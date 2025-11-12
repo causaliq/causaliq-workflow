@@ -5,36 +5,32 @@ This directory contains focused documentation for causaliq-pipeline development.
 ## Essential Documents
 
 ### 📋 **Start Here**
-- **[Requirements](feature_list.md)** - Three-month implementation plan with specific deliverables
-- **[Example Workflows](example_workflows.md)** - Series-based workflow examples
+- **[Development Roadmap](roadmap.md)** - Complete feature list, progress tracking, and three-month implementation plan
+- **[Example Workflows](example_workflows.md)** - Series-based workflow examples and YAML configuration patterns
 
 ### 🔧 **Design**
-- **[Technical Architecture](technical_architecture.md)** - Core components for three-month plan
+- **[Technical Architecture](technical_architecture.md)** - System design, Series concept, component architecture, and pipeline-specific development patterns
 
-### 📖 **Development Support**
-- **[Development Practices](development_practices.md)** - Pipeline-specific coding standards
-- **[LLM Communication Guide](llm_communication_guide.md)** - Working with LLMs on this project
-
+### 📖 **Development Support**  
+- **[LLM Development Guide](../LLM_DEVELOPMENT_GUIDE_ENHANCED.md)** - Comprehensive development standards and LLM communication patterns for the CausalIQ ecosystem
 
 ## Quick Navigation
 
 ### For Design Work
-Start with: **Technical Architecture** → **Feature List**
+Start with: **Technical Architecture** → **Development Roadmap**
 
-### For Understanding Requirements
-Start with: **Feature List** → **Example Workflows**
+### For Understanding Requirements  
+Start with: **Development Roadmap** → **Example Workflows**
 
 ### For LLM Collaboration
-Use the templates in: **LLM Communication Guide**
+Use: **LLM Development Guide** (comprehensive, ecosystem-wide standards)
 
 ## Document Purpose Summary
 
 | Document | Purpose | When to Use |
 |----------|---------|-------------|
- `feature_list.md` | Specific features by phase | Feature development |
+| `roadmap.md` | Feature specifications and progress tracking | Feature development planning |
 | `example_workflows.md` | YAML workflow examples | Understanding series concept |
-| `technical_architecture.md` | Package architecture | Building components |
-| `development_practices.md` | Pipeline-specific coding practices | Building components |
-| `llm_communication_guide.md` | LLM collaboration patterns | Getting help from LLMs |
+| `technical_architecture.md` | Package architecture and design patterns | Building components |
 
-This streamlined structure focuses on actionable implementation guidance while avoiding document redundancy.
+This streamlined structure focuses on actionable implementation guidance while maintaining single sources of truth.

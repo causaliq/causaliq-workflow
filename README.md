@@ -3,61 +3,48 @@
 [![Python Support](https://img.shields.io/pypi/pyversions/zenodo-sync.svg)](https://pypi.org/project/zenodo-sync/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Workflow orchestration for causal discovery experiments** within the [CausalIQ ecosystem](https://github.com/causaliq/causaliq). Coordinates causal discovery algorithms using DASK and YAML configuration with a focus on series-based experiment organization.
+**CI workflow-inspired orchestration for causal discovery experiments** within the [CausalIQ ecosystem](https://github.com/causaliq/causaliq). Coordinates causal discovery algorithms using GitHub Actions-style workflows executed via DASK.
+
+## Revolutionary CI Workflow Architecture
+
+� **Breakthrough Discovery**: We've adopted **GitHub Actions workflow patterns** for causal discovery experiments, transforming complex research workflows into familiar CI/CD syntax.
+
+```yaml
+name: "Algorithm Comparison"
+strategy:
+  matrix:
+    algorithm: ["PC", "GES", "LINGAM"]
+    network: ["asia", "sachs"]
+    sample_size: [100, 500, 1000]
+  exclude:
+    - algorithm: "LINGAM"
+      network: "alarm"
+steps:
+  - uses: "load-network@v1"
+    with:
+      network_name: "${{ matrix.network }}"
+  - uses: "causal-discovery@v1"
+    with:
+      algorithm: "${{ matrix.algorithm }}"
+```
 
 ## Status
 
-🚧 **Active Development** - Currently implementing core framework (Month 1 of 3-month plan). See [Development Roadmap](docs/development_roadmap.md) for detailed timeline.
+🚧 **Phase 1 Development** - CI Workflow Foundation (~15% complete)
 
-## Quick Overview
+**Current Focus**: Implementing unified CI workflow engine with GitHub Actions schema integration, package-level algorithm registry, and action-based component library.
 
-causaliq-pipeline orchestrates causal discovery experiments using:
-- **Series concept**: Organize experiments across datasets, algorithms, and parameters
-- **YAML configuration**: Define workflows with inheritance and validation
-- **DASK execution**: Parallel execution with resource management
-- **External integration**: R (bnlearn), Java (Tetrad), and Python packages
-- **LLM coordination**: Integration with causaliq-llm for model averaging
+📋 **Complete roadmap and delivery specifications**: [docs/roadmap.md](docs/roadmap.md)
 
-## Three-Month Implementation Plan
+## Key Features
 
-### Phase 1 (Month 1): Foundation ✅ Current Focus
-- YAML workflow configuration with validation
-- Series concept for experiment organization  
-- Basic DASK integration and task execution
-- Simple logging and progress monitoring
+- **🎯 GitHub Actions Syntax**: Familiar CI/CD workflow patterns for causal discovery
+- **📊 Matrix Strategy**: Advanced experiment combinations with exclude/include logic
+- **🔧 Action Components**: Reusable, versioned workflow actions (`load-network@v1`, `causal-discovery@v1`)
+- **🔌 Package Plugins**: Algorithm integration (bnlearn, Tetrad, causal-learn) via package-level plugins
+- **⚡ DASK Execution**: Parallel execution with intelligent resource management
 
-### Phase 2 (Month 2): Integration
-- External package plugins (R bnlearn, Java Tetrad)
-- Dataset download and randomization via zenodo-sync
-- LLM integration hooks for research
-- Series-based experiment execution
-
-### Phase 3 (Month 3): Production
-- Pause/resume workflow functionality
-- Resource monitoring and limits
-- Robust error handling and recovery
-- Foundation for existing workflow migration
-
-## Core Technologies
-
-- **DASK**: Parallel and distributed computing
-- **YAML**: Configuration with inheritance support
-- **Python 3.9-3.12**: Following CausalIQ ecosystem standards
-- **Plugin Architecture**: R, Java, and Python package integration
-
-## The "Series" Concept
-
-Central organizing principle for causal discovery experiments:
-```yaml
-series:
-  pc_experiments:
-    algorithm: "pc"
-    datasets: ["alarm", "asia"]
-    sample_sizes: [100, 500, 1000]
-    randomizations: 10
-    hyperparameters:
-      alpha: [0.01, 0.05, 0.1]
-```
+**See detailed architecture**: [docs/technical_architecture.md](docs/technical_architecture.md)
 
 ## Quick Start
 
@@ -78,68 +65,40 @@ scripts/activate.ps1 311
 
 ### Basic Usage
 ```bash
-# Validate workflow configuration
-causaliq-pipeline validate example_workflow.yaml --dry-run
+# Validate CI workflow configuration  
+causaliq-pipeline validate algorithm_comparison.yaml
 
 # Execute workflow (when implemented)
-causaliq-pipeline run example_workflow.yaml
+causaliq-pipeline run algorithm_comparison.yaml
 
-# Monitor progress
+# Monitor matrix job progress
 causaliq-pipeline status workflow-123
 ```
 
-## Example Workflow
-
-```yaml
-# pc_ges_comparison.yaml
-metadata:
-  name: "pc_ges_comparison"
-  description: "Compare PC and GES algorithms"
-
-series:
-  pc_series:
-    algorithm: "pc"
-    package: "causaliq-discovery"
-    datasets: ["alarm", "asia"]
-    sample_sizes: [500, 1000]
-    randomizations: 5
-    hyperparameters:
-      alpha: 0.05
-      
-  ges_series:
-    algorithm: "ges"
-    package: "causaliq-discovery" 
-    datasets: ["alarm", "asia"]
-    sample_sizes: [500, 1000]
-    randomizations: 5
-    hyperparameters:
-      score_type: "bic"
-
-analysis:
-  compare_series: ["pc_series", "ges_series"]
-  metrics: ["shd", "precision", "recall"]
-```
+**Example workflows**: [docs/example_workflows.md](docs/example_workflows.md)
 
 ## Documentation
 
-- **[Requirements](docs/feature_list.md)** - Features and three-month implementation plan
-- **[Technical Architecture](docs/technical_architecture.md)** - Technical Architecture
-- **[Example Workflows](docs/example_workflows.md)** - Series-based workflow examples
-- **[LLM Communication Guide](docs/llm_communication_guide.md)** - Working with LLMs on this project
+- **[📋 Development Roadmap](docs/roadmap.md)** - Complete roadmap and delivery specifications
+- **[🏗️ Technical Architecture](docs/technical_architecture.md)** - CI workflow engine design and core components
+- **[⚙️ CI Workflow Implementation](docs/design/ci_workflow_implementation.md)** - Strategic design decisions and implementation approach
+- **[📊 Matrix Strategy Design](docs/design/matrix_expansion_design.md)** - GitHub Actions matrix implementation details
+- **[🔧 Action Architecture](docs/design/action_architecture_design.md)** - Versioned action component system
+- **[🔌 Algorithm Registry](docs/design/algorithm_registry_design.md)** - Package-level plugin architecture
 
-## Position in CausalIQ Ecosystem
+## CausalIQ Ecosystem Integration
 
-Integrates with other CausalIQ packages:
-- **causaliq-discovery**: Core algorithms (gradual migration from monolithic repo)
-- **causaliq-llm**: LLM integration for model averaging and analysis
-- **causaliq-analysis**: Statistical analysis and metrics
-- **causaliq-experiments**: Configuration and result storage
-- **External packages**: R (bnlearn), Java (Tetrad)
+Coordinates with:
+- **causaliq-discovery**: Core algorithms (integrated as package plugins)
+- **causaliq-llm**: LLM integration via action-based architecture
+- **causaliq-analysis**: Statistical analysis actions and post-processing  
+- **causaliq-experiments**: Configuration and result storage with CI workflow metadata
 
 ## Research Context
 
-Supporting research for May 2026 paper on LLM integration for intelligent model averaging. Also preparing for migration of existing workflows from monolithic discovery repo by end 2026.
+Supporting research for May 2026 paper on LLM integration for intelligent model averaging. The CI workflow architecture enables sophisticated experimental designs while maintaining familiar syntax for the research community.
 
+**Migration target**: Existing workflows from monolithic discovery repo by end 2026.
 
 ## License
 

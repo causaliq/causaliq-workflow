@@ -34,12 +34,14 @@ extra_css:
 nav:
   - Home: index.md
   - Requirements: 
-    - Feature List: feature_list.md
+    - Development Roadmap: roadmap.md
     - Example Workflows: example_workflows.md
   - Architecture: technical_architecture.md
-  - LLM Support:
-    - LLM Communication: llm_communication_guide.md
-    - Package specifics: development_practices.md
+  - Design Documents:
+    - CI Workflow Implementation: design/ci_workflow_implementation.md
+    - Matrix Strategy Design: design/matrix_expansion_design.md
+    - Action Architecture: design/action_architecture_design.md
+    - Algorithm Registry: design/algorithm_registry_design.md
   - API Reference: api.md
 
 plugins:
