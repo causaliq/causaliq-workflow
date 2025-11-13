@@ -20,13 +20,19 @@ The causaliq-pipeline serves as the orchestration layer within the [CausalIQ eco
    - Matrix variables, with parameters, data_root/output_root validation
    - Comprehensive error reporting with schema path context
 
-3. **Dummy Structure Learner Action** (`causaliq_pipeline.actions.dummy_structure_learner`)
+3. **Workflow Execution Engine** (`causaliq_pipeline.workflow`)
+   - `WorkflowExecutor` class for parsing YAML workflows
+   - Matrix expansion with cartesian product generation
+   - Path construction from matrix variables and workflow configuration
+   - Integration with existing schema validation
+
+4. **Dummy Structure Learner Action** (`causaliq_pipeline.actions.dummy_structure_learner`)
    - Reference implementation demonstrating action framework
    - GraphML output format for causal graph representation
    - Matrix variable support (dataset, algorithm parameters)
    - Real filesystem operations with proper path construction
 
-4. **Workflow Schema** (`causaliq_pipeline.schemas.causaliq-workflow.json`)
+5. **Workflow Schema** (`causaliq_pipeline.schemas.causaliq-workflow.json`)
    - GitHub Actions-inspired syntax with causal discovery extensions
    - Matrix strategy support for parameterized experiments
    - Path construction with `data_root`, `output_root`, and `id` fields
@@ -79,21 +85,30 @@ class Action(ABC):
 
 ## Core Architecture Components
 
-### 1. CI Workflow Engine (`causaliq_pipeline.workflow`)
+### 1. Workflow Execution Engine (`causaliq_pipeline.workflow`)
 
 ```python
-class CIWorkflowEngine:
-    """Execute GitHub Actions-style workflows for causal discovery."""
+class WorkflowExecutor:
+    """Parse and execute GitHub Actions-style workflows with matrix expansion."""
     
-    def parse_workflow(self, workflow_yaml: str) -> WorkflowDefinition:
-        """Parse CI-style YAML using GitHub Actions schema."""
+    def parse_workflow(self, workflow_path: Union[str, Path]) -> Dict[str, Any]:
+        """Parse workflow YAML file with validation."""
         
-    def expand_matrix_strategy(self, strategy: MatrixStrategy) -> List[JobDefinition]:
-        """Convert GitHub Actions matrix strategy to individual experiment jobs."""
+    def expand_matrix(self, matrix: Dict[str, List[Any]]) -> List[Dict[str, Any]]:
+        """Expand matrix variables into individual job configurations."""
         
-    def execute_workflow(self, workflow: WorkflowDefinition) -> WorkflowResult:
-        """Execute workflow with DASK task graph coordination."""
+    def construct_paths(self, job: Dict[str, Any], data_root: str, 
+                       output_root: str, workflow_id: str) -> Dict[str, str]:
+        """Construct file paths using matrix variables and workflow config."""
 ```
+
+**Current Implementation Status**: ✅ **Phase 1 Complete**
+- Parse and validate YAML workflow files
+- Matrix expansion with cartesian product generation
+- Path construction from matrix variables
+- 100% test coverage with comprehensive error handling
+
+**Next Phase**: Step execution, environment management, conditional execution
 
 ### 2. Package-Level Algorithm Registry (`causaliq_pipeline.algorithms`)
 

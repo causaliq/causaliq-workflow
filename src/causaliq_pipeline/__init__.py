@@ -2,6 +2,9 @@
 causaliq-pipeline: Template package for CausalIQ repos
 """
 
+# Import core functionality
+from .workflow import WorkflowExecutionError, WorkflowExecutor
+
 __version__ = "0.1.0"
 __author__ = "CausalIQ"
 __email__ = "info@causaliq.com"
@@ -21,4 +24,6 @@ __all__ = [
     "__author__",
     "__email__",
     "VERSION",
+    "WorkflowExecutor",
+    "WorkflowExecutionError",
 ]

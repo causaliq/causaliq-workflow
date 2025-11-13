@@ -1,0 +1,3 @@
+id: "invalid-test"
+description: "Invalid workflow for testing error handling"
+# Missing required steps field

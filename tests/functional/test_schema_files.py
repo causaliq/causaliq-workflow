@@ -19,8 +19,13 @@ def test_load_default_schema():
     """Test loading default schema from package data."""
     schema = load_schema()
     assert schema["title"] == "CausalIQ Workflow Schema"
-    assert "name" in schema["required"]
+    # Required fields are id, description, and steps
+    assert "id" in schema["required"]
+    assert "description" in schema["required"]
     assert "steps" in schema["required"]
+    # Properties should still include id and description
+    assert "id" in schema["properties"]
+    assert "description" in schema["properties"]
 
 
 # Test loading schema when file does not exist

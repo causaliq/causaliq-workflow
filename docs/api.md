@@ -34,6 +34,22 @@
       show_source: false
       heading_level: 4
 
+## Workflow Execution Engine
+
+### causaliq_pipeline.workflow
+
+::: causaliq_pipeline.workflow.WorkflowExecutor
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 4
+
+::: causaliq_pipeline.workflow.WorkflowExecutionError
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 4
+
 ## Schema Validation
 
 ### causaliq_pipeline.schema
@@ -51,6 +67,12 @@
       heading_level: 4
 
 ::: causaliq_pipeline.schema.validate_workflow
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 4
+
+::: causaliq_pipeline.schema.load_workflow_file
     options:
       show_root_heading: true
       show_source: false
@@ -79,6 +101,56 @@
 ---
 
 ## Usage Examples
+
+### Using WorkflowExecutor
+
+```python
+from causaliq_pipeline import WorkflowExecutor
+
+# Create executor instance
+executor = WorkflowExecutor()
+
+# Parse and validate workflow
+workflow = executor.parse_workflow("experiment.yml")
+print(f"Workflow: {workflow['name']}")
+
+# Expand matrix variables
+if "matrix" in workflow:
+    jobs = executor.expand_matrix(workflow["matrix"])
+    print(f"Generated {len(jobs)} jobs from matrix")
+    
+    # Construct paths for each job
+    for i, job in enumerate(jobs):
+        paths = executor.construct_paths(
+            job=job,
+            data_root=workflow.get("data_root", "/data"),
+            output_root=workflow.get("output_root", "/results"), 
+            workflow_id=workflow.get("id", f"job-{i}")
+        )
+        print(f"Job {i}: {paths}")
+```
+
+### Matrix Expansion Example
+
+```python
+from causaliq_pipeline import WorkflowExecutor
+
+executor = WorkflowExecutor()
+
+# Define matrix
+matrix = {
+    "algorithm": ["pc", "ges", "lingam"],
+    "dataset": ["asia", "cancer"],
+    "alpha": [0.01, 0.05]
+}
+
+# Expand into individual jobs
+jobs = executor.expand_matrix(matrix)
+# Results in 12 jobs (3 × 2 × 2 combinations)
+
+for job in jobs:
+    print(f"Algorithm: {job['algorithm']}, Dataset: {job['dataset']}, Alpha: {job['alpha']}")
+```
 
 ### Creating a Custom Action
 

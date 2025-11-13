@@ -1,0 +1,7 @@
+# Test workflow that should fail with old schema (missing id) but pass with corrected schema
+name: "Workflow Without ID"
+# Note: No 'id' field - this would pass old schema but fail new schema
+
+steps:
+  - name: "Test Step"
+    uses: "dummy-action"

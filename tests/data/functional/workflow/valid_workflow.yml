@@ -1,0 +1,14 @@
+id: "test-001"
+description: "Test workflow with matrix variables and path construction"
+data_root: "/data"
+output_root: "/results"
+
+matrix:
+  dataset: ["asia", "cancer"]
+  algorithm: ["pc", "ges"]
+
+steps:
+  - name: "Structure Learning"
+    uses: "dummy-structure-learner"
+    with:
+      max_iter: 1000
