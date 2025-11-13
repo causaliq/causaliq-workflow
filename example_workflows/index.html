@@ -1,0 +1,1805 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../roadmap/">
+      
+      
+        <link rel="next" href="../technical_architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Example Workflows - causaliq-pipeline</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="http://causaliq.org/css/mkdocs.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#causaliq-pipeline-example-workflows" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="causaliq-pipeline" class="md-header__button md-logo" aria-label="causaliq-pipeline" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            causaliq-pipeline
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Example Workflows
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../roadmap/" class="md-tabs__link">
+          
+  
+  
+  Requirements
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../technical_architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../design/matrix_expansion_design/" class="md-tabs__link">
+          
+  
+  
+  Design Documents
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="causaliq-pipeline" class="md-nav__button md-logo" aria-label="causaliq-pipeline" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    causaliq-pipeline
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Requirements
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Workflows
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-implementation-examples-v010" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Implementation Examples (v0.1.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Implementation Examples (v0.1.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-action-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Action Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-strategy-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Strategy Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-construction-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path Construction Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implemented-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implemented Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implemented Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Action Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Schema Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Test Coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-action-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Action Implementation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-phase-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Phase: Workflow Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Phase: Workflow Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-workflowexecutor-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned WorkflowExecutor Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../technical_architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Documents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Documents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/matrix_expansion_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/algorithm_registry_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-implementation-examples-v010" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Implementation Examples (v0.1.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Implementation Examples (v0.1.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-action-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Action Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-strategy-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Strategy Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-construction-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path Construction Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implemented-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implemented Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implemented Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Action Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Schema Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Test Coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-action-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Action Implementation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-phase-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Phase: Workflow Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Phase: Workflow Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-workflowexecutor-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned WorkflowExecutor Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="causaliq-pipeline-example-workflows">CausalIQ Pipeline - Example Workflows</h1>
+<h2 id="current-implementation-examples-v010">Current Implementation Examples (v0.1.0)</h2>
+<h3 id="basic-action-workflow">Basic Action Workflow</h3>
+<p>Our current implementation supports GitHub Actions-style workflows with action components:</p>
+<pre><code class="language-yaml"># basic_structure_learning.yaml
+name: &quot;Basic Structure Learning&quot;
+id: &quot;basic-experiment-001&quot;
+data_root: &quot;/data&quot;
+output_root: &quot;/results&quot;
+
+steps:
+  - name: &quot;Learn Structure&quot;
+    uses: &quot;dummy-structure-learner&quot;
+    with:
+      dataset: &quot;asia&quot;
+      algorithm: &quot;dummy&quot;
+</code></pre>
+<h3 id="matrix-strategy-workflow">Matrix Strategy Workflow</h3>
+<p>The implemented schema supports matrix variables for parameterized experiments:</p>
+<pre><code class="language-yaml"># matrix_experiment.yaml
+name: &quot;Algorithm Comparison Matrix&quot;
+id: &quot;algo-comparison-001&quot;
+data_root: &quot;/experiments/data&quot;
+output_root: &quot;/experiments/results&quot;
+
+matrix:
+  dataset: [&quot;asia&quot;, &quot;cancer&quot;]
+  algorithm: [&quot;pc&quot;, &quot;ges&quot;]
+  alpha: [0.01, 0.05]
+
+steps:
+  - name: &quot;Structure Learning&quot;
+    uses: &quot;dummy-structure-learner&quot;
+    with:
+      max_iter: 1000
+</code></pre>
+<h3 id="path-construction-pattern">Path Construction Pattern</h3>
+<p>Our implementation automatically constructs paths from matrix variables:</p>
+<pre><code class="language-yaml"># Input paths: {data_root}/{dataset}/input.csv
+# - /experiments/data/asia/input.csv
+# - /experiments/data/cancer/input.csv
+
+# Output paths: {output_root}/{id}/{dataset}_{algorithm}/
+# - /experiments/results/algo-comparison-001/asia_pc/
+# - /experiments/results/algo-comparison-001/asia_ges/
+# - /experiments/results/algo-comparison-001/cancer_pc/
+# - /experiments/results/algo-comparison-001/cancer_ges/
+</code></pre>
+<h2 id="implemented-features">Implemented Features</h2>
+<h3 id="action-framework">✅ Action Framework</h3>
+<ul>
+<li><strong>Action Registration</strong>: Actions defined as Python classes</li>
+<li><strong>Type Safety</strong>: Input/output specifications with type hints</li>
+<li><strong>Error Handling</strong>: Comprehensive ActionExecutionError and ActionValidationError</li>
+<li><strong>GraphML Output</strong>: Standardized format for causal graphs</li>
+</ul>
+<h3 id="schema-validation">✅ Schema Validation</h3>
+<ul>
+<li><strong>GitHub Actions Syntax</strong>: Familiar workflow patterns</li>
+<li><strong>Matrix Variables</strong>: Full support for parameterized experiments  </li>
+<li><strong>Path Construction</strong>: data_root, output_root, id fields</li>
+<li><strong>Action Parameters</strong>: with blocks for action configuration</li>
+</ul>
+<h3 id="test-coverage">✅ Test Coverage</h3>
+<ul>
+<li><strong>Functional Tests</strong>: Real filesystem operations with tracked test data</li>
+<li><strong>Unit Tests</strong>: Mocked dependencies for action logic testing</li>
+<li><strong>Schema Tests</strong>: Comprehensive validation of all workflow features</li>
+</ul>
+<h2 id="example-action-implementation">Example Action Implementation</h2>
+<pre><code class="language-python">class DummyStructureLearnerAction(Action):
+    &quot;&quot;&quot;Reference action implementation.&quot;&quot;&quot;
+
+    name = &quot;dummy-structure-learner&quot;
+    version = &quot;1.0.0&quot;
+
+    inputs = {
+        &quot;data_path&quot;: ActionInput(
+            name=&quot;data_path&quot;,
+            description=&quot;Path to input CSV dataset (auto-constructed)&quot;,
+            required=True,
+            type_hint=&quot;str&quot;,
+        ),
+        &quot;output_dir&quot;: ActionInput(
+            name=&quot;output_dir&quot;, 
+            description=&quot;Directory for output files (auto-constructed)&quot;,
+            required=True,
+            type_hint=&quot;str&quot;,
+        ),
+        &quot;dataset&quot;: ActionInput(
+            name=&quot;dataset&quot;,
+            description=&quot;Dataset name from matrix&quot;,
+            required=True,
+            type_hint=&quot;str&quot;,
+        ),
+        &quot;algorithm&quot;: ActionInput(
+            name=&quot;algorithm&quot;,
+            description=&quot;Algorithm name from matrix&quot;,
+            required=True,
+            type_hint=&quot;str&quot;,
+        ),
+    }
+
+    def run(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;Create GraphML output file.&quot;&quot;&quot;
+        # Implementation creates valid GraphML file
+        # Returns graph_path, node_count, edge_count
+</code></pre>
+<h2 id="next-phase-workflow-execution">Next Phase: Workflow Execution</h2>
+<h3 id="planned-workflowexecutor-implementation">Planned WorkflowExecutor Implementation</h3>
+<pre><code class="language-python"># Future implementation (Phase 2)
+class WorkflowExecutor:
+    &quot;&quot;&quot;Execute complete workflows with matrix expansion.&quot;&quot;&quot;
+
+    def execute_workflow(self, workflow_path: str) -&gt; WorkflowResult:
+        &quot;&quot;&quot;Parse YAML and execute all workflow steps.&quot;&quot;&quot;
+
+    def expand_matrix(self, matrix: Dict[str, List]) -&gt; List[JobConfig]:
+        &quot;&quot;&quot;Convert matrix variables to individual jobs.&quot;&quot;&quot;
+
+    def construct_paths(self, job: JobConfig) -&gt; PathConfig:
+        &quot;&quot;&quot;Build input/output paths from matrix variables.&quot;&quot;&quot;
+</code></pre>
+<p>ges_series:
+    algorithm: "ges" 
+    package: "causaliq-discovery"
+    datasets: ["alarm", "asia"]  # Reference same datasets
+    sample_sizes: [100, 500, 1000]
+    randomizations: 10
+    hyperparameters:
+      score_type: ["bic", "aic"]</p>
+<h1 id="resource-configuration">Resource configuration</h1>
+<p>resources:
+  max_parallel_jobs: 8
+  memory_limit_per_job: "4GB"
+  runtime_limit_per_job: "30m"
+  total_runtime_limit: "4h"</p>
+<h1 id="analysis-configuration">Analysis configuration</h1>
+<p>analysis:
+  compare_series: ["pc_series", "ges_series"]
+  metrics: ["shd", "precision", "recall", "f1"]
+  statistical_significance: 0.05
+  output_format: ["csv", "json"]</p>
+<h1 id="logging-and-monitoring">Logging and monitoring</h1>
+<p>monitoring:
+  progress_updates: "1m"
+  log_level: "INFO"
+  save_intermediate: true</p>
+<pre><code>
+## Use Case 2: External Package Integration
+
+### Scenario
+Use R bnlearn package alongside Python algorithms for comprehensive comparison.
+
+### Multi-Package Workflow
+```yaml
+# multi_package_comparison.yaml
+metadata:
+  name: &quot;python_r_algorithm_comparison&quot;
+  description: &quot;Compare Python and R causal discovery implementations&quot;
+
+series:
+  python_pc:
+    algorithm: &quot;pc&quot;
+    package: &quot;causaliq-discovery&quot;
+    datasets: [&quot;alarm&quot;]
+    sample_sizes: [500, 1000]
+    randomizations: 5
+    hyperparameters:
+      alpha: 0.05
+
+  r_bnlearn_pc:
+    algorithm: &quot;pc.stable&quot;
+    package: &quot;r_bnlearn&quot;
+    datasets: [&quot;alarm&quot;]  # Same datasets for comparison
+    sample_sizes: [500, 1000] 
+    randomizations: 5
+    hyperparameters:
+      alpha: 0.05
+      test: &quot;cor&quot;
+
+# External package requirements
+external_packages:
+  r_bnlearn:
+    check_installation: true
+    required_version: &quot;&gt;=4.7&quot;
+    install_if_missing: false  # Fail if not available
+
+resources:
+  max_parallel_jobs: 4  # Fewer for external packages
+  memory_limit_per_job: &quot;8GB&quot;
+
+validation:
+  dry_run: true  # Preview before execution
+  check_dependencies: true
+</code></pre>
+<h2 id="use-case-3-configuration-inheritance">Use Case 3: Configuration Inheritance</h2>
+<h3 id="scenario">Scenario</h3>
+<p>Create specific experiments based on common base configuration.</p>
+<h3 id="base-configuration">Base Configuration</h3>
+<pre><code class="language-yaml"># base_causal_experiment.yaml
+metadata:
+  name: &quot;base_causal_discovery_template&quot;
+  description: &quot;Base template for causal discovery experiments&quot;
+
+defaults:
+  datasets:
+    - name: &quot;alarm&quot; 
+      zenodo_id: &quot;alarm_networks_v1&quot;
+    - name: &quot;asia&quot;
+      zenodo_id: &quot;asia_networks_v1&quot;
+  sample_sizes: [100, 500, 1000]
+  randomizations: 10
+
+resources:
+  max_parallel_jobs: 6
+  memory_limit_per_job: &quot;4GB&quot;
+  runtime_limit_per_job: &quot;1h&quot;
+
+monitoring:
+  log_level: &quot;INFO&quot;
+  progress_updates: &quot;30s&quot;
+</code></pre>
+<h3 id="inherited-specific-experiment">Inherited Specific Experiment</h3>
+<pre><code class="language-yaml"># pc_alpha_study.yaml
+inherits: &quot;base_causal_experiment.yaml&quot;
+
+metadata:
+  name: &quot;pc_alpha_sensitivity_study&quot;
+  description: &quot;Study effect of alpha parameter on PC algorithm&quot;
+
+overrides:
+  series:
+    pc_alpha_study:
+      algorithm: &quot;pc&quot;
+      package: &quot;causaliq-discovery&quot; 
+      hyperparameters:
+        alpha: [0.001, 0.01, 0.05, 0.1, 0.2]
+
+  analysis:
+    metrics: [&quot;shd&quot;, &quot;precision&quot;, &quot;recall&quot;]
+    focus_parameter: &quot;alpha&quot;
+    statistical_tests: true
+</code></pre>
+<h2 id="use-case-4-llm-integration-for-model-averaging">Use Case 4: LLM Integration for Model Averaging</h2>
+<h3 id="scenario_1">Scenario</h3>
+<p>Use LLM to guide intelligent model averaging across multiple algorithm results.</p>
+<h3 id="llm-enhanced-workflow">LLM-Enhanced Workflow</h3>
+<pre><code class="language-yaml"># llm_model_averaging.yaml
+metadata:
+  name: &quot;llm_guided_model_averaging&quot;
+  description: &quot;Use LLM for intelligent model averaging&quot;
+
+# First run multiple algorithms
+series:
+  pc_results:
+    algorithm: &quot;pc&quot;
+    package: &quot;causaliq-discovery&quot;
+    datasets: [&quot;healthcare_study&quot;]
+    sample_sizes: [1000]
+    randomizations: 5
+    hyperparameters:
+      alpha: 0.05
+
+  ges_results:
+    algorithm: &quot;ges&quot;
+    package: &quot;causaliq-discovery&quot;
+    datasets: [&quot;healthcare_study&quot;]
+    sample_sizes: [1000]
+    randomizations: 5
+    hyperparameters:
+      score_type: &quot;bic&quot;
+
+# LLM integration for analysis
+llm_analysis:
+  stage: &quot;post_discovery&quot;
+  package: &quot;causaliq-llm&quot;
+  tasks:
+    - task: &quot;analyze_algorithm_outputs&quot;
+      inputs: [&quot;pc_results&quot;, &quot;ges_results&quot;]
+      domain_knowledge: &quot;healthcare/cardiology&quot;
+
+    - task: &quot;suggest_averaging_weights&quot;
+      based_on: &quot;algorithm_reliability_analysis&quot;
+
+    - task: &quot;validate_combined_graph&quot;
+      domain_expertise: true
+
+# Model averaging using LLM suggestions
+model_averaging:
+  package: &quot;causaliq-analysis&quot;
+  method: &quot;llm_weighted_average&quot;
+  inputs: [&quot;pc_results&quot;, &quot;ges_results&quot;, &quot;llm_suggestions&quot;]
+</code></pre>
+<h2 id="use-case-5-dataset-download-and-randomization">Use Case 5: Dataset Download and Randomization</h2>
+<h3 id="scenario_2">Scenario</h3>
+<p>Automated dataset download from Zenodo with systematic randomization for robustness testing.</p>
+<h3 id="dataset-management-workflow">Dataset Management Workflow</h3>
+<pre><code class="language-yaml"># dataset_robustness_study.yaml
+metadata:
+  name: &quot;dataset_robustness_analysis&quot;
+  description: &quot;Study algorithm robustness to data variations&quot;
+
+# Dataset configuration with automatic download
+datasets:
+  primary_dataset:
+    name: &quot;benchmark_networks&quot;
+    source: &quot;zenodo&quot;
+    zenodo_id: &quot;benchmark_causal_v2&quot;
+    cache_locally: true
+
+# Randomization strategies  
+randomization:
+  strategies:
+    - type: &quot;subsample&quot;
+      fractions: [0.7, 0.8, 0.9, 1.0]
+
+    - type: &quot;variable_reorder&quot;
+      random_seeds: [42, 123, 456]
+
+    - type: &quot;noise_injection&quot;
+      noise_levels: [0.0, 0.05, 0.1]
+      noise_type: &quot;gaussian&quot;
+
+# Series using randomized datasets
+series:
+  robustness_test:
+    algorithm: &quot;pc&quot;
+    package: &quot;causaliq-discovery&quot;
+    apply_all_randomizations: true
+    hyperparameters:
+      alpha: 0.05
+
+# Analysis focuses on robustness metrics
+analysis:
+  robustness_metrics:
+    - &quot;stability_across_subsamples&quot;
+    - &quot;invariance_to_ordering&quot;
+    - &quot;noise_resistance&quot;
+  generate_robustness_report: true
+</code></pre>
+<h2 id="cli-usage-examples">CLI Usage Examples</h2>
+<h3 id="basic-execution">Basic Execution</h3>
+<pre><code class="language-bash"># Execute a series-based workflow
+causaliq-pipeline run pc_ges_comparison.yaml
+
+# Dry-run to preview execution plan
+causaliq-pipeline validate pc_ges_comparison.yaml --dry-run
+
+# Monitor running workflow
+causaliq-pipeline status workflow-abc123
+
+# Pause running workflow
+causaliq-pipeline pause workflow-abc123
+
+# Resume paused workflow  
+causaliq-pipeline resume workflow-abc123
+</code></pre>
+<h3 id="advanced-options">Advanced Options</h3>
+<pre><code class="language-bash"># Override resource limits
+causaliq-pipeline run experiment.yaml --max-jobs 16 --memory-per-job 8GB
+
+# Run specific series only
+causaliq-pipeline run experiment.yaml --series pc_series
+
+# Export results in specific format
+causaliq-pipeline results export workflow-abc123 --format csv --output results/
+</code></pre>
+<h2 id="python-api-examples">Python API Examples</h2>
+<h3 id="basic-workflow-execution">Basic Workflow Execution</h3>
+<pre><code class="language-python">from causaliq_pipeline import WorkflowManager, ConfigurationManager
+
+# Load and validate configuration
+config_manager = ConfigurationManager()
+workflow_config = config_manager.load_workflow(&quot;pc_ges_comparison.yaml&quot;)
+
+# Execute workflow
+workflow_manager = WorkflowManager()
+result = workflow_manager.execute_workflow(workflow_config)
+
+# Access results by series
+pc_results = result.get_series_results(&quot;pc_series&quot;)
+ges_results = result.get_series_results(&quot;ges_series&quot;)
+</code></pre>
+<h3 id="series-analysis">Series Analysis</h3>
+<pre><code class="language-python">from causaliq_pipeline.analysis import SeriesComparison
+
+# Compare algorithm performance across series
+comparison = SeriesComparison()
+comparison.add_series(&quot;PC Algorithm&quot;, pc_results)
+comparison.add_series(&quot;GES Algorithm&quot;, ges_results)
+
+# Generate comparison metrics
+metrics = comparison.compare_algorithms([&quot;shd&quot;, &quot;precision&quot;, &quot;recall&quot;])
+statistical_significance = comparison.statistical_test(alpha=0.05)
+
+# Export results
+comparison.export_results(&quot;algorithm_comparison.csv&quot;)
+</code></pre>
+<h3 id="configuration-inheritance">Configuration Inheritance</h3>
+<pre><code class="language-python">from causaliq_pipeline.config import ConfigurationInheritance
+
+# Create experiment based on template
+inheritance = ConfigurationInheritance()
+base_config = inheritance.load_base(&quot;base_causal_experiment.yaml&quot;)
+
+# Apply specific overrides
+specific_config = inheritance.create_derived(
+    base_config,
+    overrides={
+        &quot;series&quot;: {
+            &quot;custom_study&quot;: {
+                &quot;algorithm&quot;: &quot;fci&quot;,
+                &quot;hyperparameters&quot;: {&quot;alpha&quot;: 0.01}
+            }
+        }
+    }
+)
+</code></pre>
+<p>This focused approach emphasizes the series concept and immediate implementation needs while providing practical examples for the three-month development phase.</p>
+<h2 id="use-case-2-production-causal-inference-pipeline">Use Case 2: Production Causal Inference Pipeline</h2>
+<h3 id="scenario_3">Scenario</h3>
+<p>A business wants to continuously analyze the causal impact of marketing campaigns on customer behavior using streaming data.</p>
+<h3 id="workflow-configuration">Workflow Configuration</h3>
+<pre><code class="language-yaml"># production_inference_workflow.yaml
+metadata:
+  name: &quot;marketing_causal_inference&quot;
+  version: &quot;2.1&quot;
+  description: &quot;Real-time causal inference for marketing effectiveness&quot;
+  environment: &quot;production&quot;
+
+parameters:
+  data_stream: &quot;kafka://marketing-events&quot;
+  batch_size: 10000
+  update_frequency: &quot;1h&quot;
+  lookback_window: &quot;30d&quot;
+
+resources:
+  dask_cluster: &quot;kubernetes://marketing-cluster&quot;
+  min_workers: 3
+  max_workers: 20
+  auto_scale: true
+  memory_per_worker: &quot;4GB&quot;
+
+monitoring:
+  metrics_endpoint: &quot;prometheus://metrics&quot;
+  alert_threshold: 0.1
+  slack_notifications: true
+
+steps:
+  - name: &quot;stream_ingestion&quot;
+    package: &quot;causaliq-data&quot;
+    method: &quot;ingest_stream&quot;
+    parameters:
+      source: ${parameters.data_stream}
+      batch_size: ${parameters.batch_size}
+      schema_validation: true
+    outputs: [&quot;raw_events&quot;]
+
+  - name: &quot;real_time_preprocessing&quot;
+    package: &quot;causaliq-data&quot;
+    method: &quot;preprocess_streaming&quot;
+    depends_on: [&quot;stream_ingestion&quot;]
+    parameters:
+      window_size: ${parameters.lookback_window}
+      features: [&quot;campaign_type&quot;, &quot;customer_segment&quot;, &quot;channel&quot;, &quot;timestamp&quot;]
+      target: &quot;conversion&quot;
+    inputs: [&quot;raw_events&quot;]
+    outputs: [&quot;processed_batch&quot;]
+
+  - name: &quot;causal_graph_update&quot;
+    package: &quot;causaliq-discovery&quot;
+    method: &quot;incremental_learning&quot;
+    depends_on: [&quot;real_time_preprocessing&quot;]
+    parameters:
+      existing_graph: &quot;models/marketing_graph.pkl&quot;
+      update_threshold: 1000
+      stability_check: true
+    inputs: [&quot;processed_batch&quot;]
+    outputs: [&quot;updated_graph&quot;, &quot;graph_changes&quot;]
+
+  - name: &quot;intervention_effects&quot;
+    package: &quot;causaliq-inference&quot;
+    method: &quot;estimate_ate&quot;
+    depends_on: [&quot;causal_graph_update&quot;]
+    parameters:
+      treatment_vars: [&quot;campaign_type&quot;, &quot;channel&quot;]
+      outcome_var: &quot;conversion&quot;
+      adjustment_sets: &quot;auto&quot;
+    inputs: [&quot;updated_graph&quot;, &quot;processed_batch&quot;]
+    outputs: [&quot;treatment_effects&quot;, &quot;confidence_intervals&quot;]
+
+  - name: &quot;anomaly_detection&quot;
+    package: &quot;causaliq-monitoring&quot;
+    method: &quot;detect_effect_anomalies&quot;
+    depends_on: [&quot;intervention_effects&quot;]
+    parameters:
+      baseline_window: &quot;7d&quot;
+      anomaly_threshold: 2.0
+    inputs: [&quot;treatment_effects&quot;]
+    outputs: [&quot;anomalies&quot;, &quot;alerts&quot;]
+
+  - name: &quot;automated_insights&quot;
+    package: &quot;causaliq-pipeline&quot;
+    method: &quot;llm_generate_insights&quot;
+    depends_on: [&quot;intervention_effects&quot;, &quot;anomaly_detection&quot;]
+    parameters:
+      context: &quot;marketing_optimization&quot;
+      include_recommendations: true
+      business_constraints: &quot;config/business_rules.yaml&quot;
+    inputs: [&quot;treatment_effects&quot;, &quot;anomalies&quot;, &quot;graph_changes&quot;]
+    outputs: [&quot;insights&quot;, &quot;recommendations&quot;]
+
+  - name: &quot;dashboard_update&quot;
+    package: &quot;causaliq-visualization&quot;
+    method: &quot;update_dashboard&quot;
+    depends_on: [&quot;automated_insights&quot;]
+    parameters:
+      dashboard_id: &quot;marketing_causal_dashboard&quot;
+      auto_refresh: true
+    inputs: [&quot;treatment_effects&quot;, &quot;insights&quot;, &quot;recommendations&quot;]
+    outputs: [&quot;dashboard_url&quot;]
+
+triggers:
+  schedule: &quot;0 * * * *&quot;  # Every hour
+  data_threshold: 5000   # Trigger if 5k new events
+
+failure_handling:
+  retry_attempts: 3
+  fallback_to_previous: true
+  alert_on_failure: true
+</code></pre>
+<h2 id="use-case-3-interactive-research-exploration">Use Case 3: Interactive Research Exploration</h2>
+<h3 id="scenario_4">Scenario</h3>
+<p>An interactive session where researchers explore causal relationships with LLM assistance and iterative refinement.</p>
+<h3 id="workflow-configuration_1">Workflow Configuration</h3>
+<pre><code class="language-yaml"># interactive_exploration_workflow.yaml
+metadata:
+  name: &quot;interactive_causal_exploration&quot;
+  version: &quot;1.0&quot;
+  description: &quot;LLM-assisted interactive causal discovery&quot;
+  mode: &quot;interactive&quot;
+
+parameters:
+  data_source: &quot;research/climate_data.csv&quot;
+  domain: &quot;climate_science&quot;
+  interaction_mode: &quot;jupyter&quot;
+
+resources:
+  dask_cluster: &quot;local&quot;
+  workers: 2
+  memory_per_worker: &quot;6GB&quot;
+
+interaction:
+  llm_model: &quot;gpt-4&quot;
+  enable_suggestions: true
+  save_conversation: true
+
+steps:
+  - name: &quot;initial_analysis&quot;
+    package: &quot;causaliq-data&quot;
+    method: &quot;exploratory_analysis&quot;
+    parameters:
+      generate_summary: true
+      correlation_analysis: true
+    outputs: [&quot;data_summary&quot;, &quot;correlations&quot;]
+
+  - name: &quot;llm_initial_consultation&quot;
+    package: &quot;causaliq-pipeline&quot;
+    method: &quot;llm_domain_consultation&quot;
+    depends_on: [&quot;initial_analysis&quot;]
+    parameters:
+      domain: ${parameters.domain}
+      task: &quot;What causal relationships should we investigate in this climate dataset?&quot;
+      context_data: true
+    inputs: [&quot;data_summary&quot;, &quot;correlations&quot;]
+    outputs: [&quot;domain_insights&quot;, &quot;suggested_relationships&quot;]
+    interactive: true
+
+  - name: &quot;guided_discovery&quot;
+    package: &quot;causaliq-discovery&quot;
+    method: &quot;guided_search&quot;
+    depends_on: [&quot;llm_initial_consultation&quot;]
+    parameters:
+      prior_knowledge: &quot;domain_insights&quot;
+      search_strategy: &quot;hypothesis_driven&quot;
+    inputs: [&quot;data_summary&quot;, &quot;suggested_relationships&quot;]
+    outputs: [&quot;candidate_graphs&quot;]
+    interactive: true
+
+  - name: &quot;iterative_refinement&quot;
+    type: &quot;interactive_loop&quot;
+    depends_on: [&quot;guided_discovery&quot;]
+    max_iterations: 10
+    steps:
+      - name: &quot;graph_evaluation&quot;
+        package: &quot;causaliq-validation&quot;
+        method: &quot;evaluate_graph&quot;
+        inputs: [&quot;candidate_graphs&quot;]
+        outputs: [&quot;evaluation_metrics&quot;]
+
+      - name: &quot;llm_feedback&quot;
+        package: &quot;causaliq-pipeline&quot;
+        method: &quot;llm_evaluate_graph&quot;
+        parameters:
+          domain: ${parameters.domain}
+          include_suggestions: true
+        inputs: [&quot;candidate_graphs&quot;, &quot;evaluation_metrics&quot;]
+        outputs: [&quot;llm_feedback&quot;, &quot;improvement_suggestions&quot;]
+        interactive: true
+
+      - name: &quot;user_decision&quot;
+        type: &quot;user_input&quot;
+        prompt: &quot;Based on the LLM feedback, would you like to: (1) Accept graph (2) Refine further (3) Try different approach?&quot;
+        outputs: [&quot;user_choice&quot;]
+
+      - name: &quot;conditional_refinement&quot;
+        type: &quot;conditional&quot;
+        condition: &quot;user_choice == 'refine'&quot;
+        package: &quot;causaliq-discovery&quot;
+        method: &quot;refine_graph&quot;
+        inputs: [&quot;candidate_graphs&quot;, &quot;improvement_suggestions&quot;]
+        outputs: [&quot;refined_graphs&quot;]
+
+  - name: &quot;final_interpretation&quot;
+    package: &quot;causaliq-pipeline&quot;
+    method: &quot;llm_comprehensive_interpretation&quot;
+    depends_on: [&quot;iterative_refinement&quot;]
+    parameters:
+      domain: ${parameters.domain}
+      include_limitations: true
+      suggest_experiments: true
+    inputs: [&quot;candidate_graphs&quot;, &quot;evaluation_metrics&quot;]
+    outputs: [&quot;final_interpretation&quot;, &quot;experiment_suggestions&quot;]
+
+notebook_integration:
+  auto_generate_cells: true
+  include_visualizations: true
+  save_checkpoints: true
+</code></pre>
+<h2 id="example-cli-usage">Example CLI Usage</h2>
+<pre><code class="language-bash"># Execute a workflow
+causaliq-pipeline run workflow.yaml --config production.yaml
+
+# Validate workflow before execution
+causaliq-pipeline validate workflow.yaml
+
+# Interactive mode
+causaliq-pipeline interactive --domain healthcare --data patient_data.csv
+
+# Monitor running workflow
+causaliq-pipeline status workflow-123
+
+# Generate workflow template
+causaliq-pipeline template --type discovery --domain finance
+
+# List available packages and methods
+causaliq-pipeline list-methods --package causaliq-discovery
+</code></pre>
+<h2 id="integration-examples">Integration Examples</h2>
+<h3 id="python-api-usage">Python API Usage</h3>
+<pre><code class="language-python">from causaliq_pipeline import WorkflowEngine, DaskClusterManager
+
+# Set up DASK cluster
+cluster_manager = DaskClusterManager()
+client = cluster_manager.create_local_cluster(workers=4)
+
+# Initialize workflow engine
+engine = WorkflowEngine(client=client)
+
+# Load and execute workflow
+result = engine.execute_workflow(&quot;workflow.yaml&quot;)
+
+# Access results
+causal_graph = result.get_output(&quot;ensemble_graph&quot;)
+interpretation = result.get_output(&quot;interpretation&quot;)
+
+# Interactive LLM consultation
+llm_analyzer = engine.get_llm_analyzer()
+insights = llm_analyzer.interpret_results(result.all_outputs, domain=&quot;healthcare&quot;)
+</code></pre>
+<h3 id="jupyter-notebook-integration">Jupyter Notebook Integration</h3>
+<pre><code class="language-python">%%causaliq_workflow
+metadata:
+  name: &quot;notebook_workflow&quot;
+
+steps:
+  - name: &quot;discovery&quot;
+    package: &quot;causaliq-discovery&quot;
+    method: &quot;pc&quot;
+    parameters:
+      alpha: 0.05
+
+# Results automatically displayed in notebook
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
