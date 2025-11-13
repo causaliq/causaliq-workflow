@@ -12,7 +12,7 @@ This directory contains focused documentation for causaliq-pipeline development.
 - **[Technical Architecture](technical_architecture.md)** - System design, Series concept, component architecture, and pipeline-specific development patterns
 
 ### 📖 **Development Support**  
-- **[LLM Development Guide](../LLM_DEVELOPMENT_GUIDE_ENHANCED.md)** - Comprehensive development standards and LLM communication patterns for the CausalIQ ecosystem
+- **[LLM Development Guide](https://github.com/causaliq/causaliq/blob/main/LLM_DEVELOPMENT_GUIDE.md)** - Comprehensive development standards and LLM communication patterns for the CausalIQ ecosystem
 
 ## Quick Navigation
 

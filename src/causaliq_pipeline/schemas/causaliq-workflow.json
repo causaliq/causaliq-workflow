@@ -4,11 +4,45 @@
   "title": "CausalIQ Workflow Schema",
   "description": "Simplified GitHub Actions-style workflow for causal discovery experiments",
   "type": "object",
-  "required": ["name", "steps"],
+  "required": [
+    "name",
+    "steps"
+  ],
   "properties": {
     "name": {
       "type": "string",
       "description": "Workflow name"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique workflow identifier for path construction"
+    },
+    "data_root": {
+      "type": "string",
+      "description": "Root directory for input data files"
+    },
+    "output_root": {
+      "type": "string",
+      "description": "Root directory for output files"
+    },
+    "matrix": {
+      "type": "object",
+      "description": "Matrix variables for parameterized execution",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "array",
+          "description": "Array of values for matrix variable",
+          "minItems": 1,
+          "items": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "steps": {
       "type": "array",
@@ -18,10 +52,14 @@
         "type": "object",
         "oneOf": [
           {
-            "required": ["run"]
+            "required": [
+              "run"
+            ]
           },
           {
-            "required": ["uses"]
+            "required": [
+              "uses"
+            ]
           }
         ],
         "properties": {
@@ -36,6 +74,20 @@
           "uses": {
             "type": "string",
             "description": "Action to use"
+          },
+          "with": {
+            "type": "object",
+            "description": "Input parameters for the action",
+            "patternProperties": {
+              "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": false

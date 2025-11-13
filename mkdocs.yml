@@ -38,7 +38,6 @@ nav:
     - Example Workflows: example_workflows.md
   - Architecture: technical_architecture.md
   - Design Documents:
-    - CI Workflow Implementation: design/ci_workflow_implementation.md
     - Matrix Strategy Design: design/matrix_expansion_design.md
     - Action Architecture: design/action_architecture_design.md
     - Algorithm Registry: design/algorithm_registry_design.md

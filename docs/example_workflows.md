@@ -1,33 +1,144 @@
-# Example Workflows and Use Cases (Three-Month Focus)
+# CausalIQ Pipeline - Example Workflows
 
-## Use Case 1: Basic Series Experiment
+## Current Implementation Examples (v0.1.0)
 
-### Scenario
-Compare PC and GES algorithms across different datasets and sample sizes for research analysis.
+### Basic Action Workflow
 
-### Series-Based Workflow Configuration
+Our current implementation supports GitHub Actions-style workflows with action components:
+
 ```yaml
-# pc_ges_comparison.yaml
-metadata:
-  name: "pc_ges_algorithm_comparison"
-  description: "Compare PC and GES algorithms for causal discovery"
-  author: "Research Team"
-  version: "1.0"
+# basic_structure_learning.yaml
+name: "Basic Structure Learning"
+id: "basic-experiment-001"
+data_root: "/data"
+output_root: "/results"
 
-# Define experimental series
-series:
-  pc_series:
-    algorithm: "pc"
-    package: "causaliq-discovery"
-    datasets:
-      - name: "alarm"
-        zenodo_id: "alarm_networks_v1"
-      - name: "asia"
-        zenodo_id: "asia_networks_v1"
-    sample_sizes: [100, 500, 1000]
-    randomizations: 10
-    hyperparameters:
-      alpha: [0.01, 0.05, 0.1]
+steps:
+  - name: "Learn Structure"
+    uses: "dummy-structure-learner"
+    with:
+      dataset: "asia"
+      algorithm: "dummy"
+```
+
+### Matrix Strategy Workflow
+
+The implemented schema supports matrix variables for parameterized experiments:
+
+```yaml
+# matrix_experiment.yaml
+name: "Algorithm Comparison Matrix"
+id: "algo-comparison-001"
+data_root: "/experiments/data"
+output_root: "/experiments/results"
+
+matrix:
+  dataset: ["asia", "cancer"]
+  algorithm: ["pc", "ges"]
+  alpha: [0.01, 0.05]
+
+steps:
+  - name: "Structure Learning"
+    uses: "dummy-structure-learner"
+    with:
+      max_iter: 1000
+```
+
+### Path Construction Pattern
+
+Our implementation automatically constructs paths from matrix variables:
+
+```yaml
+# Input paths: {data_root}/{dataset}/input.csv
+# - /experiments/data/asia/input.csv
+# - /experiments/data/cancer/input.csv
+
+# Output paths: {output_root}/{id}/{dataset}_{algorithm}/
+# - /experiments/results/algo-comparison-001/asia_pc/
+# - /experiments/results/algo-comparison-001/asia_ges/
+# - /experiments/results/algo-comparison-001/cancer_pc/
+# - /experiments/results/algo-comparison-001/cancer_ges/
+```
+
+## Implemented Features
+
+### ✅ Action Framework
+- **Action Registration**: Actions defined as Python classes
+- **Type Safety**: Input/output specifications with type hints
+- **Error Handling**: Comprehensive ActionExecutionError and ActionValidationError
+- **GraphML Output**: Standardized format for causal graphs
+
+### ✅ Schema Validation
+- **GitHub Actions Syntax**: Familiar workflow patterns
+- **Matrix Variables**: Full support for parameterized experiments  
+- **Path Construction**: data_root, output_root, id fields
+- **Action Parameters**: with blocks for action configuration
+
+### ✅ Test Coverage
+- **Functional Tests**: Real filesystem operations with tracked test data
+- **Unit Tests**: Mocked dependencies for action logic testing
+- **Schema Tests**: Comprehensive validation of all workflow features
+
+## Example Action Implementation
+
+```python
+class DummyStructureLearnerAction(Action):
+    """Reference action implementation."""
+    
+    name = "dummy-structure-learner"
+    version = "1.0.0"
+    
+    inputs = {
+        "data_path": ActionInput(
+            name="data_path",
+            description="Path to input CSV dataset (auto-constructed)",
+            required=True,
+            type_hint="str",
+        ),
+        "output_dir": ActionInput(
+            name="output_dir", 
+            description="Directory for output files (auto-constructed)",
+            required=True,
+            type_hint="str",
+        ),
+        "dataset": ActionInput(
+            name="dataset",
+            description="Dataset name from matrix",
+            required=True,
+            type_hint="str",
+        ),
+        "algorithm": ActionInput(
+            name="algorithm",
+            description="Algorithm name from matrix",
+            required=True,
+            type_hint="str",
+        ),
+    }
+    
+    def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """Create GraphML output file."""
+        # Implementation creates valid GraphML file
+        # Returns graph_path, node_count, edge_count
+```
+
+## Next Phase: Workflow Execution
+
+### Planned WorkflowExecutor Implementation
+
+```python
+# Future implementation (Phase 2)
+class WorkflowExecutor:
+    """Execute complete workflows with matrix expansion."""
+    
+    def execute_workflow(self, workflow_path: str) -> WorkflowResult:
+        """Parse YAML and execute all workflow steps."""
+        
+    def expand_matrix(self, matrix: Dict[str, List]) -> List[JobConfig]:
+        """Convert matrix variables to individual jobs."""
+        
+    def construct_paths(self, job: JobConfig) -> PathConfig:
+        """Build input/output paths from matrix variables."""
+```
       
   ges_series:
     algorithm: "ges" 

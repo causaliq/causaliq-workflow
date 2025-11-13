@@ -2,18 +2,78 @@
 
 ## System Overview
 
-The causaliq-pipeline serves as the orchestration layer within the [CausalIQ ecosystem](https://github.com/causaliq/causaliq), coordinating causal discovery experiments through **CI workflow-inspired YAML configurations** executed via DASK. This architecture models causal discovery experiments as GitHub Actions-style workflows, providing unprecedented flexibility while leveraging familiar CI/CD patterns.
+The causaliq-pipeline serves as the orchestration layer within the [CausalIQ ecosystem](https://github.com/causaliq/causaliq), coordinating causal discovery experiments through **GitHub Actions-inspired YAML workflows**. This architecture models causal discovery experiments as familiar CI/CD workflows, providing unprecedented flexibility while leveraging proven workflow patterns.
+
+## Current Implementation Status
+
+### ✅ Implemented Components (v0.1.0)
+
+1. **Action Framework** (`causaliq_pipeline.action`)
+   - Abstract base class for workflow actions
+   - Type-safe input/output specifications
+   - Comprehensive error handling with `ActionExecutionError` and `ActionValidationError`
+   - 100% test coverage with unit and functional tests
+
+2. **Schema Validation** (`causaliq_pipeline.schema`)
+   - JSON Schema-based workflow validation
+   - Support for GitHub Actions-style syntax
+   - Matrix variables, with parameters, data_root/output_root validation
+   - Comprehensive error reporting with schema path context
+
+3. **Dummy Structure Learner Action** (`causaliq_pipeline.actions.dummy_structure_learner`)
+   - Reference implementation demonstrating action framework
+   - GraphML output format for causal graph representation
+   - Matrix variable support (dataset, algorithm parameters)
+   - Real filesystem operations with proper path construction
+
+4. **Workflow Schema** (`causaliq_pipeline.schemas.causaliq-workflow.json`)
+   - GitHub Actions-inspired syntax with causal discovery extensions
+   - Matrix strategy support for parameterized experiments
+   - Path construction with `data_root`, `output_root`, and `id` fields
+   - Action parameters via `with` blocks
 
 ## Core Architectural Decisions
 
-### CI Workflow Foundation
+### GitHub Actions Foundation
 
-The architecture is built on GitHub Actions workflow patterns, which provide a natural mapping for causal discovery experiments:
+The architecture is built on GitHub Actions workflow patterns, adapted for causal discovery:
 
-- **Matrix Strategy**: `algorithm: ["PC", "GES"]` → parallel experiment jobs
-- **Action Components**: Reusable workflow steps with semantic versioning
-- **Template Processing**: `${{ matrix.variable }}` substitution throughout workflows
-- **Package Plugins**: Algorithm packages (bnlearn, Tetrad, causal-learn) rather than individual algorithms
+```yaml
+name: "Causal Discovery Experiment"
+id: "asia-comparison-001"
+data_root: "/data"
+output_root: "/results"
+
+matrix:
+  dataset: ["asia", "cancer"]  
+  algorithm: ["pc", "ges"]
+
+steps:
+  - name: "Structure Learning"
+    uses: "dummy-structure-learner"
+    with:
+      alpha: 0.05
+      max_iter: 1000
+```
+
+### Action-Based Components
+
+Actions are reusable workflow components with semantic versioning:
+
+```python
+class Action(ABC):
+    """Abstract base class for all workflow actions."""
+    
+    name: str                    # Action identifier
+    version: str                 # Semantic version
+    description: str             # Human description  
+    inputs: Dict[str, ActionInput]   # Type-safe inputs
+    outputs: Dict[str, str]      # Output descriptions
+    
+    @abstractmethod
+    def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute the action with given inputs."""
+```
 
 
 
