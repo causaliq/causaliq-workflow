@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://causaliq.org/schemas/causaliq-pipeline/workflow.json",
   "title": "CausalIQ Workflow Schema",
-  "description": "GitHub Actions-style workflow for causal discovery experiments",
+  "description": "GitHub Actions-style workflow for causal discovery experiments with flexible action parameter templating",
   "type": "object",
   "required": [
     "id",
@@ -13,19 +13,11 @@
     "id": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9_-]+$",
-      "description": "Unique workflow identifier for path construction (alphanumeric, underscore, hyphen only)"
+      "description": "Unique workflow identifier (alphanumeric, underscore, hyphen only)"
     },
     "description": {
       "type": "string",
       "description": "Human-readable description of what this workflow does"
-    },
-    "data_root": {
-      "type": "string",
-      "description": "Root directory for input data files"
-    },
-    "output_root": {
-      "type": "string",
-      "description": "Root directory for output files"
     },
     "matrix": {
       "type": "object",

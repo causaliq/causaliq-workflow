@@ -103,44 +103,6 @@ def test_expand_matrix_single_variable():
     assert jobs == expected_jobs
 
 
-# Test path construction with matrix variables
-def test_construct_paths():
-    """Test path construction using matrix variables."""
-    job = {"dataset": "asia", "algorithm": "pc"}
-    data_root = "/data"
-    output_root = "/results"
-    workflow_id = "experiment-001"
-
-    executor = WorkflowExecutor()
-    paths = executor.construct_paths(job, data_root, output_root, workflow_id)
-
-    expected_paths = {
-        "data_path": "/data/asia/input.csv",
-        "output_dir": "/results/experiment-001/asia_pc",
-    }
-
-    assert paths == expected_paths
-
-
-# Test path construction with missing matrix variables
-def test_construct_paths_defaults():
-    """Test path construction with default values for missing variables."""
-    job = {}  # No matrix variables
-    data_root = "/data"
-    output_root = "/results"
-    workflow_id = "test-001"
-
-    executor = WorkflowExecutor()
-    paths = executor.construct_paths(job, data_root, output_root, workflow_id)
-
-    expected_paths = {
-        "data_path": "/data/default/input.csv",
-        "output_dir": "/results/test-001/default_default",
-    }
-
-    assert paths == expected_paths
-
-
 # Test matrix expansion exception handling
 @patch("causaliq_pipeline.workflow.itertools.product")
 def test_expand_matrix_exception_handling(mock_product):
@@ -186,32 +148,6 @@ def test_expand_matrix_with_realistic_data():
     # Verify specific combination exists
     expected_job = {"dataset": "asia", "algorithm": "pc", "alpha": 0.01}
     assert expected_job in jobs
-
-
-# Test path construction with realistic experiment data
-def test_construct_paths_with_realistic_data():
-    """Test path construction with complex job configuration."""
-    # Setup realistic job configuration
-    job = {
-        "dataset": "asia",
-        "algorithm": "pc",
-        "alpha": 0.05,
-        "sample_size": 1000,
-    }
-
-    executor = WorkflowExecutor()
-    paths = executor.construct_paths(
-        job=job,
-        data_root="/experiments/data",
-        output_root="/experiments/results",
-        workflow_id="algo-comparison-001",
-    )
-
-    expected_data_path = "/experiments/data/asia/input.csv"
-    expected_output_dir = "/experiments/results/algo-comparison-001/asia_pc"
-
-    assert paths["data_path"] == expected_data_path
-    assert paths["output_dir"] == expected_output_dir
 
 
 # Test matrix expansion maintains consistent ordering

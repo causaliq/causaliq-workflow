@@ -1,7 +1,5 @@
 id: "matrix-test-001"
 description: "Matrix workflow testing algorithm and dataset combinations"
-data_root: "/experiments/data"
-output_root: "/experiments/results"
 
 matrix:
   dataset: ["asia", "cancer", "alarm"]
@@ -12,5 +10,7 @@ steps:
   - name: "Causal Discovery"
     uses: "dummy-structure-learner"
     with:
+      dataset: "/experiments/data/{{dataset}}.csv"
+      result: "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml"
       max_iter: 500
-      alpha: "${{ matrix.alpha }}"
+      alpha: "{{alpha}}"

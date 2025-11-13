@@ -111,20 +111,6 @@ def test_step_missing_run_and_uses():
     assert "validation failed" in str(exc_info.value).lower()
 
 
-# Test workflow validation with data_root and output_root
-def test_valid_workflow_with_roots():
-    """Test validation passes with data_root and output_root fields."""
-    valid_workflow = {
-        "id": "test-workflow-001",
-        "description": "Test workflow with path configuration",
-        "data_root": "/path/to/data",
-        "output_root": "/path/to/output",
-        "steps": [{"run": "echo hello"}],
-    }
-    result = validate_workflow(valid_workflow)
-    assert result is True
-
-
 # Test workflow validation with matrix variables
 def test_valid_workflow_with_matrix():
     """Test validation passes with matrix variables."""
@@ -169,8 +155,6 @@ def test_valid_workflow_with_all_features():
     valid_workflow = {
         "id": "complete-test-001",
         "description": "Complete workflow with all features",
-        "data_root": "/data",
-        "output_root": "/results",
         "matrix": {
             "dataset": ["asia", "cancer"],
             "algorithm": ["pc", "ges"],
@@ -180,6 +164,11 @@ def test_valid_workflow_with_all_features():
                 "name": "Structure Learning",
                 "uses": "dummy-structure-learner",
                 "with": {
+                    "dataset": "/experiments/data/{{dataset}}.csv",
+                    "result": (
+                        "/experiments/results/{{id}}/{{algorithm}}/"
+                        "graph_{{dataset}}.xml"
+                    ),
                     "alpha": 0.05,
                     "max_iter": 1000,
                 },

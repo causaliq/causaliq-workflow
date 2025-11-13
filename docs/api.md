@@ -112,22 +112,47 @@ executor = WorkflowExecutor()
 
 # Parse and validate workflow
 workflow = executor.parse_workflow("experiment.yml")
-print(f"Workflow: {workflow['name']}")
+print(f"Workflow ID: {workflow['id']}")
+print(f"Description: {workflow['description']}")
 
 # Expand matrix variables
 if "matrix" in workflow:
     jobs = executor.expand_matrix(workflow["matrix"])
     print(f"Generated {len(jobs)} jobs from matrix")
     
-    # Construct paths for each job
+    # Each job contains the expanded matrix variables
     for i, job in enumerate(jobs):
-        paths = executor.construct_paths(
-            job=job,
-            data_root=workflow.get("data_root", "/data"),
-            output_root=workflow.get("output_root", "/results"), 
-            workflow_id=workflow.get("id", f"job-{i}")
-        )
-        print(f"Job {i}: {paths}")
+        print(f"Job {i}: {job}")
+        # Example: {'dataset': 'asia', 'algorithm': 'pc', 'alpha': 0.05}
+```
+
+### Flexible Path Configuration
+
+```python
+# Example workflow YAML showing flexible action parameters
+workflow_yaml = """
+id: "experiment-001"
+description: "Flexible causal discovery experiment"
+matrix:
+  dataset: ["asia", "cancer"]
+  algorithm: ["pc", "ges"]
+  alpha: [0.01, 0.05]
+
+steps:
+  - name: "Structure Learning"
+    uses: "dummy-structure-learner"
+    with:
+      dataset: "/experiments/data/{{dataset}}.csv"
+      result: "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml"
+      alpha: "{{alpha}}"
+      max_iter: 1000
+"""
+
+# Parse and expand
+executor = WorkflowExecutor()
+workflow = executor.parse_workflow_from_string(workflow_yaml)
+jobs = executor.expand_matrix(workflow["matrix"])
+# Creates 8 jobs (2×2×2) with customizable file paths
 ```
 
 ### Matrix Expansion Example

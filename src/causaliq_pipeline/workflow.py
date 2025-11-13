@@ -28,7 +28,7 @@ class WorkflowExecutor:
     This class handles the parsing of YAML workflow files and expansion of
     matrix strategies into individual experiment jobs. It provides the
     foundation for executing multi-step causal discovery workflows with
-    parameterised experiments.
+    parameterised experiments using flexible action parameter templating.
     """
 
     def parse_workflow(
@@ -94,34 +94,3 @@ class WorkflowExecutor:
             raise WorkflowExecutionError(
                 f"Matrix expansion failed: {e}"
             ) from e
-
-    def construct_paths(
-        self,
-        job: Dict[str, Any],
-        data_root: str,
-        output_root: str,
-        workflow_id: str,
-    ) -> Dict[str, str]:
-        """Construct file paths using matrix variables and workflow config.
-
-        Args:
-            job: Job configuration with matrix variables
-            data_root: Base directory for input data
-            output_root: Base directory for output files
-            workflow_id: Unique identifier for the workflow
-
-        Returns:
-            Dictionary with constructed paths
-        """
-        # Build input data path: {data_root}/{dataset}/input.csv
-        dataset = job.get("dataset", "default")
-        data_path = f"{data_root}/{dataset}/input.csv"
-
-        # Build output directory path with matrix variables
-        algorithm = job.get("algorithm", "default")
-        output_dir = f"{output_root}/{workflow_id}/{dataset}_{algorithm}"
-
-        return {
-            "data_path": data_path,
-            "output_dir": output_dir,
-        }

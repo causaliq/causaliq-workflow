@@ -28,12 +28,17 @@ def test_parse_workflow_with_real_file():
     assert workflow["id"] == "test-001"
     assert (
         workflow["description"]
-        == "Test workflow with matrix variables and path construction"
+        == "Test workflow with matrix variables and flexible action parameters"
     )
-    assert workflow["data_root"] == "/data"
-    assert workflow["output_root"] == "/results"
+    # Verify flexible action parameters
     assert len(workflow["steps"]) == 1
-    assert workflow["steps"][0]["name"] == "Structure Learning"
+    step = workflow["steps"][0]
+    assert step["name"] == "Structure Learning"
+    assert step["with"]["dataset"] == "/experiments/data/{{dataset}}.csv"
+    assert (
+        step["with"]["result"]
+        == "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}.xml"
+    )
 
 
 # Test parsing fails gracefully with invalid workflow file
@@ -79,12 +84,18 @@ def test_parse_workflow_with_matrix_file():
     assert set(matrix["algorithm"]) == {"pc", "ges"}
     assert set(matrix["alpha"]) == {0.01, 0.05}
 
-    # Verify step configuration
+    # Verify step configuration with flexible parameters
     assert len(workflow["steps"]) == 1
     step = workflow["steps"][0]
     assert step["name"] == "Causal Discovery"
     assert step["uses"] == "dummy-structure-learner"
-    assert step["with"]["alpha"] == "${{ matrix.alpha }}"
+    assert step["with"]["dataset"] == "/experiments/data/{{dataset}}.csv"
+    expected_result = (
+        "/experiments/results/{{id}}/{{algorithm}}/"
+        "graph_{{dataset}}_{{alpha}}.xml"
+    )
+    assert step["with"]["result"] == expected_result
+    assert step["with"]["alpha"] == "{{alpha}}"
 
 
 # Test parsing workflow with Path object input
@@ -104,7 +115,7 @@ def test_parse_workflow_with_pathlib_path():
     assert workflow["id"] == "test-001"
     assert (
         workflow["description"]
-        == "Test workflow with matrix variables and path construction"
+        == "Test workflow with matrix variables and flexible action parameters"
     )
 
 

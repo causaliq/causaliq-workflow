@@ -53,15 +53,46 @@ Last updated: 2025-11-13
 - [x] **Schema validation** - JSON Schema validation with corrected $schema/$id fields and required id/description
 - [x] **Error handling** - Comprehensive validation and parsing error management
 
-### 🔄 Workflow Executor Implementation [IN PROGRESS]
-- [ ] **Action orchestration** - Execute workflow steps with proper dependency handling (requires action execution engine)
+### 🔄 Workflow Executor Implementation [IN PROGRESS - Next 4 Commits to Working Pipeline]
+
+**Path to Functional Pipeline**: 4 focused commits to transition from framework to working research tool
+
+**Commit 1: Action Registry & Discovery**
+- [ ] **ActionRegistry class** - Centralized registry for action discovery and instantiation
+- [ ] **Action registration** - Mechanism to register and lookup available actions
+- [ ] **Parameter mapping** - Map workflow `with:` blocks to action inputs
+- [ ] **Integration point** - Bridge between workflow steps and action classes
+
+**Commit 2: Step Execution Engine**  
+- [ ] **Step executor** - Execute `uses:` action steps via ActionRegistry
+- [ ] **Shell command support** - Handle `run:` command execution
+- [ ] **Sequential execution** - Run workflow steps in order with context passing
 - [ ] **Error propagation** - Comprehensive error handling across workflow execution
 
-### ⏸️ Algorithm Integration [FUTURE]
-- [ ] **Real structure learning** - PC, GES, and other causal discovery algorithms
+**Commit 3: CLI Enhancement**
+- [ ] **Workflow execution command** - `causaliq-pipeline run workflow.yml`
+- [ ] **Command-line interface** - User-friendly workflow execution from CLI
+- [ ] **Progress reporting** - Real-time feedback during workflow execution
+- [ ] **Error reporting** - Clear error messages for workflow failures
+
+**Commit 4: Concrete Action Implementation**
+- [ ] **Real algorithm action** - PC or GES structure learning with actual implementation
+- [ ] **GraphML output** - Generate real causal graphs in GraphML format
+- [ ] **Data file handling** - Read actual CSV datasets and produce results
+- [ ] **Algorithm parameters** - Support real algorithm configuration options
+
+**Milestone Achievement**: After these 4 commits, the pipeline will be capable of:
+- ✅ Parse GitHub Actions-style YAML workflows (completed)
+- ✅ Execute real structure learning algorithms  
+- ✅ Handle matrix expansion for parameter sweeps
+- ✅ Organize outputs by experiment parameters
+- ✅ Run complete experiments from command line
+
+### ⏸️ Algorithm Integration [FUTURE - After Working Pipeline]
+- [ ] **Advanced algorithms** - Additional causal discovery algorithms beyond PC/GES
 - [ ] **Package plugins** - bnlearn (R), Tetrad (Java), causal-learn (Python) integration
-- [ ] **Algorithm registry** - Automatic discovery and configuration of available algorithms
 - [ ] **Cross-language bridges** - rpy2, py4j integration for R/Java algorithm access
+- [ ] **Algorithm benchmarking** - Systematic comparison across algorithm implementations
 
 ## Success Metrics - Phase 1 ✅ + Phase 2 Partial ✅
 
@@ -74,15 +105,17 @@ Last updated: 2025-11-13
 - ✅ **Schema Validation**: Corrected JSON Schema with proper $id field and field requirements
 - ✅ **Test Coverage**: 100% coverage maintained across 65 comprehensive tests
 
-## Next Milestone: Action Execution Engine
+## Next Milestone: Functional Causal Discovery Pipeline
 
-**Target**: Implement action execution within workflow steps  
+**Target**: Complete working pipeline capable of executing real causal discovery experiments
 **Success Criteria**: 
-- Execute individual workflow steps using the action framework
-- Handle step dependencies and sequential execution
-- Integrate with existing matrix expansion and path construction
-- Environment variable management for workflow context
+- Execute complete workflows from command line
+- Support real structure learning algorithms (PC, GES)
+- Handle matrix expansion with parallel step execution  
+- Generate organized experimental outputs with GraphML graphs
 - Maintain 100% test coverage and CI compliance
+
+**Timeline**: 4 focused commits transitioning from framework to working research tool
   - ✅ Required/optional section validation per pattern
   - ✅ Hierarchical field validation with detailed error reporting
   - ✅ Flexible validation schemas defined in external YAML

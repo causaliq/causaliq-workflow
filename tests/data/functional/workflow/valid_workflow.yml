@@ -1,7 +1,5 @@
 id: "test-001"
-description: "Test workflow with matrix variables and path construction"
-data_root: "/data"
-output_root: "/results"
+description: "Test workflow with matrix variables and flexible action parameters"
 
 matrix:
   dataset: ["asia", "cancer"]
@@ -11,4 +9,6 @@ steps:
   - name: "Structure Learning"
     uses: "dummy-structure-learner"
     with:
+      dataset: "/experiments/data/{{dataset}}.csv"
+      result: "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}.xml"
       max_iter: 1000

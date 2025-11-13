@@ -8,16 +8,15 @@ Our current implementation supports GitHub Actions-style workflows with action c
 
 ```yaml
 # basic_structure_learning.yaml
-name: "Basic Structure Learning"
 id: "basic-experiment-001"
-data_root: "/data"
-output_root: "/results"
+description: "Basic structure learning with flexible paths"
 
 steps:
   - name: "Learn Structure"
     uses: "dummy-structure-learner"
     with:
-      dataset: "asia"
+      dataset: "/data/asia.csv"
+      result: "/results/basic-experiment-001/graph.xml"
       algorithm: "dummy"
 ```
 
@@ -27,10 +26,8 @@ The implemented schema supports matrix variables for parameterized experiments:
 
 ```yaml
 # matrix_experiment.yaml
-name: "Algorithm Comparison Matrix"
 id: "algo-comparison-001"
-data_root: "/experiments/data"
-output_root: "/experiments/results"
+description: "Algorithm comparison with flexible path templating"
 
 matrix:
   dataset: ["asia", "cancer"]
@@ -41,23 +38,28 @@ steps:
   - name: "Structure Learning"
     uses: "dummy-structure-learner"
     with:
+      dataset: "/experiments/data/{{dataset}}.csv"
+      result: "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml"
+      alpha: "{{alpha}}"
       max_iter: 1000
 ```
 
-### Path Construction Pattern
+### Flexible Path Templating Pattern
 
-Our implementation automatically constructs paths from matrix variables:
+Our implementation supports flexible path templating using matrix variables:
 
 ```yaml
-# Input paths: {data_root}/{dataset}/input.csv
-# - /experiments/data/asia/input.csv
-# - /experiments/data/cancer/input.csv
+# Template variables can be used in action parameters:
+# {{id}} - workflow identifier
+# {{dataset}} - current matrix value for dataset
+# {{algorithm}} - current matrix value for algorithm  
+# {{alpha}} - current matrix value for alpha
 
-# Output paths: {output_root}/{id}/{dataset}_{algorithm}/
-# - /experiments/results/algo-comparison-001/asia_pc/
-# - /experiments/results/algo-comparison-001/asia_ges/
-# - /experiments/results/algo-comparison-001/cancer_pc/
-# - /experiments/results/algo-comparison-001/cancer_ges/
+# Example expansion for matrix above:
+# Job 1: dataset="/experiments/data/asia.csv", result="/experiments/results/algo-comparison-001/pc/graph_asia_0.01.xml"
+# Job 2: dataset="/experiments/data/asia.csv", result="/experiments/results/algo-comparison-001/pc/graph_asia_0.05.xml"
+# Job 3: dataset="/experiments/data/asia.csv", result="/experiments/results/algo-comparison-001/ges/graph_asia_0.01.xml"
+# ... (8 total combinations)
 ```
 
 ## Implemented Features
@@ -71,13 +73,13 @@ Our implementation automatically constructs paths from matrix variables:
 ### ✅ Workflow Execution Engine
 - **YAML Parsing**: Parse and validate GitHub Actions-style workflow files
 - **Matrix Expansion**: Convert matrix variables into individual job configurations
-- **Path Construction**: Dynamic file path generation from matrix variables
+- **Flexible Path Templating**: User-controlled path generation with {{}} template variables
 - **Error Propagation**: Comprehensive error handling with WorkflowExecutionError
 
 ### ✅ Schema Validation
 - **GitHub Actions Syntax**: Familiar workflow patterns
 - **Matrix Variables**: Full support for parameterized experiments  
-- **Path Construction**: data_root, output_root, id fields
+- **Flexible Action Parameters**: Template variables in action `with:` blocks
 - **Action Parameters**: with blocks for action configuration
 
 ### ✅ Test Coverage
@@ -140,28 +142,38 @@ executor = WorkflowExecutor()
 workflow = executor.parse_workflow("experiment.yml")
 
 # Matrix expansion example
-matrix = {"algorithm": ["pc", "ges"], "dataset": ["asia", "cancer"]}
-jobs = executor.expand_matrix(matrix)  # Returns 4 job configurations
+matrix = {"algorithm": ["pc", "ges"], "dataset": ["asia", "cancer"], "alpha": [0.01, 0.05]}
+jobs = executor.expand_matrix(matrix)  # Returns 8 job configurations
 
-# Path construction example
+# Example workflow with flexible paths
+workflow_example = {
+    "id": "experiment-001",
+    "description": "Flexible causal discovery experiment",
+    "matrix": matrix,
+    "steps": [{
+        "name": "Structure Learning",
+        "uses": "dummy-structure-learner", 
+        "with": {
+            "dataset": "/experiments/data/{{dataset}}.csv",
+            "result": "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml",
+            "alpha": "{{alpha}}"
+        }
+    }]
+}
+
+# Each job contains expanded matrix variables for template substitution
 for job in jobs:
-    paths = executor.construct_paths(
-        job=job,
-        data_root="/data",
-        output_root="/results",
-        workflow_id="experiment-001"
-    )
-    print(f"Data: {paths['data_path']}")
-    print(f"Output: {paths['output_dir']}")
+    print(f"Job: {job}")
+    # Example: {'algorithm': 'pc', 'dataset': 'asia', 'alpha': 0.01}
 ```
 
 **Implemented Features**:
 - ✅ Parse and validate YAML workflow files
 - ✅ Expand matrix variables into job configurations
-- ✅ Construct paths from matrix variables and workflow settings
+- ✅ Support flexible path templating with {{}} variables
 - ✅ Comprehensive error handling and 100% test coverage
 
-**Next Phase**: Step execution, environment management, conditional execution
+**Next Phase**: Action execution engine with template variable substitution
       
   ges_series:
     algorithm: "ges" 
