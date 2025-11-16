@@ -23,7 +23,7 @@
     
     
       
-        <title>Example Workflows - causaliq-pipeline</title>
+        <title>Example Workflows - causaliq-workflow</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#causaliq-pipeline-example-workflows" class="md-skip">
+        <a href="#causaliq-workflow-example-workflows" class="md-skip">
           Skip to content
         </a>
       
@@ -90,9 +90,11 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="causaliq-pipeline" class="md-header__button md-logo" aria-label="causaliq-pipeline" data-md-component="logo">
+    <a href=".." title="causaliq-workflow" class="md-header__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +108,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            causaliq-pipeline
+            causaliq-workflow
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -169,6 +171,11 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -193,14 +200,8 @@
     
   </nav>
   
-</header>
     
-    <div class="md-container" data-md-component="container">
       
-      
-        
-          
-            
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
@@ -307,7 +308,13 @@
     </ul>
   </div>
 </nav>
-          
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
         
       
       <main class="md-main" data-md-component="main">
@@ -326,13 +333,13 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="causaliq-pipeline" class="md-nav__button md-logo" aria-label="causaliq-pipeline" data-md-component="logo">
+    <a href=".." title="causaliq-workflow" class="md-nav__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    causaliq-pipeline
+    causaliq-workflow
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
@@ -380,6 +387,8 @@
         
         
       
+      
+        
       
     
     
@@ -514,22 +523,55 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#current-implementation-examples-v010" class="md-nav__link">
+  <a href="#design-philosophy-inspired-by-ci-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Implementation Examples (v0.1.0)
+        Design Philosophy: Inspired by CI-Workflows
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Current Implementation Examples (v0.1.0)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-workflows-in-causal-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Workflows in Causal Discovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Workflows in Causal Discovery">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-action-workflow" class="md-nav__link">
+  <a href="#simple-one-off-structure-learning-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic Action Workflow
+        Simple One-Off Structure Learning Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameterised-structure-learning-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameterised Structure Learning Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-step-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Step Examples
       
     </span>
   </a>
@@ -548,10 +590,60 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#path-construction-pattern" class="md-nav__link">
+  <a href="#workflow-of-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Path Construction Pattern
+        Workflow of workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallel-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel Jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Template Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flexible-path-templating-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flexible Path Templating Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variable-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable Validation
       
     </span>
   </a>
@@ -580,6 +672,17 @@
     <span class="md-ellipsis">
       
         ✅ Action Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-execution-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Workflow Execution Engine
       
     </span>
   </a>
@@ -625,22 +728,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-phase-workflow-execution" class="md-nav__link">
+  <a href="#current-implementation-workflowexecutor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Phase: Workflow Execution
+        Current Implementation: WorkflowExecutor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Next Phase: Workflow Execution">
+    <nav class="md-nav" aria-label="Current Implementation: WorkflowExecutor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#planned-workflowexecutor-implementation" class="md-nav__link">
+  <a href="#workflowexecutor-implementation-phase-1-complete" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Planned WorkflowExecutor Implementation
+        WorkflowExecutor Implementation (Phase 1 Complete)
       
     </span>
   </a>
@@ -707,13 +810,17 @@
     
       
       
+        
+      
     
     
     <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -829,6 +936,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -890,22 +1025,55 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#current-implementation-examples-v010" class="md-nav__link">
+  <a href="#design-philosophy-inspired-by-ci-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Implementation Examples (v0.1.0)
+        Design Philosophy: Inspired by CI-Workflows
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Current Implementation Examples (v0.1.0)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-workflows-in-causal-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Workflows in Causal Discovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Workflows in Causal Discovery">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-action-workflow" class="md-nav__link">
+  <a href="#simple-one-off-structure-learning-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic Action Workflow
+        Simple One-Off Structure Learning Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameterised-structure-learning-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameterised Structure Learning Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-step-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Step Examples
       
     </span>
   </a>
@@ -924,10 +1092,60 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#path-construction-pattern" class="md-nav__link">
+  <a href="#workflow-of-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Path Construction Pattern
+        Workflow of workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallel-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel Jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Template Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flexible-path-templating-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flexible Path Templating Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variable-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable Validation
       
     </span>
   </a>
@@ -956,6 +1174,17 @@
     <span class="md-ellipsis">
       
         ✅ Action Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-execution-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Workflow Execution Engine
       
     </span>
   </a>
@@ -1001,22 +1230,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-phase-workflow-execution" class="md-nav__link">
+  <a href="#current-implementation-workflowexecutor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Phase: Workflow Execution
+        Current Implementation: WorkflowExecutor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Next Phase: Workflow Execution">
+    <nav class="md-nav" aria-label="Current Implementation: WorkflowExecutor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#planned-workflowexecutor-implementation" class="md-nav__link">
+  <a href="#workflowexecutor-implementation-phase-1-complete" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Planned WorkflowExecutor Implementation
+        WorkflowExecutor Implementation (Phase 1 Complete)
       
     </span>
   </a>
@@ -1045,53 +1274,249 @@
 
 
 
-<h1 id="causaliq-pipeline-example-workflows">CausalIQ Pipeline - Example Workflows</h1>
-<h2 id="current-implementation-examples-v010">Current Implementation Examples (v0.1.0)</h2>
-<h3 id="basic-action-workflow">Basic Action Workflow</h3>
-<p>Our current implementation supports GitHub Actions-style workflows with action components:</p>
-<pre><code class="language-yaml"># basic_structure_learning.yaml
-name: &quot;Basic Structure Learning&quot;
-id: &quot;basic-experiment-001&quot;
-data_root: &quot;/data&quot;
-output_root: &quot;/results&quot;
+<h1 id="causaliq-workflow-example-workflows">CausalIQ Workflow - Example Workflows</h1>
+<h2 id="design-philosophy-inspired-by-ci-workflows">Design Philosophy: Inspired by CI-Workflows</h2>
+<p>The CausalIQ Workflows are <em>inspired</em> by the concepts within 
+Continuous Integration (CI) workflows. They provide a subset of the features 
+provided by CI workflows and much of the functionality is simplified to ease
+the job of specifying CausalIQ workflows.</p>
+<p>Key concepts in CausalIQ workflows are:</p>
+<ul>
+<li>Workflows are a series of one or more <em>sequential</em> <strong>steps</strong>.</li>
+<li>Steps can be either an <strong>action</strong> or they can <strong>run</strong> shell commands.</li>
+<li>actions execute typical causal inference and evaluation activities like structure 
+  learning, graph evaluation, causal inference etc., and actions:<ul>
+<li>are implemented in other CausalIQ packages such as causaliq-discovery,        causaliq-analysis etc. as specified in the <strong>uses:</strong> keyword of the step;</li>
+<li>take parameters values for the action - e.g., the algorithm to use - are specified using the <strong>with:</strong> keyword;</li>
+<li>actions can be <em>implemented intelligently</em> to perform their work efficiently and in parallel.</li>
+</ul>
+</li>
+<li>a <strong>matrix</strong> concept allows the set of steps to be repeated over multiple
+  combinations of values, for example over a set of networks, sample sizes and
+  algorithms. This is particularly valuable for large scale comparative experiments.</li>
+<li>
+<p>workflows may be run from the command line interface (CLI) using commands like:</p>
+<p><code>shell
+cwork example_workflow.yaml --network=child,property</code>
+  - CLI arguments can be used to override workflow and matrix parameters so
+    that the same workflow can be easily reused;
+  - the <strong>run:</strong> command can be used to run a workflow so that "workflows of
+    workflows" are supported.</p>
+</li>
+</ul>
+<p>The CausalIQ Workflow CLI has a <strong>--mode</strong> argument which controls its overall behaviour as follows:</p>
+<ul>
+<li><strong>--mode=run</strong>: this actually executes the workflow. Note that, in this case
+ the actions in the workflow are performed <em>conservatively</em> - if the outputs of
+ actions are already present on the file system the action is <em>not repeated</em>. This
+ therefore faciltates restarting the workflow if it has previously been interrupted.</li>
+<li><strong>--mode=dry-run</strong>: this is the default behaviour and reports what <em>would</em> be done if <strong>--mode=run</strong> were used, but does not perform the actual actions. In doing so,
+  it has the valuable side-effect of checking that the workflow definitions are
+  all valid.</li>
+<li><strong>--mode=compare</strong>: all actions in the workflow will be re-run regardless of whether the output is present on the filesystem or not. If the output is present on the filesystem, the newly-generated output will replace it, and any differences with the previous version reported. This mode is therefore a very powerful form of functional testing.  </li>
+</ul>
+<h2 id="example-workflows-in-causal-discovery">Example Workflows in Causal Discovery</h2>
+<h3 id="simple-one-off-structure-learning-examples">Simple One-Off Structure Learning Examples</h3>
+<p>The first simple example runs the Tabu-Stable structure learning algorithm on 1000 synthetic rows from the Asia network. Input and output files are generally specified in terms of
+their <em>location</em> in CausalIQ Workflows, and the filenames are fixed according to
+what kind of entity they are: a graph, metadata or trace for example.</p>
+<p>This will create a graph.xml and metadata.json file in the specified output folder. The debug switch also means that a trace.csv will be produced.</p>
+<pre><code class="language-yaml"># tabu_asia.yaml
+description: &quot;Tabu-stable learning Asia from 1K data with full trace&quot;
 
 steps:
   - name: &quot;Learn Structure&quot;
-    uses: &quot;dummy-structure-learner&quot;
+    uses: &quot;causaliq-discovery&quot;
     with:
-      dataset: &quot;asia&quot;
-      algorithm: &quot;dummy&quot;
+      algorithm: &quot;tabu-stable&quot;
+      sample_size: &quot;1k&quot;
+      dataset: &quot;/data/asia&quot;
+      output: &quot;/results/tabu-asia&quot;
+      debug: True
+</code></pre>
+<p>The same result could be achieved using the causaliq-discovery CLI command directly,
+but using this simple workflow avoids having to specify the dataset, algorithm etc. on
+the command line by using the following command:</p>
+<pre><code class="language-shell">cwork tabu_asia.yaml  # cwork is a synonym for causaliq-workflow
+</code></pre>
+<p>This "shorthand" capability becomes especially useful when plotting charts which 
+typically require a lot of parameter values to specify axis titles, chart type and colours etc., which become unmanageable to specify on the command line.</p>
+<p>Another simple workflow might be to download resources from Zenodo. This would download all the resources associated with my PhD thesis and
+unzip in the specified output folder.</p>
+<pre><code class="language-yaml"># download_paper.yaml
+description: &quot;Download assets for PhD Thesis&quot;
+
+steps:
+  - name: &quot;Download paper&quot;
+    uses: &quot;causaliq-papers&quot;
+    with:
+      operation: &quot;download&quot;
+      doi: &quot;10.5072/zenodo.338579&quot;
+      output: &quot;/papers/2025KitsonThesis&quot;
+</code></pre>
+<h3 id="parameterised-structure-learning-example">Parameterised Structure Learning Example</h3>
+<p>We can make the simple learning example more general by adding workflow-level
+variables to parameterise the workflow. In this example, the sample_size parameter has a
+default value of 1000 if not specified on the command line, whereas the None
+value for network indicates that this must be specified on the command line. 
+Note how the network and sample_size
+parameters are used in the dataset and output action parameters so
+that the correct input file and output folder are used.</p>
+<pre><code class="language-yaml"># tabu_learning.yaml
+description: &quot;Parameterised Tabu-stable learning&quot;
+sample_size: &quot;1K&quot;
+network: None
+
+steps:
+  - name: &quot;Learn Structure&quot;
+    uses: &quot;causaliq-discovery&quot;
+    with:
+      algorithm: &quot;tabu-stable&quot;
+      max_time: 10
+      sample_size: {{sample_size}}
+      dataset: &quot;/data/{{network}}&quot;
+      output: &quot;/results/{{network}}/{{sample_size}}&quot;
+</code></pre>
+<p>We can now run Tabu-Stable structure learning for any network and sample size using commands like:</p>
+<pre><code class="language-shell">cwork tabu_learning.yaml --network=child --sample_size=500
+</code></pre>
+<h3 id="multiple-step-examples">Multiple Step Examples</h3>
+<p>We could enhance this by adding a step before structure learning where an LLM provides an initial graph. In this example, the dataset is provided so that the
+LLM has access to the values, and there is also some additional domain context provided in a json file. This could generate a graph.xml in the output folder
+and probably also some metadata and/or history of the prompts and responses 
+made to the LLM. Note that, this LLM generated graph would then be available
+to be re-used in other experiments, and the prompts/response trail provides the
+means to exactly replicate this result.</p>
+<pre><code class="language-yaml"># tabu_llm_learning.yaml
+description: &quot;Tabu-stable learning Asia with LLM initialisation&quot;
+sample_size: &quot;1K&quot;
+network: None
+
+steps:
+  - name: &quot;LLM Graph Initialisation&quot;
+    uses: &quot;causaliq-knowledge&quot;
+    with:
+      operation: &quot;propose-graph&quot;
+      dataset: &quot;/data/{{network}}&quot;
+      context: &quot;/knowledge/context/{{network}}&quot;
+      output: &quot;/knowledge/llm_graphs/{{network}}&quot;
+
+  - name: &quot;Learn Structure&quot;
+    uses: &quot;causaliq-discovery&quot;
+    with:
+      initial_graph: &quot;/knowledge/llm_graphs/asia&quot;
+      # etc ....
+</code></pre>
+<p>Alternatively, or additionally, we can add some steps after structure learning
+to compute some graph metrics and visualise the way that the graph was learnt.</p>
+<p>The "Evaluate graph" step requires the bic-score which needs the dataset to be specified, and F1 needs the true graph to be supplied - the relevant causaliq-analysis action is responsible for checking that these kind of dependencies are satisified. The results folder is specified where the learnt graph and learning metadata is, and so these results are appended to the metadata.</p>
+<pre><code class="language-yaml"># learn_and_evaluate.yaml
+
+# workflow variables ... 
+
+steps:
+
+  # step(s) to learn graph ...
+
+  - name: &quot;Evaluate graph&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      operation: &quot;evaluate-graph&quot;
+      dataset: &quot;/data/{{network}}&quot;
+      true_graph: &quot;/knowledge/true_graph/{{network}}&quot;
+      metrics: [&quot;bic-score&quot;, &quot;f1&quot;, &quot;scaled-shd&quot;]
+      basis: [&quot;cpdag&quot;]
+      graph: &quot;/results/{{network}}/{{sample_size}}&quot;
 </code></pre>
 <h3 id="matrix-strategy-workflow">Matrix Strategy Workflow</h3>
-<p>The implemented schema supports matrix variables for parameterized experiments:</p>
+<p>In many cases we will wish to run comparative experiments with a different result for each combinations of algorithm, network, and sample size and randomisation. Note how we structure the output folder path so that we ensure the result for each individual experiment is placed in its own folder. We also use an "id" workflow variablesto keep these results separate from those of other workflows.</p>
+<p>Internally, the action - in this case causal-discovery - may be implemented intelligently to maximise efficiency. For example, in this case, it may read
+the maximum number of rows from the filesystem dataset just once, and then adjust the effective sample size and randomisation internally for each individual experiment.</p>
 <pre><code class="language-yaml"># matrix_experiment.yaml
-name: &quot;Algorithm Comparison Matrix&quot;
-id: &quot;algo-comparison-001&quot;
-data_root: &quot;/experiments/data&quot;
-output_root: &quot;/experiments/results&quot;
+id: &quot;stability001&quot;
+description: &quot;Algorithm stability comparison&quot;
+randomise: [&quot;variable_order&quot;, &quot;variable_name&quot;]
 
 matrix:
-  dataset: [&quot;asia&quot;, &quot;cancer&quot;]
+  network: [&quot;asia&quot;, &quot;cancer&quot;]
   algorithm: [&quot;pc&quot;, &quot;ges&quot;]
-  alpha: [0.01, 0.05]
+  sample_size: [&quot;100&quot;, &quot;1K&quot;]
+  seed: [1, 25]
 
 steps:
   - name: &quot;Structure Learning&quot;
-    uses: &quot;dummy-structure-learner&quot;
+    uses: &quot;causaliq-discovery&quot;
     with:
-      max_iter: 1000
+      algorithm: &quot;{{algorithm}}&quot;
+      sample_size: &quot;{{sample_size}}&quot;
+      dataset: &quot;/data/{{network}}&quot;
+      randomise: {{randomise}}
+      seed: {{seed}}
+      output: &quot;/results/{{id}}/{{algorithm}}/{{network}}/{{sample_size}}/{{seed}}&quot;
 </code></pre>
-<h3 id="path-construction-pattern">Path Construction Pattern</h3>
-<p>Our implementation automatically constructs paths from matrix variables:</p>
-<pre><code class="language-yaml"># Input paths: {data_root}/{dataset}/input.csv
-# - /experiments/data/asia/input.csv
-# - /experiments/data/cancer/input.csv
+<h3 id="workflow-of-workflows">Workflow of workflows</h3>
+<p>The ability of one workflow to call other parameterised workflows facilitates the creation and testing of complex CausalIQ workflows, for instance to run
+all the experiments, analysis and asset generation for a research paper or thesis. CausalIQ Papers makes use of this to provide reproducibility of CausalIQ published papers.</p>
+<p>The example below shows a simple top level workflow which might reproduce the experiments and analysis behind a thesis. The lower level workflows such as create_chapter_4.yaml might then call other workflows to perform the structure learning, result analysis and asset generation for Chapter 4.</p>
+<pre><code class="language-yaml"># reproduce_thesis.yaml
 
-# Output paths: {output_root}/{id}/{dataset}_{algorithm}/
-# - /experiments/results/algo-comparison-001/asia_pc/
-# - /experiments/results/algo-comparison-001/asia_ges/
-# - /experiments/results/algo-comparison-001/cancer_pc/
-# - /experiments/results/algo-comparison-001/cancer_ges/
+id: &quot;Kitson2025thesis&quot;
+
+matrix:
+  chapter: [4, 5, 6]
+
+steps:
+  name: &quot;Create chapter {{chapter}}&quot;
+  run: &quot;cwork create_chapter_{{chapter}}.yaml --id={{id}}
+</code></pre>
+<h3 id="parallel-jobs">Parallel Jobs</h3>
+<p>CI workflows provide a <strong>jobs:</strong> keyword which allows multiple sequences of steps to run in parallel. We are not planning to implement this at the moment, instead relying on actions to provde parallelism using DAK tasks. This keeps CausalIQ Workflow functionality simple and reflects the fact that structure learning steps involving many individual structure learning experiments can keep even very powerful machines busy.</p>
+<h2 id="template-variables">Template Variables</h2>
+<h3 id="flexible-path-templating-pattern">Flexible Path Templating Pattern</h3>
+<p>Our implementation supports flexible path templating using matrix variables:</p>
+<pre><code class="language-yaml"># Template variables can be used in action parameters:
+# {{id}} - workflow identifier
+# {{network}} - current matrix value for network
+# {{algorithm}} - current matrix value for algorithm  
+# {{sample_size}} - current matrix value for sample size
+
+# Example expansion for graphs using matrix above:
+# Job 1: dataset=&quot;/experiments/data/asia.csv&quot;, result=&quot;/experiments/results/algo-comparison-001/pc/asia/100&quot;
+# Job 2: dataset=&quot;/experiments/data/asia.csv&quot;, result=&quot;/experiments/results/algo-comparison-001/pc/asia/1K&quot;
+# Job 3: dataset=&quot;/experiments/data/asia.csv&quot;, result=&quot;/experiments/results/algo-comparison-001/ges/graph_asia_0.01.xml&quot;
+# ... (8 total combinations)
+</code></pre>
+<h3 id="template-variable-validation">Template Variable Validation</h3>
+<p>The workflow executor automatically validates that all template variables (<code>{{variable}}</code>) used in action parameters are available from either:
+- <strong>Workflow properties</strong>: <code>id</code>, <code>description</code> 
+- <strong>Matrix variables</strong>: Variables defined in the <code>matrix</code> section</p>
+<p><strong>Valid Template Usage:</strong></p>
+<pre><code class="language-yaml">id: &quot;my-experiment-001&quot;
+matrix:
+  dataset: [&quot;asia&quot;, &quot;cancer&quot;]
+  algorithm: [&quot;pc&quot;, &quot;ges&quot;]
+
+steps:
+  - uses: &quot;dummy-structure-learner&quot;
+    with:
+      # These are all valid - variables exist in workflow context
+      output: &quot;/results/{{id}}/{{dataset}}_{{algorithm}}&quot;
+      description: &quot;Running {{algorithm}} on {{dataset}}&quot;
+</code></pre>
+<p><strong>Invalid Template Usage (Validation Error):</strong></p>
+<pre><code class="language-yaml">id: &quot;my-experiment-001&quot;
+matrix:
+  dataset: [&quot;asia&quot;, &quot;cancer&quot;]
+
+steps:
+  - uses: &quot;dummy-structure-learner&quot;
+    with:
+      # This will cause a WorkflowExecutionError
+      output: &quot;/results/{{unknown_variable}}/{{missing_param}}&quot;
+</code></pre>
+<p><strong>Error Message Example:</strong></p>
+<pre><code>WorkflowExecutionError: Unknown template variables: unknown_variable, missing_param
+Available context: id, description, dataset
 </code></pre>
 <h2 id="implemented-features">Implemented Features</h2>
 <h3 id="action-framework">✅ Action Framework</h3>
@@ -1101,11 +1526,19 @@ steps:
 <li><strong>Error Handling</strong>: Comprehensive ActionExecutionError and ActionValidationError</li>
 <li><strong>GraphML Output</strong>: Standardized format for causal graphs</li>
 </ul>
+<h3 id="workflow-execution-engine">✅ Workflow Execution Engine</h3>
+<ul>
+<li><strong>YAML Parsing</strong>: Parse and validate GitHub Actions-style workflow files</li>
+<li><strong>Matrix Expansion</strong>: Convert matrix variables into individual job configurations</li>
+<li><strong>Flexible Path Templating</strong>: User-controlled path generation with {{}} template variables</li>
+<li><strong>Template Variable Validation</strong>: Automatic validation of {{variable}} patterns against available context</li>
+<li><strong>Error Propagation</strong>: Comprehensive error handling with WorkflowExecutionError</li>
+</ul>
 <h3 id="schema-validation">✅ Schema Validation</h3>
 <ul>
 <li><strong>GitHub Actions Syntax</strong>: Familiar workflow patterns</li>
 <li><strong>Matrix Variables</strong>: Full support for parameterized experiments  </li>
-<li><strong>Path Construction</strong>: data_root, output_root, id fields</li>
+<li><strong>Flexible Action Parameters</strong>: Template variables in action <code>with:</code> blocks</li>
 <li><strong>Action Parameters</strong>: with blocks for action configuration</li>
 </ul>
 <h3 id="test-coverage">✅ Test Coverage</h3>
@@ -1113,6 +1546,7 @@ steps:
 <li><strong>Functional Tests</strong>: Real filesystem operations with tracked test data</li>
 <li><strong>Unit Tests</strong>: Mocked dependencies for action logic testing</li>
 <li><strong>Schema Tests</strong>: Comprehensive validation of all workflow features</li>
+<li><strong>100% Coverage</strong>: Complete test coverage including edge cases</li>
 </ul>
 <h2 id="example-action-implementation">Example Action Implementation</h2>
 <pre><code class="language-python">class DummyStructureLearnerAction(Action):
@@ -1153,21 +1587,45 @@ steps:
         # Implementation creates valid GraphML file
         # Returns graph_path, node_count, edge_count
 </code></pre>
-<h2 id="next-phase-workflow-execution">Next Phase: Workflow Execution</h2>
-<h3 id="planned-workflowexecutor-implementation">Planned WorkflowExecutor Implementation</h3>
-<pre><code class="language-python"># Future implementation (Phase 2)
-class WorkflowExecutor:
-    &quot;&quot;&quot;Execute complete workflows with matrix expansion.&quot;&quot;&quot;
+<h2 id="current-implementation-workflowexecutor">Current Implementation: WorkflowExecutor</h2>
+<h3 id="workflowexecutor-implementation-phase-1-complete">WorkflowExecutor Implementation (Phase 1 Complete)</h3>
+<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
 
-    def execute_workflow(self, workflow_path: str) -&gt; WorkflowResult:
-        &quot;&quot;&quot;Parse YAML and execute all workflow steps.&quot;&quot;&quot;
+# Parse workflow and expand matrix
+executor = WorkflowExecutor()
+workflow = executor.parse_workflow(&quot;experiment.yml&quot;)
 
-    def expand_matrix(self, matrix: Dict[str, List]) -&gt; List[JobConfig]:
-        &quot;&quot;&quot;Convert matrix variables to individual jobs.&quot;&quot;&quot;
+# Matrix expansion example
+matrix = {&quot;algorithm&quot;: [&quot;pc&quot;, &quot;ges&quot;], &quot;dataset&quot;: [&quot;asia&quot;, &quot;cancer&quot;], &quot;alpha&quot;: [0.01, 0.05]}
+jobs = executor.expand_matrix(matrix)  # Returns 8 job configurations
 
-    def construct_paths(self, job: JobConfig) -&gt; PathConfig:
-        &quot;&quot;&quot;Build input/output paths from matrix variables.&quot;&quot;&quot;
+# Example workflow with flexible paths
+workflow_example = {
+    &quot;id&quot;: &quot;experiment-001&quot;,
+    &quot;description&quot;: &quot;Flexible causal discovery experiment&quot;,
+    &quot;matrix&quot;: matrix,
+    &quot;steps&quot;: [{
+        &quot;name&quot;: &quot;Structure Learning&quot;,
+        &quot;uses&quot;: &quot;dummy-structure-learner&quot;, 
+        &quot;with&quot;: {
+            &quot;dataset&quot;: &quot;/experiments/data/{{dataset}}.csv&quot;,
+            &quot;result&quot;: &quot;/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml&quot;,
+            &quot;alpha&quot;: &quot;{{alpha}}&quot;
+        }
+    }]
+}
+
+# Each job contains expanded matrix variables for template substitution
+for job in jobs:
+    print(f&quot;Job: {job}&quot;)
+    # Example: {'algorithm': 'pc', 'dataset': 'asia', 'alpha': 0.01}
 </code></pre>
+<p><strong>Implemented Features</strong>:
+- ✅ Parse and validate YAML workflow files
+- ✅ Expand matrix variables into job configurations
+- ✅ Support flexible path templating with {{}} variables
+- ✅ Comprehensive error handling and 100% test coverage</p>
+<p><strong>Next Phase</strong>: Action execution engine with template variable substitution</p>
 <p>ges_series:
     algorithm: "ges" 
     package: "causaliq-discovery"
@@ -1321,7 +1779,7 @@ series:
 # LLM integration for analysis
 llm_analysis:
   stage: &quot;post_discovery&quot;
-  package: &quot;causaliq-llm&quot;
+  package: &quot;causaliq-knowledge&quot;
   tasks:
     - task: &quot;analyze_algorithm_outputs&quot;
       inputs: [&quot;pc_results&quot;, &quot;ges_results&quot;]
@@ -1389,33 +1847,33 @@ analysis:
 <h2 id="cli-usage-examples">CLI Usage Examples</h2>
 <h3 id="basic-execution">Basic Execution</h3>
 <pre><code class="language-bash"># Execute a series-based workflow
-causaliq-pipeline run pc_ges_comparison.yaml
+causaliq-workflow run pc_ges_comparison.yaml
 
 # Dry-run to preview execution plan
-causaliq-pipeline validate pc_ges_comparison.yaml --dry-run
+causaliq-workflow validate pc_ges_comparison.yaml --dry-run
 
 # Monitor running workflow
-causaliq-pipeline status workflow-abc123
+causaliq-workflow status workflow-abc123
 
 # Pause running workflow
-causaliq-pipeline pause workflow-abc123
+causaliq-workflow pause workflow-abc123
 
 # Resume paused workflow  
-causaliq-pipeline resume workflow-abc123
+causaliq-workflow resume workflow-abc123
 </code></pre>
 <h3 id="advanced-options">Advanced Options</h3>
 <pre><code class="language-bash"># Override resource limits
-causaliq-pipeline run experiment.yaml --max-jobs 16 --memory-per-job 8GB
+causaliq-workflow run experiment.yaml --max-jobs 16 --memory-per-job 8GB
 
 # Run specific series only
-causaliq-pipeline run experiment.yaml --series pc_series
+causaliq-workflow run experiment.yaml --series pc_series
 
 # Export results in specific format
-causaliq-pipeline results export workflow-abc123 --format csv --output results/
+causaliq-workflow results export workflow-abc123 --format csv --output results/
 </code></pre>
 <h2 id="python-api-examples">Python API Examples</h2>
 <h3 id="basic-workflow-execution">Basic Workflow Execution</h3>
-<pre><code class="language-python">from causaliq_pipeline import WorkflowManager, ConfigurationManager
+<pre><code class="language-python">from causaliq_workflow import WorkflowManager, ConfigurationManager
 
 # Load and validate configuration
 config_manager = ConfigurationManager()
@@ -1430,7 +1888,7 @@ pc_results = result.get_series_results(&quot;pc_series&quot;)
 ges_results = result.get_series_results(&quot;ges_series&quot;)
 </code></pre>
 <h3 id="series-analysis">Series Analysis</h3>
-<pre><code class="language-python">from causaliq_pipeline.analysis import SeriesComparison
+<pre><code class="language-python">from causaliq_workflow.analysis import SeriesComparison
 
 # Compare algorithm performance across series
 comparison = SeriesComparison()
@@ -1445,7 +1903,7 @@ statistical_significance = comparison.statistical_test(alpha=0.05)
 comparison.export_results(&quot;algorithm_comparison.csv&quot;)
 </code></pre>
 <h3 id="configuration-inheritance">Configuration Inheritance</h3>
-<pre><code class="language-python">from causaliq_pipeline.config import ConfigurationInheritance
+<pre><code class="language-python">from causaliq_workflow.config import ConfigurationInheritance
 
 # Create experiment based on template
 inheritance = ConfigurationInheritance()
@@ -1465,7 +1923,7 @@ specific_config = inheritance.create_derived(
 )
 </code></pre>
 <p>This focused approach emphasizes the series concept and immediate implementation needs while providing practical examples for the three-month development phase.</p>
-<h2 id="use-case-2-production-causal-inference-pipeline">Use Case 2: Production Causal Inference Pipeline</h2>
+<h2 id="use-case-2-production-causal-inference-workflow">Use Case 2: Production Causal Inference Workflow</h2>
 <h3 id="scenario_3">Scenario</h3>
 <p>A business wants to continuously analyze the causal impact of marketing campaigns on customer behavior using streaming data.</p>
 <h3 id="workflow-configuration">Workflow Configuration</h3>
@@ -1548,7 +2006,7 @@ steps:
     outputs: [&quot;anomalies&quot;, &quot;alerts&quot;]
 
   - name: &quot;automated_insights&quot;
-    package: &quot;causaliq-pipeline&quot;
+    package: &quot;causaliq-workflow&quot;
     method: &quot;llm_generate_insights&quot;
     depends_on: [&quot;intervention_effects&quot;, &quot;anomaly_detection&quot;]
     parameters:
@@ -1613,7 +2071,7 @@ steps:
     outputs: [&quot;data_summary&quot;, &quot;correlations&quot;]
 
   - name: &quot;llm_initial_consultation&quot;
-    package: &quot;causaliq-pipeline&quot;
+    package: &quot;causaliq-workflow&quot;
     method: &quot;llm_domain_consultation&quot;
     depends_on: [&quot;initial_analysis&quot;]
     parameters:
@@ -1647,7 +2105,7 @@ steps:
         outputs: [&quot;evaluation_metrics&quot;]
 
       - name: &quot;llm_feedback&quot;
-        package: &quot;causaliq-pipeline&quot;
+        package: &quot;causaliq-workflow&quot;
         method: &quot;llm_evaluate_graph&quot;
         parameters:
           domain: ${parameters.domain}
@@ -1670,7 +2128,7 @@ steps:
         outputs: [&quot;refined_graphs&quot;]
 
   - name: &quot;final_interpretation&quot;
-    package: &quot;causaliq-pipeline&quot;
+    package: &quot;causaliq-workflow&quot;
     method: &quot;llm_comprehensive_interpretation&quot;
     depends_on: [&quot;iterative_refinement&quot;]
     parameters:
@@ -1687,26 +2145,26 @@ notebook_integration:
 </code></pre>
 <h2 id="example-cli-usage">Example CLI Usage</h2>
 <pre><code class="language-bash"># Execute a workflow
-causaliq-pipeline run workflow.yaml --config production.yaml
+causaliq-workflow run workflow.yaml --config production.yaml
 
 # Validate workflow before execution
-causaliq-pipeline validate workflow.yaml
+causaliq-workflow validate workflow.yaml
 
 # Interactive mode
-causaliq-pipeline interactive --domain healthcare --data patient_data.csv
+causaliq-workflow interactive --domain healthcare --data patient_data.csv
 
 # Monitor running workflow
-causaliq-pipeline status workflow-123
+causaliq-workflow status workflow-123
 
 # Generate workflow template
-causaliq-pipeline template --type discovery --domain finance
+causaliq-workflow template --type discovery --domain finance
 
 # List available packages and methods
-causaliq-pipeline list-methods --package causaliq-discovery
+causaliq-workflow list-methods --package causaliq-discovery
 </code></pre>
 <h2 id="integration-examples">Integration Examples</h2>
 <h3 id="python-api-usage">Python API Usage</h3>
-<pre><code class="language-python">from causaliq_pipeline import WorkflowEngine, DaskClusterManager
+<pre><code class="language-python">from causaliq_workflow import WorkflowEngine, DaskClusterManager
 
 # Set up DASK cluster
 cluster_manager = DaskClusterManager()
@@ -1757,6 +2215,8 @@ steps:
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1769,6 +2229,46 @@ steps:
       </main>
       
         <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../roadmap/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Development Roadmap">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Development Roadmap
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../technical_architecture/" class="md-footer__link md-footer__link--next" aria-label="Next: Architecture">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Architecture
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1795,7 +2295,7 @@ steps:
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>

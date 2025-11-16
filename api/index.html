@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../design/algorithm_registry_design/">
+        <link rel="prev" href="../design/workflow_executor_design/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>API Reference - causaliq-pipeline</title>
+        <title>API Reference - causaliq-workflow</title>
       
     
     
@@ -88,9 +88,11 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="causaliq-pipeline" class="md-header__button md-logo" aria-label="causaliq-pipeline" data-md-component="logo">
+    <a href=".." title="causaliq-workflow" class="md-header__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -104,7 +106,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            causaliq-pipeline
+            causaliq-workflow
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -167,6 +169,11 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -191,14 +198,8 @@
     
   </nav>
   
-</header>
     
-    <div class="md-container" data-md-component="container">
       
-      
-        
-          
-            
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
@@ -305,7 +306,13 @@
     </ul>
   </div>
 </nav>
-          
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
         
       
       <main class="md-main" data-md-component="main">
@@ -324,13 +331,13 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="causaliq-pipeline" class="md-nav__button md-logo" aria-label="causaliq-pipeline" data-md-component="logo">
+    <a href=".." title="causaliq-workflow" class="md-nav__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    causaliq-pipeline
+    causaliq-workflow
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
@@ -374,13 +381,17 @@
     
       
       
+        
+      
     
     
     <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -514,13 +525,17 @@
     
       
       
+        
+      
     
     
     <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -636,6 +651,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -722,19 +765,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelineaction" class="md-nav__link">
+  <a href="#causaliq_workflowaction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.action
+        causaliq_workflow.action
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.action">
+    <nav class="md-nav" aria-label="causaliq_workflow.action">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action" class="md-nav__link">
     <span class="md-ellipsis">
       
         Action
@@ -746,7 +789,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.run" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.run" class="md-nav__link">
     <span class="md-ellipsis">
       
         run
@@ -758,7 +801,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.run(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.run(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -774,7 +817,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.validate_inputs" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.validate_inputs" class="md-nav__link">
     <span class="md-ellipsis">
       
         validate_inputs
@@ -786,7 +829,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.validate_inputs(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.validate_inputs(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -807,7 +850,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionInput" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionInput" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionInput
@@ -818,7 +861,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionOutput" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionOutput" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionOutput
@@ -829,7 +872,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionExecutionError" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionExecutionError" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionExecutionError
@@ -840,10 +883,128 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionValidationError" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionValidationError" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionValidationError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-execution-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Execution Engine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflow Execution Engine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="causaliq_workflow.workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WorkflowExecutor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expand_matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="expand_matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="parse_workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutionError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutionError
       
     </span>
   </a>
@@ -873,19 +1034,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelineschema" class="md-nav__link">
+  <a href="#causaliq_workflowschema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.schema
+        causaliq_workflow.schema
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.schema">
+    <nav class="md-nav" aria-label="causaliq_workflow.schema">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.WorkflowValidationError" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.WorkflowValidationError" class="md-nav__link">
     <span class="md-ellipsis">
       
         WorkflowValidationError
@@ -897,7 +1058,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.WorkflowValidationError(message)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.WorkflowValidationError(message)" class="md-nav__link">
     <span class="md-ellipsis">
       
         message
@@ -908,7 +1069,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.WorkflowValidationError(schema_path)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.WorkflowValidationError(schema_path)" class="md-nav__link">
     <span class="md-ellipsis">
       
         schema_path
@@ -924,7 +1085,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.load_schema" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.load_schema" class="md-nav__link">
     <span class="md-ellipsis">
       
         load_schema
@@ -936,7 +1097,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.load_schema(schema_path)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.load_schema(schema_path)" class="md-nav__link">
     <span class="md-ellipsis">
       
         schema_path
@@ -952,7 +1113,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.validate_workflow" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.validate_workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
         validate_workflow
@@ -964,7 +1125,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.validate_workflow(workflow)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.validate_workflow(workflow)" class="md-nav__link">
     <span class="md-ellipsis">
       
         workflow
@@ -975,10 +1136,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.validate_workflow(schema_path)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.validate_workflow(schema_path)" class="md-nav__link">
     <span class="md-ellipsis">
       
         schema_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.schema.load_workflow_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_workflow_file
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load_workflow_file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.schema.load_workflow_file(file_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        file_path
       
     </span>
   </a>
@@ -1013,19 +1202,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelineactions" class="md-nav__link">
+  <a href="#causaliq_workflowactions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.actions
+        causaliq_workflow.actions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.actions">
+    <nav class="md-nav" aria-label="causaliq_workflow.actions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction" class="md-nav__link">
     <span class="md-ellipsis">
       
         DummyStructureLearnerAction
@@ -1037,7 +1226,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.run" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.run" class="md-nav__link">
     <span class="md-ellipsis">
       
         run
@@ -1049,7 +1238,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.run(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.run(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -1065,7 +1254,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs" class="md-nav__link">
     <span class="md-ellipsis">
       
         validate_inputs
@@ -1077,7 +1266,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -1120,19 +1309,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelinecli" class="md-nav__link">
+  <a href="#causaliq_workflowcli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.cli
+        causaliq_workflow.cli
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.cli">
+    <nav class="md-nav" aria-label="causaliq_workflow.cli">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.cli" class="md-nav__link">
+  <a href="#causaliq_workflow.cli" class="md-nav__link">
     <span class="md-ellipsis">
       
         cli
@@ -1144,7 +1333,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.cli.cli" class="md-nav__link">
+  <a href="#causaliq_workflow.cli.cli" class="md-nav__link">
     <span class="md-ellipsis">
       
         cli
@@ -1155,7 +1344,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.cli.main" class="md-nav__link">
+  <a href="#causaliq_workflow.cli.main" class="md-nav__link">
     <span class="md-ellipsis">
       
         main
@@ -1191,6 +1380,50 @@
   
     <nav class="md-nav" aria-label="Usage Examples">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-workflowexecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using WorkflowExecutor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variable-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flexible-path-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flexible Path Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-expansion-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Expansion Example
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#creating-a-custom-action" class="md-nav__link">
@@ -1316,19 +1549,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelineaction" class="md-nav__link">
+  <a href="#causaliq_workflowaction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.action
+        causaliq_workflow.action
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.action">
+    <nav class="md-nav" aria-label="causaliq_workflow.action">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action" class="md-nav__link">
     <span class="md-ellipsis">
       
         Action
@@ -1340,7 +1573,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.run" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.run" class="md-nav__link">
     <span class="md-ellipsis">
       
         run
@@ -1352,7 +1585,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.run(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.run(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -1368,7 +1601,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.validate_inputs" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.validate_inputs" class="md-nav__link">
     <span class="md-ellipsis">
       
         validate_inputs
@@ -1380,7 +1613,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.Action.validate_inputs(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.action.Action.validate_inputs(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -1401,7 +1634,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionInput" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionInput" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionInput
@@ -1412,7 +1645,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionOutput" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionOutput" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionOutput
@@ -1423,7 +1656,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionExecutionError" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionExecutionError" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionExecutionError
@@ -1434,10 +1667,128 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.action.ActionValidationError" class="md-nav__link">
+  <a href="#causaliq_workflow.action.ActionValidationError" class="md-nav__link">
     <span class="md-ellipsis">
       
         ActionValidationError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-execution-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Execution Engine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflow Execution Engine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="causaliq_workflow.workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WorkflowExecutor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expand_matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="expand_matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="parse_workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutionError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutionError
       
     </span>
   </a>
@@ -1467,19 +1818,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelineschema" class="md-nav__link">
+  <a href="#causaliq_workflowschema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.schema
+        causaliq_workflow.schema
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.schema">
+    <nav class="md-nav" aria-label="causaliq_workflow.schema">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.WorkflowValidationError" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.WorkflowValidationError" class="md-nav__link">
     <span class="md-ellipsis">
       
         WorkflowValidationError
@@ -1491,7 +1842,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.WorkflowValidationError(message)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.WorkflowValidationError(message)" class="md-nav__link">
     <span class="md-ellipsis">
       
         message
@@ -1502,7 +1853,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.WorkflowValidationError(schema_path)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.WorkflowValidationError(schema_path)" class="md-nav__link">
     <span class="md-ellipsis">
       
         schema_path
@@ -1518,7 +1869,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.load_schema" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.load_schema" class="md-nav__link">
     <span class="md-ellipsis">
       
         load_schema
@@ -1530,7 +1881,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.load_schema(schema_path)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.load_schema(schema_path)" class="md-nav__link">
     <span class="md-ellipsis">
       
         schema_path
@@ -1546,7 +1897,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.validate_workflow" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.validate_workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
         validate_workflow
@@ -1558,7 +1909,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.validate_workflow(workflow)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.validate_workflow(workflow)" class="md-nav__link">
     <span class="md-ellipsis">
       
         workflow
@@ -1569,10 +1920,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.schema.validate_workflow(schema_path)" class="md-nav__link">
+  <a href="#causaliq_workflow.schema.validate_workflow(schema_path)" class="md-nav__link">
     <span class="md-ellipsis">
       
         schema_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.schema.load_workflow_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_workflow_file
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load_workflow_file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.schema.load_workflow_file(file_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        file_path
       
     </span>
   </a>
@@ -1607,19 +1986,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelineactions" class="md-nav__link">
+  <a href="#causaliq_workflowactions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.actions
+        causaliq_workflow.actions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.actions">
+    <nav class="md-nav" aria-label="causaliq_workflow.actions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction" class="md-nav__link">
     <span class="md-ellipsis">
       
         DummyStructureLearnerAction
@@ -1631,7 +2010,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.run" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.run" class="md-nav__link">
     <span class="md-ellipsis">
       
         run
@@ -1643,7 +2022,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.run(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.run(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -1659,7 +2038,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs" class="md-nav__link">
     <span class="md-ellipsis">
       
         validate_inputs
@@ -1671,7 +2050,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs(inputs)" class="md-nav__link">
+  <a href="#causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs(inputs)" class="md-nav__link">
     <span class="md-ellipsis">
       
         inputs
@@ -1714,19 +2093,19 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipelinecli" class="md-nav__link">
+  <a href="#causaliq_workflowcli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq_pipeline.cli
+        causaliq_workflow.cli
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="causaliq_pipeline.cli">
+    <nav class="md-nav" aria-label="causaliq_workflow.cli">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.cli" class="md-nav__link">
+  <a href="#causaliq_workflow.cli" class="md-nav__link">
     <span class="md-ellipsis">
       
         cli
@@ -1738,7 +2117,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.cli.cli" class="md-nav__link">
+  <a href="#causaliq_workflow.cli.cli" class="md-nav__link">
     <span class="md-ellipsis">
       
         cli
@@ -1749,7 +2128,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_pipeline.cli.main" class="md-nav__link">
+  <a href="#causaliq_workflow.cli.main" class="md-nav__link">
     <span class="md-ellipsis">
       
         main
@@ -1785,6 +2164,50 @@
   
     <nav class="md-nav" aria-label="Usage Examples">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-workflowexecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using WorkflowExecutor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variable-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flexible-path-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flexible Path Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-expansion-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Expansion Example
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#creating-a-custom-action" class="md-nav__link">
@@ -1882,14 +2305,14 @@
 
 <h1 id="api-reference">API Reference</h1>
 <h2 id="core-action-framework">Core Action Framework</h2>
-<h3 id="causaliq_pipelineaction">causaliq_pipeline.action</h3>
+<h3 id="causaliq_workflowaction">causaliq_workflow.action</h3>
 
 
 <div class="doc doc-object doc-class">
 
 
 
-<h4 id="causaliq_pipeline.action.Action" class="doc doc-heading">
+<h4 id="causaliq_workflow.action.Action" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Action</span>
 
 
@@ -1921,14 +2344,14 @@
 
   
       abstractmethod
-   (causaliq_pipeline.action.Action.run)" href="#causaliq_pipeline.action.Action.run">run</a></code></b>
+   (causaliq_workflow.action.Action.run)" href="#causaliq_workflow.action.Action.run">run</a></code></b>
             –
             <div class="doc-md-description">
               <p>Execute action with validated inputs, return outputs.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            validate_inputs (causaliq_pipeline.action.Action.validate_inputs)" href="#causaliq_pipeline.action.Action.validate_inputs">validate_inputs</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            validate_inputs (causaliq_workflow.action.Action.validate_inputs)" href="#causaliq_workflow.action.Action.validate_inputs">validate_inputs</a></code></b>
             –
             <div class="doc-md-description">
               <p>Validate input values against input specifications.</p>
@@ -1955,7 +2378,7 @@
 <div class="doc doc-object doc-function">
 
 
-<h5 id="causaliq_pipeline.action.Action.run" class="doc doc-heading">
+<h5 id="causaliq_workflow.action.Action.run" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">run</span>
 
 
@@ -1964,7 +2387,7 @@
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_pipeline.action.Action.run(inputs))" href="#causaliq_pipeline.action.Action.run(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_workflow.action.Action.run(inputs))" href="#causaliq_workflow.action.Action.run(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1975,7 +2398,7 @@
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h6 id="causaliq_pipeline.action.Action.run(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
+<h6 id="causaliq_workflow.action.Action.run(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
 </h6>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
           –
           <div class="doc-md-description">
@@ -2000,7 +2423,7 @@
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionExecutionError (causaliq_pipeline.action.ActionExecutionError)" href="#causaliq_pipeline.action.ActionExecutionError">ActionExecutionError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionExecutionError (causaliq_workflow.action.ActionExecutionError)" href="#causaliq_workflow.action.ActionExecutionError">ActionExecutionError</a></code>
             –
           <div class="doc-md-description">
             <p>If action execution fails</p>
@@ -2017,12 +2440,12 @@
 <div class="doc doc-object doc-function">
 
 
-<h5 id="causaliq_pipeline.action.Action.validate_inputs" class="doc doc-heading">
+<h5 id="causaliq_workflow.action.Action.validate_inputs" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">validate_inputs</span>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_inputs</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_pipeline.action.Action.validate_inputs(inputs))" href="#causaliq_pipeline.action.Action.validate_inputs(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_inputs</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_workflow.action.Action.validate_inputs(inputs))" href="#causaliq_workflow.action.Action.validate_inputs(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2033,7 +2456,7 @@
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h6 id="causaliq_pipeline.action.Action.validate_inputs(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
+<h6 id="causaliq_workflow.action.Action.validate_inputs(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
 </h6>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
           –
           <div class="doc-md-description">
@@ -2058,7 +2481,7 @@
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_pipeline.action.ActionValidationError)" href="#causaliq_pipeline.action.ActionValidationError">ActionValidationError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_workflow.action.ActionValidationError)" href="#causaliq_workflow.action.ActionValidationError">ActionValidationError</a></code>
             –
           <div class="doc-md-description">
             <p>If validation fails</p>
@@ -2084,7 +2507,7 @@
 
 
 
-<h4 id="causaliq_pipeline.action.ActionInput" class="doc doc-heading">
+<h4 id="causaliq_workflow.action.ActionInput" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ActionInput</span>
 
 
@@ -2094,11 +2517,11 @@
 
 </h4>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">ActionInput</span><span class="p">(</span>
-    <span class="n"><span title="causaliq_pipeline.action.ActionInput(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
-    <span class="n"><span title="causaliq_pipeline.action.ActionInput(description)">description</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
-    <span class="n"><span title="causaliq_pipeline.action.ActionInput(required)">required</span></span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n"><span title="causaliq_pipeline.action.ActionInput(default)">default</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="causaliq_pipeline.action.ActionInput(type_hint)">type_hint</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;Any&quot;</span><span class="p">,</span>
+    <span class="n"><span title="causaliq_workflow.action.ActionInput(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n"><span title="causaliq_workflow.action.ActionInput(description)">description</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n"><span title="causaliq_workflow.action.ActionInput(required)">required</span></span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n"><span title="causaliq_workflow.action.ActionInput(default)">default</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="causaliq_workflow.action.ActionInput(type_hint)">type_hint</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;Any&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -2146,7 +2569,7 @@
 
 
 
-<h4 id="causaliq_pipeline.action.ActionOutput" class="doc doc-heading">
+<h4 id="causaliq_workflow.action.ActionOutput" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ActionOutput</span>
 
 
@@ -2155,7 +2578,7 @@
   </span>
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ActionOutput</span><span class="p">(</span><span class="n"><span title="causaliq_pipeline.action.ActionOutput(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_pipeline.action.ActionOutput(description)">description</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_pipeline.action.ActionOutput(value)">value</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ActionOutput</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.action.ActionOutput(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.action.ActionOutput(description)">description</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.action.ActionOutput(value)">value</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2202,7 +2625,7 @@
 
 
 
-<h4 id="causaliq_pipeline.action.ActionExecutionError" class="doc doc-heading">
+<h4 id="causaliq_workflow.action.ActionExecutionError" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ActionExecutionError</span>
 
 
@@ -2236,7 +2659,7 @@
 
 
 
-<h4 id="causaliq_pipeline.action.ActionValidationError" class="doc doc-heading">
+<h4 id="causaliq_workflow.action.ActionValidationError" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ActionValidationError</span>
 
 
@@ -2264,20 +2687,248 @@
 
     </div>
 
-</div><h2 id="schema-validation">Schema Validation</h2>
-<h3 id="causaliq_pipelineschema">causaliq_pipeline.schema</h3>
+</div><h2 id="workflow-execution-engine">Workflow Execution Engine</h2>
+<h3 id="causaliq_workflowworkflow">causaliq_workflow.workflow</h3>
 
 
 <div class="doc doc-object doc-class">
 
 
 
-<h4 id="causaliq_pipeline.schema.WorkflowValidationError" class="doc doc-heading">
+<h4 id="causaliq_workflow.workflow.WorkflowExecutor" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">WorkflowExecutor</span>
+
+
+</h4>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Parse and execute GitHub Actions-style workflows with matrix expansion.</p>
+<p>This class handles the parsing of YAML workflow files and expansion of
+matrix strategies into individual experiment jobs. It provides the
+foundation for executing multi-step causal discovery workflows with
+parameterised experiments using flexible action parameter templating.</p>
+
+          
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            expand_matrix (causaliq_workflow.workflow.WorkflowExecutor.expand_matrix)" href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix">expand_matrix</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Expand matrix variables into individual job configurations.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            parse_workflow (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow)" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow">parse_workflow</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Parse workflow YAML file with validation.</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.expand_matrix" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">expand_matrix</span>
+
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">expand_matrix</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="matrix (causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix))" href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)">matrix</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Expand matrix variables into individual job configurations.</p>
+<p>Generates all combinations from matrix variables using cartesian
+product. Each combination becomes a separate job configuration.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h6 id="causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)" class="doc doc-heading doc-heading-parameter">              <b><code>matrix</code></b>
+</h6>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="typing.Any">Any</span>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary mapping variable names to lists of values</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>List of job configurations with matrix variables expanded</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If matrix expansion fails</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.parse_workflow" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">parse_workflow</span>
+
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">parse_workflow</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="workflow_path (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)">workflow_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Parse workflow YAML file with validation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h6 id="causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)" class="doc doc-heading doc-heading-parameter">              <b><code>workflow_path</code></b>
+</h6>              (<code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to workflow YAML file</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Parsed and validated workflow dictionary</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If workflow parsing or validation fails</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="causaliq_workflow.workflow.WorkflowExecutionError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">WorkflowExecutionError</span>
+
+
+</h4>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Raised when workflow execution fails.</p>
+
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div><h2 id="schema-validation">Schema Validation</h2>
+<h3 id="causaliq_workflowschema">causaliq_workflow.schema</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="causaliq_workflow.schema.WorkflowValidationError" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">WorkflowValidationError</span>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowValidationError</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="message (causaliq_pipeline.schema.WorkflowValidationError(message))" href="#causaliq_pipeline.schema.WorkflowValidationError(message)">message</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="schema_path (causaliq_pipeline.schema.WorkflowValidationError(schema_path))" href="#causaliq_pipeline.schema.WorkflowValidationError(schema_path)">schema_path</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowValidationError</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="message (causaliq_workflow.schema.WorkflowValidationError(message))" href="#causaliq_workflow.schema.WorkflowValidationError(message)">message</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="schema_path (causaliq_workflow.schema.WorkflowValidationError(schema_path))" href="#causaliq_workflow.schema.WorkflowValidationError(schema_path)">schema_path</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2290,7 +2941,7 @@
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h5 id="causaliq_pipeline.schema.WorkflowValidationError(message)" class="doc doc-heading doc-heading-parameter">              <b><code>message</code></b>
+<h5 id="causaliq_workflow.schema.WorkflowValidationError(message)" class="doc doc-heading doc-heading-parameter">              <b><code>message</code></b>
 </h5>              (<code><span title="str">str</span></code>)
           –
           <div class="doc-md-description">
@@ -2298,7 +2949,7 @@
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h5 id="causaliq_pipeline.schema.WorkflowValidationError(schema_path)" class="doc doc-heading doc-heading-parameter">              <b><code>schema_path</code></b>
+<h5 id="causaliq_workflow.schema.WorkflowValidationError(schema_path)" class="doc doc-heading doc-heading-parameter">              <b><code>schema_path</code></b>
 </h5>              (<code><span title="str">str</span></code>, default:
                   <code>&#39;&#39;</code>
 )
@@ -2347,12 +2998,12 @@
 <div class="doc doc-object doc-function">
 
 
-<h4 id="causaliq_pipeline.schema.load_schema" class="doc doc-heading">
+<h4 id="causaliq_workflow.schema.load_schema" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">load_schema</span>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_schema</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="schema_path (causaliq_pipeline.schema.load_schema(schema_path))" href="#causaliq_pipeline.schema.load_schema(schema_path)">schema_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_schema</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="schema_path (causaliq_workflow.schema.load_schema(schema_path))" href="#causaliq_workflow.schema.load_schema(schema_path)">schema_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2363,7 +3014,7 @@
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h5 id="causaliq_pipeline.schema.load_schema(schema_path)" class="doc doc-heading doc-heading-parameter">              <b><code>schema_path</code></b>
+<h5 id="causaliq_workflow.schema.load_schema(schema_path)" class="doc doc-heading doc-heading-parameter">              <b><code>schema_path</code></b>
 </h5>              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]]</code>, default:
                   <code>None</code>
 )
@@ -2391,7 +3042,7 @@
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            WorkflowValidationError (causaliq_pipeline.schema.WorkflowValidationError)" href="#causaliq_pipeline.schema.WorkflowValidationError">WorkflowValidationError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            WorkflowValidationError (causaliq_workflow.schema.WorkflowValidationError)" href="#causaliq_workflow.schema.WorkflowValidationError">WorkflowValidationError</a></code>
             –
           <div class="doc-md-description">
             <p>If schema file cannot be loaded</p>
@@ -2408,13 +3059,13 @@
 <div class="doc doc-object doc-function">
 
 
-<h4 id="causaliq_pipeline.schema.validate_workflow" class="doc doc-heading">
+<h4 id="causaliq_workflow.schema.validate_workflow" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">validate_workflow</span>
 
 
 </h4>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_workflow</span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="workflow (causaliq_pipeline.schema.validate_workflow(workflow))" href="#causaliq_pipeline.schema.validate_workflow(workflow)">workflow</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="schema_path (causaliq_pipeline.schema.validate_workflow(schema_path))" href="#causaliq_pipeline.schema.validate_workflow(schema_path)">schema_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="workflow (causaliq_workflow.schema.validate_workflow(workflow))" href="#causaliq_workflow.schema.validate_workflow(workflow)">workflow</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="schema_path (causaliq_workflow.schema.validate_workflow(schema_path))" href="#causaliq_workflow.schema.validate_workflow(schema_path)">schema_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
 </code></pre></div>
 
@@ -2426,7 +3077,7 @@
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h5 id="causaliq_pipeline.schema.validate_workflow(workflow)" class="doc doc-heading doc-heading-parameter">              <b><code>workflow</code></b>
+<h5 id="causaliq_workflow.schema.validate_workflow(workflow)" class="doc doc-heading doc-heading-parameter">              <b><code>workflow</code></b>
 </h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
           –
           <div class="doc-md-description">
@@ -2434,7 +3085,7 @@
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h5 id="causaliq_pipeline.schema.validate_workflow(schema_path)" class="doc doc-heading doc-heading-parameter">              <b><code>schema_path</code></b>
+<h5 id="causaliq_workflow.schema.validate_workflow(schema_path)" class="doc doc-heading doc-heading-parameter">              <b><code>schema_path</code></b>
 </h5>              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]]</code>, default:
                   <code>None</code>
 )
@@ -2461,7 +3112,7 @@
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            WorkflowValidationError (causaliq_pipeline.schema.WorkflowValidationError)" href="#causaliq_pipeline.schema.WorkflowValidationError">WorkflowValidationError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            WorkflowValidationError (causaliq_workflow.schema.WorkflowValidationError)" href="#causaliq_workflow.schema.WorkflowValidationError">WorkflowValidationError</a></code>
             –
           <div class="doc-md-description">
             <p>If workflow validation fails</p>
@@ -2473,15 +3124,73 @@
 
     </div>
 
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.schema.load_workflow_file" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">load_workflow_file</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_workflow_file</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="file_path (causaliq_workflow.schema.load_workflow_file(file_path))" href="#causaliq_workflow.schema.load_workflow_file(file_path)">file_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>Load workflow from YAML file.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.schema.load_workflow_file(file_path)" class="doc doc-heading doc-heading-parameter">              <b><code>file_path</code></b>
+</h5>              (<code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to workflow YAML file</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Parsed workflow dictionary</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowValidationError (causaliq_workflow.schema.WorkflowValidationError)" href="#causaliq_workflow.schema.WorkflowValidationError">WorkflowValidationError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If file cannot be loaded</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
 </div><h2 id="built-in-actions">Built-in Actions</h2>
-<h3 id="causaliq_pipelineactions">causaliq_pipeline.actions</h3>
+<h3 id="causaliq_workflowactions">causaliq_workflow.actions</h3>
 
 
 <div class="doc doc-object doc-class">
 
 
 
-<h4 id="causaliq_pipeline.actions.DummyStructureLearnerAction" class="doc doc-heading">
+<h4 id="causaliq_workflow.actions.DummyStructureLearnerAction" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DummyStructureLearnerAction</span>
 
 
@@ -2508,14 +3217,14 @@
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            run (causaliq_pipeline.actions.DummyStructureLearnerAction.run)" href="#causaliq_pipeline.actions.DummyStructureLearnerAction.run">run</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            run (causaliq_workflow.actions.DummyStructureLearnerAction.run)" href="#causaliq_workflow.actions.DummyStructureLearnerAction.run">run</a></code></b>
             –
             <div class="doc-md-description">
               <p>Create a dummy empty GraphML file.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            validate_inputs (causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs)" href="#causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs">validate_inputs</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            validate_inputs (causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs)" href="#causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs">validate_inputs</a></code></b>
             –
             <div class="doc-md-description">
               <p>Validate input values against input specifications.</p>
@@ -2542,12 +3251,12 @@
 <div class="doc doc-object doc-function">
 
 
-<h5 id="causaliq_pipeline.actions.DummyStructureLearnerAction.run" class="doc doc-heading">
+<h5 id="causaliq_workflow.actions.DummyStructureLearnerAction.run" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">run</span>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_pipeline.actions.DummyStructureLearnerAction.run(inputs))" href="#causaliq_pipeline.actions.DummyStructureLearnerAction.run(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_workflow.actions.DummyStructureLearnerAction.run(inputs))" href="#causaliq_workflow.actions.DummyStructureLearnerAction.run(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2558,7 +3267,7 @@
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h6 id="causaliq_pipeline.actions.DummyStructureLearnerAction.run(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
+<h6 id="causaliq_workflow.actions.DummyStructureLearnerAction.run(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
 </h6>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
           –
           <div class="doc-md-description">
@@ -2584,7 +3293,7 @@ vars</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionExecutionError (causaliq_pipeline.action.ActionExecutionError)" href="#causaliq_pipeline.action.ActionExecutionError">ActionExecutionError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionExecutionError (causaliq_workflow.action.ActionExecutionError)" href="#causaliq_workflow.action.ActionExecutionError">ActionExecutionError</a></code>
             –
           <div class="doc-md-description">
             <p>If file operations fail</p>
@@ -2601,12 +3310,12 @@ vars</p>
 <div class="doc doc-object doc-function">
 
 
-<h5 id="causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs" class="doc doc-heading">
+<h5 id="causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">validate_inputs</span>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_inputs</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs(inputs))" href="#causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_inputs</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="inputs (causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs(inputs))" href="#causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs(inputs)">inputs</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2617,7 +3326,7 @@ vars</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h6 id="causaliq_pipeline.actions.DummyStructureLearnerAction.validate_inputs(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
+<h6 id="causaliq_workflow.actions.DummyStructureLearnerAction.validate_inputs(inputs)" class="doc doc-heading doc-heading-parameter">              <b><code>inputs</code></b>
 </h6>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
           –
           <div class="doc-md-description">
@@ -2642,7 +3351,7 @@ vars</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_pipeline.action.ActionValidationError)" href="#causaliq_pipeline.action.ActionValidationError">ActionValidationError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_workflow.action.ActionValidationError)" href="#causaliq_workflow.action.ActionValidationError">ActionValidationError</a></code>
             –
           <div class="doc-md-description">
             <p>If validation fails</p>
@@ -2663,14 +3372,14 @@ vars</p>
     </div>
 
 </div><h2 id="cli-interface">CLI Interface</h2>
-<h3 id="causaliq_pipelinecli">causaliq_pipeline.cli</h3>
+<h3 id="causaliq_workflowcli">causaliq_workflow.cli</h3>
 
 
 <div class="doc doc-object doc-module">
 
 
 
-<h4 id="causaliq_pipeline.cli" class="doc doc-heading">
+<h4 id="causaliq_workflow.cli" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">cli</span>
 
 
@@ -2678,7 +3387,7 @@ vars</p>
 
     <div class="doc doc-contents first">
 
-        <p>Command-line interface for causaliq-pipeline.</p>
+        <p>Command-line interface for causaliq-workflow.</p>
 
           
 
@@ -2695,14 +3404,14 @@ vars</p>
 <p><span class="doc-section-title">Functions:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            cli (causaliq_pipeline.cli.cli)" href="#causaliq_pipeline.cli.cli">cli</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cli (causaliq_workflow.cli.cli)" href="#causaliq_workflow.cli.cli">cli</a></code></b>
             –
             <div class="doc-md-description">
               <p>Simple CLI example.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            main (causaliq_pipeline.cli.main)" href="#causaliq_pipeline.cli.main">main</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            main (causaliq_workflow.cli.main)" href="#causaliq_workflow.cli.main">main</a></code></b>
             –
             <div class="doc-md-description">
               <p>Entry point for the CLI.</p>
@@ -2728,12 +3437,12 @@ vars</p>
 <div class="doc doc-object doc-function">
 
 
-<h5 id="causaliq_pipeline.cli.cli" class="doc doc-heading">
+<h5 id="causaliq_workflow.cli.cli" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">cli</span>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cli</span><span class="p">(</span><span class="n"><span title="causaliq_pipeline.cli.cli(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_pipeline.cli.cli(greet)">greet</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cli</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cli.cli(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.cli(greet)">greet</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2750,7 +3459,7 @@ vars</p>
 <div class="doc doc-object doc-function">
 
 
-<h5 id="causaliq_pipeline.cli.main" class="doc doc-heading">
+<h5 id="causaliq_workflow.cli.main" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">main</span>
 
 
@@ -2776,8 +3485,115 @@ vars</p>
 
 </div><hr />
 <h2 id="usage-examples">Usage Examples</h2>
+<h3 id="using-workflowexecutor">Using WorkflowExecutor</h3>
+<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
+from causaliq_workflow.workflow import WorkflowExecutionError
+
+# Create executor instance
+executor = WorkflowExecutor()
+
+try:
+    # Parse and validate workflow (includes template variable validation)
+    workflow = executor.parse_workflow(&quot;experiment.yml&quot;)
+    print(f&quot;Workflow ID: {workflow['id']}&quot;)
+    print(f&quot;Description: {workflow['description']}&quot;)
+
+    # Expand matrix variables
+    if &quot;matrix&quot; in workflow:
+        jobs = executor.expand_matrix(workflow[&quot;matrix&quot;])
+        print(f&quot;Generated {len(jobs)} jobs from matrix&quot;)
+
+        # Each job contains the expanded matrix variables
+        for i, job in enumerate(jobs):
+            print(f&quot;Job {i}: {job}&quot;)
+            # Example: {'dataset': 'asia', 'algorithm': 'pc', 'alpha': 0.05}
+
+except WorkflowExecutionError as e:
+    if &quot;Unknown template variables&quot; in str(e):
+        print(f&quot;Template validation failed: {e}&quot;)
+        # Example: &quot;Unknown template variables: missing_var. Available context: id, dataset, algorithm&quot;
+    else:
+        print(f&quot;Workflow execution failed: {e}&quot;)
+</code></pre>
+<h3 id="template-variable-validation">Template Variable Validation</h3>
+<pre><code class="language-python"># The WorkflowExecutor automatically validates template variables during parsing
+# Template variables ({{variable}}) are checked against:
+# - Workflow properties: id, description
+# - Matrix variables: variables defined in the matrix section
+
+# Example: Valid template usage
+valid_workflow = {
+    &quot;id&quot;: &quot;test-001&quot;,
+    &quot;description&quot;: &quot;Template validation example&quot;, 
+    &quot;matrix&quot;: {&quot;dataset&quot;: [&quot;asia&quot;], &quot;algorithm&quot;: [&quot;pc&quot;]},
+    &quot;steps&quot;: [{
+        &quot;uses&quot;: &quot;dummy-structure-learner&quot;,
+        &quot;with&quot;: {
+            &quot;output&quot;: &quot;/results/{{id}}/{{dataset}}_{{algorithm}}.xml&quot;,
+            &quot;description&quot;: &quot;Processing {{dataset}} with {{algorithm}}&quot;
+        }
+    }]
+}
+
+# Example: Invalid template usage (will raise WorkflowExecutionError)
+invalid_workflow = {
+    &quot;id&quot;: &quot;test-001&quot;, 
+    &quot;matrix&quot;: {&quot;dataset&quot;: [&quot;asia&quot;]},
+    &quot;steps&quot;: [{
+        &quot;uses&quot;: &quot;dummy-structure-learner&quot;, 
+        &quot;with&quot;: {
+            &quot;output&quot;: &quot;/results/{{unknown_var}}/result.xml&quot;  # unknown_var not in context
+        }
+    }]
+}
+</code></pre>
+<h3 id="flexible-path-configuration">Flexible Path Configuration</h3>
+<pre><code class="language-python"># Example workflow YAML showing flexible action parameters
+workflow_yaml = &quot;&quot;&quot;
+id: &quot;experiment-001&quot;
+description: &quot;Flexible causal discovery experiment&quot;
+matrix:
+  dataset: [&quot;asia&quot;, &quot;cancer&quot;]
+  algorithm: [&quot;pc&quot;, &quot;ges&quot;]
+  alpha: [0.01, 0.05]
+
+steps:
+  - name: &quot;Structure Learning&quot;
+    uses: &quot;dummy-structure-learner&quot;
+    with:
+      dataset: &quot;/experiments/data/{{dataset}}.csv&quot;
+      result: &quot;/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml&quot;
+      alpha: &quot;{{alpha}}&quot;
+      max_iter: 1000
+&quot;&quot;&quot;
+
+# Parse and expand
+executor = WorkflowExecutor()
+workflow = executor.parse_workflow_from_string(workflow_yaml)
+jobs = executor.expand_matrix(workflow[&quot;matrix&quot;])
+# Creates 8 jobs (2×2×2) with customizable file paths
+</code></pre>
+<h3 id="matrix-expansion-example">Matrix Expansion Example</h3>
+<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
+
+executor = WorkflowExecutor()
+
+# Define matrix
+matrix = {
+    &quot;algorithm&quot;: [&quot;pc&quot;, &quot;ges&quot;, &quot;lingam&quot;],
+    &quot;dataset&quot;: [&quot;asia&quot;, &quot;cancer&quot;],
+    &quot;alpha&quot;: [0.01, 0.05]
+}
+
+# Expand into individual jobs
+jobs = executor.expand_matrix(matrix)
+# Results in 12 jobs (3 × 2 × 2 combinations)
+
+for job in jobs:
+    print(f&quot;Algorithm: {job['algorithm']}, Dataset: {job['dataset']}, Alpha: {job['alpha']}&quot;)
+</code></pre>
 <h3 id="creating-a-custom-action">Creating a Custom Action</h3>
-<pre><code class="language-python">from causaliq_pipeline.action import Action, ActionInput, ActionExecutionError
+<pre><code class="language-python">from causaliq_workflow.action import Action, ActionInput, ActionExecutionError
 from typing import Any, Dict
 
 class MyStructureLearnerAction(Action):
@@ -2829,7 +3645,7 @@ class MyStructureLearnerAction(Action):
             raise ActionExecutionError(f&quot;Structure learning failed: {e}&quot;) from e
 </code></pre>
 <h3 id="validating-workflows">Validating Workflows</h3>
-<pre><code class="language-python">from causaliq_pipeline.schema import validate_workflow, WorkflowValidationError
+<pre><code class="language-python">from causaliq_workflow.schema import validate_workflow, WorkflowValidationError
 
 workflow_data = {
     &quot;name&quot;: &quot;My Experiment&quot;,
@@ -2859,7 +3675,7 @@ except WorkflowValidationError as e:
     print(f&quot;Schema path: {e.schema_path}&quot;)
 </code></pre>
 <h3 id="loading-custom-schemas">Loading Custom Schemas</h3>
-<pre><code class="language-python">from causaliq_pipeline.schema import load_schema
+<pre><code class="language-python">from causaliq_workflow.schema import load_schema
 from pathlib import Path
 
 # Load custom schema
@@ -2882,7 +3698,7 @@ validate_workflow(workflow_data, schema)
 <h3 id="testing-your-actions">Testing Your Actions</h3>
 <pre><code class="language-python">import pytest
 from pathlib import Path
-from causaliq_pipeline.action import ActionExecutionError
+from causaliq_workflow.action import ActionExecutionError
 
 def test_my_action_success():
     &quot;&quot;&quot;Test successful action execution.&quot;&quot;&quot;
@@ -2928,6 +3744,8 @@ def test_my_action_missing_file():
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -2940,6 +3758,30 @@ def test_my_action_missing_file():
       </main>
       
         <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../design/workflow_executor_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Executor">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Workflow Executor
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -2966,7 +3808,7 @@ def test_my_action_missing_file():
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
