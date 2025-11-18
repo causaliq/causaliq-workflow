@@ -271,13 +271,8 @@ class WorkflowExecutor:
             for job_index, job in enumerate(jobs):
                 # Create workflow context
                 context = WorkflowContext(
-                    workflow_id=workflow.get("id", f"workflow-{job_index}"),
-                    matrix=matrix,
-                    current_job=job,
-                    data_root=workflow.get("data_root", ""),
-                    output_root=workflow.get("output_root", ""),
                     mode=mode,
-                    all_jobs=jobs,
+                    matrix=matrix,
                 )
 
                 # Execute job steps

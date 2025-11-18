@@ -50,7 +50,7 @@ class Action(ABC):
     def run(
         self,
         inputs: Dict[str, Any],
-        mode: str = "run",
+        mode: str = "dry-run",
         context: Optional["WorkflowContext"] = None,
     ) -> Dict[str, Any]:
         """Execute action with validated inputs, return outputs.

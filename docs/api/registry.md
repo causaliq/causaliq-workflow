@@ -87,16 +87,17 @@ from causaliq_workflow.registry import WorkflowContext
 
 # Create workflow context for action execution
 context = WorkflowContext(
-    workflow_id="experiment-001",
-    step_name="structure-learning",
-    matrix_vars={"dataset": "asia", "algorithm": "pc"},
-    workflow_vars={"data_root": "/experiments/data"}
+    mode="run",
+    matrix={"dataset": ["asia", "cancer"], "algorithm": ["pc", "ges"]},
 )
 
-# Context provides complete workflow information to actions
-print(f"Current step: {context.step_name}")
-print(f"Matrix variables: {context.matrix_vars}")
-print(f"Workflow root: {context.workflow_vars['data_root']}")
+# Context provides execution metadata for action optimization
+print(f"Execution mode: {context.mode}")
+print(f"Matrix definition: {context.matrix}")
+
+# Actions can optimize across the full matrix space
+if len(context.matrix.get("dataset", [])) > 1:
+    print("Multi-dataset experiment - can pre-load data")
 ```
 
 ## Architecture Notes

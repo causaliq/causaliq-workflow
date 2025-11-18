@@ -90,12 +90,8 @@ def test_execute_action_with_context():
     registry = ActionRegistry()
 
     context = WorkflowContext(
-        workflow_id="test-workflow",
-        matrix={"param": ["value1", "value2"]},
-        current_job={"param": "value1"},
-        data_root="/test/data",
-        output_root="/test/output",
         mode="dry-run",
+        matrix={"param": ["value1", "value2"]},
     )
 
     inputs = {
@@ -119,12 +115,8 @@ def test_execute_action_not_found():
 
     registry = ActionRegistry()
     context = WorkflowContext(
-        workflow_id="test",
-        matrix={},
-        current_job={},
-        data_root="/test",
-        output_root="/test",
         mode="dry-run",
+        matrix={},
     )
 
     with pytest.raises(ActionExecutionError) as exc_info:

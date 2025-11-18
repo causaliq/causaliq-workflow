@@ -18,25 +18,19 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class WorkflowContext:
-    """Complete workflow context passed to actions for optimization.
+    """Workflow context for action execution optimization.
+
+    Provides minimal context needed for actions to optimize across workflows.
+    Actions receive specific data through inputs; context provides
+    meta-information.
 
     Attributes:
-        workflow_id: Unique identifier for the workflow execution
-        matrix: Dictionary of matrix variables and their possible values
-        current_job: Current matrix job parameters being executed
-        data_root: Base path for data files in the workflow
-        output_root: Base path for output files in the workflow
-        mode: Execution mode ('run', 'validate', etc.)
-        all_jobs: Complete list of all matrix jobs in the workflow
+        mode: Execution mode ('dry-run', 'run', 'compare')
+        matrix: Complete matrix definition for cross-job optimization
     """
 
-    workflow_id: str
-    matrix: Dict[str, List[Any]]
-    current_job: Dict[str, Any]
-    data_root: str
-    output_root: str
     mode: str
-    all_jobs: Optional[List[Dict[str, Any]]] = None
+    matrix: Dict[str, List[Any]]
 
 
 class ActionRegistryError(Exception):
