@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../matrix_expansion_design/">
+        <link rel="prev" href="../action_architecture_design/">
       
       
-        <link rel="next" href="../action_auto_discovery_design/">
+        <link rel="next" href="../workflow_executor_design/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Action Architecture - causaliq-workflow</title>
+        <title>Algorithm Registry - causaliq-workflow</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#action-auto-discovery-architecture" class="md-skip">
+        <a href="#action-auto-discovery-design" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Action Architecture
+              Algorithm Registry
             
           </span>
         </div>
@@ -605,6 +605,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -624,7 +652,7 @@
   <span class="md-ellipsis">
     
   
-    Action Architecture
+    Algorithm Registry
   
 
     
@@ -642,7 +670,7 @@
   <span class="md-ellipsis">
     
   
-    Action Architecture
+    Algorithm Registry
   
 
     
@@ -679,34 +707,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auto-discovery-action-framework" class="md-nav__link">
+  <a href="#how-auto-discovery-works-the-complete-journey" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auto-Discovery Action Framework
+        How Auto-Discovery Works: The Complete Journey
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Auto-Discovery Action Framework">
+    <nav class="md-nav" aria-label="How Auto-Discovery Works: The Complete Journey">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-actions-are-found-and-used" class="md-nav__link">
+  <a href="#phase-1-system-initialization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How Actions Are Found and Used
+        Phase 1: System Initialization
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="How Actions Are Found and Used">
+    <nav class="md-nav" aria-label="Phase 1: System Initialization">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-discovery-lifecycle" class="md-nav__link">
+  <a href="#step-1-workflow-engine-starts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Discovery Lifecycle
+        Step 1: Workflow Engine Starts
       
     </span>
   </a>
@@ -714,10 +742,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#convention-based-action-definition" class="md-nav__link">
+  <a href="#step-2-python-environment-scanning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Convention-Based Action Definition
+        Step 2: Python Environment Scanning
       
     </span>
   </a>
@@ -730,33 +758,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#base-action-interface" class="md-nav__link">
+  <a href="#phase-2-action-detection-and-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Base Action Interface
+        Phase 2: Action Detection and Registration
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#auto-discovery-action-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Auto-Discovery Action Registry
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Auto-Discovery Action Registry">
+    <nav class="md-nav" aria-label="Phase 2: Action Detection and Registration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-discovery-works-step-by-step" class="md-nav__link">
+  <a href="#step-3-convention-based-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How Discovery Works Step-by-Step
+        Step 3: Convention-Based Detection
       
     </span>
   </a>
@@ -764,10 +781,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#action-package-development-workflow" class="md-nav__link">
+  <a href="#step-4-automatic-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Action Package Development Workflow
+        Step 4: Automatic Registration
       
     </span>
   </a>
@@ -780,72 +797,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-2-data-loading-action" class="md-nav__link">
+  <a href="#phase-3-workflow-execution-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example 2: Data Loading Action
+        Phase 3: Workflow Execution Integration
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-3-algorithm-bridge-action" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 3: Algorithm Bridge Action
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#algorithm-execution-actions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Algorithm Execution Actions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#benefits-of-auto-discovery-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Benefits of Auto-Discovery Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Benefits of Auto-Discovery Architecture">
+    <nav class="md-nav" aria-label="Phase 3: Workflow Execution Integration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-action-developers" class="md-nav__link">
+  <a href="#step-5-yaml-parsing-and-action-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For Action Developers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For Action Developers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zero-configuration-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Zero Configuration Setup
+        Step 5: YAML Parsing and Action Resolution
       
     </span>
   </a>
@@ -853,88 +820,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#development-workflow" class="md-nav__link">
+  <a href="#step-6-dynamic-action-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-workflow-authors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Workflow Authors
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For Workflow Authors">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#seamless-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Seamless Integration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ecosystem-growth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ecosystem Growth
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-the-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For the Framework
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For the Framework">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#architectural-benefits" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architectural Benefits
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ecosystem-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ecosystem Integration
+        Step 6: Dynamic Action Execution
       
     </span>
   </a>
@@ -952,22 +841,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auto-discovery-implementation-patterns" class="md-nav__link">
+  <a href="#the-plugin-developer-experience" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auto-Discovery Implementation Patterns
+        The Plugin Developer Experience
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Auto-Discovery Implementation Patterns">
+    <nav class="md-nav" aria-label="The Plugin Developer Experience">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cross-language-bridges" class="md-nav__link">
+  <a href="#creating-an-action-package-step-by-step" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cross-Language Bridges
+        Creating an Action Package: Step-by-Step
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating an Action Package: Step-by-Step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-standard-python-package-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Standard Python Package Setup
       
     </span>
   </a>
@@ -975,10 +876,176 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#algorithm-collections" class="md-nav__link">
+  <a href="#step-2-implement-the-action-convention" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Algorithm Collections
+        Step 2: Implement the Action Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-installation-and-immediate-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Installation and Immediate Availability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery-process-implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery Process Implementation Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Discovery Process Implementation Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#module-introspection-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Introspection Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling-and-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling and Resilience
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ecosystem-integration-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ecosystem Integration Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ecosystem Integration Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#distribution-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-language-bridge-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Language Bridge Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benefits-of-the-auto-discovery-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits of the Auto-Discovery Approach
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Benefits of the Auto-Discovery Approach">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-developers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Developers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-the-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For the Ecosystem
       
     </span>
   </a>
@@ -994,34 +1061,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../action_auto_discovery_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Algorithm Registry
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1357,34 +1396,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auto-discovery-action-framework" class="md-nav__link">
+  <a href="#how-auto-discovery-works-the-complete-journey" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auto-Discovery Action Framework
+        How Auto-Discovery Works: The Complete Journey
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Auto-Discovery Action Framework">
+    <nav class="md-nav" aria-label="How Auto-Discovery Works: The Complete Journey">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-actions-are-found-and-used" class="md-nav__link">
+  <a href="#phase-1-system-initialization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How Actions Are Found and Used
+        Phase 1: System Initialization
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="How Actions Are Found and Used">
+    <nav class="md-nav" aria-label="Phase 1: System Initialization">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-discovery-lifecycle" class="md-nav__link">
+  <a href="#step-1-workflow-engine-starts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Discovery Lifecycle
+        Step 1: Workflow Engine Starts
       
     </span>
   </a>
@@ -1392,10 +1431,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#convention-based-action-definition" class="md-nav__link">
+  <a href="#step-2-python-environment-scanning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Convention-Based Action Definition
+        Step 2: Python Environment Scanning
       
     </span>
   </a>
@@ -1408,33 +1447,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#base-action-interface" class="md-nav__link">
+  <a href="#phase-2-action-detection-and-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Base Action Interface
+        Phase 2: Action Detection and Registration
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#auto-discovery-action-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Auto-Discovery Action Registry
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Auto-Discovery Action Registry">
+    <nav class="md-nav" aria-label="Phase 2: Action Detection and Registration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-discovery-works-step-by-step" class="md-nav__link">
+  <a href="#step-3-convention-based-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How Discovery Works Step-by-Step
+        Step 3: Convention-Based Detection
       
     </span>
   </a>
@@ -1442,10 +1470,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#action-package-development-workflow" class="md-nav__link">
+  <a href="#step-4-automatic-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Action Package Development Workflow
+        Step 4: Automatic Registration
       
     </span>
   </a>
@@ -1458,72 +1486,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-2-data-loading-action" class="md-nav__link">
+  <a href="#phase-3-workflow-execution-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example 2: Data Loading Action
+        Phase 3: Workflow Execution Integration
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-3-algorithm-bridge-action" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 3: Algorithm Bridge Action
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#algorithm-execution-actions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Algorithm Execution Actions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#benefits-of-auto-discovery-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Benefits of Auto-Discovery Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Benefits of Auto-Discovery Architecture">
+    <nav class="md-nav" aria-label="Phase 3: Workflow Execution Integration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-action-developers" class="md-nav__link">
+  <a href="#step-5-yaml-parsing-and-action-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For Action Developers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For Action Developers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zero-configuration-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Zero Configuration Setup
+        Step 5: YAML Parsing and Action Resolution
       
     </span>
   </a>
@@ -1531,88 +1509,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#development-workflow" class="md-nav__link">
+  <a href="#step-6-dynamic-action-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-workflow-authors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Workflow Authors
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For Workflow Authors">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#seamless-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Seamless Integration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ecosystem-growth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ecosystem Growth
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-the-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For the Framework
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For the Framework">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#architectural-benefits" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architectural Benefits
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ecosystem-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ecosystem Integration
+        Step 6: Dynamic Action Execution
       
     </span>
   </a>
@@ -1630,22 +1530,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auto-discovery-implementation-patterns" class="md-nav__link">
+  <a href="#the-plugin-developer-experience" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auto-Discovery Implementation Patterns
+        The Plugin Developer Experience
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Auto-Discovery Implementation Patterns">
+    <nav class="md-nav" aria-label="The Plugin Developer Experience">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cross-language-bridges" class="md-nav__link">
+  <a href="#creating-an-action-package-step-by-step" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cross-Language Bridges
+        Creating an Action Package: Step-by-Step
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating an Action Package: Step-by-Step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-standard-python-package-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Standard Python Package Setup
       
     </span>
   </a>
@@ -1653,10 +1565,176 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#algorithm-collections" class="md-nav__link">
+  <a href="#step-2-implement-the-action-convention" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Algorithm Collections
+        Step 2: Implement the Action Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-installation-and-immediate-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Installation and Immediate Availability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery-process-implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery Process Implementation Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Discovery Process Implementation Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#module-introspection-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Introspection Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling-and-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling and Resilience
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ecosystem-integration-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ecosystem Integration Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ecosystem Integration Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#distribution-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-language-bridge-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Language Bridge Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benefits-of-the-auto-discovery-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits of the Auto-Discovery Approach
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Benefits of the Auto-Discovery Approach">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-developers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Developers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-the-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For the Ecosystem
       
     </span>
   </a>
@@ -1685,506 +1763,241 @@
 
 
 
-<h1 id="action-auto-discovery-architecture">Action Auto-Discovery Architecture</h1>
+<h1 id="action-auto-discovery-design">Action Auto-Discovery Design</h1>
 <h2 id="overview">Overview</h2>
-<p>The action architecture provides reusable, automatically-discoverable workflow components following GitHub Actions patterns. Actions are <strong>zero-configuration plugins</strong> that become available immediately upon installation, with no registry files or manual setup required.</p>
-<h2 id="auto-discovery-action-framework">Auto-Discovery Action Framework</h2>
-<h3 id="how-actions-are-found-and-used">How Actions Are Found and Used</h3>
-<h4 id="the-discovery-lifecycle">The Discovery Lifecycle</h4>
+<p>The auto-discovery system implements a <strong>convention-over-configuration</strong> approach where actions are automatically found and registered without any configuration files. This design eliminates the need for manual registry management while providing a seamless plugin ecosystem for causal discovery workflows.</p>
+<h2 id="how-auto-discovery-works-the-complete-journey">How Auto-Discovery Works: The Complete Journey</h2>
+<h3 id="phase-1-system-initialization">Phase 1: System Initialization</h3>
+<h4 id="step-1-workflow-engine-starts">Step 1: Workflow Engine Starts</h4>
+<p>When a user runs <code>causaliq-workflow experiment.yml</code>:</p>
 <ol>
-<li><strong>Installation Phase</strong>: Developer installs action package (<code>pip install my-action</code>)</li>
-<li><strong>Discovery Phase</strong>: Framework scans Python environment for action packages  </li>
-<li><strong>Registration Phase</strong>: Actions are automatically registered by module name</li>
-<li><strong>Execution Phase</strong>: Workflows reference actions by name (<code>uses: "my-action"</code>)</li>
+<li><strong>WorkflowExecutor initialization</strong>: Creates a new <code>WorkflowExecutor</code> instance</li>
+<li><strong>ActionRegistry creation</strong>: Instantiates <code>ActionRegistry()</code> which triggers discovery</li>
+<li><strong>Discovery activation</strong>: The registry immediately begins scanning for actions</li>
 </ol>
-<h4 id="convention-based-action-definition">Convention-Based Action Definition</h4>
-<p>Actions follow a simple naming convention for automatic discovery:</p>
-<pre><code class="language-python"># my_action/__init__.py - Must export class named 'CausalIQAction'
-from causaliq_workflow.action import Action
-
-class CausalIQAction(Action):  # Must be named 'CausalIQAction'
-    name = &quot;my-action&quot;
-    version = &quot;1.0.0&quot;
-    description = &quot;Performs custom analysis&quot;
-
-    def run(self, inputs):
-        # Implementation here
-        return {&quot;status&quot;: &quot;complete&quot;}
-</code></pre>
-<h3 id="base-action-interface">Base Action Interface</h3>
-<pre><code class="language-python">from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
-import semantic_version
-
-@dataclass
-class ActionInput:
-    &quot;&quot;&quot;Define action input specification.&quot;&quot;&quot;
-    name: str
-    description: str
-    required: bool = False
-    default: Any = None
-    type_hint: str = &quot;Any&quot;
-
-@dataclass
-class ActionOutput:
-    &quot;&quot;&quot;Define action output specification.&quot;&quot;&quot;
-    name: str
-    description: str
-    value: Any
-
-class Action(ABC):
-    &quot;&quot;&quot;Base class for all workflow actions.&quot;&quot;&quot;
-
-    # Action metadata
-    name: str = &quot;&quot;
-    version: str = &quot;1.0.0&quot;
-    description: str = &quot;&quot;
-    author: str = &quot;&quot;
-
-    # Input/output specifications
-    inputs: Dict[str, ActionInput] = {}
-    outputs: Dict[str, str] = {}  # name -&gt; description mapping
-
-    @abstractmethod
-    def run(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
-        &quot;&quot;&quot;Execute action with validated inputs, return outputs.&quot;&quot;&quot;
-        pass
-
-    def validate_inputs(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
-        &quot;&quot;&quot;Validate and process input values.&quot;&quot;&quot;
-        validated = {}
-
-        for input_name, input_spec in self.inputs.items():
-            if input_spec.required and input_name not in inputs:
-                raise ValueError(f&quot;Required input '{input_name}' missing for action {self.name}&quot;)
-
-            value = inputs.get(input_name, input_spec.default)
-            validated[input_name] = value
-
-        return validated
-
-    def format_outputs(self, raw_outputs: Dict[str, Any]) -&gt; Dict[str, ActionOutput]:
-        &quot;&quot;&quot;Format raw outputs with metadata.&quot;&quot;&quot;
-        formatted = {}
-
-        for name, value in raw_outputs.items():
-            description = self.outputs.get(name, f&quot;Output from {self.name}&quot;)
-            formatted[name] = ActionOutput(
-                name=name,
-                description=description,
-                value=value
-            )
-
-        return formatted
-</code></pre>
-<h3 id="auto-discovery-action-registry">Auto-Discovery Action Registry</h3>
-<p>The registry automatically discovers and manages actions without configuration:</p>
-<pre><code class="language-python">import pkgutil
-import importlib
-from typing import Dict, Type, Any
-
-class ActionRegistry:
-    &quot;&quot;&quot;Automatically discover and manage workflow actions.&quot;&quot;&quot;
-
-    def __init__(self):
-        self._actions: Dict[str, Type[Action]] = {}
-        self._discover_actions()  # Automatic discovery on initialization
-
-    def _discover_actions(self):
-        &quot;&quot;&quot;Scan Python environment for action packages.&quot;&quot;&quot;
-
-        # Iterate through all importable modules
-        for finder, module_name, ispkg in pkgutil.iter_modules():
-            try:
-                # Attempt to import the module
-                module = importlib.import_module(module_name)
-
-                # Check if module exports an 'Action' class
-                if hasattr(module, 'Action'):
-                    action_class = getattr(module, 'Action')
-
-                    # Verify it's a proper Action subclass
-                    if (isinstance(action_class, type) and 
-                        issubclass(action_class, Action) and 
-                        action_class != Action):
-
-                        # Register using module name as action identifier
-                        self._actions[module_name] = action_class
-
-            except ImportError:
-                # Skip modules that can't be imported
-                continue
-
-    def get_available_actions(self) -&gt; Dict[str, Type[Action]]:
-        &quot;&quot;&quot;Return copy of available actions.&quot;&quot;&quot;
-        return self._actions.copy()
-
-    def get_action_class(self, action_name: str) -&gt; Type[Action]:
-        &quot;&quot;&quot;Get action class by name.&quot;&quot;&quot;
-        if action_name not in self._actions:
-            raise ActionRegistryError(f&quot;Action '{action_name}' not found. Available actions: {list(self._actions.keys())}&quot;)
-        return self._actions[action_name]
-</code></pre>
-<h4 id="how-discovery-works-step-by-step">How Discovery Works Step-by-Step</h4>
+<h4 id="step-2-python-environment-scanning">Step 2: Python Environment Scanning</h4>
+<p>The system methodically searches the Python environment:</p>
 <ol>
-<li><strong>Registry Initialization</strong>: When <code>ActionRegistry()</code> is created, discovery starts automatically</li>
-<li><strong>Module Scanning</strong>: Uses <code>pkgutil.iter_modules()</code> to iterate through all Python modules</li>
-<li><strong>Safe Import</strong>: Attempts to import each module, skipping those that fail</li>
-<li><strong>Convention Check</strong>: Looks for a class named 'Action' in each module</li>
-<li><strong>Validation</strong>: Ensures the Action class inherits from the base Action class</li>
-<li><strong>Registration</strong>: Maps module name to Action class for workflow lookup</li>
+<li><strong>Module enumeration</strong>: Uses <code>pkgutil.iter_modules()</code> to list all importable modules</li>
+<li><strong>Safe import attempts</strong>: Tries to import each module with comprehensive error handling</li>
+<li><strong>Module filtering</strong>: Focuses only on modules that successfully import</li>
 </ol>
-<h4 id="action-package-development-workflow">Action Package Development Workflow</h4>
-<p><strong>Step 1: Create Standard Python Package</strong></p>
-<pre><code class="language-bash">mkdir my_custom_action
-cd my_custom_action
-</code></pre>
-<p><strong>Step 2: Define Package Structure</strong></p>
-<pre><code>my_custom_action/
-├── pyproject.toml
-├── my_custom_action/
-│   └── __init__.py  # Must export 'Action' class
-└── README.md
-</code></pre>
-<p><strong>Step 3: Implement Action Convention</strong></p>
-<pre><code class="language-python"># my_custom_action/__init__.py
-from causaliq_workflow.action import Action
-
-class CausalIQAction(Action):  # Must be named 'CausalIQAction'
-    name = &quot;my-custom-action&quot;
-    version = &quot;1.0.0&quot; 
-    description = &quot;Custom analysis action&quot;
-
-    def run(self, inputs):
-        # Action implementation
-        result = self.perform_analysis(inputs['data'])
-        return {&quot;analysis_result&quot;: result}
-</code></pre>
-<p><strong>Step 4: Install and Use Immediately</strong></p>
-<pre><code class="language-bash">pip install my_custom_action
-causaliq-workflow my-experiment.yml  # Action automatically available
-</code></pre>
-<pre><code>
-## Auto-Discovery Action Examples
-
-### Example 1: Simple Analysis Action
-
-**Package: causaliq_analysis**
-
-```python
-# causaliq_analysis/__init__.py
-from causaliq_workflow.action import Action
-import pandas as pd
-import networkx as nx
-
-class CausalIQAction(Action):  # Auto-discovered by this name
-    name = &quot;causaliq-analysis&quot;
-    version = &quot;1.0.0&quot;
-    description = &quot;Basic causal graph analysis&quot;
-
-    def run(self, inputs):
-        &quot;&quot;&quot;Analyze causal graph structure.&quot;&quot;&quot;
-        graph_path = inputs['graph_path']
-        graph = nx.read_graphml(graph_path)
-
-        analysis = {
-            &quot;nodes&quot;: len(graph.nodes),
-            &quot;edges&quot;: len(graph.edges), 
-            &quot;density&quot;: nx.density(graph),
-            &quot;is_dag&quot;: nx.is_directed_acyclic_graph(graph)
-        }
-
-        return {&quot;analysis&quot;: analysis}
-</code></pre>
-<p><strong>Usage in Workflow:</strong></p>
+<h3 id="phase-2-action-detection-and-registration">Phase 2: Action Detection and Registration</h3>
+<h4 id="step-3-convention-based-detection">Step 3: Convention-Based Detection</h4>
+<p>For each successfully imported module, the system applies the discovery convention:</p>
+<ol>
+<li><strong>Attribute inspection</strong>: Checks if the module has an attribute named 'CausalIQAction'</li>
+<li><strong>Type validation</strong>: Verifies that the 'CausalIQAction' attribute is a class</li>
+<li><strong>Inheritance verification</strong>: Confirms it inherits from <code>causaliq_workflow.action.Action</code></li>
+<li><strong>Action validation</strong>: Ensures the class implements required abstract methods</li>
+</ol>
+<h4 id="step-4-automatic-registration">Step 4: Automatic Registration</h4>
+<p>When an action is detected:</p>
+<ol>
+<li><strong>Name extraction</strong>: Uses the module name as the action identifier</li>
+<li><strong>Registry storage</strong>: Stores mapping: <code>{module_name: CausalIQAction_class}</code></li>
+<li><strong>Metadata collection</strong>: Gathers action name, version, description from the class</li>
+<li><strong>Availability confirmation</strong>: Marks the action as ready for workflow use</li>
+</ol>
+<h3 id="phase-3-workflow-execution-integration">Phase 3: Workflow Execution Integration</h3>
+<h4 id="step-5-yaml-parsing-and-action-resolution">Step 5: YAML Parsing and Action Resolution</h4>
+<p>When processing a workflow file:</p>
 <pre><code class="language-yaml">steps:
-  - name: &quot;Analyze Graph&quot;
-    uses: &quot;causaliq_analysis&quot;  # Automatically discovered
+  - name: &quot;Custom Analysis&quot;
+    uses: &quot;my_custom_action&quot;  # This triggers action lookup
     with:
-      graph_path: &quot;/results/learned_graph.xml&quot;
+      parameter: &quot;value&quot;
 </code></pre>
-<h3 id="example-2-data-loading-action">Example 2: Data Loading Action</h3>
-<p><strong>Package: causaliq_data</strong></p>
-<pre><code class="language-python"># causaliq_data/__init__.py  
-from causaliq_workflow.action import Action
-import pandas as pd
-from pathlib import Path
-
-class CausalIQAction(Action):
-    name = &quot;causaliq-data&quot;
-    version = &quot;2.1.0&quot;
-    description = &quot;Load and preprocess causal datasets&quot;
-
-    def run(self, inputs):
-        &quot;&quot;&quot;Load dataset with optional preprocessing.&quot;&quot;&quot;
-        dataset_name = inputs['dataset']
-        sample_size = inputs.get('sample_size')
-
-        # Load from standard datasets
-        if dataset_name == &quot;asia&quot;:
-            data = self._load_asia_network()
-        elif dataset_name == &quot;cancer&quot;:
-            data = self._load_cancer_network()
-        else:
-            # Load from file path
-            data = pd.read_csv(dataset_name)
-
-        # Apply sampling if requested
-        if sample_size and sample_size &lt; len(data):
-            data = data.sample(n=sample_size, random_state=42)
-
-        output_path = inputs['output_path']
-        data.to_csv(f&quot;{output_path}/data.csv&quot;, index=False)
-
-        return {
-            &quot;data_path&quot;: f&quot;{output_path}/data.csv&quot;,
-            &quot;rows&quot;: len(data),
-            &quot;columns&quot;: len(data.columns)
-        }
+<p>The system follows this resolution path:</p>
+<ol>
+<li><strong>Action name extraction</strong>: Parses <code>uses: "my_custom_action"</code></li>
+<li><strong>Registry lookup</strong>: Searches registered actions for "my_custom_action"</li>
+<li><strong>Class retrieval</strong>: Gets the corresponding CausalIQAction class</li>
+<li><strong>Instance creation</strong>: Instantiates the action with <code>CausalIQAction()</code></li>
+</ol>
+<h4 id="step-6-dynamic-action-execution">Step 6: Dynamic Action Execution</h4>
+<p>During step execution:</p>
+<ol>
+<li><strong>Parameter preparation</strong>: Collects parameters from the <code>with</code> block</li>
+<li><strong>Input validation</strong>: Action validates its own inputs using schemas</li>
+<li><strong>Execution</strong>: Calls <code>action.run(inputs)</code> with validated parameters</li>
+<li><strong>Output handling</strong>: Processes and stores action outputs</li>
+</ol>
+<h2 id="the-plugin-developer-experience">The Plugin Developer Experience</h2>
+<h3 id="creating-an-action-package-step-by-step">Creating an Action Package: Step-by-Step</h3>
+<h4 id="step-1-standard-python-package-setup">Step 1: Standard Python Package Setup</h4>
+<p>Developers start with familiar Python packaging:</p>
+<pre><code class="language-bash">mkdir causaliq-pc-algorithm
+cd causaliq-pc-algorithm
 </code></pre>
-<h3 id="example-3-algorithm-bridge-action">Example 3: Algorithm Bridge Action</h3>
-<p><strong>Package: causaliq_pc_algorithm</strong></p>
-<pre><code class="language-python"># causaliq_pc_algorithm/__init__.py
-from causaliq_workflow.action import Action
+<p><strong>File: pyproject.toml</strong></p>
+<pre><code class="language-toml">[project]
+name = &quot;causaliq-pc-algorithm&quot;
+version = &quot;1.0.0&quot;
+description = &quot;PC algorithm implementation for CausalIQ workflows&quot;
+dependencies = [
+    &quot;causaliq-workflow&gt;=0.1.0&quot;,
+    &quot;networkx&gt;=2.8.0&quot;,
+    &quot;pandas&gt;=1.5.0&quot;
+]
+</code></pre>
+<h4 id="step-2-implement-the-action-convention">Step 2: Implement the Action Convention</h4>
+<p><strong>File: causaliq_pc_algorithm/<strong>init</strong>.py</strong></p>
+<pre><code class="language-python">from causaliq_workflow.action import Action
 import pandas as pd
 import networkx as nx
 
+# Must be named 'CausalIQAction' for auto-discovery
 class CausalIQAction(Action):
-    name = &quot;causaliq-pc-algorithm&quot; 
-    version = &quot;1.5.2&quot;
+    name = &quot;causaliq-pc-algorithm&quot;
+    version = &quot;1.0.0&quot; 
     description = &quot;PC algorithm for causal structure learning&quot;
 
     def run(self, inputs):
-        &quot;&quot;&quot;Execute PC algorithm.&quot;&quot;&quot;
-        data_path = inputs['data_path']
+        # Read data
+        data = pd.read_csv(inputs['dataset'])
+
+        # Run PC algorithm
         alpha = inputs.get('alpha', 0.05)
-        output_path = inputs['output_path']
-
-        # Load data
-        data = pd.read_csv(data_path)
-
-        # Run PC algorithm (implementation details omitted)
-        graph = self._execute_pc_algorithm(data, alpha)
+        graph = self.pc_algorithm(data, alpha)
 
         # Save results
+        output_path = inputs['output_path']
         nx.write_graphml(graph, f&quot;{output_path}/graph.xml&quot;)
 
-        # Generate metadata
-        metadata = {
-            &quot;algorithm&quot;: &quot;pc&quot;,
-            &quot;alpha&quot;: alpha,
+        return {
+            &quot;graph_path&quot;: f&quot;{output_path}/graph.xml&quot;,
             &quot;nodes&quot;: len(graph.nodes),
             &quot;edges&quot;: len(graph.edges)
         }
 
-        with open(f&quot;{output_path}/metadata.json&quot;, 'w') as f:
-            json.dump(metadata, f, indent=2)
-
-        return {
-            &quot;graph_path&quot;: f&quot;{output_path}/graph.xml&quot;,
-            &quot;metadata_path&quot;: f&quot;{output_path}/metadata.json&quot;,
-            &quot;edge_count&quot;: len(graph.edges)
-        }
-            columns = dataset.columns.tolist()
-            np.random.shuffle(columns)
-            randomised = dataset[columns]
-            transformation_log.append(f&quot;Shuffled column order: {' -&gt; '.join(columns)}&quot;)
-
-        elif strategy == &quot;subsample&quot;:
-            subsample_size = min(len(dataset) // 2, 1000)
-            randomised = dataset.sample(n=subsample_size).reset_index(drop=True)
-            transformation_log.append(f&quot;Subsampled to {subsample_size} rows&quot;)
-
-        elif strategy == &quot;bootstrap&quot;:
-            randomised = dataset.sample(n=len(dataset), replace=True).reset_index(drop=True)
-            transformation_log.append(&quot;Bootstrap resampling applied&quot;)
-
-        else:
-            raise ValueError(f&quot;Unknown randomisation strategy: {strategy}&quot;)
-
-        return {
-            &quot;randomised_dataset&quot;: randomised,
-            &quot;transformation_log&quot;: transformation_log
-        }
+    def pc_algorithm(self, data, alpha):
+        # PC algorithm implementation
+        pass
 </code></pre>
-<h3 id="algorithm-execution-actions">Algorithm Execution Actions</h3>
-<pre><code class="language-python">import networkx as nx
+<h4 id="step-3-installation-and-immediate-availability">Step 3: Installation and Immediate Availability</h4>
+<pre><code class="language-bash"># Install the package
+pip install causaliq-pc-algorithm
 
-class CausalDiscoveryAction(Action):
-    &quot;&quot;&quot;Execute causal discovery algorithm from various packages.&quot;&quot;&quot;
-
-    name = &quot;causal-discovery&quot;
-    version = &quot;1.0.0&quot;
-    description = &quot;Run causal discovery algorithm with automatic package detection&quot;
-
-    inputs = {
-        &quot;algorithm&quot;: ActionInput(&quot;algorithm&quot;, &quot;Algorithm name (pc, ges, lingam, etc.)&quot;, required=True),
-        &quot;package&quot;: ActionInput(&quot;package&quot;, &quot;Algorithm package (bnlearn, tetrad, causal-learn, auto)&quot;, default=&quot;auto&quot;),
-        &quot;data&quot;: ActionInput(&quot;data&quot;, &quot;Input dataset&quot;, required=True),
-        &quot;parameters&quot;: ActionInput(&quot;parameters&quot;, &quot;Algorithm-specific parameters&quot;, default={})
-    }
-
-    outputs = {
-        &quot;learned_graph&quot;: &quot;Learned causal graph as NetworkX DiGraph&quot;,
-        &quot;algorithm_info&quot;: &quot;Information about algorithm execution&quot;,
-        &quot;performance_metrics&quot;: &quot;Execution time, memory usage, convergence info&quot;
-    }
-
-    def run(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
-        &quot;&quot;&quot;Execute causal discovery algorithm.&quot;&quot;&quot;
-        algorithm = inputs[&quot;algorithm&quot;].lower()
-        package = inputs[&quot;package&quot;]
-        data = inputs[&quot;data&quot;]
-        parameters = inputs[&quot;parameters&quot;]
-
-        # Auto-detect package if needed
-        if package == &quot;auto&quot;:
-            package = self._detect_best_package(algorithm)
-
-        # Execute algorithm
-        start_time = time.time()
-
-        if package == &quot;bnlearn&quot;:
-            learned_graph, algo_info = self._execute_bnlearn(algorithm, data, parameters)
-        elif package == &quot;tetrad&quot;:
-            learned_graph, algo_info = self._execute_tetrad(algorithm, data, parameters)
-        elif package == &quot;causal-learn&quot;:
-            learned_graph, algo_info = self._execute_causal_learn(algorithm, data, parameters)
-        else:
-            raise ValueError(f&quot;Unsupported package: {package}&quot;)
-
-        execution_time = time.time() - start_time
-
-        performance_metrics = {
-            &quot;execution_time_seconds&quot;: execution_time,
-            &quot;algorithm&quot;: algorithm,
-            &quot;package&quot;: package,
-            &quot;num_variables&quot;: len(data.columns),
-            &quot;num_samples&quot;: len(data),
-            &quot;num_edges&quot;: learned_graph.number_of_edges()
-        }
-
-        return {
-            &quot;learned_graph&quot;: learned_graph,
-            &quot;algorithm_info&quot;: algo_info,
-            &quot;performance_metrics&quot;: performance_metrics
-        }
-
-    def _detect_best_package(self, algorithm: str) -&gt; str:
-        &quot;&quot;&quot;Detect best available package for algorithm.&quot;&quot;&quot;
-        algorithm_packages = {
-            &quot;pc&quot;: [&quot;bnlearn&quot;, &quot;causal-learn&quot;, &quot;tetrad&quot;],
-            &quot;ges&quot;: [&quot;causal-learn&quot;, &quot;tetrad&quot;], 
-            &quot;lingam&quot;: [&quot;causal-learn&quot;],
-            &quot;iamb&quot;: [&quot;bnlearn&quot;],
-            &quot;gs&quot;: [&quot;bnlearn&quot;]
-        }
-
-        preferred_packages = algorithm_packages.get(algorithm, [&quot;causal-learn&quot;])
-
-        # Check availability and return first available
-        for package in preferred_packages:
-            if self._is_package_available(package):
-                return package
-
-        raise RuntimeError(f&quot;No available package found for algorithm: {algorithm}&quot;)
-
-    def _execute_bnlearn(self, algorithm: str, data: pd.DataFrame, 
-                        parameters: Dict) -&gt; tuple:
-        &quot;&quot;&quot;Execute algorithm using R bnlearn.&quot;&quot;&quot;
-        try:
-            import rpy2.robjects as ro
-            from rpy2.robjects import pandas2ri
-        }
+# Action is immediately available in workflows
+causaliq-workflow my-experiment.yml
 </code></pre>
-<h2 id="benefits-of-auto-discovery-architecture">Benefits of Auto-Discovery Architecture</h2>
-<h3 id="for-action-developers">For Action Developers</h3>
-<h4 id="zero-configuration-setup">Zero Configuration Setup</h4>
-<ul>
-<li><strong>No registry management</strong>: No need to maintain configuration files or plugin registries</li>
-<li><strong>Standard Python patterns</strong>: Use familiar <code>pyproject.toml</code>, <code>pip install</code>, and package structure</li>
-<li><strong>Immediate availability</strong>: Actions become available as soon as the package is installed</li>
-<li><strong>Simple convention</strong>: Just export a class named 'Action' from the package</li>
-</ul>
-<h4 id="development-workflow">Development Workflow</h4>
-<ol>
-<li><strong>Create package</strong>: Standard Python package with <code>pyproject.toml</code></li>
-<li><strong>Implement action</strong>: Export 'Action' class following the interface</li>
-<li><strong>Test locally</strong>: <code>pip install -e .</code> for development testing</li>
-<li><strong>Publish</strong>: Standard PyPI publishing or GitHub releases</li>
-<li><strong>Use immediately</strong>: Actions available in all workflows without restart</li>
-</ol>
-<h3 id="for-workflow-authors">For Workflow Authors</h3>
-<h4 id="seamless-integration">Seamless Integration</h4>
-<ul>
-<li><strong>Familiar syntax</strong>: Uses standard GitHub Actions-style <code>uses: "action-name"</code></li>
-<li><strong>No configuration</strong>: No need to declare or configure actions before use</li>
-<li><strong>Version management</strong>: Standard semantic versioning through package versions</li>
-<li><strong>Dependency handling</strong>: Python's pip handles all dependencies automatically</li>
-</ul>
-<h4 id="ecosystem-growth">Ecosystem Growth</h4>
-<ul>
-<li><strong>Organic discovery</strong>: New actions become available automatically</li>
-<li><strong>Community contributions</strong>: Easy for community to create and share actions</li>
-<li><strong>Quality assurance</strong>: Actions are regular Python packages with standard testing</li>
-<li><strong>Documentation</strong>: Standard Python documentation tools apply</li>
-</ul>
-<h3 id="for-the-framework">For the Framework</h3>
-<h4 id="architectural-benefits">Architectural Benefits</h4>
-<ul>
-<li><strong>Reduced complexity</strong>: No registry files, configuration, or plugin management code</li>
-<li><strong>Robustness</strong>: Discovery failures don't break the system (graceful degradation)  </li>
-<li><strong>Performance</strong>: Lazy loading and one-time discovery minimize overhead</li>
-<li><strong>Maintainability</strong>: Less framework code means easier maintenance</li>
-</ul>
-<h4 id="ecosystem-integration">Ecosystem Integration</h4>
-<ul>
-<li><strong>Standard distribution</strong>: Uses PyPI and standard Python packaging</li>
-<li><strong>Cross-platform</strong>: Works wherever Python works</li>
-<li><strong>Version compatibility</strong>: Standard semantic versioning for compatibility management</li>
-<li><strong>Testing integration</strong>: Actions can be tested with standard Python testing tools</li>
-</ul>
-<h2 id="auto-discovery-implementation-patterns">Auto-Discovery Implementation Patterns</h2>
-<h3 id="cross-language-bridges">Cross-Language Bridges</h3>
-<p>Actions can bridge to R, Java, and other languages:</p>
-<pre><code class="language-python"># causaliq_bnlearn/__init__.py
-from causaliq_workflow.action import Action
-import rpy2.robjects as ro
+<p><strong>File: my-experiment.yml</strong></p>
+<pre><code class="language-yaml">name: &quot;PC Algorithm Test&quot;
+steps:
+  - name: &quot;Learn Structure&quot;
+    uses: &quot;causaliq-pc-algorithm&quot;  # Automatically discovered
+    with:
+      dataset: &quot;/data/asia.csv&quot;
+      alpha: 0.01
+      output_path: &quot;/results/pc&quot;
+</code></pre>
+<h2 id="discovery-process-implementation-details">Discovery Process Implementation Details</h2>
+<h3 id="module-introspection-strategy">Module Introspection Strategy</h3>
+<p>The system uses Python's built-in introspection capabilities:</p>
+<pre><code class="language-python">import pkgutil
+import importlib
+from typing import Dict, Type
 
-class CausalIQAction(Action):
-    name = &quot;causaliq-bnlearn&quot;
-
+class ActionRegistry:
     def __init__(self):
-        # Initialize R environment once
-        ro.r('library(bnlearn)')
+        self.actions: Dict[str, Type[Action]] = {}
+        self._discover_actions()
+
+    def _discover_actions(self):
+        &quot;&quot;&quot;Automatically discover and register all available actions.&quot;&quot;&quot;
+
+        # Scan all importable modules
+        for finder, module_name, ispkg in pkgutil.iter_modules():
+            try:
+                # Safely attempt to import module
+                module = importlib.import_module(module_name)
+
+                # Check for CausalIQAction class using naming convention
+                if hasattr(module, 'CausalIQAction'):
+                    action_class = getattr(module, 'CausalIQAction')
+
+                    # Verify it's actually an Action subclass
+                    if (isinstance(action_class, type) and 
+                        issubclass(action_class, Action) and 
+                        action_class != Action):
+
+                        # Register using module name
+                        self.actions[module_name] = action_class
+
+            except ImportError:
+                # Skip modules that can't be imported
+                continue
+</code></pre>
+<h3 id="error-handling-and-resilience">Error Handling and Resilience</h3>
+<p>The discovery process is designed to be robust:</p>
+<ol>
+<li><strong>Import error tolerance</strong>: Failed module imports are silently skipped</li>
+<li><strong>Type safety</strong>: Strict validation of action classes</li>
+<li><strong>Namespace isolation</strong>: Each action operates in its own namespace</li>
+<li><strong>Graceful degradation</strong>: System continues working even if some actions fail to load</li>
+</ol>
+<h3 id="performance-considerations">Performance Considerations</h3>
+<p>The auto-discovery system is optimized for efficiency:</p>
+<ol>
+<li><strong>Lazy loading</strong>: Actions are only instantiated when needed</li>
+<li><strong>One-time discovery</strong>: Module scanning happens once during registry creation</li>
+<li><strong>Minimal overhead</strong>: Discovery adds negligible startup time</li>
+<li><strong>Cached results</strong>: Action registry is reused across workflow steps</li>
+</ol>
+<h2 id="ecosystem-integration-patterns">Ecosystem Integration Patterns</h2>
+<h3 id="distribution-strategy">Distribution Strategy</h3>
+<p>Action packages follow standard Python distribution:</p>
+<ol>
+<li><strong>PyPI publishing</strong>: <code>pip install causaliq-tetrad-bridge</code></li>
+<li><strong>GitHub releases</strong>: Direct installation from repositories</li>
+<li><strong>Local development</strong>: <code>pip install -e .</code> for development packages</li>
+<li><strong>Version management</strong>: Standard semantic versioning</li>
+</ol>
+<h3 id="dependency-management">Dependency Management</h3>
+<p>Actions declare their dependencies naturally:</p>
+<pre><code class="language-toml"># Action package dependencies
+dependencies = [
+    &quot;causaliq-workflow&gt;=0.1.0&quot;,    # Framework dependency
+    &quot;rpy2&gt;=3.5.0&quot;,                 # R interface (if needed)
+    &quot;jpype1&gt;=1.4.0&quot;,               # Java interface (if needed)
+    &quot;scikit-learn&gt;=1.2.0&quot;          # Algorithm dependencies
+]
+</code></pre>
+<h3 id="cross-language-bridge-pattern">Cross-Language Bridge Pattern</h3>
+<p>For R and Java integrations:</p>
+<pre><code class="language-python">class RBridgeAction(Action):
+    def __init__(self):
+        # Initialize R environment
+        self.r_session = self._setup_r_environment()
 
     def run(self, inputs):
-        # Bridge to R bnlearn package
-        algorithm = inputs['algorithm']  # 'pc', 'gs', 'iamb', etc.
-        ro.globalenv['data'] = inputs['data']
-        ro.r(f'result &lt;- {algorithm}(data)')
-        return {&quot;graph&quot;: self._convert_to_networkx(ro.r('result'))}
+        # Execute R code through rpy2
+        result = self.r_session.run_algorithm(inputs)
+        return self._convert_r_output(result)
 </code></pre>
-<h3 id="algorithm-collections">Algorithm Collections</h3>
-<p>Single packages can provide multiple related algorithms:</p>
-<pre><code class="language-python"># causaliq_constraint_based/__init__.py
-class CausalIQAction(Action):
-    name = &quot;causaliq-constraint-based&quot;
-
-    def run(self, inputs):
-        algorithm = inputs['algorithm']
-
-        if algorithm == 'pc':
-            return self._run_pc(inputs)
-        elif algorithm == 'fci':
-            return self._run_fci(inputs)
-        elif algorithm == 'cfci':
-            return self._run_cfci(inputs)
-        else:
-            raise ValueError(f&quot;Unknown algorithm: {algorithm}&quot;)
-</code></pre>
-<p>This auto-discovery architecture creates a vibrant, extensible ecosystem where actions can be developed, shared, and used with minimal friction while maintaining the robustness and reliability needed for scientific workflows.</p>
+<h2 id="benefits-of-the-auto-discovery-approach">Benefits of the Auto-Discovery Approach</h2>
+<h3 id="for-users">For Users</h3>
+<ol>
+<li><strong>Zero configuration</strong>: Install and use immediately</li>
+<li><strong>No registry management</strong>: No config files to maintain</li>
+<li><strong>Standard workflow</strong>: Familiar pip install → use pattern</li>
+<li><strong>Automatic updates</strong>: New action versions available immediately</li>
+</ol>
+<h3 id="for-developers">For Developers</h3>
+<ol>
+<li><strong>Standard Python packaging</strong>: No custom build systems</li>
+<li><strong>Simple convention</strong>: Just export an 'Action' class</li>
+<li><strong>Full Python ecosystem</strong>: Use any Python dependencies</li>
+<li><strong>Independent development</strong>: No coordination with core framework needed</li>
+</ol>
+<h3 id="for-the-ecosystem">For the Ecosystem</h3>
+<ol>
+<li><strong>Organic growth</strong>: Easy to create and share actions</li>
+<li><strong>Version management</strong>: Standard semantic versioning</li>
+<li><strong>Quality control</strong>: Actions are regular Python packages with testing</li>
+<li><strong>Documentation</strong>: Standard Python documentation tools apply</li>
+</ol>
 
 
 
@@ -2222,7 +2035,7 @@ class CausalIQAction(Action):
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../matrix_expansion_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Matrix Strategy Design">
+          <a href="../action_architecture_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Architecture">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2232,20 +2045,20 @@ class CausalIQAction(Action):
                 Previous
               </span>
               <div class="md-ellipsis">
-                Matrix Strategy Design
+                Action Architecture
               </div>
             </div>
           </a>
         
         
           
-          <a href="../action_auto_discovery_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Algorithm Registry">
+          <a href="../workflow_executor_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Workflow Executor">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Algorithm Registry
+                Workflow Executor
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -291,17 +291,18 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="../api/" class="md-tabs__link">
-        
-  
-  
     
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
   
   API Reference
 
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
@@ -555,15 +556,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#architectural-vision-scalable-research-reproducibility-platform" class="md-nav__link">
+  <a href="#architectural-vision-configuration-free-research-reproducibility-platform" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Architectural Vision: Scalable Research Reproducibility Platform
+        Architectural Vision: Configuration-Free Research Reproducibility Platform
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Architectural Vision: Scalable Research Reproducibility Platform">
+    <nav class="md-nav" aria-label="Architectural Vision: Configuration-Free Research Reproducibility Platform">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -571,6 +572,17 @@
     <span class="md-ellipsis">
       
         Core Architecture Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zero-configuration-auto-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zero-Configuration Auto-Discovery
       
     </span>
   </a>
@@ -657,6 +669,123 @@
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-discovery-architecture-how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-Discovery Architecture: How It Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auto-Discovery Architecture: How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-discovery-process-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Discovery Process: Step-by-Step
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Discovery Process: Step-by-Step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-workflow-execution-begins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Workflow Execution Begins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-package-scanning-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Package Scanning Phase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-convention-based-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Convention-Based Registration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-workflow-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Workflow Resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zero-configuration-plugin-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zero-Configuration Plugin Pattern
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zero-Configuration Plugin Pattern">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-new-action-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a New Action Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why This Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1135,7 +1264,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../design/algorithm_registry_design/" class="md-nav__link">
+      <a href="../design/action_auto_discovery_design/" class="md-nav__link">
         
   
   
@@ -1197,9 +1326,27 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+    
+    
+    
+    
+      
+      
         
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -1213,7 +1360,219 @@
   
   
 
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1245,15 +1604,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#architectural-vision-scalable-research-reproducibility-platform" class="md-nav__link">
+  <a href="#architectural-vision-configuration-free-research-reproducibility-platform" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Architectural Vision: Scalable Research Reproducibility Platform
+        Architectural Vision: Configuration-Free Research Reproducibility Platform
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Architectural Vision: Scalable Research Reproducibility Platform">
+    <nav class="md-nav" aria-label="Architectural Vision: Configuration-Free Research Reproducibility Platform">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1261,6 +1620,17 @@
     <span class="md-ellipsis">
       
         Core Architecture Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zero-configuration-auto-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zero-Configuration Auto-Discovery
       
     </span>
   </a>
@@ -1347,6 +1717,123 @@
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-discovery-architecture-how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-Discovery Architecture: How It Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auto-Discovery Architecture: How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-discovery-process-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Discovery Process: Step-by-Step
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Discovery Process: Step-by-Step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-workflow-execution-begins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Workflow Execution Begins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-package-scanning-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Package Scanning Phase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-convention-based-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Convention-Based Registration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-workflow-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Workflow Resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zero-configuration-plugin-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zero-Configuration Plugin Pattern
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zero-Configuration Plugin Pattern">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-new-action-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a New Action Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why This Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1718,19 +2205,22 @@
 
 
 <h1 id="causaliq-workflow-technical-architecture">CausalIQ Workflow - Technical Architecture</h1>
-<h2 id="architectural-vision-scalable-research-reproducibility-platform">Architectural Vision: Scalable Research Reproducibility Platform</h2>
+<h2 id="architectural-vision-configuration-free-research-reproducibility-platform">Architectural Vision: Configuration-Free Research Reproducibility Platform</h2>
 <h3 id="core-architecture-principles">Core Architecture Principles</h3>
-<p>CausalIQ Workflow is designed as a <strong>workflow orchestration engine</strong> that enables reproducible causal discovery research through:</p>
+<p>CausalIQ Workflow is designed as a <strong>zero-configuration workflow orchestration engine</strong> that enables reproducible causal discovery research through:</p>
 <ol>
+<li><strong>Auto-Discovery Action System</strong>: Actions are automatically discovered from installed Python packages - no configuration files required</li>
 <li><strong>Sequential Steps with Matrix Expansion</strong>: Simple, predictable workflow execution with powerful parameterization</li>
 <li><strong>Conservative Execution</strong>: Actions skip work if outputs already exist, enabling safe workflow restart and efficient re-runs</li>
 <li><strong>Mode-Based Operation</strong>: <code>--mode=dry-run|run|compare</code> provides validation, execution, and functional testing capabilities</li>
-<li><strong>Intelligent Actions</strong>: Actions optimize internally (e.g., loading datasets once at maximum sample size) while hiding complexity from users  </li>
+<li><strong>Convention-Based Plugin Pattern</strong>: Actions follow simple naming conventions for automatic registration</li>
 <li><strong>Implicit Parameter Passing</strong>: CLI parameters flow through workflows without formal definitions</li>
 <li><strong>Action-Level Validation</strong>: Each action validates its own inputs (integrated with dry-run capability)</li>
 <li><strong>Workflow Composition</strong>: Workflows can call other workflows via <code>cwork</code> commands, enabling complex research workflows</li>
 <li><strong>Standardized Output</strong>: Fixed filenames by type (<code>graph.xml</code>, <code>metadata.json</code>, <code>trace.csv</code>) with hierarchical organization</li>
 </ol>
+<h3 id="zero-configuration-auto-discovery">Zero-Configuration Auto-Discovery</h3>
+<p><strong>How Action Discovery Works</strong>: When a workflow runs, the system automatically finds and registers all available actions through Python's module introspection - no registry files, no configuration needed. Simply install a package that exports an <code>Action</code> class and it becomes available in workflows.</p>
 <h3 id="research-reproducibility-pattern">Research Reproducibility Pattern</h3>
 <p><strong>Paper Reproduction</strong> = Workflow-of-Workflows where:
 - <strong>Top-level workflow</strong> defines paper reproduction strategy
@@ -1802,7 +2292,17 @@ class StructureLearnerAction(Action):
 <h2 id="current-implementation-status">Current Implementation Status</h2>
 <h3 id="implemented-components-v010">✅ Implemented Components (v0.1.0)</h3>
 <ol>
-<li><strong>Action Framework</strong> (<code>causaliq_workflow.action</code>)</li>
+<li><strong>Auto-Discovery Action Registry</strong> (<code>causaliq_workflow.registry</code>)</li>
+<li><strong>Zero-configuration action discovery</strong>: Automatically finds all installed action packages</li>
+<li><strong>Convention-based registration</strong>: Packages export 'CausalIQAction' class for automatic registration  </li>
+<li><strong>Python module introspection</strong>: Uses <code>pkgutil.iter_modules()</code> for discovery without config files</li>
+<li><strong>Runtime action lookup</strong>: Dynamic resolution of action names to classes during workflow execution</li>
+<li>
+<p><strong>Namespace isolation</strong>: Each action package maintains its own namespace and dependencies</p>
+</li>
+<li>
+<p><strong>Action Framework</strong> (<code>causaliq_workflow.action</code>)</p>
+</li>
 <li>Abstract base class for workflow actions</li>
 <li>Type-safe input/output specifications</li>
 <li>Comprehensive error handling with <code>ActionExecutionError</code> and <code>ActionValidationError</code></li>
@@ -1825,12 +2325,12 @@ class StructureLearnerAction(Action):
 <li>Matrix expansion with cartesian product generation</li>
 <li>Path construction from matrix variables and workflow configuration</li>
 <li>
-<p>Integration with existing schema validation</p>
+<p>Integration with auto-discovery action registry</p>
 </li>
 <li>
-<p><strong>Dummy Structure Learner Action</strong> (<code>causaliq_workflow.actions.dummy_structure_learner</code>)</p>
+<p><strong>Example Action Package</strong> (<code>tests/functional/fixtures/test_action</code>)</p>
 </li>
-<li>Reference implementation demonstrating action framework</li>
+<li>Reference implementation demonstrating auto-discovery pattern</li>
 <li>GraphML output format for causal graph representation</li>
 <li>Matrix variable support (dataset, algorithm parameters)</li>
 <li>
@@ -1844,6 +2344,63 @@ class StructureLearnerAction(Action):
 <li>Path construction with <code>data_root</code>, <code>output_root</code>, and <code>id</code> fields</li>
 <li>Action parameters via <code>with</code> blocks</li>
 </ol>
+<h2 id="auto-discovery-architecture-how-it-works">Auto-Discovery Architecture: How It Works</h2>
+<h3 id="the-discovery-process-step-by-step">The Discovery Process: Step-by-Step</h3>
+<h4 id="1-workflow-execution-begins">1. <strong>Workflow Execution Begins</strong></h4>
+<p>When you run <code>causaliq-workflow my-experiment.yml</code>, the system:
+- Creates a new <code>ActionRegistry</code> instance
+- Triggers the automatic discovery process
+- Scans all installed Python packages for actions</p>
+<h4 id="2-package-scanning-phase">2. <strong>Package Scanning Phase</strong></h4>
+<p>The registry uses Python's module introspection to:
+- Iterate through all importable modules using <code>pkgutil.iter_modules()</code>
+- Attempt to import each module safely (catching import errors)
+- Look for modules that export an 'Action' class</p>
+<h4 id="3-convention-based-registration">3. <strong>Convention-Based Registration</strong></h4>
+<p>For each discovered module, the system:
+- Checks if the module has a 'CausalIQAction' attribute
+- Verifies that it's a subclass of <code>causaliq_workflow.action.Action</code>
+- Registers the action using the module name as the action identifier
+- Builds a runtime lookup table: <code>{action_name: CausalIQAction_class}</code></p>
+<h4 id="4-workflow-resolution">4. <strong>Workflow Resolution</strong></h4>
+<p>When a workflow step specifies <code>uses: "my-custom-action"</code>:
+- The registry looks up "my-custom-action" in the registered actions
+- Instantiates the corresponding CausalIQAction class
+- Passes workflow parameters to the action's <code>run()</code> method</p>
+<h3 id="zero-configuration-plugin-pattern">Zero-Configuration Plugin Pattern</h3>
+<h4 id="creating-a-new-action-package">Creating a New Action Package</h4>
+<p>Developers create action packages by following a simple convention:</p>
+<p><strong>Step 1: Package Structure</strong></p>
+<pre><code>my-custom-action/
+├── pyproject.toml           # Standard Python package config
+├── my_custom_action/        # Package directory  
+│   └── __init__.py         # Must export 'Action' class
+└── README.md
+</code></pre>
+<p><strong>Step 2: Action Implementation</strong></p>
+<pre><code class="language-python"># my_custom_action/__init__.py
+from causaliq_workflow.action import Action
+
+class CausalIQAction(Action):  # Must be named 'CausalIQAction'
+    name = &quot;my-custom-action&quot;
+    description = &quot;Performs custom analysis&quot;
+
+    def run(self, inputs):
+        # Action logic here
+        return {&quot;result&quot;: &quot;analysis complete&quot;}
+</code></pre>
+<p><strong>Step 3: Installation &amp; Discovery</strong></p>
+<pre><code class="language-bash">pip install my-custom-action    # Install the package
+causaliq-workflow my-workflow.yml  # Action automatically discovered
+</code></pre>
+<h4 id="why-this-works">Why This Works</h4>
+<ul>
+<li><strong>No configuration files</strong>: No registry.json, no plugin.xml, no setup scripts</li>
+<li><strong>Standard Python packaging</strong>: Uses familiar pyproject.toml and pip install</li>
+<li><strong>Immediate availability</strong>: Actions become available as soon as the package is installed</li>
+<li><strong>Namespace safety</strong>: 'CausalIQAction' avoids conflicts with generic 'Action' classes in other packages</li>
+<li><strong>Version management</strong>: Standard semantic versioning through package versions</li>
+</ul>
 <h2 id="core-architectural-decisions">Core Architectural Decisions</h2>
 <h3 id="github-actions-foundation">GitHub Actions Foundation</h3>
 <p>The architecture is built on GitHub Actions workflow patterns, adapted for causal discovery:</p>

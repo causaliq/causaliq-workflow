@@ -1,0 +1,2215 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../registry/">
+      
+      
+        <link rel="next" href="../schema/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Workflow Engine - causaliq-workflow</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="http://causaliq.org/css/mkdocs.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#workflow-engine" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="causaliq-workflow" class="md-header__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            causaliq-workflow
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Workflow Engine
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../roadmap/" class="md-tabs__link">
+          
+  
+  
+  Requirements
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../technical_architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../design/matrix_expansion_design/" class="md-tabs__link">
+          
+  
+  
+  Design Documents
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="causaliq-workflow" class="md-nav__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    causaliq-workflow
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Requirements
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../example_workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical_architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Documents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Documents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/matrix_expansion_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/action_auto_discovery_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WorkflowExecutor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="parse_workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expand_matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="expand_matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        execute_workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="execute_workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cli_params
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exception Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutionError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutionError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Workflow Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-expansion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Expansion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variable-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-workflow-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Workflow Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-variable-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable Context
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Template Variable Context">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-template-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Template Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WorkflowExecutor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="parse_workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expand_matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="expand_matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        execute_workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="execute_workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cli_params
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exception Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutionError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutionError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Workflow Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-expansion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Expansion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variable-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-workflow-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Workflow Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-variable-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variable Context
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Template Variable Context">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-template-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Template Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="workflow-engine">Workflow Engine</h1>
+<p>The workflow execution engine provides powerful workflow parsing, validation, and execution with matrix expansion and template variable support.</p>
+<h2 id="core-classes">Core Classes</h2>
+<h3 id="causaliq_workflowworkflow">causaliq_workflow.workflow</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="causaliq_workflow.workflow.WorkflowExecutor" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">WorkflowExecutor</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowExecutor</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+        <p>Parse and execute GitHub Actions-style workflows with matrix expansion.</p>
+<p>This class handles the parsing of YAML workflow files and expansion of
+matrix strategies into individual experiment jobs. It provides the
+foundation for executing multi-step causal discovery workflows with
+parameterised experiments using flexible action parameter templating.</p>
+
+          
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            parse_workflow (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow)" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow">parse_workflow</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Parse workflow YAML file with validation.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            expand_matrix (causaliq_workflow.workflow.WorkflowExecutor.expand_matrix)" href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix">expand_matrix</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Expand matrix variables into individual job configurations.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            execute_workflow (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow)" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow">execute_workflow</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Execute complete workflow with matrix expansion.</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.workflow.WorkflowExecutor.parse_workflow" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">parse_workflow</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">parse_workflow</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="workflow_path (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)">workflow_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Parse workflow YAML file with validation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)" class="doc doc-heading doc-heading-parameter">              <b><code>workflow_path</code></b>
+</h5>              (<code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to workflow YAML file</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode)" class="doc doc-heading doc-heading-parameter">              <b><code>mode</code></b>
+</h5>              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;dry-run&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Execution mode for action validation</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Parsed and validated workflow dictionary</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If workflow parsing or validation fails</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.workflow.WorkflowExecutor.expand_matrix" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">expand_matrix</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">expand_matrix</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="matrix (causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix))" href="#causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)">matrix</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Expand matrix variables into individual job configurations.</p>
+<p>Generates all combinations from matrix variables using cartesian
+product. Each combination becomes a separate job configuration.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.expand_matrix(matrix)" class="doc doc-heading doc-heading-parameter">              <b><code>matrix</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="typing.Any">Any</span>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary mapping variable names to lists of values</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>List of job configurations with matrix variables expanded</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If matrix expansion fails</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">execute_workflow</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute_workflow</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="workflow (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow)">workflow</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="cli_params (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)">cli_params</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Execute complete workflow with matrix expansion.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow)" class="doc doc-heading doc-heading-parameter">              <b><code>workflow</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Parsed workflow dictionary</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode)" class="doc doc-heading doc-heading-parameter">              <b><code>mode</code></b>
+</h5>              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;dry-run&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Execution mode ('dry-run', 'run', 'compare')</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)" class="doc doc-heading doc-heading-parameter">              <b><code>cli_params</code></b>
+</h5>              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Additional parameters from CLI</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>List of job results from matrix expansion</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If workflow execution fails</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="exception-handling">Exception Handling</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="causaliq_workflow.workflow.WorkflowExecutionError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">WorkflowExecutionError</span>
+
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Raised when workflow execution fails.</p>
+
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div><hr />
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="basic-workflow-execution">Basic Workflow Execution</h3>
+<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor, WorkflowExecutionError
+from causaliq_workflow.registry import ActionRegistry
+
+# Create executor instance
+executor = WorkflowExecutor()
+
+try:
+    # Parse and validate workflow (includes template variable validation)
+    workflow = executor.parse_workflow(&quot;experiment.yml&quot;)
+    print(f&quot;Workflow ID: {workflow['id']}&quot;)
+    print(f&quot;Description: {workflow['description']}&quot;)
+
+    # Execute the complete workflow
+    results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
+    print(f&quot;Workflow completed successfully&quot;)
+
+except WorkflowExecutionError as e:
+    print(f&quot;Workflow execution failed: {e}&quot;)
+</code></pre>
+<h3 id="matrix-expansion">Matrix Expansion</h3>
+<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
+
+executor = WorkflowExecutor()
+
+# Define matrix for parameter sweeps
+matrix = {
+    &quot;algorithm&quot;: [&quot;pc&quot;, &quot;ges&quot;, &quot;lingam&quot;],
+    &quot;dataset&quot;: [&quot;asia&quot;, &quot;cancer&quot;],
+    &quot;alpha&quot;: [0.01, 0.05]
+}
+
+# Expand into individual parameter combinations
+jobs = executor.expand_matrix(matrix)
+print(f&quot;Generated {len(jobs)} jobs from matrix&quot;)  # Results in 12 jobs (3 × 2 × 2)
+
+for i, job in enumerate(jobs):
+    print(f&quot;Job {i}: Algorithm={job['algorithm']}, Dataset={job['dataset']}, Alpha={job['alpha']}&quot;)
+</code></pre>
+<h3 id="template-variable-system">Template Variable System</h3>
+<pre><code class="language-python"># The WorkflowExecutor automatically validates template variables during parsing
+# Template variables ({{variable}}) are checked against available context
+
+# Example: Valid template usage
+valid_workflow = {
+    &quot;id&quot;: &quot;test-001&quot;,
+    &quot;description&quot;: &quot;Template validation example&quot;, 
+    &quot;matrix&quot;: {&quot;dataset&quot;: [&quot;asia&quot;], &quot;algorithm&quot;: [&quot;pc&quot;]},
+    &quot;steps&quot;: [{
+        &quot;uses&quot;: &quot;my-custom-action&quot;,
+        &quot;with&quot;: {
+            &quot;output&quot;: &quot;/results/{{id}}/{{dataset}}_{{algorithm}}.xml&quot;,
+            &quot;description&quot;: &quot;Processing {{dataset}} with {{algorithm}}&quot;
+        }
+    }]
+}
+
+try:
+    workflow = executor.parse_workflow_dict(valid_workflow)
+    print(&quot;Template validation passed!&quot;)
+except WorkflowExecutionError as e:
+    if &quot;Unknown template variables&quot; in str(e):
+        print(f&quot;Template validation failed: {e}&quot;)
+        # Example: &quot;Unknown template variables: missing_var. Available context: id, dataset, algorithm&quot;
+    else:
+        print(f&quot;Workflow execution failed: {e}&quot;)
+</code></pre>
+<h3 id="advanced-workflow-features">Advanced Workflow Features</h3>
+<pre><code class="language-python"># Example workflow YAML showing flexible action parameters
+workflow_yaml = \&quot;\&quot;\&quot;
+id: &quot;experiment-001&quot;
+description: &quot;Flexible causal discovery experiment&quot;
+matrix:
+  dataset: [&quot;asia&quot;, &quot;cancer&quot;]
+  algorithm: [&quot;pc&quot;, &quot;ges&quot;]
+  alpha: [0.01, 0.05]
+
+steps:
+  - name: &quot;Structure Learning&quot;
+    uses: &quot;my-structure-learner&quot;
+    with:
+      data_path: &quot;/experiments/data/{{dataset}}.csv&quot;
+      output_dir: &quot;/experiments/results/{{id}}/{{algorithm}}/&quot;
+      alpha: &quot;{{alpha}}&quot;
+      max_iter: 1000
+
+  - name: &quot;Validation&quot;
+    uses: &quot;validate-graph&quot;
+    with:
+      graph_path: &quot;/experiments/results/{{id}}/{{algorithm}}/graph.graphml&quot;
+      metrics_output: &quot;/experiments/results/{{id}}/{{algorithm}}/metrics.json&quot;
+\&quot;\&quot;\&quot;
+
+# Save and parse the workflow
+with open(&quot;experiment.yml&quot;, &quot;w&quot;) as f:
+    f.write(workflow_yaml)
+
+workflow = executor.parse_workflow(&quot;experiment.yml&quot;)
+
+# Matrix expansion creates jobs with substituted variables
+if &quot;matrix&quot; in workflow:
+    jobs = executor.expand_matrix(workflow[&quot;matrix&quot;])
+    # Creates 8 jobs (2×2×2) with customizable file paths
+
+    for job in jobs:
+        print(f&quot;Job: {job}&quot;)
+        # Example output: {'dataset': 'asia', 'algorithm': 'pc', 'alpha': 0.01}
+</code></pre>
+<h2 id="template-variable-context">Template Variable Context</h2>
+<p>Template variables can reference:</p>
+<ol>
+<li><strong>Workflow properties</strong>: <code>{{id}}</code>, <code>{{description}}</code>, <code>{{name}}</code></li>
+<li><strong>Matrix variables</strong>: Any variables defined in the <code>matrix</code> section</li>
+<li><strong>Step context</strong>: Variables available during step execution</li>
+<li><strong>File paths</strong>: Dynamic path generation using workflow context</li>
+</ol>
+<h3 id="available-template-variables">Available Template Variables</h3>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Variables</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workflow</td>
+<td><code>id</code>, <code>description</code>, <code>name</code></td>
+<td><code>{{id}}</code></td>
+</tr>
+<tr>
+<td>Matrix</td>
+<td>User-defined matrix vars</td>
+<td><code>{{dataset}}</code>, <code>{{algorithm}}</code></td>
+</tr>
+<tr>
+<td>Paths</td>
+<td><code>data_root</code>, <code>output_root</code></td>
+<td><code>{{output_root}}/results</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="error-handling">Error Handling</h2>
+<p>The WorkflowExecutor provides detailed error reporting for:</p>
+<ul>
+<li><strong>Parse errors</strong>: Invalid YAML/JSON syntax</li>
+<li><strong>Schema validation</strong>: Workflow structure validation</li>
+<li><strong>Template errors</strong>: Unknown or invalid template variables</li>
+<li><strong>Action errors</strong>: Action execution failures</li>
+<li><strong>Matrix errors</strong>: Invalid matrix definitions</li>
+</ul>
+<hr />
+<p><strong><a href="../registry/">← Previous: Registry</a></strong> | <strong><a href="../">Back to API Overview</a></strong> | <strong><a href="../schema/">Next: Schema Validation →</a></strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../registry/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Registry">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Action Registry
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../schema/" class="md-footer__link md-footer__link--next" aria-label="Next: Schema Validation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Schema Validation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
