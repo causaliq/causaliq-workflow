@@ -88,5 +88,13 @@
       }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": {
+    "type": [
+      "string",
+      "number",
+      "boolean",
+      "null"
+    ],
+    "description": "Workflow variable (use null for required variables that must be provided via CLI)"
+  }
 }

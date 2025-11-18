@@ -141,6 +141,14 @@ class WorkflowExecutor:
         # Build available context
         available_variables = {"id", "description"}
 
+        # Add workflow variables (excluding workflow metadata fields)
+        workflow_vars = {
+            k
+            for k, v in workflow.items()
+            if k not in {"id", "description", "matrix", "steps"}
+        }
+        available_variables.update(workflow_vars)
+
         # Add matrix variables if present
         if "matrix" in workflow:
             available_variables.update(workflow["matrix"].keys())
@@ -209,6 +217,39 @@ class WorkflowExecutor:
             return result
         else:
             return obj
+
+    def _validate_required_variables(
+        self, workflow: Dict[str, Any], cli_params: Dict[str, Any]
+    ) -> None:
+        """Validate that required workflow variables (None values) provided.
+
+        Args:
+            workflow: Parsed workflow dictionary
+            cli_params: CLI parameters that can override workflow variables
+
+        Raises:
+            WorkflowExecutionError: If required variables are not provided
+        """
+        required_vars = []
+
+        for key, value in workflow.items():
+            # Skip workflow metadata fields
+            if key in {"id", "description", "matrix", "steps"}:
+                continue
+
+            # Check for None values (required variables)
+            if value is None:
+                # Check if provided via CLI
+                if key not in cli_params:
+                    required_vars.append(key)
+
+        if required_vars:
+            sorted_vars = sorted(required_vars)
+            raise WorkflowExecutionError(
+                f"Required workflow variables not provided: {sorted_vars}. "
+                f"These variables have 'None' values and must be specified "
+                f"via CLI parameters or calling workflow."
+            )
 
     def _validate_workflow_actions(
         self, workflow: Dict[str, Any], mode: str
@@ -307,6 +348,9 @@ class WorkflowExecutor:
             Job execution results
 
         """
+        # Validate required workflow variables (None values must be provided)
+        self._validate_required_variables(workflow, cli_params)
+
         # Combine all variable sources for template resolution
         variables = {
             **workflow,  # Workflow-level properties
