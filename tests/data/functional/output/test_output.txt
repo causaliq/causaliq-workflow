@@ -1,0 +1,10 @@
+Test Action Output
+==================
+
+Input file: tests\data\functional\dummy_data.csv
+Output directory: tests\data\functional\output
+Custom message: Hello from CLI test
+Execution mode: validate
+Message length: 19 characters
+
+This demonstrates a working causaliq-workflow action package!

@@ -8,7 +8,7 @@ matrix strategy support for causal discovery experiments.
 import itertools
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 from causaliq_workflow.registry import ActionRegistry, WorkflowContext
 from causaliq_workflow.schema import (
@@ -286,6 +286,7 @@ class WorkflowExecutor:
         workflow: Dict[str, Any],
         mode: str = "dry-run",
         cli_params: Optional[Dict[str, Any]] = None,
+        step_logger: Optional[Callable[[str, str, str], None]] = None,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
 
@@ -293,6 +294,7 @@ class WorkflowExecutor:
             workflow: Parsed workflow dictionary
             mode: Execution mode ('dry-run', 'run', 'compare')
             cli_params: Additional parameters from CLI
+            step_logger: Optional function to log step execution
 
         Returns:
             List of job results from matrix expansion
@@ -318,7 +320,7 @@ class WorkflowExecutor:
 
                 # Execute job steps
                 job_result = self._execute_job(
-                    workflow, job, context, cli_params
+                    workflow, job, context, cli_params, step_logger
                 )
                 results.append(job_result)
 
@@ -335,6 +337,7 @@ class WorkflowExecutor:
         job: Dict[str, Any],
         context: WorkflowContext,
         cli_params: Dict[str, Any],
+        step_logger: Optional[Callable[[str, str, str], None]] = None,
     ) -> Dict[str, Any]:
         """Execute single job with resolved matrix variables.
 
@@ -373,10 +376,29 @@ class WorkflowExecutor:
                     action_inputs, variables
                 )
 
+                # Log step execution in real-time if logger provided
+                if step_logger:
+                    # Get action's display name from the class (with hyphens)
+                    action_class = self.action_registry.get_action_class(
+                        action_name
+                    )
+                    display_name = getattr(action_class, "name", action_name)
+                    step_logger(display_name, step_name, "EXECUTING")
+
                 # Execute action
                 step_result = self.action_registry.execute_action(
                     action_name, resolved_inputs, context
                 )
+
+                # Log step completion in real-time if logger provided
+                if step_logger:
+                    # Use same display name for consistency
+                    action_class = self.action_registry.get_action_class(
+                        action_name
+                    )
+                    display_name = getattr(action_class, "name", action_name)
+                    status = step_result.get("status", "unknown").upper()
+                    step_logger(display_name, step_name, status)
 
                 step_results[step_name] = step_result
 

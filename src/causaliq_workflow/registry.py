@@ -122,6 +122,19 @@ class ActionRegistry:
                             f"{action_class.__name__}"
                         )
 
+                        # Also register by action hyphenated name if different
+                        if (
+                            hasattr(action_class, "name")
+                            and action_class.name != action_name
+                        ):
+                            hyphenated_name = action_class.name
+                            if hyphenated_name not in self._actions:
+                                self._actions[hyphenated_name] = action_class
+                                logger.info(
+                                    f"Registered action: {hyphenated_name} -> "
+                                    f"{action_class.__name__} (alias)"
+                                )
+
         except Exception as e:
             error_msg = f"Error scanning module {module_name}: {e}"
             self._discovery_errors.append(error_msg)

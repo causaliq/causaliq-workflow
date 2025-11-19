@@ -22,9 +22,8 @@ def test_cli_version(runner):
 def test_cli_help(runner):
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
-    assert (  # NOTE: the (crt) optional name not present when called this way
-        "Usage: causaliq-workflow [OPTIONS] NAME" in result.output
-    )
-    assert "Simple CLI example." in result.output
-    assert "NAME is the person to greet" in result.output
-    assert "  --greet TEXT  Greeting to use" in result.output
+    assert "Usage: causaliq-workflow [OPTIONS] WORKFLOW_FILE" in result.output
+    assert "Execute CausalIQ workflow files." in result.output
+    assert "WORKFLOW_FILE is the path to a YAML workflow file" in result.output
+    assert "--mode [dry-run|run]" in result.output
+    assert "--log-level [none|summary|all]" in result.output

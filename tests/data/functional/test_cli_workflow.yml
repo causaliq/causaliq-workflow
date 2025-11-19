@@ -1,0 +1,10 @@
+description: "Test workflow for CLI testing"
+id: "test-cli-workflow"
+
+steps:
+  - name: "Test Step"
+    uses: "test_action"
+    with:
+      data_path: "tests/data/functional/dummy_data.csv"
+      output_dir: "tests/data/functional/output"
+      message: "Hello from CLI test"
