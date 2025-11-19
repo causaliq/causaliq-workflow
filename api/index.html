@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../design/workflow_executor_design/">
+        <link rel="prev" href="../design/logging_architecture_design/">
       
       
         <link rel="next" href="actions/">
@@ -682,6 +682,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/logging_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -869,6 +897,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#status-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#cli-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1034,6 +1084,62 @@
   
   
     <li class="md-nav__item">
+      <a href="status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cli/" class="md-nav__link">
         
   
@@ -1173,6 +1279,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#status-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#cli-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1258,6 +1386,20 @@
 <li><strong>load_schema/load_workflow_file</strong> - File loading utilities</li>
 <li><strong>WorkflowValidationError</strong> - Validation-specific exceptions</li>
 </ul>
+<h3 id="status-system"><a href="status/">Status System</a></h3>
+<p>Comprehensive task execution status enumeration for workflow logging and monitoring.</p>
+<ul>
+<li><strong>TaskStatus</strong> - Standardized status reporting for all task execution outcomes</li>
+<li><strong>Status properties</strong> - Categorization helpers (success, error, execution, dry-run)</li>
+<li><strong>Status definitions</strong> - Complete coverage of execution, comparison, and error statuses</li>
+</ul>
+<h3 id="logging-system"><a href="logging/">Logging System</a></h3>
+<p>Centralized logging infrastructure with multiple output destinations for workflow execution monitoring.</p>
+<ul>
+<li><strong>WorkflowLogger</strong> - Multi-destination logging with file/terminal output support</li>
+<li><strong>LogLevel</strong> - Verbosity control (NONE, SUMMARY, ALL)</li>
+<li><strong>Output configuration</strong> - Flexible logging destination management</li>
+</ul>
 <h3 id="cli-interface"><a href="cli/">CLI Interface</a></h3>
 <p>Command-line interface for workflow execution and management.</p>
 <ul>
@@ -1317,7 +1459,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../design/workflow_executor_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Executor">
+          <a href="../design/logging_architecture_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Logging Architecture">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1327,7 +1469,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
                 Previous
               </span>
               <div class="md-ellipsis">
-                Workflow Executor
+                Logging Architecture
               </div>
             </div>
           </a>

@@ -682,6 +682,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/logging_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1193,6 +1221,62 @@
     
   
     Schema Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
   
 
     
@@ -1993,31 +2077,26 @@ _discovery_errors: List to collect any discovery errors</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowContext</span><span class="p">(</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(workflow_id)">workflow_id</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(matrix)">matrix</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]],</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(current_job)">current_job</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(data_root)">data_root</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(output_root)">output_root</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(mode)">mode</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
-    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(all_jobs)">all_jobs</span></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowContext</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.registry.WorkflowContext(mode)">mode</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(matrix)">matrix</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]])</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
 
 
-        <p>Complete workflow context passed to actions for optimization.</p>
+        <p>Workflow context for action execution optimization.</p>
+<p>Provides minimal context needed for actions to optimize across workflows.
+Actions receive specific data through inputs; context provides
+meta-information.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><span title="causaliq_workflow.registry.WorkflowContext.workflow_id">workflow_id</span></code></b>
+          <b><code><span title="causaliq_workflow.registry.WorkflowContext.mode">mode</span></code></b>
               (<code><span title="str">str</span></code>)
           –
           <div class="doc-md-description">
-            <p>Unique identifier for the workflow execution</p>
+            <p>Execution mode ('dry-run', 'run', 'compare')</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2025,47 +2104,7 @@ _discovery_errors: List to collect any discovery errors</p>
               (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="typing.Any">Any</span>]]</code>)
           –
           <div class="doc-md-description">
-            <p>Dictionary of matrix variables and their possible values</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="causaliq_workflow.registry.WorkflowContext.current_job">current_job</span></code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Current matrix job parameters being executed</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="causaliq_workflow.registry.WorkflowContext.data_root">data_root</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Base path for data files in the workflow</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="causaliq_workflow.registry.WorkflowContext.output_root">output_root</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Base path for output files in the workflow</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="causaliq_workflow.registry.WorkflowContext.mode">mode</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Execution mode ('run', 'validate', etc.)</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="causaliq_workflow.registry.WorkflowContext.all_jobs">all_jobs</span></code></b>
-              (<code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Complete list of all matrix jobs in the workflow</p>
+            <p>Complete matrix definition for cross-job optimization</p>
           </div>
         </li>
     </ul>
@@ -2188,16 +2227,17 @@ custom_actions = registry.get_available_actions()
 
 # Create workflow context for action execution
 context = WorkflowContext(
-    workflow_id=&quot;experiment-001&quot;,
-    step_name=&quot;structure-learning&quot;,
-    matrix_vars={&quot;dataset&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;},
-    workflow_vars={&quot;data_root&quot;: &quot;/experiments/data&quot;}
+    mode=&quot;run&quot;,
+    matrix={&quot;dataset&quot;: [&quot;asia&quot;, &quot;cancer&quot;], &quot;algorithm&quot;: [&quot;pc&quot;, &quot;ges&quot;]},
 )
 
-# Context provides complete workflow information to actions
-print(f&quot;Current step: {context.step_name}&quot;)
-print(f&quot;Matrix variables: {context.matrix_vars}&quot;)
-print(f&quot;Workflow root: {context.workflow_vars['data_root']}&quot;)
+# Context provides execution metadata for action optimization
+print(f&quot;Execution mode: {context.mode}&quot;)
+print(f&quot;Matrix definition: {context.matrix}&quot;)
+
+# Actions can optimize across the full matrix space
+if len(context.matrix.get(&quot;dataset&quot;, [])) &gt; 1:
+    print(&quot;Multi-dataset experiment - can pre-load data&quot;)
 </code></pre>
 <h2 id="architecture-notes">Architecture Notes</h2>
 <p>The ActionRegistry uses Python's module discovery system to automatically find and register actions. Actions are discovered by:</p>

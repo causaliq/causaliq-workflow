@@ -1187,6 +1187,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/logging_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1375,6 +1403,62 @@
     
   
     Schema Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
   
 
     
@@ -2042,13 +2126,134 @@
 - [x] <strong>Action execution</strong> - Full mapping of workflow <code>with:</code> blocks to action inputs with validation
 - [x] <strong>Error handling</strong> - Comprehensive action discovery and execution error management
 - [x] <strong>Plugin architecture</strong> - Zero-configuration plugin system with test action package demonstrating pattern</p>
-<p><strong>Commit 4: CLI Implementation &amp; Mode Support</strong> 🔑 <strong>NEXT</strong>
-- [ ] <strong><code>causaliq-workflow</code> command</strong> - Complete CLI with workflow file execution using ActionRegistry
-- [ ] <strong>Mode-based operation</strong> - <code>--mode=dry-run|run|compare</code> for validation, execution, and testing
-- [ ] <strong>Parameter injection</strong> - CLI parameters available as template variables via WorkflowExecutor
-- [ ] <strong>CLI error handling</strong> - User-friendly error reporting for workflow and action failures
-- [ ] <strong>Workflow validation</strong> - Pre-execution validation with clear error messages via ActionRegistry</p>
-<p><strong>Commit 5: External Package Integration &amp; Demo</strong>
+<p><strong>Commit 4: Workflow Variable Required Parameters</strong> ✅ <strong>COMPLETED</strong>
+- [x] <strong>None value support</strong> - Workflow variables with <code>null</code> values require CLI specification
+- [x] <strong>Required parameter validation</strong> - Clear error messages when required variables missing
+- [x] <strong>Template integration</strong> - Workflow variables included in template validation context
+- [x] <strong>Schema enhancement</strong> - JSON schema supports <code>null</code> values for mandatory specification
+- [x] <strong>Comprehensive testing</strong> - Full coverage of default values, CLI overrides, and validation</p>
+<p><strong>Commit 5: TaskStatus Enum Foundation</strong> ✅ <strong>COMPLETED</strong> - [Design Note: docs/design/logging_architecture_design.md]
+- [x] <strong>TaskStatus enum</strong> - Define all 10 status types (EXECUTES, WOULD_EXECUTE, SKIPS, etc.)
+- [x] <strong>Status validation</strong> - Unit tests for enum definitions and completeness
+- [x] <strong>Foundation only</strong> - Pure enum implementation, no behavior changes</p>
+<p><strong>Commit 6: WorkflowLogger Core Structure</strong> ✅ <strong>COMPLETED</strong>
+- [x] <strong>WorkflowLogger class</strong> - Basic constructor with file/terminal output configuration
+- [x] <strong>Output destinations</strong> - Support for multiple logging targets (file, terminal, tests)
+- [x] <strong>Basic methods</strong> - Logger instantiation and configuration, no task-specific logic yet</p>
+<p><strong>Commit 7: Action Interface Extension</strong> 🔑 <strong>NEXT</strong>
+- [ ] <strong>Optional logger parameter</strong> - Add <code>logger</code> to <code>Action.run()</code> method signature
+- [ ] <strong>Backward compatibility</strong> - All existing actions accept but ignore logger
+- [ ] <strong>Interface validation</strong> - Confirm all actions work unchanged with new signature</p>
+<p><strong>Commit 8: Basic CLI Foundation</strong> 🎯 <strong>REAL-WORLD TESTING READY</strong>
+- [ ] <strong>Minimal CLI command</strong> - <code>causaliq-workflow run workflow.yml</code> with basic options
+- [ ] <strong>File path resolution</strong> - Handle workflow file loading and validation<br />
+- [ ] <strong>Mode selection</strong> - Support --mode=run|dry-run execution
+- [ ] <strong>Basic error handling</strong> - User-friendly error messages for common issues
+- [ ] <strong>Log level control</strong> - --log-level=none|summary|all parameter</p>
+<p><strong>REAL-WORLD TESTING PHASE</strong> 🧪 <strong>START HERE FOR EXTERNAL PACKAGE DEVELOPMENT</strong></p>
+<p><em>After Commit 8, create <code>causaliq-simple-actions</code> package to test:</em>
+- <em>Action development experience with <code>CausalIQAction</code> convention</em>
+- <em>CLI usability and error messages</em><br />
+- <em>Package discovery and integration</em>
+- <em>Workflow syntax ergonomics</em></p>
+<p><strong>Commit 9: Basic Task Logging</strong>
+- [ ] <strong>log_task() method</strong> - Implement formatted message output with status/runtime/files
+- [ ] <strong>Message formatting</strong> - Standardized format: timestamp, action, status, description
+- [ ] <strong>Comprehensive testing</strong> - All status types with various input/output scenarios</p>
+<p><strong>Commit 9: Basic Task Logging</strong>
+- [ ] <strong>log_task() method</strong> - Implement formatted message output with status/runtime/files
+- [ ] <strong>Message formatting</strong> - Standardized format: timestamp, action, status, description
+- [ ] <strong>Comprehensive testing</strong> - All status types with various input/output scenarios</p>
+<p><strong>Commit 10: Action Output File Interface</strong>
+- [ ] <strong>get_output_files() method</strong> - Add to Action base class for file discovery
+- [ ] <strong>Default implementation</strong> - Empty list for actions without specific outputs
+- [ ] <strong>Test integration</strong> - Implement in dummy action for validation</p>
+<p><strong>Commit 11: FileManager for Output Detection</strong>
+- [ ] <strong>FileManager class</strong> - File existence and comparison utilities
+- [ ] <strong>Traditional file logic</strong> - Basic exists/missing detection for replace-semantics files
+- [ ] <strong>Isolated testing</strong> - File operations without workflow integration</p>
+<p><strong>Commit 12: Skip Logic Foundation</strong>
+- [ ] <strong>should_skip_action() method</strong> - Determine if action can skip based on existing outputs
+- [ ] <strong>Traditional files only</strong> - Skip logic for replace-semantics files (no append-semantics yet)
+- [ ] <strong>Comprehensive scenarios</strong> - Test various file existence and modification patterns</p>
+<p><strong>Commit 13: ActionExecutor Core Structure</strong>
+- [ ] <strong>ActionExecutor class</strong> - Wrapper for action execution with status determination
+- [ ] <strong>Status logic</strong> - EXECUTES vs SKIPS for traditional files in run mode
+- [ ] <strong>Mock integration</strong> - Test execution wrapper without WorkflowExecutor changes</p>
+<p><strong>Commit 14: WorkflowExecutor Logger Integration</strong>
+- [ ] <strong>Logger creation</strong> - WorkflowExecutor creates and configures WorkflowLogger
+- [ ] <strong>ActionExecutor usage</strong> - Replace direct action calls with ActionExecutor wrapper
+- [ ] <strong>Regression testing</strong> - Ensure all existing workflows continue to pass</p>
+<p><strong>Commit 15: Runtime Estimation Interface</strong>
+- [ ] <strong>estimate_runtime() method</strong> - Add to Action base class for progress calculation
+- [ ] <strong>Default estimation</strong> - 1-second default for actions without specific estimates
+- [ ] <strong>Progress foundation</strong> - Basic estimation without user interface</p>
+<p><strong>Commit 16: Dry-Run Mode Status Logic</strong>
+- [ ] <strong>WOULD_EXECUTE status</strong> - Implement dry-run equivalent of EXECUTES
+- [ ] <strong>WOULD_SKIP status</strong> - Implement dry-run equivalent of SKIPS<br />
+- [ ] <strong>Mode differentiation</strong> - Proper status based on run vs dry-run mode</p>
+<p><strong>Commit 17: Append-Semantics File Support</strong>
+- [ ] <strong>get_output_contribution_key()</strong> - Action method for append-semantics identification
+- [ ] <strong>has_existing_contribution()</strong> - Check if action's section exists in append-semantics files
+- [ ] <strong>FileManager enhancement</strong> - Handle metadata.json style files with action-specific sections</p>
+<p><strong>Commit 18: Progress Estimation Foundation</strong>
+- [ ] <strong>Progress calculation</strong> - Aggregate runtime estimates for workflow progress tracking
+- [ ] <strong>Background tracking</strong> - Progress computation without user interface display
+- [ ] <strong>Accuracy testing</strong> - Validate progress calculation with various workflow scenarios</p>
+<p><strong>Commit 19: Integration Testing</strong>
+- [ ] <strong>End-to-end validation</strong> - Complete logging system integration testing
+- [ ] <strong>Matrix workflows</strong> - Multi-action workflow testing with all status types
+- [ ] <strong>100% coverage</strong> - Maintain comprehensive test coverage for all logging features</p>
+<p><strong>Commit 20: CLI Logging Parameters Enhancement</strong>
+- [ ] <strong>Enhanced CLI options</strong> - Improve CLI based on real-world testing feedback
+- [ ] <strong>Better error messages</strong> - Refine error handling discovered during external package testing
+- [ ] <strong>Path resolution improvements</strong> - Handle edge cases found during real usage</p>
+<p><strong>Commit 21: ProgressReporter Foundation</strong>
+- [ ] <strong>ProgressReporter class</strong> - Click integration for progress bar display
+- [ ] <strong>Basic structure</strong> - Progress bar initialization and configuration
+- [ ] <strong>No live updates</strong> - Static progress structure without real-time updates yet</p>
+<p><strong>Commit 22: Live Progress Integration</strong><br />
+- [ ] <strong>Real-time updates</strong> - Connect progress reporter to workflow execution
+- [ ] <strong>Action completion</strong> - Update progress as actions complete
+- [ ] <strong>Optional display</strong> - Toggle progress bars based on CLI parameters</p>
+<p><strong>Commit 23: Summary Report Generation</strong>
+- [ ] <strong>Status aggregation</strong> - Count tasks by status type (EXECUTES, SKIPS, etc.)
+- [ ] <strong>Summary formatting</strong> - Clear report with counts, runtime, resource usage
+- [ ] <strong>Report accuracy</strong> - Comprehensive testing for summary calculation</p>
+<p><strong>Commit 23: Error Display Enhancement</strong>
+- [ ] <strong>FAILED status formatting</strong> - User-friendly error messages with actionable suggestions
+- [ ] <strong>INVALID_* status details</strong> - Clear parameter validation error reporting
+- [ ] <strong>Error summary</strong> - Aggregate error information for debugging</p>
+<p><strong>Commit 24: CLI Integration Testing</strong>
+- [ ] <strong>Complete CLI testing</strong> - All logging features with file output verification
+- [ ] <strong>Performance validation</strong> - Logging overhead measurement and optimization
+- [ ] <strong>Real workflow execution</strong> - End-to-end testing with actual causal discovery workflows</p>
+<p><strong>Commit 25: File Comparison Foundation</strong>
+- [ ] <strong>Comparison utilities</strong> - Basic file diff and comparison logic in FileManager
+- [ ] <strong>Text file diffs</strong> - Generate meaningful comparisons for various file types
+- [ ] <strong>Isolated testing</strong> - File comparison without execution integration</p>
+<p><strong>Commit 26: Compare Mode Status Logic</strong>
+- [ ] <strong>IDENTICAL status</strong> - Implement when re-execution produces same outputs
+- [ ] <strong>DIFFERENT status</strong> - Implement when re-execution produces changed outputs
+- [ ] <strong>Compare mode execution</strong> - New execution path for output comparison</p>
+<p><strong>Commit 27: Timeout Handling Infrastructure</strong>
+- [ ] <strong>Timeout configuration</strong> - Per-action timeout settings and monitoring
+- [ ] <strong>TIMED_OUT status</strong> - Graceful termination with timeout status reporting
+- [ ] <strong>Cleanup logic</strong> - Proper resource cleanup when actions exceed timeout</p>
+<p><strong>Commit 28: Resource Monitoring Foundation</strong>
+- [ ] <strong>Memory monitoring</strong> - Track memory usage during action execution
+- [ ] <strong>CPU monitoring</strong> - Track CPU utilization and report in log messages
+- [ ] <strong>Resource reporting</strong> - Include resource usage in status messages</p>
+<p><strong>Commit 29: Advanced Progress Features</strong>
+- [ ] <strong>Estimated completion</strong> - Real-time estimates based on action progress
+- [ ] <strong>Resource display</strong> - Memory/CPU usage in progress indicators
+- [ ] <strong>Smart updates</strong> - Adaptive progress update frequency based on action complexity</p>
+<p><strong>Commit 30: Advanced Features Integration</strong>
+- [ ] <strong>Compare mode testing</strong> - Complete integration testing for output comparison
+- [ ] <strong>Resource monitoring validation</strong> - Accuracy testing for memory/CPU tracking
+- [ ] <strong>Performance optimization</strong> - Final performance tuning for large workflows
+- [ ] <strong>Documentation updates</strong> - Complete documentation for all advanced logging features</p>
+<p><strong>Commit 9: External Package Integration &amp; Demo</strong>
 - [ ] <strong>causaliq-discovery package</strong> - Simple structure learning action (PC algorithm)
 - [ ] <strong>Entry point registration</strong> - Dynamic discovery working with external package
 - [ ] <strong>End-to-end workflow</strong> - Complete example: CLI → ActionRegistry → External action → Results

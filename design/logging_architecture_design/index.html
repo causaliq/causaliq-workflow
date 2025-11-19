@@ -1,0 +1,3287 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../workflow_executor_design/">
+      
+      
+        <link rel="next" href="../../api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Logging Architecture - causaliq-workflow</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="http://causaliq.org/css/mkdocs.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#logging-task-status-architecture-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="causaliq-workflow" class="md-header__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            causaliq-workflow
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Logging Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../roadmap/" class="md-tabs__link">
+          
+  
+  
+  Requirements
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../technical_architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../matrix_expansion_design/" class="md-tabs__link">
+          
+  
+  
+  Design Documents
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="causaliq-workflow" class="md-nav__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    causaliq-workflow
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Requirements
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../example_workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical_architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Documents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Documents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matrix_expansion_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../action_auto_discovery_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functional Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functional Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fr1-multi-destination-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR1: Multi-Destination Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr2-test-capturable-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR2: Test-Capturable Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr3-task-level-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR3: Task-Level Granularity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr4-standardized-message-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR4: Standardized Message Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr5-comprehensive-status-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR5: Comprehensive Status System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr6-summary-reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR6: Summary Reporting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr7-progress-indication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR7: Progress Indication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Functional Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Non-Functional Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nfr1-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFR1: Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfr2-flexibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFR2: Flexibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfr3-backward-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFR3: Backward Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-status-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task Status Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Task Status Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-execution-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Execution Statuses
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Execution Statuses">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#executes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EXECUTES
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#would_execute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WOULD_EXECUTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SKIPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#would_skip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WOULD_SKIP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compare-mode-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compare Mode Statuses
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compare Mode Statuses">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IDENTICAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#different" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DIFFERENT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Statuses
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Statuses">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#invalid_uses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INVALID_USES
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalid_parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INVALID_PARAMETER
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAILED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timed_out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TIMED_OUT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#component-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflowlogger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowLogger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taskstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TaskStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionexecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ActionExecutor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modified-action-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modified Action Interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-core-logging-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Core Logging Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-smart-execution-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Smart Execution Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-cli-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: CLI Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Advanced Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#append-semantics-output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Append-Semantics Output Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Append-Semantics Output Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-metadata-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Metadata Challenge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact-on-task-status-determination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact on Task Status Determination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-structure-learning-analysis-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Structure Learning + Analysis Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-task-level-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Task-Level Logging?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-status-based-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Status-Based Execution?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-optional-logger-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Optional Logger Parameter?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Points
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Points">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflowexecutor-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutor Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionregistry-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ActionRegistry Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exception-handling-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Extensions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Enhancements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functional Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functional Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fr1-multi-destination-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR1: Multi-Destination Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr2-test-capturable-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR2: Test-Capturable Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr3-task-level-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR3: Task-Level Granularity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr4-standardized-message-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR4: Standardized Message Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr5-comprehensive-status-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR5: Comprehensive Status System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr6-summary-reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR6: Summary Reporting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fr7-progress-indication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FR7: Progress Indication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Functional Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Non-Functional Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nfr1-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFR1: Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfr2-flexibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFR2: Flexibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfr3-backward-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFR3: Backward Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-status-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task Status Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Task Status Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-execution-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Execution Statuses
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Execution Statuses">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#executes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EXECUTES
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#would_execute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WOULD_EXECUTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SKIPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#would_skip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WOULD_SKIP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compare-mode-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compare Mode Statuses
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compare Mode Statuses">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IDENTICAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#different" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DIFFERENT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Statuses
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Statuses">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#invalid_uses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INVALID_USES
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalid_parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INVALID_PARAMETER
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAILED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timed_out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TIMED_OUT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#component-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflowlogger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowLogger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taskstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TaskStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionexecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ActionExecutor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modified-action-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modified Action Interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-core-logging-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Core Logging Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-smart-execution-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Smart Execution Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-cli-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: CLI Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Advanced Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#append-semantics-output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Append-Semantics Output Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Append-Semantics Output Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-metadata-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Metadata Challenge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact-on-task-status-determination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact on Task Status Determination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-structure-learning-analysis-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Structure Learning + Analysis Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-task-level-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Task-Level Logging?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-status-based-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Status-Based Execution?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-optional-logger-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Optional Logger Parameter?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Points
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Points">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflowexecutor-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowExecutor Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionregistry-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ActionRegistry Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exception-handling-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Extensions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Enhancements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="logging-task-status-architecture-design">Logging &amp; Task Status Architecture Design</h1>
+<p><strong>Design Document Version</strong>: 1.0<br />
+<strong>Date</strong>: 2025-11-18<br />
+<strong>Status</strong>: Draft - Implementation Planned</p>
+<h2 id="overview">Overview</h2>
+<p>CausalIQ Workflow requires a comprehensive logging and task status system to provide visibility into workflow execution, enable debugging, and support different execution modes (dry-run, run, compare). This document outlines the architecture for task-level logging with standardized status reporting.</p>
+<h2 id="requirements">Requirements</h2>
+<h3 id="functional-requirements">Functional Requirements</h3>
+<h4 id="fr1-multi-destination-logging">FR1: Multi-Destination Logging</h4>
+<ul>
+<li><strong>Requirement</strong>: Log messages to file and/or terminal simultaneously</li>
+<li><strong>Rationale</strong>: Terminal output for interactive use, file output for audit trails and debugging</li>
+<li><strong>Implementation</strong>: Configurable output destinations via CLI parameters</li>
+</ul>
+<h4 id="fr2-test-capturable-output">FR2: Test-Capturable Output</h4>
+<ul>
+<li><strong>Requirement</strong>: Output must be capturable and verifiable in automated tests</li>
+<li><strong>Rationale</strong>: Essential for testing workflow execution and validating status reporting</li>
+<li><strong>Implementation</strong>: Structured logging interface that tests can intercept</li>
+</ul>
+<h4 id="fr3-task-level-granularity">FR3: Task-Level Granularity</h4>
+<ul>
+<li><strong>Requirement</strong>: Messages produced at individual task level (each action execution)</li>
+<li><strong>Rationale</strong>: Actions may execute multiple internal tasks (e.g., learning hundreds of graphs)</li>
+<li><strong>Implementation</strong>: Actions control their own message granularity and frequency</li>
+</ul>
+<h4 id="fr4-standardized-message-format">FR4: Standardized Message Format</h4>
+<ul>
+<li><strong>Requirement</strong>: Consistent, parseable message format across all actions</li>
+<li><strong>Format</strong>: <code>YYYY-MM-DD HH:MM:SS [action-name] STATUS task description (details)</code></li>
+<li><strong>Example</strong>: <code>2025-06-23 12:03:23 [causal-discovery] EXECUTES learn graph in 2.3s</code></li>
+<li><strong>Rationale</strong>: Enables monitoring, parsing, and integration with external tools</li>
+</ul>
+<h4 id="fr5-comprehensive-status-system">FR5: Comprehensive Status System</h4>
+<ul>
+<li><strong>Requirement</strong>: Task execution status covers all workflow execution modes</li>
+<li><strong>Statuses</strong>: See <a href="#task-status-definitions">Task Status Definitions</a></li>
+<li><strong>Rationale</strong>: Provides complete visibility into workflow execution state</li>
+</ul>
+<h4 id="fr6-summary-reporting">FR6: Summary Reporting</h4>
+<ul>
+<li><strong>Requirement</strong>: Aggregate status counts and resource consumption</li>
+<li><strong>Includes</strong>: Task counts per status, total runtime, estimated resource usage</li>
+<li><strong>Rationale</strong>: High-level workflow execution overview for monitoring</li>
+</ul>
+<h4 id="fr7-progress-indication">FR7: Progress Indication</h4>
+<ul>
+<li><strong>Requirement</strong>: Real-time progress feedback during execution</li>
+<li><strong>Implementation</strong>: Click-based progress bars with estimated completion</li>
+<li><strong>Rationale</strong>: User experience during long-running workflows</li>
+</ul>
+<h3 id="non-functional-requirements">Non-Functional Requirements</h3>
+<h4 id="nfr1-performance">NFR1: Performance</h4>
+<ul>
+<li><strong>Requirement</strong>: Logging overhead &lt; 5% of total execution time</li>
+<li><strong>Implementation</strong>: Efficient logging with minimal I/O blocking</li>
+</ul>
+<h4 id="nfr2-flexibility">NFR2: Flexibility</h4>
+<ul>
+<li><strong>Requirement</strong>: Actions have complete control over message frequency/content</li>
+<li><strong>Implementation</strong>: Optional logger interface, actions decide granularity</li>
+</ul>
+<h4 id="nfr3-backward-compatibility">NFR3: Backward Compatibility</h4>
+<ul>
+<li><strong>Requirement</strong>: Existing actions work without modification</li>
+<li><strong>Implementation</strong>: Logger parameter is optional, graceful degradation</li>
+</ul>
+<h2 id="task-status-definitions">Task Status Definitions</h2>
+<h3 id="core-execution-statuses">Core Execution Statuses</h3>
+<h4 id="executes">EXECUTES</h4>
+<ul>
+<li><strong>Mode</strong>: run, compare</li>
+<li><strong>Condition</strong>: Task executed successfully, output files created/updated</li>
+<li><strong>Message</strong>: Includes actual runtime, input/output file sizes</li>
+<li><strong>Example</strong>: <code>EXECUTES learn graph in 2.3s → inputs: /data/asia.csv (1.2MB) → outputs: /results/graph.xml (0.8MB)</code></li>
+</ul>
+<h4 id="would_execute">WOULD_EXECUTE</h4>
+<ul>
+<li><strong>Mode</strong>: dry-run</li>
+<li><strong>Condition</strong>: Task would execute successfully if run, output files absent</li>
+<li><strong>Message</strong>: Includes estimated runtime from action</li>
+<li><strong>Example</strong>: <code>WOULD_EXECUTE learn graph in ~2.1s → inputs: /data/asia.csv (1.2MB) → outputs: /results/graph.xml (estimated)</code></li>
+</ul>
+<h4 id="skips">SKIPS</h4>
+<ul>
+<li><strong>Mode</strong>: run</li>
+<li><strong>Condition</strong>: Task skipped because output files exist and are current</li>
+<li><strong>Message</strong>: Includes existing file information</li>
+<li><strong>Example</strong>: <code>SKIPS learn graph → outputs: /results/graph.xml (exists, 0.8MB)</code></li>
+<li><strong>Special Case</strong>: For append-semantics files (e.g., metadata.json), only skips if action's expected contribution already exists</li>
+</ul>
+<h4 id="would_skip">WOULD_SKIP</h4>
+<ul>
+<li><strong>Mode</strong>: dry-run  </li>
+<li><strong>Condition</strong>: Task would be skipped because output files exist</li>
+<li><strong>Message</strong>: Includes existing file information</li>
+<li><strong>Example</strong>: <code>WOULD_SKIP learn graph → outputs: /results/graph.xml (exists, 0.8MB)</code></li>
+<li><strong>Special Case</strong>: For append-semantics files, evaluates whether action's contribution would be added</li>
+</ul>
+<h3 id="compare-mode-statuses">Compare Mode Statuses</h3>
+<h4 id="identical">IDENTICAL</h4>
+<ul>
+<li><strong>Mode</strong>: compare</li>
+<li><strong>Condition</strong>: Task re-executed, outputs identical to previous run</li>
+<li><strong>Message</strong>: Includes comparison details</li>
+<li><strong>Example</strong>: <code>IDENTICAL learn graph in 2.4s → outputs: /results/graph.xml (unchanged)</code></li>
+<li><strong>Special Case</strong>: For append-semantics files, compares only the action's specific contribution</li>
+</ul>
+<h4 id="different">DIFFERENT</h4>
+<ul>
+<li><strong>Mode</strong>: compare</li>
+<li><strong>Condition</strong>: Task re-executed, outputs differ from previous run</li>
+<li><strong>Message</strong>: Includes difference summary</li>
+<li><strong>Example</strong>: <code>DIFFERENT learn graph in 2.3s → outputs: /results/graph.xml (5 edge changes)</code></li>
+<li><strong>Special Case</strong>: For append-semantics files, reports differences in the action's contribution</li>
+</ul>
+<h3 id="error-statuses">Error Statuses</h3>
+<h4 id="invalid_uses">INVALID_USES</h4>
+<ul>
+<li><strong>Mode</strong>: All</li>
+<li><strong>Condition</strong>: Action package specified in <code>uses:</code> not found</li>
+<li><strong>Message</strong>: Available actions listed</li>
+<li><strong>Example</strong>: <code>INVALID_USES unknown-action → Available: [causal-discovery, visualization]</code></li>
+</ul>
+<h4 id="invalid_parameter">INVALID_PARAMETER</h4>
+<ul>
+<li><strong>Mode</strong>: All (detected in dry-run)</li>
+<li><strong>Condition</strong>: Parameters in <code>with:</code> block are invalid for action</li>
+<li><strong>Message</strong>: Specific parameter validation errors</li>
+<li><strong>Example</strong>: <code>INVALID_PARAMETER learn graph → missing required: data_path, invalid: alpha=-0.1</code></li>
+</ul>
+<h4 id="failed">FAILED</h4>
+<ul>
+<li><strong>Mode</strong>: run, compare</li>
+<li><strong>Condition</strong>: Task execution threw unexpected exception</li>
+<li><strong>Message</strong>: Exception details with traceback reference</li>
+<li><strong>Example</strong>: <code>FAILED learn graph after 1.2s → FileNotFoundError: /data/missing.csv (see log line 1234)</code></li>
+</ul>
+<h4 id="timed_out">TIMED_OUT</h4>
+<ul>
+<li><strong>Mode</strong>: run, compare  </li>
+<li><strong>Condition</strong>: Task exceeded configured timeout</li>
+<li><strong>Message</strong>: Timeout duration and partial results</li>
+<li><strong>Example</strong>: <code>TIMED_OUT learn graph after 300s → timeout: 300s, partial outputs may exist</code></li>
+</ul>
+<h2 id="architecture-design">Architecture Design</h2>
+<h3 id="component-overview">Component Overview</h3>
+<pre><code>┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  WorkflowExecutor │───→│  ActionExecutor  │───→│     Action      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  WorkflowLogger  │←───│   StatusTracker  │    │   FileManager   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       
+         ▼                       ▼                       
+┌─────────────────┐    ┌─────────────────┐              
+│ProgressReporter  │    │  Summary Report  │              
+└─────────────────┘    └─────────────────┘              
+</code></pre>
+<h3 id="core-classes">Core Classes</h3>
+<h4 id="workflowlogger">WorkflowLogger</h4>
+<pre><code class="language-python">class WorkflowLogger:
+    &quot;&quot;&quot;Centralized logging with multiple output destinations.&quot;&quot;&quot;
+
+    def __init__(self, 
+                 terminal: bool = True,
+                 log_file: Optional[Path] = None,
+                 log_level: LogLevel = LogLevel.SUMMARY):
+
+    def log_task(self, 
+                action_name: str, 
+                status: TaskStatus,
+                message: str,
+                runtime: Optional[float] = None,
+                inputs: Optional[Dict[str, Any]] = None,
+                outputs: Optional[str] = None,
+                job_info: Optional[str] = None) -&gt; None:
+
+    def start_progress(self, total_jobs: int, estimated_runtime: float) -&gt; None:
+    def update_progress(self, completed: int, current_job: str) -&gt; None:
+    def finish_progress(self) -&gt; None:
+</code></pre>
+<h4 id="taskstatus">TaskStatus</h4>
+<pre><code class="language-python">class TaskStatus(Enum):
+    &quot;&quot;&quot;Enumeration of all possible task execution statuses.&quot;&quot;&quot;
+    EXECUTES = &quot;EXECUTES&quot;
+    WOULD_EXECUTE = &quot;WOULD_EXECUTE&quot;
+    SKIPS = &quot;SKIPS&quot;
+    WOULD_SKIP = &quot;WOULD_SKIP&quot;
+    IDENTICAL = &quot;IDENTICAL&quot;
+    DIFFERENT = &quot;DIFFERENT&quot;
+    INVALID_USES = &quot;INVALID_USES&quot;
+    INVALID_PARAMETER = &quot;INVALID_PARAMETER&quot;
+    FAILED = &quot;FAILED&quot;
+    TIMED_OUT = &quot;TIMED_OUT&quot;
+</code></pre>
+<h4 id="actionexecutor">ActionExecutor</h4>
+<pre><code class="language-python">class ActionExecutor:
+    &quot;&quot;&quot;Handles action execution with logging and status determination.&quot;&quot;&quot;
+
+    def __init__(self, logger: WorkflowLogger, file_manager: FileManager):
+
+    def execute_action(self, 
+                      action_name: str,
+                      action_class: Type[Action], 
+                      inputs: Dict[str, Any],
+                      mode: str,
+                      context: WorkflowContext) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;Execute action with comprehensive status logging.&quot;&quot;&quot;
+
+    def should_skip(self, action_class: Type[Action], inputs: Dict[str, Any]) -&gt; bool:
+        &quot;&quot;&quot;Determine if action should be skipped based on existing outputs.&quot;&quot;&quot;
+
+    def estimate_runtime(self, action_class: Type[Action], inputs: Dict[str, Any]) -&gt; float:
+        &quot;&quot;&quot;Get runtime estimate from action for progress calculation.&quot;&quot;&quot;
+</code></pre>
+<h4 id="modified-action-interface">Modified Action Interface</h4>
+<pre><code class="language-python">class Action(ABC):
+    &quot;&quot;&quot;Base class with optional logging support.&quot;&quot;&quot;
+
+    @abstractmethod
+    def run(self, 
+           inputs: Dict[str, Any], 
+           mode: str = &quot;dry-run&quot;,
+           context: Optional[WorkflowContext] = None,
+           logger: Optional[WorkflowLogger] = None) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;Execute with optional logging capability.&quot;&quot;&quot;
+
+    def estimate_runtime(self, inputs: Dict[str, Any]) -&gt; float:
+        &quot;&quot;&quot;Provide runtime estimate for progress calculation.&quot;&quot;&quot;
+        return 1.0  # Default: 1 second estimate
+
+    def get_output_files(self, inputs: Dict[str, Any]) -&gt; List[str]:
+        &quot;&quot;&quot;Return list of output files this action will create.&quot;&quot;&quot;
+        return []  # Default: no specific outputs
+
+    def get_output_contribution_key(self, inputs: Dict[str, Any]) -&gt; Optional[str]:
+        &quot;&quot;&quot;Return key identifying this action's contribution in append-semantics files.
+
+        Used for files like metadata.json where multiple actions append content
+        rather than replacing the entire file. Return None for traditional files.
+        &quot;&quot;&quot;
+        return None  # Default: traditional replace-semantics
+
+    def has_existing_contribution(self, file_path: str, inputs: Dict[str, Any]) -&gt; bool:
+        &quot;&quot;&quot;Check if this action's contribution already exists in append-semantics file.
+
+        Only called when get_output_contribution_key() returns non-None.
+        Used to determine if action can skip execution.
+        &quot;&quot;&quot;
+        return False  # Default: not applicable
+</code></pre>
+<h2 id="implementation-phases">Implementation Phases</h2>
+<h3 id="phase-1-core-logging-infrastructure">Phase 1: Core Logging Infrastructure</h3>
+<p><strong>Target</strong>: Basic logging working with actions</p>
+<p><strong>Components</strong>:
+- <code>TaskStatus</code> enum with all status definitions
+- <code>WorkflowLogger</code> class with file/terminal output
+- Modified <code>Action.run()</code> signature with optional logger parameter
+- Basic status logging from within actions</p>
+<p><strong>Benefits</strong>:
+- Actions can immediately start logging task-level messages
+- Foundation for all subsequent logging features
+- No breaking changes (logger parameter optional)</p>
+<p><strong>Example Usage</strong>:</p>
+<pre><code class="language-python"># Inside action.run()
+if logger:
+    logger.log_task(
+        action_name=self.name,
+        status=TaskStatus.EXECUTES,
+        message=&quot;learn graph&quot;,
+        runtime=2.3,
+        inputs={&quot;dataset&quot;: &quot;/data/asia.csv&quot;},
+        outputs=&quot;/results/graph.xml&quot;
+    )
+</code></pre>
+<h3 id="phase-2-smart-execution-logic">Phase 2: Smart Execution Logic</h3>
+<p><strong>Target</strong>: Add output detection and skip logic</p>
+<p><strong>Components</strong>:
+- <code>FileManager</code> class for output file detection
+- <code>ActionExecutor</code> class with skip logic
+- Runtime estimation interface
+- SKIP/WOULD_SKIP status implementation</p>
+<p><strong>Benefits</strong>:
+- Intelligent workflow execution avoiding duplicate work
+- Progress estimation foundation
+- Proper dry-run vs run mode differentiation</p>
+<h3 id="phase-3-cli-integration">Phase 3: CLI Integration</h3>
+<p><strong>Target</strong>: Complete user interface with logging</p>
+<p><strong>Components</strong>:
+- CLI parameters: <code>--log-file</code>, <code>--log-level</code>
+- <code>ProgressReporter</code> with Click integration
+- Summary reports with status counts
+- User-friendly error display</p>
+<p><strong>Benefits</strong>:
+- Real-world testing of logging design
+- Complete user experience
+- Feedback for design refinement</p>
+<h3 id="phase-4-advanced-features">Phase 4: Advanced Features</h3>
+<p><strong>Target</strong>: Compare mode and monitoring</p>
+<p><strong>Components</strong>:
+- File comparison for IDENTICAL/DIFFERENT
+- Resource monitoring (memory, CPU)
+- Timeout handling with TIMED_OUT
+- Enhanced progress displays</p>
+<h2 id="design-decisions">Design Decisions</h2>
+<h3 id="append-semantics-output-files">Append-Semantics Output Files</h3>
+<h4 id="the-metadata-challenge">The Metadata Challenge</h4>
+<p>Structure learning experiments often produce a <code>metadata.json</code> file that has <strong>append semantics</strong> rather than <strong>replace semantics</strong>:</p>
+<ul>
+<li><strong>Initial Creation</strong>: Structure learning action creates metadata with algorithm details, runtime, parameters</li>
+<li><strong>Subsequent Additions</strong>: Analysis actions add scores, metrics, validation results to the same file</li>
+<li><strong>Incremental Growth</strong>: File grows over workflow execution rather than being replaced</li>
+</ul>
+<h4 id="impact-on-task-status-determination">Impact on Task Status Determination</h4>
+<p><strong>Traditional Files</strong> (e.g., <code>graph.xml</code>):
+- File exists → task can skip
+- File missing → task must execute
+- Compare mode: entire file comparison</p>
+<p><strong>Append-Semantics Files</strong> (e.g., <code>metadata.json</code>):
+- File exists → check if <em>this action's contribution</em> already present
+- Action's section missing → must execute (even if file exists)
+- Compare mode: compare only this action's contribution</p>
+<h4 id="implementation-strategy">Implementation Strategy</h4>
+<p><strong>Action Interface Extension</strong>:</p>
+<pre><code class="language-python">class Action(ABC):
+    def get_output_contribution_key(self, inputs: Dict[str, Any]) -&gt; Optional[str]:
+        &quot;&quot;&quot;Return key identifying this action's contribution in append-semantics files.&quot;&quot;&quot;
+        return None  # Most actions don't use append semantics
+
+    def has_existing_contribution(self, file_path: str, inputs: Dict[str, Any]) -&gt; bool:
+        &quot;&quot;&quot;Check if this action's contribution already exists in append-semantics file.&quot;&quot;&quot;
+        return False  # Default: not applicable
+</code></pre>
+<p><strong>FileManager Enhancement</strong>:</p>
+<pre><code class="language-python">class FileManager:
+    def should_skip_action(self, action: Action, inputs: Dict[str, Any]) -&gt; bool:
+        output_files = action.get_output_files(inputs)
+        for file_path in output_files:
+            if not os.path.exists(file_path):
+                return False  # Missing file, must execute
+
+            # Check append-semantics files
+            contrib_key = action.get_output_contribution_key(inputs)
+            if contrib_key and not action.has_existing_contribution(file_path, inputs):
+                return False  # Action's contribution missing
+
+        return True  # All outputs present (traditional or append-semantics)
+</code></pre>
+<p><strong>Comparison Logic</strong>:</p>
+<pre><code class="language-python">class FileManager:
+    def compare_outputs(self, action: Action, inputs: Dict[str, Any], 
+                       old_run_dir: str, new_run_dir: str) -&gt; ComparisonResult:
+        &quot;&quot;&quot;Compare outputs, handling append-semantics files appropriately.&quot;&quot;&quot;
+
+        output_files = action.get_output_files(inputs)
+        for file_path in output_files:
+            contrib_key = action.get_output_contribution_key(inputs)
+            if contrib_key:
+                # Compare only this action's contribution
+                return self._compare_contribution(old_run_dir, new_run_dir, 
+                                                file_path, contrib_key)
+            else:
+                # Traditional full-file comparison
+                return self._compare_full_file(old_run_dir, new_run_dir, file_path)
+</code></pre>
+<h4 id="example-structure-learning-analysis-pipeline">Example: Structure Learning + Analysis Pipeline</h4>
+<p><strong>Workflow</strong>:</p>
+<pre><code class="language-yaml">jobs:
+  structure_learning:
+    uses: causal-discovery
+    with: 
+      algorithm: pc
+      data: data/asia.csv
+
+  analysis:
+    uses: graph-analysis  
+    with:
+      graph: ${{ jobs.structure_learning.outputs.graph }}
+</code></pre>
+<p><strong>Execution Sequence</strong>:</p>
+<ol>
+<li><strong>Structure Learning</strong> (first run):</li>
+<li>Creates: <code>/results/graph.xml</code>, <code>/results/metadata.json</code></li>
+<li><code>metadata.json</code>: <code>{"structure_learning": {"algorithm": "pc", "runtime": 2.3, ...}}</code></li>
+<li>
+<p>Status: <code>EXECUTES</code></p>
+</li>
+<li>
+<p><strong>Analysis</strong> (first run):</p>
+</li>
+<li>Reads: <code>/results/graph.xml</code></li>
+<li>Appends to: <code>/results/metadata.json</code> </li>
+<li><code>metadata.json</code>: <code>{"structure_learning": {...}, "analysis": {"scores": {...}, "metrics": {...}}}</code></li>
+<li>
+<p>Status: <code>EXECUTES</code></p>
+</li>
+<li>
+<p><strong>Structure Learning</strong> (second run):</p>
+</li>
+<li><code>metadata.json</code> exists but missing <code>structure_learning</code> section (analysis cleared it)</li>
+<li>
+<p>Status: <code>EXECUTES</code> (recreates structure learning contribution)</p>
+</li>
+<li>
+<p><strong>Analysis</strong> (second run):</p>
+</li>
+<li><code>metadata.json</code> exists with <code>structure_learning</code> but missing <code>analysis</code> section</li>
+<li>
+<p>Status: <code>EXECUTES</code> (adds analysis contribution)</p>
+</li>
+<li>
+<p><strong>Structure Learning</strong> (third run):</p>
+</li>
+<li><code>metadata.json</code> exists with <code>structure_learning</code> section present</li>
+<li>Status: <code>SKIPS</code> (contribution already exists)</li>
+</ol>
+<h4 id="design-benefits">Design Benefits</h4>
+<ul>
+<li><strong>Precise Skip Logic</strong>: Actions only skip when their specific contribution exists</li>
+<li><strong>Accurate Comparison</strong>: Compare mode focuses on action's actual output changes</li>
+<li><strong>Incremental Execution</strong>: Workflows can build up metadata files progressively</li>
+<li><strong>Clear Status Reporting</strong>: Users understand exactly what each action contributed</li>
+</ul>
+<h3 id="why-task-level-logging">Why Task-Level Logging?</h3>
+<ul>
+<li><strong>Actions control granularity</strong>: Each action knows its internal complexity</li>
+<li><strong>Flexible reporting</strong>: Single chart vs. hundreds of graphs handled appropriately  </li>
+<li><strong>Real-time feedback</strong>: Users see progress as work happens</li>
+<li><strong>Debugging capability</strong>: Specific task failures easily identified</li>
+</ul>
+<h3 id="why-status-based-execution">Why Status-Based Execution?</h3>
+<ul>
+<li><strong>Mode-aware behavior</strong>: Same action behaves correctly in dry-run vs run</li>
+<li><strong>Smart skipping</strong>: Avoid duplicate work, enable incremental execution</li>
+<li><strong>Compare mode support</strong>: Foundation for regression testing workflows</li>
+<li><strong>Clear error categorization</strong>: Different error types handled appropriately</li>
+</ul>
+<h3 id="why-optional-logger-parameter">Why Optional Logger Parameter?</h3>
+<ul>
+<li><strong>Backward compatibility</strong>: Existing actions continue working unchanged</li>
+<li><strong>Gradual adoption</strong>: Actions can add logging over time</li>
+<li><strong>Testing simplicity</strong>: Tests can inject mock loggers easily</li>
+<li><strong>Performance</strong>: No overhead for actions that don't use logging</li>
+</ul>
+<h2 id="integration-points">Integration Points</h2>
+<h3 id="workflowexecutor-integration">WorkflowExecutor Integration</h3>
+<ul>
+<li>WorkflowExecutor creates WorkflowLogger based on CLI parameters</li>
+<li>Passes logger to ActionExecutor for all action executions</li>
+<li>Coordinates progress reporting across matrix jobs</li>
+<li>Handles summary report generation</li>
+</ul>
+<h3 id="actionregistry-integration">ActionRegistry Integration</h3>
+<ul>
+<li>Validates actions support logging interface during discovery</li>
+<li>Provides action metadata for runtime estimation</li>
+<li>Enables error status reporting for INVALID_USES</li>
+</ul>
+<h3 id="exception-handling-integration">Exception Handling Integration</h3>
+<ul>
+<li>All action exceptions caught by ActionExecutor</li>
+<li>Converted to appropriate FAILED status messages</li>
+<li>Stack traces logged with reference line numbers</li>
+<li>Graceful workflow continuation after failures</li>
+</ul>
+<h2 id="testing-strategy">Testing Strategy</h2>
+<h3 id="unit-testing">Unit Testing</h3>
+<ul>
+<li>Mock logger captures for status verification</li>
+<li>FileManager testing with temporary directories</li>
+<li>ActionExecutor testing with mock actions</li>
+<li>Status transition testing for all scenarios</li>
+</ul>
+<h3 id="integration-testing">Integration Testing</h3>
+<ul>
+<li>End-to-end logging through WorkflowExecutor</li>
+<li>CLI parameter integration testing</li>
+<li>File output format validation</li>
+<li>Progress reporter integration testing</li>
+</ul>
+<h3 id="performance-testing">Performance Testing</h3>
+<ul>
+<li>Logging overhead measurement</li>
+<li>Large matrix workflow testing</li>
+<li>Memory usage monitoring</li>
+<li>File I/O performance validation</li>
+</ul>
+<h2 id="future-extensions">Future Extensions</h2>
+<h3 id="advanced-features">Advanced Features</h3>
+<ul>
+<li><strong>Log parsing tools</strong>: Analysis scripts for workflow execution logs</li>
+<li><strong>Monitoring integration</strong>: Prometheus/Grafana metrics export</li>
+<li><strong>Notification system</strong>: Slack/email alerts for workflow completion</li>
+<li><strong>Dashboard integration</strong>: Web UI for workflow execution monitoring</li>
+</ul>
+<h3 id="action-enhancements">Action Enhancements</h3>
+<ul>
+<li><strong>Detailed progress</strong>: Sub-task progress reporting within actions</li>
+<li><strong>Resource prediction</strong>: More sophisticated runtime/memory estimation</li>
+<li><strong>Parallel logging</strong>: Thread-safe logging for parallel action execution</li>
+<li><strong>Custom status types</strong>: Action-specific status extensions</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>This logging architecture provides:
+- <strong>Complete visibility</strong> into workflow execution at appropriate granularity
+- <strong>User-friendly experience</strong> with progress indication and clear error reporting<br />
+- <strong>Developer-friendly integration</strong> with optional, backward-compatible interface
+- <strong>Foundation for advanced features</strong> like compare mode and monitoring
+- <strong>Testing-ready design</strong> with mockable interfaces and captured output</p>
+<p>The phased implementation approach allows for incremental development with real-world feedback at each stage, ensuring the final design meets actual user needs while maintaining system reliability and performance.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../workflow_executor_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Executor">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Workflow Executor
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../api/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Overview
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
