@@ -14,6 +14,7 @@ from causaliq_workflow.action import (
     ActionInput,
     ActionValidationError,
 )
+from causaliq_workflow.logger import WorkflowLogger
 
 
 # Test ActionInput can be created with all parameters
@@ -47,7 +48,124 @@ def test_action_input_defaults():
     assert action_input.type_hint == "Any"
 
 
-# Test ActionExecutionError can be created and raised
+# Test backward compatibility without logger parameter
+def test_action_backward_compatibility_no_logger():
+    """Actions work correctly without logger parameter
+    (backward compatibility)."""
+
+    class BackwardCompatibleAction(Action):
+        name = "backward-compatible"
+        description = "Action that works without logger"
+
+        def run(self, inputs, mode="dry-run", context=None, logger=None):
+            # Should work fine when logger is None
+            return {"status": "success", "mode": mode}
+
+    action = BackwardCompatibleAction()
+
+    # Test old-style call without logger
+    result = action.run({"param": "value"}, mode="run")
+    assert result["status"] == "success"
+    assert result["mode"] == "run"
+
+    # Test with explicit None logger
+    result = action.run({"param": "value"}, mode="dry-run", logger=None)
+    assert result["status"] == "success"
+    assert result["mode"] == "dry-run"
+
+
+# Test logger parameter type validation
+def test_action_logger_parameter_type_validation():
+    """Action properly handles different logger parameter types."""
+
+    class ValidatingAction(Action):
+        name = "validating-action"
+        description = "Action that validates logger parameter"
+
+        def run(self, inputs, mode="dry-run", context=None, logger=None):
+            logger_type = type(logger).__name__ if logger else "None"
+            return {"logger_type": logger_type}
+
+    action = ValidatingAction()
+
+    # Test with None
+    result = action.run({})
+    assert result["logger_type"] == "None"
+
+    # Test with WorkflowLogger
+    logger = WorkflowLogger(terminal=False)
+    result = action.run({}, logger=logger)
+    assert result["logger_type"] == "WorkflowLogger"
+
+
+# Test existing actions continue to work unchanged
+def test_existing_action_interface_unchanged():
+    """Existing action implementations continue to work without
+    modification."""
+
+    class ExistingStyleAction(Action):
+        """Simulates existing action using **kwargs pattern."""
+
+        name = "existing-style"
+        description = "Action using existing interface patterns"
+
+        def run(self, inputs, **kwargs):
+            # Old style using **kwargs (common pattern in existing actions)
+            mode = kwargs.get("mode", "dry-run")
+            context = kwargs.get("context")
+            logger = kwargs.get("logger")
+
+            return {
+                "has_mode": mode is not None,
+                "has_context": context is not None,
+                "has_logger": logger is not None,
+            }
+
+    action = ExistingStyleAction()
+
+    # Test old-style call
+    result = action.run({"input": "test"})
+    assert result["has_mode"] is True  # default mode
+    assert result["has_context"] is False
+    assert result["has_logger"] is False
+
+    # Test with new logger parameter
+    logger = WorkflowLogger(terminal=False)
+    result = action.run({"input": "test"}, logger=logger)
+    assert result["has_mode"] is True
+    assert result["has_context"] is False
+    assert result["has_logger"] is True
+
+
+# Test integration with action registry and logger parameter
+def test_action_registry_logger_integration():
+    """Action registry properly passes logger parameter to actions."""
+
+    class LoggerAwareAction(Action):
+        name = "logger-aware-action"
+        description = "Action that reports logger usage"
+
+        def run(self, inputs, mode="dry-run", context=None, logger=None):
+            return {
+                "logger_received": logger is not None,
+                "logger_terminal": (
+                    logger.is_terminal_logging if logger else None
+                ),
+                "logger_file": logger.is_file_logging if logger else None,
+            }
+
+    # Simulate what action registry would do
+    action = LoggerAwareAction()
+    logger = WorkflowLogger(terminal=True, log_file=None)
+
+    # Test direct action call with logger
+    result = action.run({"input": "test"}, mode="run", logger=logger)
+
+    assert result["logger_received"] is True
+    assert result["logger_terminal"] is True
+    assert result["logger_file"] is False
+
+
 def test_action_execution_error_creation():
     with pytest.raises(ActionExecutionError, match="Test execution error"):
         raise ActionExecutionError("Test execution error")

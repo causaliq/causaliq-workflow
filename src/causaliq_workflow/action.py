@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 if TYPE_CHECKING:
+    from causaliq_workflow.logger import WorkflowLogger
     from causaliq_workflow.registry import WorkflowContext
 
 
@@ -52,6 +53,7 @@ class Action(ABC):
         inputs: Dict[str, Any],
         mode: str = "dry-run",
         context: Optional["WorkflowContext"] = None,
+        logger: Optional["WorkflowLogger"] = None,
     ) -> Dict[str, Any]:
         """Execute action with validated inputs, return outputs.
 
@@ -59,6 +61,7 @@ class Action(ABC):
             inputs: Dictionary of input values keyed by input name
             mode: Execution mode ('dry-run', 'run', 'compare')
             context: Workflow context for optimization and intelligence
+            logger: Optional logger for task execution reporting
 
         Returns:
             Dictionary of output values keyed by output name

@@ -23,6 +23,7 @@ class MockWorkflowCausalIQAction(CausalIQAction):
     def run(self, inputs: dict, **kwargs) -> dict:
         mode = kwargs.get("mode", "run")
         context = kwargs.get("context")
+        kwargs.get("logger")
 
         # Include context information to test CLI params via variable
         # resolution
