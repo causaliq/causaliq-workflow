@@ -1,496 +1,249 @@
-# CausalIQ Workflow - Development Roadmap & Progress
+# CausalIQ Workflow - Development Roadmap
 
-**Single source of truth for all development planning and progress tracking**
+**Last updated**: November 20, 2025  
+**Current release**: CLI Implementation Complete
 
-Last updated: 2025-11-18
+## 🎯 Current Status
 
-## Current Status: Phase 1-2 Complete - Action Framework + Workflow Engine [99% COMPLETE]
+**✅ COMPLETED: Release 0.3 - Basic CLI
 
-### 🎯 Major Achievement: Complete Action Registry System + Dynamic Plugin Discovery
+*Latest commit*: `36b16d8 feat: implement CLI with real-time workflow execution feedback`
 
-**Key Breakthrough**: We've successfully implemented the complete action registry system with automatic discovery, enabling a true plugin ecosystem for causal discovery workflows. The registry provides zero-configuration action discovery, automatic registration, and seamless integration with the workflow execution engine.
+**Current Capabilities**:
 
-**Latest Achievement**: Complete ActionRegistry implementation with auto-discovery via import-time introspection, comprehensive test action package demonstrating the plugin pattern, and full integration with WorkflowExecutor for end-to-end action execution. The system now supports dynamic action loading from external packages without circular dependencies.
+- Complete command-line interface: `causaliq-workflow run [--dry-run] <workflow>`
+- Real-time workflow execution with step-by-step feedback  
+- Action registry with plugin architecture
+- 100% test coverage (471/471 lines) with full quality compliance
+- Working end-to-end execution from YAML configuration
 
-**Action Registry Highlights**:
-- ✅ **Zero-configuration discovery** - Actions automatically discovered via import-time introspection using 'CausalIQAction' convention
-- ✅ **Plugin architecture** - Complete test action package demonstrating external action development patterns
-- ✅ **Seamless integration** - WorkflowExecutor now executes actions via ActionRegistry with full parameter mapping
-- ✅ **Comprehensive validation** - Registry validates action availability and provides detailed error reporting
-- ✅ **Production-ready pattern** - External packages export 'CausalIQAction' class and become immediately available in workflows
-- ✅ **Complete documentation** - Registry API documentation with usage examples and architecture notes
-- ✅ **100% test coverage maintained** - Registry and integration fully tested with comprehensive edge case coverage
+**Next Release**: 0.4 Enahnced Workflow  
+**Target**: 1.0 Production Workflow
 
-**Implementation Highlights**:
-- ✅ **Action framework foundation** - Abstract base classes with type-safe input/output specifications
-- ✅ **GraphML format adoption** - Design decision for causal graph representation (DAGs, PDAGs, CPDAGs, MAGs, PAGs)
-- ✅ **Matrix variable architecture** - Schema support for parameterized experiments
-- ✅ **GitHub Actions-inspired syntax** - Familiar workflow patterns with schema validation
-- ✅ **WorkflowExecutor class** - 99-line implementation featuring YAML workflow parsing, matrix expansion, and comprehensive validation
+---
 
-## Phase 1 Features (Month 1): Action Framework Foundation ✅ 100% Complete
+## ✅ Completed Implementation
 
-### ✅ Foundation Infrastructure [COMPLETED] 
-- [x] **Testing framework** - Comprehensive pytest setup covering unit, functional, integration (112/112 tests passing)
-- [x] **CI/CD workflow** - GitHub Actions workflow with linting, formatting, type checking
-- [x] **Code quality** - Black, isort, flake8, MyPy integration with 100% compliance
-- [x] **Documentation structure** - MkDocs integration with restructured API documentation
-- [x] **API documentation** - Comprehensive 6-page API reference with Google-style docstrings
-- [x] **Development environment** - Complete workspace setup with proper tooling
-- [x] **Configuration foundation** - JSON Schema-based workflow validation established
-- [x] **Test policy compliance** - Function-based test structure with single-line comments
+*See Git commit history for detailed implementation progress*
 
-### ✅ Action Framework [COMPLETED]
-- [x] **Action base classes** - Abstract Action class with type-safe input/output specifications
-- [x] **Error handling** - ActionExecutionError and ActionValidationError with comprehensive context
-- [x] **Input/output specification** - ActionInput dataclass for type hints and validation
-- [x] **Reference implementation** - DummyStructureLearnerAction demonstrating framework patterns
-- [x] **GraphML format decision** - Adopted GraphML as standard for causal graph representation
-- [x] **Matrix variable support** - Actions receive dataset, algorithm, and parameter inputs
+**Key Commits**:
 
-### ✅ Workflow Schema Integration [COMPLETED]
-- [x] **GitHub Actions-inspired syntax** - Familiar workflow patterns adapted for causal discovery
-- [x] **Matrix strategy support** - Parameterized experiments with matrix variable expansion
-- [x] **Path construction fields** - data_root, output_root, id fields for organizing experiment outputs  
-- [x] **Action parameters** - with blocks for passing parameters to actions
-- [x] **Schema validation** - JSON Schema validation with comprehensive error reporting
+- `ce41487` - Action registry with auto-discovery plugin system
+- `302b70a` - WorkflowExecutor with YAML parsing and matrix expansion  
+- `a2c01da` - Action framework with dummy structure learner
+- `b9c9c81` - Schema validation using JSON Schema
+- `36b16d8` - CLI with real-time workflow execution feedback
 
-## Phase 2 Features (Current): Workflow Execution Engine [95% Complete]
+**Current Architecture**:
 
-### ✅ CI-Style Workflow Engine [COMPLETED]
-- [x] **WorkflowExecutor class** - Complete 99-line implementation with comprehensive testing (112 total tests, 100% coverage)
-- [x] **Workflow parser** - Parse GitHub Actions-style YAML workflows with schema validation
-- [x] **Matrix expansion** - Convert matrix variables into individual experiment jobs using cartesian product
-- [x] **Path construction** - Dynamic file path generation from matrix variables with flexible templating
-- [x] **Schema validation** - JSON Schema validation with corrected $schema/$id fields and required id/description
-- [x] **Error handling** - Comprehensive validation and parsing error management
-- [x] **Template variable system** - Full template validation with context checking and error reporting
+- 📋 **CLI**: `causaliq-workflow run [--dry-run] <workflow>`
+- 🔌 **Action Registry**: Auto-discovery plugin system
+- ⚙️ **WorkflowExecutor**: YAML parsing, matrix expansion, step execution
+- 📊 **Schema Validation**: JSON Schema with error reporting
+- 🧩 **Testing**: 100% coverage, 201 tests passing
 
-### ✅ Documentation Infrastructure [COMPLETED]
-- [x] **API restructure** - Separated API documentation into focused, navigable pages
-- [x] **Google-style docstrings** - Complete class variable documentation for comprehensive API coverage  
-- [x] **Cross-linking** - Proper navigation between API sections with back/forward links
-- [x] **Usage examples** - Comprehensive examples covering basic to advanced usage patterns
-- [x] **MkDocs integration** - Updated navigation structure with proper page organization
-- [x] **CI integration** - Documentation builds without warnings or broken links
 
-### 🔄 Research Reproducibility Platform [STREAMLINED 3-COMMIT APPROACH]
+## 🛣️ Upcoming Implementation
 
-**Architectural Focus**: Optimized path to working CLI with external actions. Start with dynamic action discovery and build incrementally.
+### Release 0.3: Enhanced Workflow
+**Key Deliverables**: Conservative execution and dry-run capability
 
-### 🔄 Research Reproducibility Platform [STREAMLINED 3-COMMIT APPROACH]
+**Commit 0.3.1: Basic Task Logging Infrastructure**
 
-**Architectural Focus**: Optimized path to working CLI with external actions. Start with dynamic action discovery and build incrementally.
-
-**Commit 1: Template Variable Validation** ✅ **COMPLETED**
-- [x] **Template extraction** - Parse `{{variable}}` patterns from action parameters
-- [x] **Context validation** - Verify template variables exist in matrix + workflow properties
-- [x] **Error reporting** - Clear errors for unknown/malformed template variables
-- [x] **Comprehensive tests** - Cover valid, invalid, and malformed template scenarios
-
-**Commit 2: Documentation & Test Infrastructure** ✅ **COMPLETED**
-- [x] **API documentation restructure** - Separated into focused pages (Actions, Registry, Workflow, Schema, CLI, Examples)
-- [x] **Google-style docstrings** - Complete class variable documentation for API generation
-- [x] **Test policy compliance** - Converted major test files to function-based structure with single-line comments
-- [x] **100% test coverage** - Maintained comprehensive coverage across 112 tests
-- [x] **MkDocs integration** - Updated navigation and cross-linking structure
-- [x] **Documentation quality** - Eliminated broken links and warnings
-
-**Commit 3: Action Registry & Step Execution Engine** ✅ **COMPLETED**
-- [x] **ActionRegistry class** - Centralized registry for dynamic action discovery via import-time introspection
-- [x] **Dynamic discovery** - Load actions from imported packages using convention-over-configuration
-- [x] **Step executor** - Complete integration with WorkflowExecutor for `uses:` action step execution
-- [x] **Action execution** - Full mapping of workflow `with:` blocks to action inputs with validation
-- [x] **Error handling** - Comprehensive action discovery and execution error management
-- [x] **Plugin architecture** - Zero-configuration plugin system with test action package demonstrating pattern
-
-**Commit 4: Workflow Variable Required Parameters** ✅ **COMPLETED**
-- [x] **None value support** - Workflow variables with `null` values require CLI specification
-- [x] **Required parameter validation** - Clear error messages when required variables missing
-- [x] **Template integration** - Workflow variables included in template validation context
-- [x] **Schema enhancement** - JSON schema supports `null` values for mandatory specification
-- [x] **Comprehensive testing** - Full coverage of default values, CLI overrides, and validation
-
-**Commit 5: TaskStatus Enum Foundation** ✅ **COMPLETED** - [Design Note: docs/design/logging_architecture_design.md]
-- [x] **TaskStatus enum** - Define all 10 status types (EXECUTES, WOULD_EXECUTE, SKIPS, etc.)
-- [x] **Status validation** - Unit tests for enum definitions and completeness
-- [x] **Foundation only** - Pure enum implementation, no behavior changes
-
-**Commit 6: WorkflowLogger Core Structure** ✅ **COMPLETED**
-- [x] **WorkflowLogger class** - Basic constructor with file/terminal output configuration
-- [x] **Output destinations** - Support for multiple logging targets (file, terminal, tests)
-- [x] **Basic methods** - Logger instantiation and configuration, no task-specific logic yet
-
-**Commit 7: Action Interface Extension** 🔑 **NEXT**
-- [ ] **Optional logger parameter** - Add `logger` to `Action.run()` method signature
-- [ ] **Backward compatibility** - All existing actions accept but ignore logger
-- [ ] **Interface validation** - Confirm all actions work unchanged with new signature
-
-**Commit 8: Basic CLI Foundation** 🎯 **REAL-WORLD TESTING READY**
-- [ ] **Minimal CLI command** - `causaliq-workflow run workflow.yml` with basic options
-- [ ] **File path resolution** - Handle workflow file loading and validation  
-- [ ] **Mode selection** - Support --mode=run|dry-run execution
-- [ ] **Basic error handling** - User-friendly error messages for common issues
-- [ ] **Log level control** - --log-level=none|summary|all parameter
-
-**REAL-WORLD TESTING PHASE** 🧪 **START HERE FOR EXTERNAL PACKAGE DEVELOPMENT**
-
-*After Commit 8, create `causaliq-simple-actions` package to test:*
-- *Action development experience with `CausalIQAction` convention*
-- *CLI usability and error messages*  
-- *Package discovery and integration*
-- *Workflow syntax ergonomics*
-
-**Commit 9: Basic Task Logging**
 - [ ] **log_task() method** - Implement formatted message output with status/runtime/files
 - [ ] **Message formatting** - Standardized format: timestamp, action, status, description
 - [ ] **Comprehensive testing** - All status types with various input/output scenarios
 
-**Commit 9: Basic Task Logging**
-- [ ] **log_task() method** - Implement formatted message output with status/runtime/files
-- [ ] **Message formatting** - Standardized format: timestamp, action, status, description
-- [ ] **Comprehensive testing** - All status types with various input/output scenarios
+**Commit 0.3.2: Action Output File Interface**
 
-**Commit 10: Action Output File Interface**
 - [ ] **get_output_files() method** - Add to Action base class for file discovery
 - [ ] **Default implementation** - Empty list for actions without specific outputs
-- [ ] **Test integration** - Implement in dummy action for validation
+- [ ] **Test integration** - Implement in test actions for validation
 
-**Commit 11: FileManager for Output Detection**
+**Commit 0.3.3: FileManager Foundation**
+
 - [ ] **FileManager class** - File existence and comparison utilities
 - [ ] **Traditional file logic** - Basic exists/missing detection for replace-semantics files
 - [ ] **Isolated testing** - File operations without workflow integration
 
-**Commit 12: Skip Logic Foundation**
+**Commit 0.3.4: Skip Logic Implementation**
+
 - [ ] **should_skip_action() method** - Determine if action can skip based on existing outputs
 - [ ] **Traditional files only** - Skip logic for replace-semantics files (no append-semantics yet)
 - [ ] **Comprehensive scenarios** - Test various file existence and modification patterns
 
-**Commit 13: ActionExecutor Core Structure**
+**Commit 0.3.5: ActionExecutor Wrapper**
+
 - [ ] **ActionExecutor class** - Wrapper for action execution with status determination
 - [ ] **Status logic** - EXECUTES vs SKIPS for traditional files in run mode
 - [ ] **Mock integration** - Test execution wrapper without WorkflowExecutor changes
 
-**Commit 14: WorkflowExecutor Logger Integration**
-- [ ] **Logger creation** - WorkflowExecutor creates and configures WorkflowLogger
-- [ ] **ActionExecutor usage** - Replace direct action calls with ActionExecutor wrapper
-- [ ] **Regression testing** - Ensure all existing workflows continue to pass
+**Commit 0.3.6: Dry-Run Status Logic**
 
-**Commit 15: Runtime Estimation Interface**
-- [ ] **estimate_runtime() method** - Add to Action base class for progress calculation
-- [ ] **Default estimation** - 1-second default for actions without specific estimates
-- [ ] **Progress foundation** - Basic estimation without user interface
-
-**Commit 16: Dry-Run Mode Status Logic**
 - [ ] **WOULD_EXECUTE status** - Implement dry-run equivalent of EXECUTES
 - [ ] **WOULD_SKIP status** - Implement dry-run equivalent of SKIPS  
 - [ ] **Mode differentiation** - Proper status based on run vs dry-run mode
 
-**Commit 17: Append-Semantics File Support**
-- [ ] **get_output_contribution_key()** - Action method for append-semantics identification
-- [ ] **has_existing_contribution()** - Check if action's section exists in append-semantics files
-- [ ] **FileManager enhancement** - Handle metadata.json style files with action-specific sections
+**Commit 0.3.7: WorkflowExecutor Integration**
 
-**Commit 18: Progress Estimation Foundation**
+- [ ] **Logger creation** - WorkflowExecutor creates and configures WorkflowLogger
+- [ ] **ActionExecutor usage** - Replace direct action calls with ActionExecutor wrapper
+- [ ] **Regression testing** - Ensure all existing workflows continue to pass
+
+### Release 0.4: Progress and Summary
+**Key deliverables**: Real-time progress tracking and execution summary
+
+**Commit 0.4.1: Runtime Estimation Interface**
+
+- [ ] **estimate_runtime() method** - Add to Action base class for progress calculation
+- [ ] **Default estimation** - 1-second default for actions without specific estimates
+- [ ] **Progress foundation** - Basic estimation without user interface
+
+**Commit 0.4.2: Progress Calculation Engine**
+
 - [ ] **Progress calculation** - Aggregate runtime estimates for workflow progress tracking
 - [ ] **Background tracking** - Progress computation without user interface display
 - [ ] **Accuracy testing** - Validate progress calculation with various workflow scenarios
 
-**Commit 19: Integration Testing**
-- [ ] **End-to-end validation** - Complete logging system integration testing
-- [ ] **Matrix workflows** - Multi-action workflow testing with all status types
-- [ ] **100% coverage** - Maintain comprehensive test coverage for all logging features
+**Commit 0.4.3: ProgressReporter Foundation**
 
-**Commit 20: CLI Logging Parameters Enhancement**
-- [ ] **Enhanced CLI options** - Improve CLI based on real-world testing feedback
-- [ ] **Better error messages** - Refine error handling discovered during external package testing
-- [ ] **Path resolution improvements** - Handle edge cases found during real usage
-
-**Commit 21: ProgressReporter Foundation**
 - [ ] **ProgressReporter class** - Click integration for progress bar display
 - [ ] **Basic structure** - Progress bar initialization and configuration
-- [ ] **No live updates** - Static progress structure without real-time updates yet
+- [ ] **Static progress** - Progress structure without real-time updates yet
 
-**Commit 22: Live Progress Integration**  
+**Commit 0.4.4: Live Progress Integration**
+
 - [ ] **Real-time updates** - Connect progress reporter to workflow execution
 - [ ] **Action completion** - Update progress as actions complete
 - [ ] **Optional display** - Toggle progress bars based on CLI parameters
 
-**Commit 23: Summary Report Generation**
+**Commit 0.4.5: Status Aggregation & Summary**
+
 - [ ] **Status aggregation** - Count tasks by status type (EXECUTES, SKIPS, etc.)
 - [ ] **Summary formatting** - Clear report with counts, runtime, resource usage
 - [ ] **Report accuracy** - Comprehensive testing for summary calculation
 
-**Commit 23: Error Display Enhancement**
+**Commit 0.4.6: Enhanced Error Reporting**
+
 - [ ] **FAILED status formatting** - User-friendly error messages with actionable suggestions
 - [ ] **INVALID_* status details** - Clear parameter validation error reporting
 - [ ] **Error summary** - Aggregate error information for debugging
 
-**Commit 24: CLI Integration Testing**
+**Commit 0.4.7: CLI Enhancement & Testing**
+
+- [ ] **Enhanced CLI options** - Improve CLI based on real-world testing feedback
+- [ ] **Better error messages** - Refine error handling discovered during external package testing
+- [ ] **Path resolution improvements** - Handle edge cases found during real usage
 - [ ] **Complete CLI testing** - All logging features with file output verification
 - [ ] **Performance validation** - Logging overhead measurement and optimization
-- [ ] **Real workflow execution** - End-to-end testing with actual causal discovery workflows
 
-**Commit 25: File Comparison Foundation**
+### Release 0.5: Advanced Features
+**Key deliverables**: Metadata, compare mode, timeouts, estimated completion.
+
+**Commit 0.5.1: Append-Semantics File Support**
+
+- [ ] **get_output_contribution_key()** - Action method for append-semantics identification
+- [ ] **has_existing_contribution()** - Check if action's section exists in append-semantics files
+- [ ] **FileManager enhancement** - Handle metadata.json style files with action-specific sections
+
+**Commit 0.5.2: File Comparison Foundation**
+
 - [ ] **Comparison utilities** - Basic file diff and comparison logic in FileManager
 - [ ] **Text file diffs** - Generate meaningful comparisons for various file types
 - [ ] **Isolated testing** - File comparison without execution integration
 
-**Commit 26: Compare Mode Status Logic**
+**Commit 0.5.3: Compare Mode Status Logic**
+
 - [ ] **IDENTICAL status** - Implement when re-execution produces same outputs
 - [ ] **DIFFERENT status** - Implement when re-execution produces changed outputs
 - [ ] **Compare mode execution** - New execution path for output comparison
 
-**Commit 27: Timeout Handling Infrastructure**
-- [ ] **Timeout configuration** - Per-action timeout settings and monitoring
-- [ ] **TIMED_OUT status** - Graceful termination with timeout status reporting
-- [ ] **Cleanup logic** - Proper resource cleanup when actions exceed timeout
+**Commit 0.5.4: Resource Monitoring Infrastructure**
 
-**Commit 28: Resource Monitoring Foundation**
 - [ ] **Memory monitoring** - Track memory usage during action execution
 - [ ] **CPU monitoring** - Track CPU utilization and report in log messages
 - [ ] **Resource reporting** - Include resource usage in status messages
 
-**Commit 29: Advanced Progress Features**
+**Commit 0.5.5: Timeout Handling**
+
+- [ ] **Timeout configuration** - Per-action timeout settings and monitoring
+- [ ] **TIMED_OUT status** - Graceful termination with timeout status reporting
+- [ ] **Cleanup logic** - Proper resource cleanup when actions exceed timeout
+
+**Commit 0.5.6: Advanced Progress Features**
+
 - [ ] **Estimated completion** - Real-time estimates based on action progress
 - [ ] **Resource display** - Memory/CPU usage in progress indicators
 - [ ] **Smart updates** - Adaptive progress update frequency based on action complexity
 
-**Commit 30: Advanced Features Integration**
+**Commit 0.5.7: Integration Testing & Optimization**
+
+- [ ] **End-to-end validation** - Complete logging system integration testing
+- [ ] **Matrix workflows** - Multi-action workflow testing with all status types
+- [ ] **100% coverage** - Maintain comprehensive test coverage for all logging features
 - [ ] **Compare mode testing** - Complete integration testing for output comparison
 - [ ] **Resource monitoring validation** - Accuracy testing for memory/CPU tracking
 - [ ] **Performance optimization** - Final performance tuning for large workflows
 - [ ] **Documentation updates** - Complete documentation for all advanced logging features
 
-**Commit 9: External Package Integration & Demo**
-- [ ] **causaliq-discovery package** - Simple structure learning action (PC algorithm)
-- [ ] **Entry point registration** - Dynamic discovery working with external package
-- [ ] **End-to-end workflow** - Complete example: CLI → ActionRegistry → External action → Results
-- [ ] **Real algorithm execution** - PC structure learning with actual data processing
-- [ ] **Output standardization** - GraphML files and standardized result formats
+### Release 0.5: Algorithm Integration Foundation
+**Target**: Robust testing infrastructure with concrete action implementations
 
-**Milestone Achievement**: After these 5 commits, CausalIQ Workflow will support:
-- ✅ **Complete documentation infrastructure** - Comprehensive API reference with proper navigation
-- ✅ **Template variable validation** - Full context checking and error reporting
-- ✅ **Test infrastructure compliance** - Function-based test structure with 100% coverage
-- ✅ **Dynamic action discovery** - Load actions from external packages via import-time introspection
-- [ ] **Complete CLI interface** - Full `causaliq-workflow` command with mode support and parameter injection
-- [ ] **External action execution** - Real structure learning via causaliq-discovery package
-- [ ] **Conservative execution** - Skip work if outputs exist, enabling safe workflow restarts  
-- [ ] **Research reproducibility foundation** - Ready for causaliq-papers integration
+**Commit 0.5.1: Test Action Fixtures**
 
-### 🔮 Future Enhancements [When Proven Necessary]
+- [ ] **Concrete test actions** - Real algorithm implementations in tests/functional/fixtures
+- [ ] **PC algorithm test action** - Simple structure learning with actual causal discovery logic
+- [ ] **Multiple test algorithms** - Different algorithms to test various scenarios (GES, constraint-based)
+- [ ] **Data processing** - Handle real CSV data and generate actual GraphML outputs
 
-**Parallel Jobs Support**: Add `jobs:` syntax and parallel execution when performance demands require it
-**DASK Integration**: Step-level parallelization for computationally intensive actions  
-**Formal Parameter Schemas**: Optional workflow input definitions for enhanced validation when workflows become complex
-- ✅ **DASK-powered task parallelization** within steps
-- ✅ **Workflow composition** via calling with parameters
-- ✅ **Intelligent action optimization** with dry-run and caching
-- ✅ **Research reproducibility platform** foundation for causaliq-papers integration
-- [ ] **Data file handling** - Read actual CSV datasets and produce results
-- [ ] **Algorithm parameters** - Support real algorithm configuration options
+**Commit 0.5.2: Algorithm Testing Infrastructure**
 
-**Milestone Achievement**: After these 8 commits, CausalIQ Workflow will support:
-- ✅ **Parallel job execution** with dependency management
-- ✅ **DASK-powered task parallelization** within steps
-- ✅ **Workflow composition** via calling with parameters
-- ✅ **Intelligent action optimization** with dry-run and caching
-- ✅ **Research reproducibility platform** foundation for causaliq-papers integration
+- [ ] **Output standardization** - GraphML files with proper causal graph representation
+- [ ] **Parameter validation** - Algorithm-specific parameter handling and validation
+- [ ] **Data fixtures** - Test datasets for consistent algorithm validation
+- [ ] **Results validation** - Verify GraphML output structure and content
 
-### 🔮 Research Reproducibility Ecosystem [FUTURE - Integration with causaliq-papers]
+**Commit 0.5.3: End-to-End Validation**
 
-**Vision**: CausalIQ Workflow serves as the execution engine for a comprehensive research reproducibility platform.
+- [ ] **Complete workflow testing** - CLI → ActionRegistry → Test actions → Results
+- [ ] **Matrix workflow validation** - Multi-algorithm, multi-dataset test scenarios
+- [ ] **Performance benchmarking** - Execution time and resource usage with real algorithms
+- [ ] **Documentation examples** - Complete usage examples using test action fixtures
 
-**causaliq-papers Integration Architecture**:
-```bash
-# High-level research reproducibility workflow
-causaliq-papers replicate peters2023causal --target=figure3
+## 🚀 Possible Future Features
 
-# causaliq-papers processes paper dependencies and generates:
-├── workflow-dependencies.yml    # Analyzes what's needed for figure3
-├── optimized-reproduction.yml   # Generates minimal workflow-of-workflows
-└── execution-plan.json         # Dependency graph for execution
+**External Algorithm Integration** (After robust test infrastructure):
 
-# Then calls causaliq-workflow to execute:
-causaliq-workflow run optimized-reproduction.yml --target=figure3
-```
+- Multi-language workflows (R bnlearn, Java Tetrad, Python causal-learn)
+- External CausalIQ package integration (discovery, analysis)
+- Matrix-driven algorithm comparisons across datasets
+- Automatic dataset download and preprocessing
 
-**Workflow-of-Workflows Pattern**:
-- **Paper reproduction** = Top-level workflow calling component workflows
-- **Dependency resolution** = causaliq-papers analyzes workflow graph to minimize execution
-- **Asset targeting** = Generate only requested paper assets (tables, figures, results)
-- **Intelligence integration** = Actions optimize across the entire workflow graph
+**Production Features:****
 
-### ⏸️ Algorithm Integration [FUTURE - After Working Workflow]
-- [ ] **Advanced algorithms** - Additional causal discovery algorithms beyond PC/GES
-- [ ] **Package plugins** - bnlearn (R), Tetrad (Java), causal-learn (Python) integration
-- [ ] **Cross-language bridges** - rpy2, py4j integration for R/Java algorithm access
-- [ ] **Algorithm benchmarking** - Systematic comparison across algorithm implementations
+- 📋 **Workflow queuing** - CI-style runner management
+- 📊 **Monitoring dashboard** - Real-time execution tracking  
+- 🗺 **Artifacts & caching** - Persistent storage, result reuse
+- 🔒 **Security & isolation** - Secrets management, containers
+- 📈 **Performance optimization** - Resource limits, scheduling
 
-## Success Metrics - Phase 1 ✅ + Phase 2 ✅
+**Research Platform:**
 
-- ✅ **Framework Foundation**: Action framework with type-safe interfaces implemented
-- ✅ **Schema Architecture**: GitHub Actions-inspired workflow syntax with matrix support  
-- ✅ **Reference Implementation**: DummyStructureLearnerAction proving framework viability
-- ✅ **Format Decision**: GraphML adopted as standard for causal graph representation
-- ✅ **Workflow Parsing**: Complete WorkflowExecutor with YAML parsing and matrix expansion
-- ✅ **Path Construction**: Dynamic file path generation from matrix variables
-- ✅ **Schema Validation**: Corrected JSON Schema with proper $id field and field requirements
-- ✅ **Test Coverage**: 100% coverage maintained across 112 comprehensive tests
-- ✅ **Documentation Infrastructure**: Complete API reference with structured navigation
-- ✅ **Template System**: Full template variable validation and context checking
-- ✅ **Code Quality**: Policy-compliant test structure with function-based organization
-- ✅ **Action Registry**: Complete plugin architecture with auto-discovery and validation
-- ✅ **Plugin System**: Zero-configuration action packages with production-ready patterns
+- 🤖 **LLM integration** - Model averaging, hypothesis generation
+- 🌐 **Web interface** - Browser-based workflow designer
+- 🚀 **Cloud deployment** - AWS/GCP/Azure runners
+- 👥 **Collaboration** - Multi-researcher workflows
+- 📚 **Publication workflows** - Reproducible research outputs
 
-## Next Milestone: Functional Causal Discovery Workflow
+**Advanced Capabilities:**
 
-**Target**: Complete working workflow capable of executing real causal discovery experiments
-**Success Criteria**: 
-- Execute complete workflows from command line
-- Support real structure learning algorithms (PC, GES)
-- Handle matrix expansion with parallel step execution  
-- Generate organized experimental outputs with GraphML graphs
-- Maintain 100% test coverage and CI compliance
-- Comprehensive API documentation with proper navigation
-
-**Timeline**: 2 focused commits remaining to transition from framework to working research tool
-  - ✅ Required/optional section validation per pattern
-  - ✅ Hierarchical field validation with detailed error reporting
-  - ✅ Flexible validation schemas defined in external YAML
-- [x] **Flexible workflow patterns** - 5 patterns supporting diverse research needs
-  - ✅ Series pattern for comparative research (algorithm comparison across datasets/parameters)
-  - ✅ Task pattern for sequential operations (preprocessing → algorithm → analysis)  
-  - ✅ Mixed pattern combining multiple approaches
-  - ✅ Workflow pattern for DAG-based workflows with dependencies
-  - ✅ Longitudinal_research pattern for temporal causal discovery studies
-- [ ] **Configuration inheritance** - Create workflows based on templates with overrides
-### ✅ CI-Style Workflow Engine [COMPLETED]
-- [x] **Workflow parser** - Parse GitHub Actions-style YAML workflows
-- [x] **Matrix expansion** - Convert matrix variables into individual experiment jobs  
-- [x] **Path construction** - Dynamic file path generation from matrix variables
-- [x] **Schema validation** - JSON Schema validation with required id/description fields
-- [x] **WorkflowExecutor class** - Complete 99-line implementation with comprehensive testing
-- [ ] **Step execution** - Execute workflow steps with action-based architecture
-- [ ] **Environment management** - Handle workflow environment variables and context
-- [ ] **Conditional execution** - Support `if:` conditions in workflow steps
-- [ ] **Artifact handling** - Manage inputs/outputs between workflow steps
-
-### ⏸️ DASK Task Graph Integration [PENDING]
-- [ ] **Matrix job expansion** - Convert matrix configs into DASK task graphs
-- [ ] **Dependency management** - Handle job dependencies with DASK
-- [ ] **Local cluster management** - Setup and manage local DASK clusters
-- [ ] **Progress monitoring** - Track workflow execution with real-time updates
-- [ ] **Resource estimation** - Estimate compute requirements for planning
-
-### ⏸️ Configuration Migration [PENDING]
-- [ ] **CI workflow validation** - Ensure CI workflows validate correctly
-- [ ] **Documentation update** - Update all docs to reflect CI workflow approach
-
-## Phase 2 Features (Month 2): Research Integration [NOT STARTED]
-
-### ⏸️ Algorithm Package Integration
-- [ ] **R bnlearn integration** - Execute R bnlearn algorithms via rpy2
-  - Matrix-driven algorithm selection: `algorithm: ["pc", "iamb", "gs"]`
-- [ ] **Java Tetrad integration** - Integration with Java-based Tetrad via py4j
-  - Cross-language workflow steps with data serialization
-- [ ] **Python causal-learn** - Direct integration with Python algorithms
-  - Native Python execution within workflow steps
-- [ ] **Package discovery** - Automatic detection of available packages
-- [ ] **Dependency validation** - Check required packages before workflow execution
-
-### ⏸️ Dataset Management with CI Patterns
-- [ ] **Zenodo integration** - Dataset download as workflow action
-  - `uses: zenodo-download@v1` action pattern
-- [ ] **Dataset caching** - Local storage and reuse with cache actions
-- [ ] **Matrix dataset expansion** - Multiple datasets in workflow matrix
-  - `matrix: {dataset: ["asia", "sachs"], sample_size: [100, 1000]}`
-- [ ] **Dataset transformations** - Preprocessing steps as workflow actions
-
-### ⏸️ Advanced Matrix Workflows
-- [ ] **Cross-product expansion** - Full matrix combinations with intelligent batching
-- [ ] **Conditional matrices** - Include/exclude matrix combinations based on conditions
-- [ ] **Matrix job dependencies** - Sequential and parallel matrix job orchestration
-- [ ] **Result aggregation** - Collect and combine results across matrix jobs
-
-### ⏸️ LLM Integration as Actions
-- [ ] **Model averaging action** - LLM-guided model averaging as reusable action
-- [ ] **Hypothesis generation** - LLM analysis steps in workflow
-- [ ] **Result interpretation** - LLM post-processing actions
-- [ ] **Research workflow templates** - Pre-built workflows for common research patterns
-
-## Phase 3 Features (Month 3): Production CI Features [NOT STARTED]
-
-### ⏸️ Advanced Workflow Management
-- [ ] **Workflow queuing** - Manage multiple concurrent workflows like CI runners
-- [ ] **Pause/resume** - Interrupt and restart workflows with state preservation
-- [ ] **Workflow artifacts** - Persistent storage and retrieval of workflow outputs
-- [ ] **Workflow caching** - Cache intermediate results for faster re-runs
-- [ ] **Branch/PR workflows** - Different workflows for different experiment branches
-
-### ⏸️ Enterprise CI Features
-- [ ] **Secrets management** - Secure handling of API keys and credentials
-- [ ] **Environment isolation** - Containerized execution environments
-- [ ] **Resource limits** - CPU, memory, and time limits per workflow/job
-- [ ] **Approval workflows** - Human approval steps for expensive experiments
-- [ ] **Scheduled workflows** - Cron-style scheduled execution
-
-### ⏸️ Monitoring and Observability  
-- [ ] **Workflow status dashboard** - Real-time workflow execution monitoring
-- [ ] **Job logs and traces** - Detailed logging with searchable history
-- [ ] **Performance metrics** - Resource usage, timing, and efficiency tracking
-- [ ] **Alert integration** - Notifications for workflow success/failure
-- [ ] **Audit trail** - Complete execution history for reproducibility
-
-### ⏸️ Results and Artifacts
-- [ ] **Standardized outputs** - Replace pickle files with structured formats
-- [ ] **Version tracking** - Track algorithm versions and parameter changes
-- [ ] **Result comparison** - Compare outputs across workflow runs
-- [ ] **Export capabilities** - Multiple output formats (CSV, JSON, HDF5)
-- [ ] **Reproducibility metadata** - Complete metadata for result reproduction
-
-## Success Criteria by Phase
-
-### Phase 1 Success Metrics  
-- [ ] Execute GitHub Actions-style YAML workflows locally
-- [ ] Matrix expansion generates individual causal discovery jobs
-- [ ] Package-level algorithm integration (bnlearn, Tetrad, causal-learn)
-- [ ] DASK task graph execution with progress monitoring
-- [ ] Jinja2 template processing for workflow variables
-
-### Phase 2 Success Metrics
-- [ ] Multi-language workflows (R, Java, Python) in single configuration
-- [ ] Automatic dataset download and matrix expansion across datasets
-- [ ] LLM integration actions for model averaging and analysis
-- [ ] Advanced matrix workflows with conditional execution
-- [ ] Research workflow templates for common causal discovery patterns
-
-### Phase 3 Success Metrics  
-- [ ] Production-grade workflow queue management
-- [ ] Enterprise features: secrets, isolation, limits, approvals
-- [ ] Comprehensive monitoring dashboard with real-time status
-- [ ] Standardized result formats with complete reproducibility metadata
-- [ ] Foundation ready for large-scale research deployment
-
-## Post Three-Month Features (Research Phase)
-
-### Q2 2026: Advanced Research Features
 - **Workflow marketplace** - Sharing and discovering research workflow templates
 - **Interactive notebooks** - Jupyter integration with workflow execution
-- **Publication workflows** - Generate reproducible research outputs automatically
-- **Domain knowledge integration** - Expert knowledge as workflow conditions
-
-### Q3-Q4 2026: Migration and Scale
 - **Multi-machine execution** - Distributed workflows across compute clusters
-- **Cloud provider integration** - AWS, GCP, Azure workflow runners
-- **GPU acceleration** - Support for GPU-accelerated algorithms
-- **Web interface** - Browser-based workflow designer and monitor
-
-### Beyond 2026: Advanced Capabilities
-- **Workflow orchestration** - Complex multi-stage research workflows
-- **Real-time collaboration** - Multiple researchers on shared workflows
 - **AI-assisted optimization** - Automated hyperparameter and workflow tuning
 - **Integration ecosystem** - Plugins for major research tools and platforms
 
-This roadmap leverages the familiar GitHub Actions paradigm while building a powerful platform specifically designed for causal discovery research workflows.
+---
+
+*This roadmap leverages Git commit history for completed work, provides detailed
+release-based planning for upcoming functionality, and outlines future possibilities.*
