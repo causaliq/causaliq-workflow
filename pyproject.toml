@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "causaliq-workflow"
 dynamic = ["version"]
-description = "A template for CausalIQ repos"
+description = "Workflow engine for causal discovery and inference"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "CausalIQ", email = "info@causaliq.com"},
 ]
@@ -15,9 +15,8 @@ maintainers = [
     {name = "CausalIQ", email = "info@causaliq.com"},
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -72,7 +71,7 @@ Repository = "https://github.com/causaliq/causaliq-workflow"
 
 [project.scripts]
 causaliq-workflow = "causaliq_workflow.cli:main"
-crt = "causaliq_workflow.cli:main"
+cqflow = "causaliq_workflow.cli:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "causaliq_workflow.__version__"}
