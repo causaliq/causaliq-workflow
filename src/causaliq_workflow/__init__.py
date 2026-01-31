@@ -3,7 +3,7 @@ causaliq-workflow: Template package for CausalIQ repos
 """
 
 # Import core functionality
-from .action import Action, ActionExecutionError, ActionValidationError
+from .action import ActionExecutionError, ActionValidationError, CausalIQAction
 from .logger import LogLevel, WorkflowLogger  # noqa: F401
 from .registry import ActionRegistry, ActionRegistryError, WorkflowContext
 from .status import TaskStatus  # noqa: F401
@@ -28,7 +28,7 @@ __all__ = [
     "__author__",
     "__email__",
     "VERSION",
-    "Action",
+    "CausalIQAction",
     "ActionExecutionError",
     "ActionValidationError",
     "ActionRegistry",

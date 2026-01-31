@@ -34,7 +34,7 @@ class ActionOutput:
     value: Any
 
 
-class Action(ABC):
+class CausalIQAction(ABC):
     """Base class for all workflow actions."""
 
     # Action metadata

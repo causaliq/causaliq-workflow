@@ -20,10 +20,10 @@ import csv
 from pathlib import Path
 from typing import Any, Dict
 
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction as BaseAction
 
 
-class CausalIQAction(Action):
+class CausalIQAction(BaseAction):
     """Simple data analysis action with no external dependencies."""
 
     name = "my-analysis-action"

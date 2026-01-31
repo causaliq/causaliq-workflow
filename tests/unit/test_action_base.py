@@ -9,10 +9,10 @@ import typing
 import pytest
 
 from causaliq_workflow.action import (
-    Action,
     ActionExecutionError,
     ActionInput,
     ActionValidationError,
+    CausalIQAction,
 )
 from causaliq_workflow.logger import WorkflowLogger
 
@@ -53,7 +53,7 @@ def test_action_backward_compatibility_no_logger():
     """Actions work correctly without logger parameter
     (backward compatibility)."""
 
-    class BackwardCompatibleAction(Action):
+    class BackwardCompatibleAction(CausalIQAction):
         name = "backward-compatible"
         description = "Action that works without logger"
 
@@ -78,7 +78,7 @@ def test_action_backward_compatibility_no_logger():
 def test_action_logger_parameter_type_validation():
     """Action properly handles different logger parameter types."""
 
-    class ValidatingAction(Action):
+    class ValidatingAction(CausalIQAction):
         name = "validating-action"
         description = "Action that validates logger parameter"
 
@@ -103,7 +103,7 @@ def test_existing_action_interface_unchanged():
     """Existing action implementations continue to work without
     modification."""
 
-    class ExistingStyleAction(Action):
+    class ExistingStyleAction(CausalIQAction):
         """Simulates existing action using **kwargs pattern."""
 
         name = "existing-style"
@@ -141,7 +141,7 @@ def test_existing_action_interface_unchanged():
 def test_action_registry_logger_integration():
     """Action registry properly passes logger parameter to actions."""
 
-    class LoggerAwareAction(Action):
+    class LoggerAwareAction(CausalIQAction):
         name = "logger-aware-action"
         description = "Action that reports logger usage"
 
@@ -189,7 +189,7 @@ def test_action_validation_error_inheritance():
     assert isinstance(error, Exception)
 
 
-class ConcreteTestAction(Action):
+class ConcreteTestAction(CausalIQAction):
     """Concrete Action implementation for testing base class."""
 
     name = "test-concrete-action"
@@ -233,9 +233,9 @@ def test_validate_inputs_default_implementation():
 # Test that Action abstract class cannot be instantiated directly
 def test_action_cannot_be_instantiated_directly():
     with pytest.raises(
-        TypeError, match="Can't instantiate abstract class Action"
+        TypeError, match="Can't instantiate abstract class CausalIQAction"
     ):
-        Action()  # type: ignore
+        CausalIQAction()  # type: ignore
 
 
 # Test that WorkflowContext is available for type hints
@@ -260,7 +260,7 @@ def test_action_module_type_checking_coverage():
     # Verify that during static type checking, WorkflowContext would be
     # available but at runtime it's not imported into the module namespace
     action_module = causaliq_workflow.action
-    assert hasattr(action_module, "Action")
+    assert hasattr(action_module, "CausalIQAction")
     assert hasattr(action_module, "ActionInput")
     assert hasattr(action_module, "ActionExecutionError")
     assert hasattr(action_module, "ActionValidationError")

@@ -5,7 +5,7 @@ Example of an external action package following the causaliq-workflow
 convention. This demonstrates the production-ready pattern:
 
 1. Export a class named 'CausalIQAction' that inherits from
-   causaliq_workflow.action.Action
+   causaliq_workflow.action.CausalIQAction
 2. Import this package and it becomes available as 'uses: test_action'
 3. Zero configuration required - clean namespace with no conflicts
 
@@ -23,11 +23,11 @@ steps:
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from causaliq_workflow.action import Action as BaseAction
 from causaliq_workflow.action import (
     ActionExecutionError,
     ActionInput,
 )
+from causaliq_workflow.action import CausalIQAction as BaseAction
 
 if TYPE_CHECKING:
     from causaliq_workflow.registry import WorkflowContext

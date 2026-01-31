@@ -179,4 +179,4 @@ def test_registry_package_grouping_existing_actions():
 def test_conditional_workflow_context_import():
     import causaliq_workflow.action
 
-    assert hasattr(causaliq_workflow.action, "Action")
+    assert hasattr(causaliq_workflow.action, "CausalIQAction")

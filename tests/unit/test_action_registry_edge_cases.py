@@ -7,11 +7,11 @@ Tests edge cases, error paths, and discovery scenarios.
 import sys
 from types import ModuleType
 
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 from causaliq_workflow.registry import ActionRegistry
 
 
-class MockCausalIQAction(Action):
+class MockCausalIQAction(CausalIQAction):
     """Mock action for testing discovery."""
 
     name = "mock-action"
@@ -23,7 +23,7 @@ class MockCausalIQAction(Action):
 
 
 class InvalidAction:
-    """Invalid action class that doesn't inherit from Action."""
+    """Invalid action class that doesn't inherit from CausalIQAction."""
 
     name = "invalid"
 

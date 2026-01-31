@@ -11,7 +11,7 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type
 
-from causaliq_workflow.action import Action, ActionExecutionError
+from causaliq_workflow.action import ActionExecutionError, CausalIQAction
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +53,12 @@ class ActionRegistry:
     packages are imported. No configuration needed - just import the package
     and use 'uses: package-name' in workflows.
 
-    Convention: Action packages should export an Action subclass named
+    Convention: Action packages should export a CausalIQAction subclass named
     'CausalIQAction' in their __init__.py file to avoid namespace collisions.
 
     Attributes:
         _instance: Singleton instance of the ActionRegistry
-        _actions: Dictionary mapping action names to Action classes
+        _actions: Dictionary mapping action names to CausalIQAction classes
         _discovery_errors: List of errors encountered during action discovery
     """
 
@@ -68,18 +68,18 @@ class ActionRegistry:
         """Initialize registry and discover available actions.
 
         Initializes:
-            _actions: Dictionary mapping action names to Action classes
+            _actions: Dictionary mapping action names to CausalIQAction classes
             _discovery_errors: List to collect any discovery errors
         """
-        self._actions: Dict[str, Type[Action]] = {}
+        self._actions: Dict[str, Type[CausalIQAction]] = {}
         self._discovery_errors: List[str] = []
         self._discover_actions()
 
     def _discover_actions(self) -> None:
-        """Discover actions by scanning imported modules for Action classes."""
+        """Discover actions by scanning imported modules for CausalIQAction."""
         logger.info("Discovering available actions from imported modules...")
 
-        # Scan all imported modules for Action classes
+        # Scan all imported modules for CausalIQAction classes
         for module_name, module in sys.modules.items():
             if module is None:
                 continue  # type: ignore[unreachable]
@@ -99,17 +99,17 @@ class ActionRegistry:
             self._scan_module_for_actions(module_name, module)
 
     def _scan_module_for_actions(self, module_name: str, module: Any) -> None:
-        """Scan a specific module for Action classes."""
+        """Scan a specific module for CausalIQAction classes."""
         try:
             # Look for a CausalIQAction class exported at module level
             if hasattr(module, "CausalIQAction"):
                 action_class = getattr(module, "CausalIQAction")
 
-                # Verify it's actually an Action subclass
+                # Verify it's actually a CausalIQAction subclass
                 if (
                     inspect.isclass(action_class)
-                    and issubclass(action_class, Action)
-                    and action_class != Action
+                    and issubclass(action_class, CausalIQAction)
+                    and action_class != CausalIQAction
                 ):
 
                     # Use the root package name as action name
@@ -142,7 +142,7 @@ class ActionRegistry:
 
     @classmethod
     def register_action(
-        cls, package_name: str, action_class: Type[Action]
+        cls, package_name: str, action_class: Type[CausalIQAction]
     ) -> None:
         """Register an action class from a package.
 
@@ -158,11 +158,11 @@ class ActionRegistry:
             f"Registered action: {package_name} -> {action_class.__name__}"
         )
 
-    def get_available_actions(self) -> Dict[str, Type[Action]]:
+    def get_available_actions(self) -> Dict[str, Type[CausalIQAction]]:
         """Get dictionary of available action names to classes.
 
         Returns:
-            Dictionary mapping action names to Action classes
+            Dictionary mapping action names to CausalIQAction classes
 
         """
         return self._actions.copy()
@@ -188,14 +188,14 @@ class ActionRegistry:
         """
         return name in self._actions
 
-    def get_action_class(self, name: str) -> Type[Action]:
+    def get_action_class(self, name: str) -> Type[CausalIQAction]:
         """Get action class by name.
 
         Args:
             name: Action name
 
         Returns:
-            Action class
+            CausalIQAction class
 
         Raises:
             ActionRegistryError: If action not found
