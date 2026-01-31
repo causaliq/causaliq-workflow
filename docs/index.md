@@ -1,36 +1,57 @@
-# Documentation Structure
+# CausalIQ Workflow
 
-This directory contains focused documentation for causaliq-workflow development.
+![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
-## Essential Documents
+## Welcome
 
-### 📋 **Start Here**
-- **[Development Roadmap](roadmap.md)** - Complete feature list, progress tracking, and three-month implementation plan
-- **[Example Workflows](example_workflows.md)** - Series-based workflow examples and YAML configuration patterns
+Welcome to the documentation for CausalIQ Workflow - a comprehensive solution for designing, executing, and reproducing causal discovery and inference experiments at scale. It is part of the [CausalIQ ecosystem](https://causaliq.org/) for intelligent causal discovery.
 
-### 🔧 **Design**
-- **[Technical Architecture](technical_architecture.md)** - System design, Series concept, component architecture, and workflow-specific development patterns
+---
 
-### 📖 **Development Support**  
-- **[LLM Development Guide](https://github.com/causaliq/causaliq/blob/main/LLM_DEVELOPMENT_GUIDE.md)** - Comprehensive development standards and LLM communication patterns for the CausalIQ ecosystem
+## Overview
 
-## Quick Navigation
+This site provides detailed documentation, including:
 
-### For Design Work
-Start with: **Technical Architecture** → **Development Roadmap**
+- Development roadmap
+- User guide
+- Architectural vision
+- Design notes
+- API reference for users and contributors
 
-### For Understanding Requirements  
-Start with: **Development Roadmap** → **Example Workflows**
+---
 
-### For LLM Collaboration
-Use: **LLM Development Guide** (comprehensive, ecosystem-wide standards)
+## Quickstart & Installation
 
-## Document Purpose Summary
+For a quickstart guide and installation instructions, see the [README on GitHub](https://github.com/causaliq/causaliq-workflow#readme).
 
-| Document | Purpose | When to Use |
-|----------|---------|-------------|
-| `roadmap.md` | Feature specifications and progress tracking | Feature development planning |
-| `example_workflows.md` | YAML workflow examples | Understanding series concept |
-| `technical_architecture.md` | Package architecture and design patterns | Building components |
+---
 
-This streamlined structure focuses on actionable implementation guidance while maintaining single sources of truth.
+## Documentation Contents
+
+- [Development Roadmap](roadmap.md): Roadmap of upcoming features
+- [User Guide]: Comprehensive user guide (coming soon)
+- [Architecture](architecture/overview.md): Overall architecture and design notes
+- [API Reference](api/overview.md): Complete reference for Python code
+- [Development Guidelines](https://github.com/causaliq/causaliq/blob/main/CONTRIBUTING.md): CausalIQ guidelines for developers
+- [Changelog](https://github.com/causaliq/causaliq-workflow/blob/main/CHANGELOG.md)
+- [License](https://github.com/causaliq/causaliq-workflow/blob/main/LICENSE)
+
+---
+
+## Support & Community
+
+- [GitHub Issues](https://github.com/causaliq/causaliq-workflow/issues): Report bugs or request features.
+- [GitHub Discussions](https://github.com/causaliq/causaliq-workflow/discussions): Ask questions and join the community.
+
+---
+
+**Tip:**  
+Use the navigation sidebar to explore the documentation.  
+For the latest code and releases, visit the [causaliq-workflow GitHub repository](https://github.com/causaliq/causaliq-workflow).
+
+---
+
+**Supported Python Versions**: 3.9, 3.10, 3.11, 3.12, 3.13  
+**Default Python Version**: 3.11

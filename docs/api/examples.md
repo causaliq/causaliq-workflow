@@ -204,12 +204,12 @@ steps:
 
 ```python
 # custom_actions/causal_discovery.py
-from causaliq_workflow.action import Action, ActionExecutionError
+from causaliq_workflow.action import CausalIQAction, ActionExecutionError
 from typing import Any, Dict
 import pandas as pd
 import networkx as nx
 
-class PCAlgorithmAction(Action):
+class PCAlgorithmAction(CausalIQAction):
     """PC algorithm for causal structure learning."""
     
     name = "pc-algorithm"
@@ -254,7 +254,7 @@ class PCAlgorithmAction(Action):
         # Add some edges based on correlations (simplified)
         return G
 
-class NetworkAnalysisAction(Action):
+class NetworkAnalysisAction(CausalIQAction):
     """Network analysis and metrics calculation."""
     
     name = "network-analysis" 
@@ -585,4 +585,4 @@ results, errors = execute_workflow_parallel("experiments/large-matrix.yml", max_
 
 ---
 
-**[← Previous: CLI Interface](cli.md)** | **[Back to API Overview](../api.md)**
+**[← Previous: CLI Interface](cli.md)** | **[Back to API Overview](overview.md)**

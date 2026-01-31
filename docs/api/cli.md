@@ -295,4 +295,4 @@ python -m causaliq_workflow experiments/workflow.yml
 
 ---
 
-**[← Previous: Schema Validation](schema.md)** | **[Back to API Overview](../api.md)** | **[Next: Examples →](examples.md)**
+**[← Previous: Schema Validation](schema.md)** | **[Back to API Overview](overview.md)** | **[Next: Examples →](examples.md)**

@@ -13,7 +13,7 @@ CausalIQ Workflow is designed as a **zero-configuration workflow orchestration e
 5. **Convention-Based Plugin Pattern**: Actions follow simple naming conventions for automatic registration
 6. **Implicit Parameter Passing**: CLI parameters flow through workflows without formal definitions
 7. **Action-Level Validation**: Each action validates its own inputs (integrated with dry-run capability)
-8. **Workflow Composition**: Workflows can call other workflows via `cwork` commands, enabling complex research workflows
+8. **Workflow Composition**: Workflows can call other workflows via `cqflow` commands, enabling complex research workflows
 9. **Standardized Output**: Fixed filenames by type (`graph.xml`, `metadata.json`, `trace.csv`) with hierarchical organization
 
 ### Zero-Configuration Auto-Discovery
@@ -61,7 +61,7 @@ steps:
 steps:
   - name: "Run Structure Learning"
     run: |
-      cwork structure-learning.yml \
+      cqflow structure-learning.yml \
         --network="{{network}}" --algorithm="{{algorithm}}"
 ```
 
@@ -69,9 +69,9 @@ steps:
 
 ```yaml
 # CLI execution modes
-cwork workflow.yml --mode=dry-run    # Default: validate and preview (no execution)
-cwork workflow.yml --mode=run        # Execute workflow (skip if outputs exist)
-cwork workflow.yml --mode=compare    # Re-execute and compare with existing outputs
+cqflow workflow.yml --mode=dry-run    # Default: validate and preview (no execution)
+cqflow workflow.yml --mode=run        # Execute workflow (skip if outputs exist)
+cqflow workflow.yml --mode=compare    # Re-execute and compare with existing outputs
 ```
 
 ### Action Intelligence & Efficiency
@@ -83,7 +83,7 @@ action.run(inputs, force=False)     # (b) Skip if output file already exists (co
 action.compare(inputs)              # (c) Regenerate and compare with filesystem
 
 # Implicit parameter passing - no formal definitions needed
-class StructureLearnerAction(Action):
+class StructureLearnerAction(CausalIQAction):
     def run(self, inputs, matrix_job, dry_run=False):
         # Action handles its own validation
         self.validate_inputs(inputs)
@@ -113,7 +113,7 @@ The causaliq-workflow serves as the orchestration layer within the [CausalIQ eco
    - **Namespace isolation**: Each action package maintains its own namespace and dependencies
 
 2. **Action Framework** (`causaliq_workflow.action`)
-   - Abstract base class for workflow actions
+   - Abstract base class `CausalIQAction` for workflow actions
    - Type-safe input/output specifications
    - Comprehensive error handling with `ActionExecutionError` and `ActionValidationError`
    - 100% test coverage with unit and functional tests
@@ -161,7 +161,7 @@ The registry uses Python's module introspection to:
 #### 3. **Convention-Based Registration**
 For each discovered module, the system:
 - Checks if the module has a 'CausalIQAction' attribute
-- Verifies that it's a subclass of `causaliq_workflow.action.Action`
+- Verifies that it's a subclass of `causaliq_workflow.action.CausalIQAction`
 - Registers the action using the module name as the action identifier
 - Builds a runtime lookup table: `{action_name: CausalIQAction_class}`
 
@@ -181,16 +181,16 @@ Developers create action packages by following a simple convention:
 my-custom-action/
 ├── pyproject.toml           # Standard Python package config
 ├── my_custom_action/        # Package directory  
-│   └── __init__.py         # Must export 'Action' class
+│   └── __init__.py         # Must export 'CausalIQAction' class
 └── README.md
 ```
 
 **Step 2: Action Implementation**
 ```python
 # my_custom_action/__init__.py
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 
-class CausalIQAction(Action):  # Must be named 'CausalIQAction'
+class CausalIQAction(CausalIQAction):  # Must be named 'CausalIQAction'
     name = "my-custom-action"
     description = "Performs custom analysis"
     
@@ -320,19 +320,19 @@ class CausalLearnPackage:
 class ActionRegistry:
     """Manage reusable workflow actions."""
     
-    def register_action(self, name: str, version: str, action: Action) -> None:
+    def register_action(self, name: str, version: str, action: CausalIQAction) -> None:
         """Register versioned action: load-network@v1."""
         
     def execute_action(self, action_ref: str, inputs: Dict) -> ActionResult:
         """Execute action with input validation and output handling."""
 
-class LoadNetworkAction(Action):
+class LoadNetworkAction(CausalIQAction):
     """Action: load-network@v1 - Load causal network dataset."""
     
-class CausalDiscoveryAction(Action):
+class CausalDiscoveryAction(CausalIQAction):
     """Action: causal-discovery@v1 - Run causal discovery algorithm."""
     
-class EvaluateGraphAction(Action):
+class EvaluateGraphAction(CausalIQAction):
     """Action: evaluate-graph@v1 - Evaluate learned graph against true graph."""
 ```
 

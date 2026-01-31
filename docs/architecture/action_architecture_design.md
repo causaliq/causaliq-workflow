@@ -21,9 +21,9 @@ Actions follow a simple naming convention for automatic discovery:
 
 ```python
 # my_action/__init__.py - Must export class named 'CausalIQAction'
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 
-class CausalIQAction(Action):  # Must be named 'CausalIQAction'
+class CausalIQAction(CausalIQAction):  # Must be named 'CausalIQAction'
     name = "my-action"
     version = "1.0.0"
     description = "Performs custom analysis"
@@ -57,7 +57,7 @@ class ActionOutput:
     description: str
     value: Any
 
-class Action(ABC):
+class CausalIQAction(ABC):
     """Base class for all workflow actions."""
     
     # Action metadata
@@ -116,7 +116,7 @@ class ActionRegistry:
     """Automatically discover and manage workflow actions."""
     
     def __init__(self):
-        self._actions: Dict[str, Type[Action]] = {}
+        self._actions: Dict[str, Type[CausalIQAction]] = {}
         self._discover_actions()  # Automatic discovery on initialization
     
     def _discover_actions(self):
@@ -128,14 +128,14 @@ class ActionRegistry:
                 # Attempt to import the module
                 module = importlib.import_module(module_name)
                 
-                # Check if module exports an 'Action' class
-                if hasattr(module, 'Action'):
-                    action_class = getattr(module, 'Action')
+                # Check if module exports a 'CausalIQAction' class
+                if hasattr(module, 'CausalIQAction'):
+                    action_class = getattr(module, 'CausalIQAction')
                     
-                    # Verify it's a proper Action subclass
+                    # Verify it's a proper CausalIQAction subclass
                     if (isinstance(action_class, type) and 
-                        issubclass(action_class, Action) and 
-                        action_class != Action):
+                        issubclass(action_class, CausalIQAction) and 
+                        action_class != CausalIQAction):
                         
                         # Register using module name as action identifier
                         self._actions[module_name] = action_class
@@ -144,11 +144,11 @@ class ActionRegistry:
                 # Skip modules that can't be imported
                 continue
     
-    def get_available_actions(self) -> Dict[str, Type[Action]]:
+    def get_available_actions(self) -> Dict[str, Type[CausalIQAction]]:
         """Return copy of available actions."""
         return self._actions.copy()
     
-    def get_action_class(self, action_name: str) -> Type[Action]:
+    def get_action_class(self, action_name: str) -> Type[CausalIQAction]:
         """Get action class by name."""
         if action_name not in self._actions:
             raise ActionRegistryError(f"Action '{action_name}' not found. Available actions: {list(self._actions.keys())}")
@@ -160,9 +160,9 @@ class ActionRegistry:
 1. **Registry Initialization**: When `ActionRegistry()` is created, discovery starts automatically
 2. **Module Scanning**: Uses `pkgutil.iter_modules()` to iterate through all Python modules
 3. **Safe Import**: Attempts to import each module, skipping those that fail
-4. **Convention Check**: Looks for a class named 'Action' in each module
-5. **Validation**: Ensures the Action class inherits from the base Action class
-6. **Registration**: Maps module name to Action class for workflow lookup
+4. **Convention Check**: Looks for a class named 'CausalIQAction' in each module
+5. **Validation**: Ensures the CausalIQAction class inherits from the base CausalIQAction class
+6. **Registration**: Maps module name to CausalIQAction class for workflow lookup
 
 #### Action Package Development Workflow
 
@@ -177,16 +177,16 @@ cd my_custom_action
 my_custom_action/
 ├── pyproject.toml
 ├── my_custom_action/
-│   └── __init__.py  # Must export 'Action' class
+│   └── __init__.py  # Must export 'CausalIQAction' class
 └── README.md
 ```
 
 **Step 3: Implement Action Convention**
 ```python
 # my_custom_action/__init__.py
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 
-class CausalIQAction(Action):  # Must be named 'CausalIQAction'
+class CausalIQAction(CausalIQAction):  # Must be named 'CausalIQAction'
     name = "my-custom-action"
     version = "1.0.0" 
     description = "Custom analysis action"
@@ -212,11 +212,11 @@ causaliq-workflow my-experiment.yml  # Action automatically available
 
 ```python
 # causaliq_analysis/__init__.py
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 import pandas as pd
 import networkx as nx
 
-class CausalIQAction(Action):  # Auto-discovered by this name
+class CausalIQAction(CausalIQAction):  # Auto-discovered by this name
     name = "causaliq-analysis"
     version = "1.0.0"
     description = "Basic causal graph analysis"
@@ -251,11 +251,11 @@ steps:
 
 ```python
 # causaliq_data/__init__.py  
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 import pandas as pd
 from pathlib import Path
 
-class CausalIQAction(Action):
+class CausalIQAction(CausalIQAction):
     name = "causaliq-data"
     version = "2.1.0"
     description = "Load and preprocess causal datasets"
@@ -294,11 +294,11 @@ class CausalIQAction(Action):
 
 ```python
 # causaliq_pc_algorithm/__init__.py
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 import pandas as pd
 import networkx as nx
 
-class CausalIQAction(Action):
+class CausalIQAction(CausalIQAction):
     name = "causaliq-pc-algorithm" 
     version = "1.5.2"
     description = "PC algorithm for causal structure learning"
@@ -362,7 +362,7 @@ class CausalIQAction(Action):
 ```python
 import networkx as nx
 
-class CausalDiscoveryAction(Action):
+class CausalDiscoveryAction(CausalIQAction):
     """Execute causal discovery algorithm from various packages."""
     
     name = "causal-discovery"
@@ -502,10 +502,10 @@ Actions can bridge to R, Java, and other languages:
 
 ```python
 # causaliq_bnlearn/__init__.py
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 import rpy2.robjects as ro
 
-class CausalIQAction(Action):
+class CausalIQAction(CausalIQAction):
     name = "causaliq-bnlearn"
     
     def __init__(self):
@@ -525,7 +525,7 @@ Single packages can provide multiple related algorithms:
 
 ```python  
 # causaliq_constraint_based/__init__.py
-class CausalIQAction(Action):
+class CausalIQAction(CausalIQAction):
     name = "causaliq-constraint-based"
     
     def run(self, inputs):

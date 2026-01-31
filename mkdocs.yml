@@ -43,15 +43,17 @@ nav:
   - Requirements: 
     - Development Roadmap: roadmap.md
     - Example Workflows: example_workflows.md
-  - Architecture: technical_architecture.md
-  - Design Documents:
-    - Matrix Strategy Design: design/matrix_expansion_design.md
-    - Action Architecture: design/action_architecture_design.md
-    - Algorithm Registry: design/action_auto_discovery_design.md
-    - Workflow Executor: design/workflow_executor_design.md
-    - Logging Architecture: design/logging_architecture_design.md
+  - Architecture: 
+    - Architectural Overview: architecture/overview.md
+    - Design Documents:
+      - Matrix Strategy Design: architecture/matrix_expansion_design.md
+      - Action Architecture: architecture/action_architecture_design.md
+      - Algorithm Registry: architecture/action_auto_discovery_design.md
+      - Workflow Executor: architecture/workflow_executor_design.md
+      - Logging Architecture: architecture/logging_architecture_design.md
+      - Results Cache Design: architecture/results_cache_design.md
   - API Reference:
-    - Overview: api.md
+    - Overview: api/overview.md
     - Action Framework: api/actions.md
     - Action Registry: api/registry.md
     - Workflow Engine: api/workflow.md
@@ -96,3 +98,5 @@ plugins:
             backlinks: tree
             show_bases: false
             show_inheritance_diagram: true
+
+            

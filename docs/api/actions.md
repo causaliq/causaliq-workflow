@@ -6,7 +6,7 @@ The action framework provides the foundational classes for building reusable wor
 
 ### causaliq_workflow.action
 
-::: causaliq_workflow.action.Action
+::: causaliq_workflow.action.CausalIQAction
     options:
       show_root_heading: true
       show_source: false
@@ -43,10 +43,10 @@ The action framework provides the foundational classes for building reusable wor
 ## Quick Example
 
 ```python
-from causaliq_workflow.action import Action, ActionExecutionError
+from causaliq_workflow.action import CausalIQAction, ActionExecutionError
 from typing import Any, Dict
 
-class MyStructureLearnerAction(Action):
+class MyStructureLearnerAction(CausalIQAction):
     """Custom structure learning action."""
     
     name = "my-structure-learner"
@@ -70,7 +70,7 @@ class MyStructureLearnerAction(Action):
 
 ### Action Implementation Guidelines
 
-1. **Inherit from Action base class** - Provides standardized interface
+1. **Inherit from CausalIQAction base class** - Provides standardized interface
 2. **Define comprehensive inputs** - Use ActionInput for type safety
 3. **Document outputs clearly** - Help users understand action results
 4. **Handle errors gracefully** - Use ActionExecutionError and ActionValidationError
@@ -114,4 +114,4 @@ def test_my_action_missing_file():
 
 ---
 
-**[← Back to API Overview](../api.md)** | **[Next: Action Registry →](registry.md)**
+**[← Back to API Overview](overview.md)** | **[Next: Action Registry →](registry.md)**

@@ -1,5 +1,22 @@
 # CausalIQ Workflow - Example Workflows
 
+!!! info "Feature Implementation Status"
+    This documentation includes both **currently implemented** features and **planned features**. Planned features are marked with warning boxes. Currently implemented:
+    
+    - ✅ Workflow parsing and validation
+    - ✅ Matrix expansion into job configurations
+    - ✅ Template variable substitution (`{{variable}}`)
+    - ✅ Action registry and discovery
+    - ✅ Schema validation (strings, numbers, booleans in `with:` blocks)
+    
+    Planned features (not yet implemented):
+    
+    - ⏳ Array values in `with:` blocks
+    - ⏳ Series-based workflows
+    - ⏳ Resource configuration
+    - ⏳ LLM integration
+    - ⏳ Advanced randomization strategies
+
 ## Design Philosophy: Inspired by CI-Workflows
 
 The CausalIQ Workflows are *inspired* by the concepts within 
@@ -22,7 +39,7 @@ Key concepts in CausalIQ workflows are:
   - workflows may be run from the command line interface (CLI) using commands like:
 
     ```shell
-    cwork example_workflow.yaml --network=child,property
+    cqflow example_workflow.yaml --model=child,property
     ```
       - CLI arguments can be used to override workflow and matrix parameters so
         that the same workflow can be easily reused;
@@ -42,40 +59,125 @@ The CausalIQ Workflow CLI has a **--mode** argument which controls its overall b
 
 ## Example Workflows in Causal Discovery
 
-### Simple One-Off Structure Learning Examples
+### Unparameterised single-step workflows
 
-The first simple example runs the Tabu-Stable structure learning algorithm on 1000 synthetic rows from the Asia network. Input and output files are generally specified in terms of
-their *location* in CausalIQ Workflows, and the filenames are fixed according to
-what kind of entity they are: a graph, metadata or trace for example.
+The first simple example is a minimal workflow that asks a LLM to propose a causal network for covid
 
-This will create a graph.xml and metadata.json file in the specified output folder. The debug switch also means that a trace.csv will be produced.
+```yaml
+# llm_covid.yaml
+steps:
+  - name: "Llama3 proposes a covid graph"
+    uses: "causaliq-knowledge"
+    with:
+      action: "generate_graph"
+      context: "models/covid/covid_llm_context.json"
+      result: "results/covid.db"
+```
+This is a single-step workflow with a minimal set of values defined for the 
+single step:
+
+- **name** - each step must be given a neame which is hopefully meaningful
+- **uses** - the step must define which CausalIQ package it uses
+
+and then has a variable number of parameters following the **with:** statment that
+defines the processing to be undertaken by the package through its *CausalIQAction* interface. In this example, these are:
+
+- **action** - this parameter is always present and defines what particular action
+the package is required to do
+- **context** - defines a JSON file providing details of the problem domain and its variables which will serve as input to the LLM for this action
+- **result** - defines a results (sql-lite) database where results will be placed
+
+The same result could be achieved using the causaliq-knowledge CLI command directly,
+but using this simple workflow avoids having to specify the model and result locations on
+the command line by using the following command:
+
+```shell
+cqflow llm_covid.yaml  # cqflow is a synonym for causaliq-workflow
+```
+
+Using `.yaml` workflow files becomes increasingly convenenient as additional parameters
+are specified, for example, as in the following example:
 
 
 ```yaml
+# llm_covid.yaml
+description: "Using gpt-4 to propose a causal graph using rich context"
+root_dir: "c:/dev/causaliq/causaliq-research"
+
+steps:
+  - name: "GPT-4 proposes a covid graph"
+    uses: "causaliq-knowledge"
+    with:
+      action: "generate_graph"
+      llm: "openai/gpt-4o-mini"
+      context_level: "rich"
+      context: "models/covid/covid_llm_context.json"
+      result: "results/covid.db"
+```
+
+Additional workflow-level parameters here are: 
+
+- **description** - a human friendly description of the workflow
+- **root_dir** - a base file location for all paths used in the workflow
+(by default the current directory is used)
+
+Additional parameters for the `generate_graph` step are:
+
+- **llm** - explicit specification of LLM model to use instead of using the default LLM
+- **context_level** - specify that a rich level of context is to be provided to the LLM
+
+The next simple example runs the Tabu-Stable structure learning algorithm on 1000 synthetic rows from the Asia network. Specific parameters for structure learning are:
+
+- **action** - specifices the structure learning action
+- **algorithm** - the structure learning algorithm
+- **sample_size** - how many rows of data to use
+- **dataset** - file containing synthetically generated rows
+- **debug** - is set true so that a detailed iteration-by-iteratuon analysis of
+the learning process is included in the result
+- **results** - the results database, where in this case an entry will be 
+the learnt graph, an iteration trace, and structure learning metadata
+
+```yaml
 # tabu_asia.yaml
+id: "tabu-stable_asia_1k"
 description: "Tabu-stable learning Asia from 1K data with full trace"
 
 steps:
   - name: "Learn Structure"
     uses: "causaliq-discovery"
     with:
+      action: "learn_structure"
       algorithm: "tabu-stable"
       sample_size: "1k"
-      dataset: "/data/asia"
-      output: "/results/tabu-asia"
+      dataset: "models/asia/asia_10k.data.gz"
       debug: True
+      results: "results/tabu_stable.db"
 ```
 
-The same result could be achieved using the causaliq-discovery CLI command directly,
-but using this simple workflow avoids having to specify the dataset, algorithm etc. on
-the command line by using the following command:
+The example below **updates** the metadata about a learned graph to evaluate
+structural accuracy and some inference scores for all graphs learnt by asia.
 
-```shell
-cwork tabu_asia.yaml  # cwork is a synonym for causaliq-workflow
+!!! warning "Planned Feature"
+    Array values in `with:` blocks (e.g., `dag_structure: ["f1", "shd"]` and `score: ["bic", "bde"]`) shown in this example are planned features. The current schema only supports string, number, and boolean values in action parameters.
+
+```yaml
+# evaluate_graph.yaml
+description: "Evaluate structure and score of learned graphs"
+model: "asia"
+
+steps:
+  - name: "Evaluate Graph"
+    uses: "causaliq-analysis"
+    with:
+      action: "evaluate_graph"
+      model: {{model}}
+      true_graph: "models/{{model}}/{{model}}.xdsl"
+      dag_structure: ["f1",shd"]
+      cpdag_structure: "shd"
+      score: ["bic", "bde"]
+      results: "results/tabu_stable.db"
 ```
 
-This "shorthand" capability becomes especially useful when plotting charts which 
-typically require a lot of parameter values to specify axis titles, chart type and colours etc., which become unmanageable to specify on the command line.
 
 Another simple workflow might be to download resources from Zenodo. This would download all the resources associated with my PhD thesis and
 unzip in the specified output folder.
@@ -98,8 +200,8 @@ steps:
 We can make the simple learning example more general by adding workflow-level
 variables to parameterise the workflow. In this example, the sample_size parameter has a
 default value of 1000 if not specified on the command line, whereas the None
-value for network indicates that this must be specified on the command line. 
-Note how the network and sample_size
+value for model (i.e. network) indicates that this must be specified on the command line. 
+Note how the model and sample_size
 parameters are used in the dataset and output action parameters so
 that the correct input file and output folder are used.
 
@@ -107,22 +209,23 @@ that the correct input file and output folder are used.
 # tabu_learning.yaml
 description: "Parameterised Tabu-stable learning"
 sample_size: "1K"
-network: None
+model: None
 
 steps:
   - name: "Learn Structure"
     uses: "causaliq-discovery"
     with:
+      action: "learn_structure"
       algorithm: "tabu-stable"
       max_time: 10
       sample_size: {{sample_size}}
-      dataset: "/data/{{network}}"
-      output: "/results/{{network}}/{{sample_size}}"
+      dataset: "/models/{{model}}/{{network}}_10k.data.gz"
+      output: "/results/tabu_stable.db
 ```
 We can now run Tabu-Stable structure learning for any network and sample size using commands like:
 
 ```shell
-cwork tabu_learning.yaml --network=child --sample_size=500
+cqflow tabu_learning.yaml --network=child --sample_size=500
 ``` 
 
 ### Multiple Step Examples
@@ -139,47 +242,22 @@ means to exactly replicate this result.
 # tabu_llm_learning.yaml
 description: "Tabu-stable learning Asia with LLM initialisation"
 sample_size: "1K"
-network: None
+model: None
 
 steps:
   - name: "LLM Graph Initialisation"
     uses: "causaliq-knowledge"
     with:
-      operation: "propose-graph"
-      dataset: "/data/{{network}}"
-      context: "/knowledge/context/{{network}}"
-      output: "/knowledge/llm_graphs/{{network}}"
+      action: "generate_graph"
+      context: "models/{{model}}/{{model}}_llm_context.json"
+      result: "results/llm_graphs.db"
 
   - name: "Learn Structure"
     uses: "causaliq-discovery"
     with:
-      initial_graph: "/knowledge/llm_graphs/asia"
+      action: "learn_structure"
+      initial_graph: "results/llm_graphs.db"
       # etc ....
-```
-
-Alternatively, or additionally, we can add some steps after structure learning
-to compute some graph metrics and visualise the way that the graph was learnt.
-
-The "Evaluate graph" step requires the bic-score which needs the dataset to be specified, and F1 needs the true graph to be supplied - the relevant causaliq-analysis action is responsible for checking that these kind of dependencies are satisified. The results folder is specified where the learnt graph and learning metadata is, and so these results are appended to the metadata.
-
-```yaml
-# learn_and_evaluate.yaml
-
-# workflow variables ... 
-
-steps:
-
-  # step(s) to learn graph ...
-
-  - name: "Evaluate graph"
-    uses: "causaliq-analysis"
-    with:
-      operation: "evaluate-graph"
-      dataset: "/data/{{network}}"
-      true_graph: "/knowledge/true_graph/{{network}}"
-      metrics: ["bic-score", "f1", "scaled-shd"]
-      basis: ["cpdag"]
-      graph: "/results/{{network}}/{{sample_size}}"
 ```
 
 ### Matrix Strategy Workflow
@@ -189,14 +267,16 @@ In many cases we will wish to run comparative experiments with a different resul
 Internally, the action - in this case causal-discovery - may be implemented intelligently to maximise efficiency. For example, in this case, it may read
 the maximum number of rows from the filesystem dataset just once, and then adjust the effective sample size and randomisation internally for each individual experiment.
 
+!!! warning "Planned Feature"
+    The `randomise` workflow-level variable and array values in `with:` blocks (e.g., `randomise: {{randomise}}`) shown in this example are planned features. The current schema only supports string, number, and boolean values in action parameters.
+
 ```yaml
 # matrix_experiment.yaml
-id: "stability001"
 description: "Algorithm stability comparison"
 randomise: ["variable_order", "variable_name"]
 
 matrix:
-  network: ["asia", "cancer"]
+  model: ["asia", "cancer"]
   algorithm: ["pc", "ges"]
   sample_size: ["100", "1K"]
   seed: [1, 25]
@@ -205,12 +285,13 @@ steps:
   - name: "Structure Learning"
     uses: "causaliq-discovery"
     with:
+      action: "learn_structure"
       algorithm: "{{algorithm}}"
       sample_size: "{{sample_size}}"
-      dataset: "/data/{{network}}"
+      dataset: "models/{{model}}/{{model}}_10k.data.gz"
       randomise: {{randomise}}
       seed: {{seed}}
-      output: "/results/{{id}}/{{algorithm}}/{{network}}/{{sample_size}}/{{seed}}"
+      output: "results/algo_stability.db"
 ```
 
 ### Workflow of workflows
@@ -230,7 +311,7 @@ matrix:
 
 steps:
   name: "Create chapter {{chapter}}"
-  run: "cwork create_chapter_{{chapter}}.yaml --id={{id}}
+  run: "cqflow create_chapter_{{chapter}}.yaml --id={{id}}
 ```
 
 ### Parallel Jobs
@@ -327,7 +408,7 @@ Available context: id, description, dataset
 ## Example Action Implementation
 
 ```python
-class DummyStructureLearnerAction(Action):
+class DummyStructureLearnerAction(CausalIQAction):
     """Reference action implementation."""
     
     name = "dummy-structure-learner"
@@ -410,7 +491,12 @@ for job in jobs:
 - ✅ Comprehensive error handling and 100% test coverage
 
 **Next Phase**: Action execution engine with template variable substitution
-      
+
+!!! warning "Planned Feature"
+    The `series`, `resources`, `analysis`, and `monitoring` workflow sections shown below are planned features and not yet implemented in the current schema.
+
+```yaml
+# series_workflow_example.yaml (Planned Feature)
   ges_series:
     algorithm: "ges" 
     package: "causaliq-discovery"
@@ -442,6 +528,9 @@ monitoring:
 ```
 
 ## Use Case 2: External Package Integration
+
+!!! warning "Planned Feature"
+    The `series`, `external_packages`, `resources`, and `validation` workflow sections shown in this example are planned features and not yet implemented in the current schema.
 
 ### Scenario
 Use R bnlearn package alongside Python algorithms for comprehensive comparison.
@@ -490,6 +579,9 @@ validation:
 ```
 
 ## Use Case 3: Configuration Inheritance
+
+!!! warning "Planned Feature"
+    The `defaults`, `inherits`, and inheritance-based workflow configuration shown in this example are planned features and not yet implemented in the current schema.
 
 ### Scenario
 Create specific experiments based on common base configuration.
@@ -545,6 +637,9 @@ overrides:
 
 ## Use Case 4: LLM Integration for Model Averaging
 
+!!! warning "Planned Feature"
+    The `series`, `llm_analysis`, and `model_averaging` workflow sections shown in this example are planned features and not yet implemented in the current schema.
+
 ### Scenario
 Use LLM to guide intelligent model averaging across multiple algorithm results.
 
@@ -598,6 +693,9 @@ model_averaging:
 ```
 
 ## Use Case 5: Dataset Download and Randomization
+
+!!! warning "Planned Feature"
+    The `datasets`, `randomization`, `series`, and `analysis` workflow sections shown in this example are planned features and not yet implemented in the current schema.
 
 ### Scenario
 Automated dataset download from Zenodo with systematic randomization for robustness testing.
@@ -742,6 +840,9 @@ This focused approach emphasizes the series concept and immediate implementation
 
 ## Use Case 2: Production Causal Inference Workflow
 
+!!! warning "Planned Feature"
+    This production workflow configuration demonstrates planned features including `parameters`, `resources`, `monitoring`, `depends_on`, `inputs`, `outputs`, and streaming data integration. These are not yet implemented in the current schema.
+
 ### Scenario
 A business wants to continuously analyze the causal impact of marketing campaigns on customer behavior using streaming data.
 
@@ -857,6 +958,9 @@ failure_handling:
 ```
 
 ## Use Case 3: Interactive Research Exploration
+
+!!! warning "Planned Feature"
+    This interactive exploration workflow demonstrates planned features including interactive mode, LLM-assisted analysis, `user_interaction`, `state`, and iterative workflow refinement. These are not yet implemented in the current schema.
 
 ### Scenario  
 An interactive session where researchers explore causal relationships with LLM assistance and iterative refinement.

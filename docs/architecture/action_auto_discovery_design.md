@@ -96,12 +96,12 @@ dependencies = [
 #### Step 2: Implement the Action Convention
 **File: causaliq_pc_algorithm/__init__.py**
 ```python
-from causaliq_workflow.action import Action
+from causaliq_workflow.action import CausalIQAction
 import pandas as pd
 import networkx as nx
 
 # Must be named 'CausalIQAction' for auto-discovery
-class CausalIQAction(Action):
+class CausalIQAction(CausalIQAction):
     name = "causaliq-pc-algorithm"
     version = "1.0.0" 
     description = "PC algorithm for causal structure learning"
@@ -178,10 +178,10 @@ class ActionRegistry:
                 if hasattr(module, 'CausalIQAction'):
                     action_class = getattr(module, 'CausalIQAction')
                     
-                    # Verify it's actually an Action subclass
+                    # Verify it's actually a CausalIQAction subclass
                     if (isinstance(action_class, type) and 
-                        issubclass(action_class, Action) and 
-                        action_class != Action):
+                        issubclass(action_class, CausalIQAction) and 
+                        action_class != CausalIQAction):
                         
                         # Register using module name
                         self.actions[module_name] = action_class
@@ -234,7 +234,7 @@ dependencies = [
 For R and Java integrations:
 
 ```python
-class RBridgeAction(Action):
+class RBridgeAction(CausalIQAction):
     def __init__(self):
         # Initialize R environment
         self.r_session = self._setup_r_environment()
@@ -255,7 +255,7 @@ class RBridgeAction(Action):
 
 ### For Developers
 1. **Standard Python packaging**: No custom build systems
-2. **Simple convention**: Just export an 'Action' class
+2. **Simple convention**: Just export a 'CausalIQAction' class
 3. **Full Python ecosystem**: Use any Python dependencies
 4. **Independent development**: No coordination with core framework needed
 
