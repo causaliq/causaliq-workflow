@@ -1,49 +1,32 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: January 30, 2026
+**Last updated**: February 1, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
 ## 🚧  Under development
 
-### Release v0.1.0 - Foundation Actions
-
-Framework for plug-in actions, basic workflow and CLI support
-
-**Scope**
-
-- `causaliq-workflow run [--dry-run] <workflow>`
-- Auto-discovery plugin system
-- YAML parsing, matrix expansion, step execution
-- JSON Schema with error reporting
-- support Python v3.13
-
-**Implementation Plan**
-
-*Commit 1: support Python v3.13* ✅
-
-- add v3.13 venv and CI testing
-
-*Commit 2: cqflow short form command supported* ✅
-
-- support cqflow short command
-- update license specification
-
-*Commit 3: refactor so base action class is named CausalIQAction. ✅
-
-- refactor base interface class name from Action to CausalIQAction
-- rename 
-
-*Commit 4: documentation ready for release*
-
-- include copilot instructions
-- ensure documentation up to date
-
-*See Git commit history for detailed implementation progress*
+No release currently under development.
 
 ## ✅ Previous Releases
 
-None
+### Release v0.1.0 - Workflow Foundations (2026-02-01)
+
+Framework for plug-in actions, basic workflow and CLI support
+
+**Delivered**
+
+- `causaliq-workflow run [--dry-run] <workflow>` CLI command
+- `cqflow` short form command alias
+- Auto-discovery plugin system with `CausalIQAction` base class
+- YAML parsing, matrix expansion, step execution
+- JSON Schema validation with clear error reporting
+- Template variable validation for workflow files
+- Support for Python 3.9, 3.10, 3.11, 3.12, and 3.13
+- Comprehensive logging system
+- 100% test coverage
+
+*See Git commit history for detailed implementation progress*
 
 ## 🛣️ Upcoming Releases (speculative)
 
@@ -80,6 +63,8 @@ Graph averaging and structural analysis workflows
 
 
 ### Release 0.5.0: Enhanced workflow
+
+Dry and comparison runs, runtime estimation and processing summary
 
 **Scope**:
 

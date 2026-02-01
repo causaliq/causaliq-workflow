@@ -1,13 +1,41 @@
+
 # causaliq-workflow
 
-[![Python Support](https://img.shields.io/pypi/pyversions/zenodo-sync.svg)](https://pypi.org/project/zenodo-sync/)
+![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 **GitHub Actions-inspired workflow orchestration for causal discovery experiments** within the [CausalIQ ecosystem](https://github.com/causaliq/causaliq). Execute causal discovery workflows using familiar CI/CD patterns with conservative execution and comprehensive action framework.
 
-## Current Implementation (v0.1.0)
+## Status
 
-✅ **Action Framework Foundation Complete** - Robust workflow orchestration with 100% test coverage
+🚧 **Active Development** - This repository is currently in active development, which involves:
+
+- migrating functionality from the legacy monolithic [discovery repo](https://github.com/causaliq/discovery) to support legacy experiments and analysis
+- ensure CausalIQ development standards are met
+- adding new features to provide a comprehensive, open, causal discovery workflow.
+
+
+## Features
+
+✅ **Implemented Releases**
+
+- **Release v0.1.0 - Workflow Foundations**: Plug-in actions, basic workflow and CLI support, 100% test coverage
+
+*See Git commit history for detailed implementation progress*
+
+🛣️ Upcoming Releases
+
+- **Release v0.2.0 - Knowledge Workflows**: Integrate with causaliq-knowledge generate_graph action.
+- **Release v0.3.0 - Result Caching**: Output action results and metadata store to the results cache
+- **Release v0.4.0 - Analysis Workflows**: Graph averaging and structural analysis workflows.
+- **Release v0.5.0 - Enhanced Workflow**: Dry and comparison runs, runtime estimation and processing summary
+- **Release v0.6.0 - Discovery Workflows**: Structure learning algorithms integrated
+
+
+## Brief Example Usage
+
+**Example Workflow Definition**, experiment.xml:
 
 ```yaml
 description: "Causal Discovery Experiment"
@@ -30,41 +58,48 @@ steps:
 
 **Execute with modes:**
 ```bash
-cwork experiment.yml --mode=dry-run    # Validate and preview (default)
-cwork experiment.yml --mode=run        # Execute (skip if outputs exist)
-cwork experiment.yml --mode=compare    # Re-execute and compare outputs
+cqflow experiment.yml --mode=dry-run    # Validate and preview (default)
+cqflow experiment.yml --mode=run        # Execute (skip if outputs exist)
+cqflow experiment.yml --mode=compare    # Re-execute and compare outputs
 ```
 
-Note that **cwork** is a short synonym for **causaliq-workflow** which can also be used.
+Note that **cqflow** is a short synonym for **causaliq-workflow** which can also be used.
 
-## Implementation Status
 
-� **Phase 1: Action Framework Foundation** - ✅ 75% Complete (47/47 tests passing)
+## Upcoming Key Innovations
 
-**Completed Features**:
-- ✅ **Action Framework**: Type-safe action base classes with comprehensive error handling
-- ✅ **Schema Validation**: GitHub Actions-inspired workflow syntax with matrix support
-- ✅ **Test Coverage**: 100% coverage across unit, functional, and integration tests
-- ✅ **Reference Implementation**: DummyStructureLearnerAction demonstrating framework
+### 🔄 Workflow Orchestration
 
-📋 **Complete progress tracking**: [docs/roadmap.md](docs/roadmap.md)
+- Continuous Integration (CI) testing: Workflow specification syntax
+- Dask distributed computing: Scalable parallel processing
+- Dependency management: Automatic handling of data and processing dependencies
+- Error recovery: Robust handling of failures and restarts
 
-## Key Features
+### 📊 Experiment Management
 
-- **🎯 GitHub Actions Syntax**: Familiar workflow patterns adapted for causal discovery
-- **📊 Matrix Variables**: Parameterized experiments with hierarchical output organization
-- **🔧 CausalIQ Actions**: Reusable workflow actions from causaliq-discovery, causaliq-analysis packages
-- **⚡ Conservative Execution**: Skip work if outputs exist, enabling safe restarts and efficient re-runs
-- **🛡️ Mode-Based Operation**: dry-run (validate), run (execute), compare (functional testing)
-- **🗂️ Standardized Output**: Fixed filenames by type (graph.xml, metadata.json, trace.csv)
-- **🧪 Comprehensive Testing**: Unit, functional, and integration tests with tracked test data
+- Configuration management: YAML-based experiment specifications
+- Parameter sweeps: Systematic exploration of algorithm parameters
+- Version control: Git-based tracking of experiments and results
+- Reproducibility: Deterministic execution with seed management
 
-**See detailed architecture**: [docs/technical_architecture.md](docs/technical_architecture.md)
+## Integration with CausalIQ Ecosystem
 
-## Quick Start
+- 🔍 **CausalIQ Discovery** is called by this package to perform structure learning.
+- 📊 **CausalIQ Analysis** is called by this package to perform results analysis and generate assets for research papers.
+- 🔮 **CausalIQ Predict** is called by this package to perform causal prediction.
+- 🔄 **Zenodo Synchronisation** is used by this package to download datasets and upload results.
+- 🧪 **CausalIQ Papers** are defined in terms of CausalIQ Workflows allowing the reproduction of experiments, results and published paper assets created by the CausalIQ ecosystem.
+
+## LLM Support
+
+The following provides project-specific context for this repo which should be provided after the [personal and ecosystem context](https://github.com/causaliq/causaliq/blob/main/LLM_DEVELOPMENT_GUIDE.md):
+
+```text
+tbc
+```
 
 ### Prerequisites
-- Python 3.9-3.12
+- Python 3.9-3.13
 - Git
 - R with bnlearn (optional, for external integration)
 
@@ -75,27 +110,12 @@ cd causaliq-workflow
 
 # Set up development environment
 scripts/setup-env.ps1 -Install
-scripts/activate.ps1 311
+scripts/activate.ps1
 ```
 
 **Example workflows**: [docs/example_workflows.md](docs/example_workflows.md)
 
-## Documentation
 
-- **[📋 Development Roadmap](docs/roadmap.md)** - Complete roadmap and delivery specifications
-- **[🏗️ Technical Architecture](docs/technical_architecture.md)** - CI workflow engine design and core components
-- **[⚙️ CI Workflow Implementation](docs/design/ci_workflow_implementation.md)** - Strategic design decisions and implementation approach
-- **[📊 Matrix Strategy Design](docs/design/matrix_expansion_design.md)** - GitHub Actions matrix implementation details
-- **[🔧 Action Architecture](docs/design/action_architecture_design.md)** - Versioned action component system
-- **[🔌 Algorithm Registry](docs/design/algorithm_registry_design.md)** - Package-level plugin architecture
-
-## CausalIQ Ecosystem Integration
-
-Coordinates with:
-- **causaliq-discovery**: Core algorithms (integrated as package plugins)
-- **causaliq-knowledge**: Provides knowledge, including from LLMs, via action-based architecture
-- **causaliq-analysis**: Statistical analysis actions and post-processing  
-- **causaliq-papers**: Configuration and result storage for to enable reproducibility of CausalIQ papers
 
 ## Research Context
 
@@ -103,11 +123,66 @@ Supporting research for May 2026 paper on LLM integration for intelligent model 
 
 **Migration target**: Existing workflows from monolithic discovery repo by end 2026.
 
-## License
+## Quick Start
 
-MIT License - see [LICENSE](LICENSE) file.
+```python
+# to be completed
+```
+
+## Getting started
+
+### Prerequisites
+
+- Git 
+- Latest stable versions of Python 3.9, 3.10. 3.11 and 3.12
+
+
+### Clone the new repo locally and check that it works
+
+Clone the causaliq-analysis repo locally as normal
+
+```bash
+git clone https://github.com/causaliq/causaliq-analysis.git
+```
+
+Set up the Python virtual environments and activate the default Python virtual environment. You may see
+messages from VSCode (if you are using it as your IDE) that new Python environments are being created
+as the scripts/setup-env runs - these messages can be safely ignored at this stage.
+
+```text
+scripts/setup-env -Install
+scripts/activate
+```
+
+Check that the causaliq-analysis CLI is working, check that all CI tests pass, and start up the local mkdocs webserver. There should be no errors  reported in any of these.
+
+```text
+causaliq-analysis --help
+scripts/check_ci
+mkdocs serve
+```
+
+Enter **http://127.0.0.1:8000/** in a browser and check that the 
+causaliq-data documentation is visible.
+
+If all of the above works, this confirms that the code is working successfully on your system.
+
+
+## Documentation
+
+Full API documentation is available at: **http://127.0.0.1:8000/** (when running `mkdocs serve`)
+
+## Contributing
+
+This repository is part of the CausalIQ ecosystem. For development setup:
+
+1. Clone the repository
+2. Run `scripts/setup-env -Install` to set up environments  
+3. Run `scripts/check_ci` to verify all tests pass
+4. Start documentation server with `mkdocs serve`
 
 ---
 
-**Supported Python Versions**: 3.9, 3.10, 3.11, 3.12  
-**Default Python Version**: 3.11
+**Supported Python Versions**: 3.9, 3.10, 3.11, 3.12, 3.13
+**Default Python Version**: 3.11  
+**License**: MIT
