@@ -12,14 +12,14 @@
         <link rel="prev" href="../roadmap/">
       
       
-        <link rel="next" href="../technical_architecture/">
+        <link rel="next" href="../architecture/overview/">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -252,33 +252,14 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="../technical_architecture/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Architecture
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
     
     
       <li class="md-tabs__item">
-        <a href="../design/matrix_expansion_design/" class="md-tabs__link">
+        <a href="../architecture/overview/" class="md-tabs__link">
           
   
   
-  Design Documents
+  Architecture
 
         </a>
       </li>
@@ -294,7 +275,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../api/" class="md-tabs__link">
+        <a href="../api/overview/" class="md-tabs__link">
           
   
   
@@ -547,10 +528,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#simple-one-off-structure-learning-examples" class="md-nav__link">
+  <a href="#unparameterised-single-step-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Simple One-Off Structure Learning Examples
+        Unparameterised single-step workflows
       
     </span>
   </a>
@@ -756,6 +737,390 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#use-case-2-external-package-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 2: External Package Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 2: External Package Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-package-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Package Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-3-configuration-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 3: Configuration Inheritance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 3: Configuration Inheritance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inherited-specific-experiment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inherited Specific Experiment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-4-llm-integration-for-model-averaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 4: LLM Integration for Model Averaging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 4: LLM Integration for Model Averaging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llm-enhanced-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM-Enhanced Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-5-dataset-download-and-randomization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 5: Dataset Download and Randomization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 5: Dataset Download and Randomization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-management-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset Management Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-api-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Python API Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Workflow Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#series-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Series Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Inheritance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-2-production-causal-inference-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 2: Production Causal Inference Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 2: Production Causal Inference Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-3-interactive-research-exploration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 3: Interactive Research Exploration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 3: Interactive Research Exploration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-cli-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example CLI Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-api-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jupyter-notebook-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jupyter Notebook Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -778,9 +1143,27 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../technical_architecture/" class="md-nav__link">
+    
+    
+    
+    
+      
+      
         
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -794,7 +1177,281 @@
   
   
 
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Overview
+  
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Documents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Documents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/matrix_expansion_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/action_auto_discovery_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/logging_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/results_cache_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -831,7 +1488,7 @@
   <span class="md-ellipsis">
     
   
-    Design Documents
+    API Reference
   
 
     
@@ -847,207 +1504,6 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Design Documents
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../design/matrix_expansion_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Matrix Strategy Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../design/action_architecture_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Action Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../design/action_auto_discovery_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Algorithm Registry
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../design/workflow_executor_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workflow Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../design/logging_architecture_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Logging Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Reference
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
     API Reference
   
 
@@ -1061,7 +1517,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+      <a href="../api/overview/" class="md-nav__link">
         
   
   
@@ -1363,10 +1819,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#simple-one-off-structure-learning-examples" class="md-nav__link">
+  <a href="#unparameterised-single-step-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Simple One-Off Structure Learning Examples
+        Unparameterised single-step workflows
       
     </span>
   </a>
@@ -1572,6 +2028,390 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#use-case-2-external-package-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 2: External Package Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 2: External Package Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-package-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Package Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-3-configuration-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 3: Configuration Inheritance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 3: Configuration Inheritance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inherited-specific-experiment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inherited Specific Experiment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-4-llm-integration-for-model-averaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 4: LLM Integration for Model Averaging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 4: LLM Integration for Model Averaging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llm-enhanced-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM-Enhanced Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-5-dataset-download-and-randomization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 5: Dataset Download and Randomization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 5: Dataset Download and Randomization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-management-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset Management Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-api-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Python API Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Workflow Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#series-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Series Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Inheritance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-2-production-causal-inference-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 2: Production Causal Inference Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 2: Production Causal Inference Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-3-interactive-research-exploration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case 3: Interactive Research Exploration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case 3: Interactive Research Exploration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-cli-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example CLI Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-api-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jupyter-notebook-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jupyter Notebook Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1590,6 +2430,22 @@
 
 
 <h1 id="causaliq-workflow-example-workflows">CausalIQ Workflow - Example Workflows</h1>
+<p>!!! info "Feature Implementation Status"
+    This documentation includes both <strong>currently implemented</strong> features and <strong>planned features</strong>. Planned features are marked with warning boxes. Currently implemented:</p>
+<pre><code>- ✅ Workflow parsing and validation
+- ✅ Matrix expansion into job configurations
+- ✅ Template variable substitution (`{{variable}}`)
+- ✅ Action registry and discovery
+- ✅ Schema validation (strings, numbers, booleans in `with:` blocks)
+
+Planned features (not yet implemented):
+
+- ⏳ Array values in `with:` blocks
+- ⏳ Series-based workflows
+- ⏳ Resource configuration
+- ⏳ LLM integration
+- ⏳ Advanced randomization strategies
+</code></pre>
 <h2 id="design-philosophy-inspired-by-ci-workflows">Design Philosophy: Inspired by CI-Workflows</h2>
 <p>The CausalIQ Workflows are <em>inspired</em> by the concepts within 
 Continuous Integration (CI) workflows. They provide a subset of the features 
@@ -1612,7 +2468,7 @@ the job of specifying CausalIQ workflows.</p>
 <li>
 <p>workflows may be run from the command line interface (CLI) using commands like:</p>
 <p><code>shell
-cwork example_workflow.yaml --network=child,property</code>
+cqflow example_workflow.yaml --model=child,property</code>
   - CLI arguments can be used to override workflow and matrix parameters so
     that the same workflow can be easily reused;
   - the <strong>run:</strong> command can be used to run a workflow so that "workflows of
@@ -1631,31 +2487,109 @@ cwork example_workflow.yaml --network=child,property</code>
 <li><strong>--mode=compare</strong>: all actions in the workflow will be re-run regardless of whether the output is present on the filesystem or not. If the output is present on the filesystem, the newly-generated output will replace it, and any differences with the previous version reported. This mode is therefore a very powerful form of functional testing.  </li>
 </ul>
 <h2 id="example-workflows-in-causal-discovery">Example Workflows in Causal Discovery</h2>
-<h3 id="simple-one-off-structure-learning-examples">Simple One-Off Structure Learning Examples</h3>
-<p>The first simple example runs the Tabu-Stable structure learning algorithm on 1000 synthetic rows from the Asia network. Input and output files are generally specified in terms of
-their <em>location</em> in CausalIQ Workflows, and the filenames are fixed according to
-what kind of entity they are: a graph, metadata or trace for example.</p>
-<p>This will create a graph.xml and metadata.json file in the specified output folder. The debug switch also means that a trace.csv will be produced.</p>
+<h3 id="unparameterised-single-step-workflows">Unparameterised single-step workflows</h3>
+<p>The first simple example is a minimal workflow that asks a LLM to propose a causal network for covid</p>
+<pre><code class="language-yaml"># llm_covid.yaml
+steps:
+  - name: &quot;Llama3 proposes a covid graph&quot;
+    uses: &quot;causaliq-knowledge&quot;
+    with:
+      action: &quot;generate_graph&quot;
+      context: &quot;models/covid/covid_llm_context.json&quot;
+      result: &quot;results/covid.db&quot;
+</code></pre>
+<p>This is a single-step workflow with a minimal set of values defined for the 
+single step:</p>
+<ul>
+<li><strong>name</strong> - each step must be given a neame which is hopefully meaningful</li>
+<li><strong>uses</strong> - the step must define which CausalIQ package it uses</li>
+</ul>
+<p>and then has a variable number of parameters following the <strong>with:</strong> statment that
+defines the processing to be undertaken by the package through its <em>CausalIQAction</em> interface. In this example, these are:</p>
+<ul>
+<li><strong>action</strong> - this parameter is always present and defines what particular action
+the package is required to do</li>
+<li><strong>context</strong> - defines a JSON file providing details of the problem domain and its variables which will serve as input to the LLM for this action</li>
+<li><strong>result</strong> - defines a results (sql-lite) database where results will be placed</li>
+</ul>
+<p>The same result could be achieved using the causaliq-knowledge CLI command directly,
+but using this simple workflow avoids having to specify the model and result locations on
+the command line by using the following command:</p>
+<pre><code class="language-shell">cqflow llm_covid.yaml  # cqflow is a synonym for causaliq-workflow
+</code></pre>
+<p>Using <code>.yaml</code> workflow files becomes increasingly convenenient as additional parameters
+are specified, for example, as in the following example:</p>
+<pre><code class="language-yaml"># llm_covid.yaml
+description: &quot;Using gpt-4 to propose a causal graph using rich context&quot;
+root_dir: &quot;c:/dev/causaliq/causaliq-research&quot;
+
+steps:
+  - name: &quot;GPT-4 proposes a covid graph&quot;
+    uses: &quot;causaliq-knowledge&quot;
+    with:
+      action: &quot;generate_graph&quot;
+      llm: &quot;openai/gpt-4o-mini&quot;
+      context_level: &quot;rich&quot;
+      context: &quot;models/covid/covid_llm_context.json&quot;
+      result: &quot;results/covid.db&quot;
+</code></pre>
+<p>Additional workflow-level parameters here are: </p>
+<ul>
+<li><strong>description</strong> - a human friendly description of the workflow</li>
+<li><strong>root_dir</strong> - a base file location for all paths used in the workflow
+(by default the current directory is used)</li>
+</ul>
+<p>Additional parameters for the <code>generate_graph</code> step are:</p>
+<ul>
+<li><strong>llm</strong> - explicit specification of LLM model to use instead of using the default LLM</li>
+<li><strong>context_level</strong> - specify that a rich level of context is to be provided to the LLM</li>
+</ul>
+<p>The next simple example runs the Tabu-Stable structure learning algorithm on 1000 synthetic rows from the Asia network. Specific parameters for structure learning are:</p>
+<ul>
+<li><strong>action</strong> - specifices the structure learning action</li>
+<li><strong>algorithm</strong> - the structure learning algorithm</li>
+<li><strong>sample_size</strong> - how many rows of data to use</li>
+<li><strong>dataset</strong> - file containing synthetically generated rows</li>
+<li><strong>debug</strong> - is set true so that a detailed iteration-by-iteratuon analysis of
+the learning process is included in the result</li>
+<li><strong>results</strong> - the results database, where in this case an entry will be 
+the learnt graph, an iteration trace, and structure learning metadata</li>
+</ul>
 <pre><code class="language-yaml"># tabu_asia.yaml
+id: &quot;tabu-stable_asia_1k&quot;
 description: &quot;Tabu-stable learning Asia from 1K data with full trace&quot;
 
 steps:
   - name: &quot;Learn Structure&quot;
     uses: &quot;causaliq-discovery&quot;
     with:
+      action: &quot;learn_structure&quot;
       algorithm: &quot;tabu-stable&quot;
       sample_size: &quot;1k&quot;
-      dataset: &quot;/data/asia&quot;
-      output: &quot;/results/tabu-asia&quot;
+      dataset: &quot;models/asia/asia_10k.data.gz&quot;
       debug: True
+      results: &quot;results/tabu_stable.db&quot;
 </code></pre>
-<p>The same result could be achieved using the causaliq-discovery CLI command directly,
-but using this simple workflow avoids having to specify the dataset, algorithm etc. on
-the command line by using the following command:</p>
-<pre><code class="language-shell">cwork tabu_asia.yaml  # cwork is a synonym for causaliq-workflow
+<p>The example below <strong>updates</strong> the metadata about a learned graph to evaluate
+structural accuracy and some inference scores for all graphs learnt by asia.</p>
+<p>!!! warning "Planned Feature"
+    Array values in <code>with:</code> blocks (e.g., <code>dag_structure: ["f1", "shd"]</code> and <code>score: ["bic", "bde"]</code>) shown in this example are planned features. The current schema only supports string, number, and boolean values in action parameters.</p>
+<pre><code class="language-yaml"># evaluate_graph.yaml
+description: &quot;Evaluate structure and score of learned graphs&quot;
+model: &quot;asia&quot;
+
+steps:
+  - name: &quot;Evaluate Graph&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;evaluate_graph&quot;
+      model: {{model}}
+      true_graph: &quot;models/{{model}}/{{model}}.xdsl&quot;
+      dag_structure: [&quot;f1&quot;,shd&quot;]
+      cpdag_structure: &quot;shd&quot;
+      score: [&quot;bic&quot;, &quot;bde&quot;]
+      results: &quot;results/tabu_stable.db&quot;
 </code></pre>
-<p>This "shorthand" capability becomes especially useful when plotting charts which 
-typically require a lot of parameter values to specify axis titles, chart type and colours etc., which become unmanageable to specify on the command line.</p>
 <p>Another simple workflow might be to download resources from Zenodo. This would download all the resources associated with my PhD thesis and
 unzip in the specified output folder.</p>
 <pre><code class="language-yaml"># download_paper.yaml
@@ -1673,27 +2607,28 @@ steps:
 <p>We can make the simple learning example more general by adding workflow-level
 variables to parameterise the workflow. In this example, the sample_size parameter has a
 default value of 1000 if not specified on the command line, whereas the None
-value for network indicates that this must be specified on the command line. 
-Note how the network and sample_size
+value for model (i.e. network) indicates that this must be specified on the command line. 
+Note how the model and sample_size
 parameters are used in the dataset and output action parameters so
 that the correct input file and output folder are used.</p>
 <pre><code class="language-yaml"># tabu_learning.yaml
 description: &quot;Parameterised Tabu-stable learning&quot;
 sample_size: &quot;1K&quot;
-network: None
+model: None
 
 steps:
   - name: &quot;Learn Structure&quot;
     uses: &quot;causaliq-discovery&quot;
     with:
+      action: &quot;learn_structure&quot;
       algorithm: &quot;tabu-stable&quot;
       max_time: 10
       sample_size: {{sample_size}}
-      dataset: &quot;/data/{{network}}&quot;
-      output: &quot;/results/{{network}}/{{sample_size}}&quot;
+      dataset: &quot;/models/{{model}}/{{network}}_10k.data.gz&quot;
+      output: &quot;/results/tabu_stable.db
 </code></pre>
 <p>We can now run Tabu-Stable structure learning for any network and sample size using commands like:</p>
-<pre><code class="language-shell">cwork tabu_learning.yaml --network=child --sample_size=500
+<pre><code class="language-shell">cqflow tabu_learning.yaml --network=child --sample_size=500
 </code></pre>
 <h3 id="multiple-step-examples">Multiple Step Examples</h3>
 <p>We could enhance this by adding a step before structure learning where an LLM provides an initial graph. In this example, the dataset is provided so that the
@@ -1705,55 +2640,35 @@ means to exactly replicate this result.</p>
 <pre><code class="language-yaml"># tabu_llm_learning.yaml
 description: &quot;Tabu-stable learning Asia with LLM initialisation&quot;
 sample_size: &quot;1K&quot;
-network: None
+model: None
 
 steps:
   - name: &quot;LLM Graph Initialisation&quot;
     uses: &quot;causaliq-knowledge&quot;
     with:
-      operation: &quot;propose-graph&quot;
-      dataset: &quot;/data/{{network}}&quot;
-      context: &quot;/knowledge/context/{{network}}&quot;
-      output: &quot;/knowledge/llm_graphs/{{network}}&quot;
+      action: &quot;generate_graph&quot;
+      context: &quot;models/{{model}}/{{model}}_llm_context.json&quot;
+      result: &quot;results/llm_graphs.db&quot;
 
   - name: &quot;Learn Structure&quot;
     uses: &quot;causaliq-discovery&quot;
     with:
-      initial_graph: &quot;/knowledge/llm_graphs/asia&quot;
+      action: &quot;learn_structure&quot;
+      initial_graph: &quot;results/llm_graphs.db&quot;
       # etc ....
-</code></pre>
-<p>Alternatively, or additionally, we can add some steps after structure learning
-to compute some graph metrics and visualise the way that the graph was learnt.</p>
-<p>The "Evaluate graph" step requires the bic-score which needs the dataset to be specified, and F1 needs the true graph to be supplied - the relevant causaliq-analysis action is responsible for checking that these kind of dependencies are satisified. The results folder is specified where the learnt graph and learning metadata is, and so these results are appended to the metadata.</p>
-<pre><code class="language-yaml"># learn_and_evaluate.yaml
-
-# workflow variables ... 
-
-steps:
-
-  # step(s) to learn graph ...
-
-  - name: &quot;Evaluate graph&quot;
-    uses: &quot;causaliq-analysis&quot;
-    with:
-      operation: &quot;evaluate-graph&quot;
-      dataset: &quot;/data/{{network}}&quot;
-      true_graph: &quot;/knowledge/true_graph/{{network}}&quot;
-      metrics: [&quot;bic-score&quot;, &quot;f1&quot;, &quot;scaled-shd&quot;]
-      basis: [&quot;cpdag&quot;]
-      graph: &quot;/results/{{network}}/{{sample_size}}&quot;
 </code></pre>
 <h3 id="matrix-strategy-workflow">Matrix Strategy Workflow</h3>
 <p>In many cases we will wish to run comparative experiments with a different result for each combinations of algorithm, network, and sample size and randomisation. Note how we structure the output folder path so that we ensure the result for each individual experiment is placed in its own folder. We also use an "id" workflow variablesto keep these results separate from those of other workflows.</p>
 <p>Internally, the action - in this case causal-discovery - may be implemented intelligently to maximise efficiency. For example, in this case, it may read
 the maximum number of rows from the filesystem dataset just once, and then adjust the effective sample size and randomisation internally for each individual experiment.</p>
+<p>!!! warning "Planned Feature"
+    The <code>randomise</code> workflow-level variable and array values in <code>with:</code> blocks (e.g., <code>randomise: {{randomise}}</code>) shown in this example are planned features. The current schema only supports string, number, and boolean values in action parameters.</p>
 <pre><code class="language-yaml"># matrix_experiment.yaml
-id: &quot;stability001&quot;
 description: &quot;Algorithm stability comparison&quot;
 randomise: [&quot;variable_order&quot;, &quot;variable_name&quot;]
 
 matrix:
-  network: [&quot;asia&quot;, &quot;cancer&quot;]
+  model: [&quot;asia&quot;, &quot;cancer&quot;]
   algorithm: [&quot;pc&quot;, &quot;ges&quot;]
   sample_size: [&quot;100&quot;, &quot;1K&quot;]
   seed: [1, 25]
@@ -1762,12 +2677,13 @@ steps:
   - name: &quot;Structure Learning&quot;
     uses: &quot;causaliq-discovery&quot;
     with:
+      action: &quot;learn_structure&quot;
       algorithm: &quot;{{algorithm}}&quot;
       sample_size: &quot;{{sample_size}}&quot;
-      dataset: &quot;/data/{{network}}&quot;
+      dataset: &quot;models/{{model}}/{{model}}_10k.data.gz&quot;
       randomise: {{randomise}}
       seed: {{seed}}
-      output: &quot;/results/{{id}}/{{algorithm}}/{{network}}/{{sample_size}}/{{seed}}&quot;
+      output: &quot;results/algo_stability.db&quot;
 </code></pre>
 <h3 id="workflow-of-workflows">Workflow of workflows</h3>
 <p>The ability of one workflow to call other parameterised workflows facilitates the creation and testing of complex CausalIQ workflows, for instance to run
@@ -1782,7 +2698,7 @@ matrix:
 
 steps:
   name: &quot;Create chapter {{chapter}}&quot;
-  run: &quot;cwork create_chapter_{{chapter}}.yaml --id={{id}}
+  run: &quot;cqflow create_chapter_{{chapter}}.yaml --id={{id}}
 </code></pre>
 <h3 id="parallel-jobs">Parallel Jobs</h3>
 <p>CI workflows provide a <strong>jobs:</strong> keyword which allows multiple sequences of steps to run in parallel. We are not planning to implement this at the moment, instead relying on actions to provde parallelism using DAK tasks. This keeps CausalIQ Workflow functionality simple and reflects the fact that structure learning steps involving many individual structure learning experiments can keep even very powerful machines busy.</p>
@@ -1864,7 +2780,7 @@ Available context: id, description, dataset
 <li><strong>100% Coverage</strong>: Complete test coverage including edge cases</li>
 </ul>
 <h2 id="example-action-implementation">Example Action Implementation</h2>
-<pre><code class="language-python">class DummyStructureLearnerAction(Action):
+<pre><code class="language-python">class DummyStructureLearnerAction(CausalIQAction):
     &quot;&quot;&quot;Reference action implementation.&quot;&quot;&quot;
 
     name = &quot;dummy-structure-learner&quot;
@@ -1941,40 +2857,45 @@ for job in jobs:
 - ✅ Support flexible path templating with {{}} variables
 - ✅ Comprehensive error handling and 100% test coverage</p>
 <p><strong>Next Phase</strong>: Action execution engine with template variable substitution</p>
-<p>ges_series:
-    algorithm: "ges" 
-    package: "causaliq-discovery"
-    datasets: ["alarm", "asia"]  # Reference same datasets
+<p>!!! warning "Planned Feature"
+    The <code>series</code>, <code>resources</code>, <code>analysis</code>, and <code>monitoring</code> workflow sections shown below are planned features and not yet implemented in the current schema.</p>
+<pre><code class="language-yaml"># series_workflow_example.yaml (Planned Feature)
+  ges_series:
+    algorithm: &quot;ges&quot; 
+    package: &quot;causaliq-discovery&quot;
+    datasets: [&quot;alarm&quot;, &quot;asia&quot;]  # Reference same datasets
     sample_sizes: [100, 500, 1000]
     randomizations: 10
     hyperparameters:
-      score_type: ["bic", "aic"]</p>
-<h1 id="resource-configuration">Resource configuration</h1>
-<p>resources:
+      score_type: [&quot;bic&quot;, &quot;aic&quot;]
+
+# Resource configuration
+resources:
   max_parallel_jobs: 8
-  memory_limit_per_job: "4GB"
-  runtime_limit_per_job: "30m"
-  total_runtime_limit: "4h"</p>
-<h1 id="analysis-configuration">Analysis configuration</h1>
-<p>analysis:
-  compare_series: ["pc_series", "ges_series"]
-  metrics: ["shd", "precision", "recall", "f1"]
+  memory_limit_per_job: &quot;4GB&quot;
+  runtime_limit_per_job: &quot;30m&quot;
+  total_runtime_limit: &quot;4h&quot;
+
+# Analysis configuration
+analysis:
+  compare_series: [&quot;pc_series&quot;, &quot;ges_series&quot;]
+  metrics: [&quot;shd&quot;, &quot;precision&quot;, &quot;recall&quot;, &quot;f1&quot;]
   statistical_significance: 0.05
-  output_format: ["csv", "json"]</p>
-<h1 id="logging-and-monitoring">Logging and monitoring</h1>
-<p>monitoring:
-  progress_updates: "1m"
-  log_level: "INFO"
-  save_intermediate: true</p>
-<pre><code>
-## Use Case 2: External Package Integration
+  output_format: [&quot;csv&quot;, &quot;json&quot;]
 
-### Scenario
-Use R bnlearn package alongside Python algorithms for comprehensive comparison.
-
-### Multi-Package Workflow
-```yaml
-# multi_package_comparison.yaml
+# Logging and monitoring
+monitoring:
+  progress_updates: &quot;1m&quot;
+  log_level: &quot;INFO&quot;
+  save_intermediate: true
+</code></pre>
+<h2 id="use-case-2-external-package-integration">Use Case 2: External Package Integration</h2>
+<p>!!! warning "Planned Feature"
+    The <code>series</code>, <code>external_packages</code>, <code>resources</code>, and <code>validation</code> workflow sections shown in this example are planned features and not yet implemented in the current schema.</p>
+<h3 id="scenario">Scenario</h3>
+<p>Use R bnlearn package alongside Python algorithms for comprehensive comparison.</p>
+<h3 id="multi-package-workflow">Multi-Package Workflow</h3>
+<pre><code class="language-yaml"># multi_package_comparison.yaml
 metadata:
   name: &quot;python_r_algorithm_comparison&quot;
   description: &quot;Compare Python and R causal discovery implementations&quot;
@@ -2015,7 +2936,9 @@ validation:
   check_dependencies: true
 </code></pre>
 <h2 id="use-case-3-configuration-inheritance">Use Case 3: Configuration Inheritance</h2>
-<h3 id="scenario">Scenario</h3>
+<p>!!! warning "Planned Feature"
+    The <code>defaults</code>, <code>inherits</code>, and inheritance-based workflow configuration shown in this example are planned features and not yet implemented in the current schema.</p>
+<h3 id="scenario_1">Scenario</h3>
 <p>Create specific experiments based on common base configuration.</p>
 <h3 id="base-configuration">Base Configuration</h3>
 <pre><code class="language-yaml"># base_causal_experiment.yaml
@@ -2063,7 +2986,9 @@ overrides:
     statistical_tests: true
 </code></pre>
 <h2 id="use-case-4-llm-integration-for-model-averaging">Use Case 4: LLM Integration for Model Averaging</h2>
-<h3 id="scenario_1">Scenario</h3>
+<p>!!! warning "Planned Feature"
+    The <code>series</code>, <code>llm_analysis</code>, and <code>model_averaging</code> workflow sections shown in this example are planned features and not yet implemented in the current schema.</p>
+<h3 id="scenario_2">Scenario</h3>
 <p>Use LLM to guide intelligent model averaging across multiple algorithm results.</p>
 <h3 id="llm-enhanced-workflow">LLM-Enhanced Workflow</h3>
 <pre><code class="language-yaml"># llm_model_averaging.yaml
@@ -2113,7 +3038,9 @@ model_averaging:
   inputs: [&quot;pc_results&quot;, &quot;ges_results&quot;, &quot;llm_suggestions&quot;]
 </code></pre>
 <h2 id="use-case-5-dataset-download-and-randomization">Use Case 5: Dataset Download and Randomization</h2>
-<h3 id="scenario_2">Scenario</h3>
+<p>!!! warning "Planned Feature"
+    The <code>datasets</code>, <code>randomization</code>, <code>series</code>, and <code>analysis</code> workflow sections shown in this example are planned features and not yet implemented in the current schema.</p>
+<h3 id="scenario_3">Scenario</h3>
 <p>Automated dataset download from Zenodo with systematic randomization for robustness testing.</p>
 <h3 id="dataset-management-workflow">Dataset Management Workflow</h3>
 <pre><code class="language-yaml"># dataset_robustness_study.yaml
@@ -2239,7 +3166,9 @@ specific_config = inheritance.create_derived(
 </code></pre>
 <p>This focused approach emphasizes the series concept and immediate implementation needs while providing practical examples for the three-month development phase.</p>
 <h2 id="use-case-2-production-causal-inference-workflow">Use Case 2: Production Causal Inference Workflow</h2>
-<h3 id="scenario_3">Scenario</h3>
+<p>!!! warning "Planned Feature"
+    This production workflow configuration demonstrates planned features including <code>parameters</code>, <code>resources</code>, <code>monitoring</code>, <code>depends_on</code>, <code>inputs</code>, <code>outputs</code>, and streaming data integration. These are not yet implemented in the current schema.</p>
+<h3 id="scenario_4">Scenario</h3>
 <p>A business wants to continuously analyze the causal impact of marketing campaigns on customer behavior using streaming data.</p>
 <h3 id="workflow-configuration">Workflow Configuration</h3>
 <pre><code class="language-yaml"># production_inference_workflow.yaml
@@ -2351,7 +3280,9 @@ failure_handling:
   alert_on_failure: true
 </code></pre>
 <h2 id="use-case-3-interactive-research-exploration">Use Case 3: Interactive Research Exploration</h2>
-<h3 id="scenario_4">Scenario</h3>
+<p>!!! warning "Planned Feature"
+    This interactive exploration workflow demonstrates planned features including interactive mode, LLM-assisted analysis, <code>user_interaction</code>, <code>state</code>, and iterative workflow refinement. These are not yet implemented in the current schema.</p>
+<h3 id="scenario_5">Scenario</h3>
 <p>An interactive session where researchers explore causal relationships with LLM assistance and iterative refinement.</p>
 <h3 id="workflow-configuration_1">Workflow Configuration</h3>
 <pre><code class="language-yaml"># interactive_exploration_workflow.yaml
@@ -2567,13 +3498,13 @@ steps:
         
         
           
-          <a href="../technical_architecture/" class="md-footer__link md-footer__link--next" aria-label="Next: Architecture">
+          <a href="../architecture/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Architectural Overview">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Architecture
+                Architectural Overview
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2610,10 +3541,10 @@ steps:
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

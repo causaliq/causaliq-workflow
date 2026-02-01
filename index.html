@@ -17,7 +17,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#documentation-structure" class="md-skip">
+        <a href="#causaliq-workflow" class="md-skip">
           Skip to content
         </a>
       
@@ -250,33 +250,14 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="technical_architecture/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Architecture
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
     
     
       <li class="md-tabs__item">
-        <a href="design/matrix_expansion_design/" class="md-tabs__link">
+        <a href="architecture/overview/" class="md-tabs__link">
           
   
   
-  Design Documents
+  Architecture
 
         </a>
       </li>
@@ -292,7 +273,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="api/" class="md-tabs__link">
+        <a href="api/overview/" class="md-tabs__link">
           
   
   
@@ -410,110 +391,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#essential-documents" class="md-nav__link">
+  <a href="#welcome" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Essential Documents
+        Welcome
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Essential Documents">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#start-here" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        📋 Start Here
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#design" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🔧 Design
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#development-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        📖 Development Support
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-navigation" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Navigation
+        Overview
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Quick Navigation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-design-work" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Design Work
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-understanding-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Understanding Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-llm-collaboration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For LLM Collaboration
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#document-purpose-summary" class="md-nav__link">
+  <a href="#quickstart-installation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Document Purpose Summary
+        Quickstart &amp; Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support &amp; Community
       
     </span>
   </a>
@@ -651,9 +576,27 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="technical_architecture/" class="md-nav__link">
+    
+    
+    
+    
+      
+      
         
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -667,7 +610,281 @@
   
   
 
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Overview
+  
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Documents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Documents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/matrix_expansion_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/action_auto_discovery_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/logging_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/results_cache_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -704,7 +921,7 @@
   <span class="md-ellipsis">
     
   
-    Design Documents
+    API Reference
   
 
     
@@ -720,207 +937,6 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Design Documents
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="design/matrix_expansion_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Matrix Strategy Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="design/action_architecture_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Action Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="design/action_auto_discovery_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Algorithm Registry
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="design/workflow_executor_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workflow Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="design/logging_architecture_design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Logging Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Reference
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
     API Reference
   
 
@@ -934,7 +950,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/" class="md-nav__link">
+      <a href="api/overview/" class="md-nav__link">
         
   
   
@@ -1213,110 +1229,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#essential-documents" class="md-nav__link">
+  <a href="#welcome" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Essential Documents
+        Welcome
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Essential Documents">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#start-here" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        📋 Start Here
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#design" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🔧 Design
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#development-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        📖 Development Support
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-navigation" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Navigation
+        Overview
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Quick Navigation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-design-work" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Design Work
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-understanding-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Understanding Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-llm-collaboration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For LLM Collaboration
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#document-purpose-summary" class="md-nav__link">
+  <a href="#quickstart-installation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Document Purpose Summary
+        Quickstart &amp; Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support &amp; Community
       
     </span>
   </a>
@@ -1340,57 +1300,49 @@
 
 
 
-<h1 id="documentation-structure">Documentation Structure</h1>
-<p>This directory contains focused documentation for causaliq-workflow development.</p>
-<h2 id="essential-documents">Essential Documents</h2>
-<h3 id="start-here">📋 <strong>Start Here</strong></h3>
+<h1 id="causaliq-workflow">CausalIQ Workflow</h1>
+<p><img alt="Python Versions" src="https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue" />
+<a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
+<img alt="Coverage" src="https://img.shields.io/badge/coverage-100%25-brightgreen" /></p>
+<h2 id="welcome">Welcome</h2>
+<p>Welcome to the documentation for CausalIQ Workflow - a comprehensive solution for designing, executing, and reproducing causal discovery and inference experiments at scale. It is part of the <a href="https://causaliq.org/">CausalIQ ecosystem</a> for intelligent causal discovery.</p>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>This site provides detailed documentation, including:</p>
 <ul>
-<li><strong><a href="roadmap/">Development Roadmap</a></strong> - Complete feature list, progress tracking, and three-month implementation plan</li>
-<li><strong><a href="example_workflows/">Example Workflows</a></strong> - Series-based workflow examples and YAML configuration patterns</li>
+<li>Development roadmap</li>
+<li>User guide</li>
+<li>Architectural vision</li>
+<li>Design notes</li>
+<li>API reference for users and contributors</li>
 </ul>
-<h3 id="design">🔧 <strong>Design</strong></h3>
+<hr />
+<h2 id="quickstart-installation">Quickstart &amp; Installation</h2>
+<p>For a quickstart guide and installation instructions, see the <a href="https://github.com/causaliq/causaliq-workflow#readme">README on GitHub</a>.</p>
+<hr />
+<h2 id="documentation-contents">Documentation Contents</h2>
 <ul>
-<li><strong><a href="technical_architecture/">Technical Architecture</a></strong> - System design, Series concept, component architecture, and workflow-specific development patterns</li>
+<li><a href="roadmap/">Development Roadmap</a>: Roadmap of upcoming features</li>
+<li>[User Guide]: Comprehensive user guide (coming soon)</li>
+<li><a href="architecture/overview/">Architecture</a>: Overall architecture and design notes</li>
+<li><a href="api/overview/">API Reference</a>: Complete reference for Python code</li>
+<li><a href="https://github.com/causaliq/causaliq/blob/main/CONTRIBUTING.md">Development Guidelines</a>: CausalIQ guidelines for developers</li>
+<li><a href="https://github.com/causaliq/causaliq-workflow/blob/main/CHANGELOG.md">Changelog</a></li>
+<li><a href="https://github.com/causaliq/causaliq-workflow/blob/main/LICENSE">License</a></li>
 </ul>
-<h3 id="development-support">📖 <strong>Development Support</strong></h3>
+<hr />
+<h2 id="support-community">Support &amp; Community</h2>
 <ul>
-<li><strong><a href="https://github.com/causaliq/causaliq/blob/main/LLM_DEVELOPMENT_GUIDE.md">LLM Development Guide</a></strong> - Comprehensive development standards and LLM communication patterns for the CausalIQ ecosystem</li>
+<li><a href="https://github.com/causaliq/causaliq-workflow/issues">GitHub Issues</a>: Report bugs or request features.</li>
+<li><a href="https://github.com/causaliq/causaliq-workflow/discussions">GitHub Discussions</a>: Ask questions and join the community.</li>
 </ul>
-<h2 id="quick-navigation">Quick Navigation</h2>
-<h3 id="for-design-work">For Design Work</h3>
-<p>Start with: <strong>Technical Architecture</strong> → <strong>Development Roadmap</strong></p>
-<h3 id="for-understanding-requirements">For Understanding Requirements</h3>
-<p>Start with: <strong>Development Roadmap</strong> → <strong>Example Workflows</strong></p>
-<h3 id="for-llm-collaboration">For LLM Collaboration</h3>
-<p>Use: <strong>LLM Development Guide</strong> (comprehensive, ecosystem-wide standards)</p>
-<h2 id="document-purpose-summary">Document Purpose Summary</h2>
-<table>
-<thead>
-<tr>
-<th>Document</th>
-<th>Purpose</th>
-<th>When to Use</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>roadmap.md</code></td>
-<td>Feature specifications and progress tracking</td>
-<td>Feature development planning</td>
-</tr>
-<tr>
-<td><code>example_workflows.md</code></td>
-<td>YAML workflow examples</td>
-<td>Understanding series concept</td>
-</tr>
-<tr>
-<td><code>technical_architecture.md</code></td>
-<td>Package architecture and design patterns</td>
-<td>Building components</td>
-</tr>
-</tbody>
-</table>
-<p>This streamlined structure focuses on actionable implementation guidance while maintaining single sources of truth.</p>
+<hr />
+<p><strong>Tip:</strong><br />
+Use the navigation sidebar to explore the documentation.<br />
+For the latest code and releases, visit the <a href="https://github.com/causaliq/causaliq-workflow">causaliq-workflow GitHub repository</a>.</p>
+<hr />
+<p><strong>Supported Python Versions</strong>: 3.9, 3.10, 3.11, 3.12, 3.13<br />
+<strong>Default Python Version</strong>: 3.11</p>
 
 
 
@@ -1472,10 +1424,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
