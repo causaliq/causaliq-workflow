@@ -9,7 +9,7 @@ from .registry import ActionRegistry, ActionRegistryError, WorkflowContext
 from .status import TaskStatus  # noqa: F401
 from .workflow import WorkflowExecutionError, WorkflowExecutor
 
-__version__ = "0.1.0"
+__version__ = "0.1.1.dev1"
 __author__ = "CausalIQ"
 __email__ = "info@causaliq.com"
 
@@ -20,8 +20,8 @@ __description__ = "Template package for CausalIQ repos"
 __url__ = "https://github.com/causaliq/causaliq-workflow"
 __license__ = "MIT"
 
-# Version tuple for programmatic access
-VERSION = tuple(map(int, __version__.split(".")))
+# Version tuple for programmatic access (only numeric parts)
+VERSION = tuple(int(part) for part in __version__.split(".") if part.isdigit())
 
 __all__ = [
     "__version__",
