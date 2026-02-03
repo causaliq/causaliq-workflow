@@ -59,6 +59,7 @@ class ActionRegistry:
     Attributes:
         _instance: Singleton instance of the ActionRegistry
         _actions: Dictionary mapping action names to CausalIQAction classes
+        _entry_points: Dictionary of lazy-loadable entry points
         _discovery_errors: List of errors encountered during action discovery
     """
 
@@ -69,15 +70,96 @@ class ActionRegistry:
 
         Initializes:
             _actions: Dictionary mapping action names to CausalIQAction classes
+            _entry_points: Dictionary of entry points for lazy loading
             _discovery_errors: List to collect any discovery errors
         """
         self._actions: Dict[str, Type[CausalIQAction]] = {}
+        self._entry_points: Dict[str, Any] = {}  # Lazy-loaded entry points
         self._discovery_errors: List[str] = []
         self._discover_actions()
 
     def _discover_actions(self) -> None:
+        """Discover actions via entry points and imported modules."""
+        logger.info("Discovering available actions...")
+
+        # First, discover entry points (lazy - just record names, don't import)
+        self._discover_entry_points()
+
+        # Then scan imported modules as fallback
+        self._discover_via_modules()
+
+    def _discover_entry_points(self) -> None:
+        """Discover entry points without importing them (lazy loading).
+
+        Entry points are recorded but not loaded until actually needed.
+        This avoids circular import issues since we don't import the
+        action packages until execution time.
+        """
+        try:
+            if sys.version_info >= (3, 10):
+                from importlib.metadata import entry_points
+
+                eps = entry_points(group="causaliq.actions")
+            else:
+                from importlib.metadata import entry_points
+
+                all_eps = entry_points()
+                eps = all_eps.get("causaliq.actions", [])
+
+            for ep in eps:
+                # Just record the entry point, don't load it yet
+                self._entry_points[ep.name] = ep
+                logger.info(
+                    f"Discovered action entry point: {ep.name} "
+                    f"(will load on first use)"
+                )
+
+        except Exception as e:
+            logger.debug(f"Entry point discovery not available: {e}")
+
+    def _load_entry_point(self, name: str) -> Optional[Type[CausalIQAction]]:
+        """Load an entry point on demand.
+
+        Args:
+            name: Entry point name to load
+
+        Returns:
+            Loaded action class or None if loading fails
+        """
+        if name not in self._entry_points:
+            return None
+
+        ep = self._entry_points[name]
+        try:
+            action_class = ep.load()
+            if (
+                inspect.isclass(action_class)
+                and issubclass(action_class, CausalIQAction)
+                and action_class != CausalIQAction
+            ):
+                # Cache the loaded class
+                self._actions[name] = action_class
+                logger.info(
+                    f"Loaded action from entry point: "
+                    f"{name} -> {action_class.__name__}"
+                )
+                return action_class
+            else:
+                error_msg = (
+                    f"Entry point {name} does not export a CausalIQAction"
+                )
+                self._discovery_errors.append(error_msg)
+                logger.warning(error_msg)
+                return None
+        except Exception as e:
+            error_msg = f"Error loading entry point {name}: {e}"
+            self._discovery_errors.append(error_msg)
+            logger.warning(error_msg)
+            return None
+
+    def _discover_via_modules(self) -> None:
         """Discover actions by scanning imported modules for CausalIQAction."""
-        logger.info("Discovering available actions from imported modules...")
+        logger.info("Scanning imported modules for actions...")
 
         # Scan all imported modules for CausalIQAction classes
         for module_name, module in sys.modules.items():
@@ -161,11 +243,27 @@ class ActionRegistry:
     def get_available_actions(self) -> Dict[str, Type[CausalIQAction]]:
         """Get dictionary of available action names to classes.
 
+        Note: Entry points that haven't been loaded yet will not appear
+        in the returned dictionary. Use get_available_action_names() to
+        get all available action names including lazy-loadable ones.
+
         Returns:
             Dictionary mapping action names to CausalIQAction classes
 
         """
         return self._actions.copy()
+
+    def get_available_action_names(self) -> List[str]:
+        """Get list of all available action names.
+
+        Includes both loaded actions and lazy-loadable entry points.
+
+        Returns:
+            List of available action names
+        """
+        names = set(self._actions.keys())
+        names.update(self._entry_points.keys())
+        return sorted(names)
 
     def get_discovery_errors(self) -> List[str]:
         """Get list of errors encountered during action discovery.
@@ -183,13 +281,13 @@ class ActionRegistry:
             name: Action name to check
 
         Returns:
-            True if action is available
+            True if action is available (loaded or lazy-loadable)
 
         """
-        return name in self._actions
+        return name in self._actions or name in self._entry_points
 
     def get_action_class(self, name: str) -> Type[CausalIQAction]:
-        """Get action class by name.
+        """Get action class by name, loading from entry point if needed.
 
         Args:
             name: Action name
@@ -198,16 +296,29 @@ class ActionRegistry:
             CausalIQAction class
 
         Raises:
-            ActionRegistryError: If action not found
+            ActionRegistryError: If action not found or fails to load
 
         """
-        if name not in self._actions:
-            available = list(self._actions.keys())
+        # Return cached action if available
+        if name in self._actions:
+            return self._actions[name]
+
+        # Try to load from entry point
+        if name in self._entry_points:
+            action_class = self._load_entry_point(name)
+            if action_class is not None:
+                return action_class
             raise ActionRegistryError(
-                f"Action '{name}' not found. Available actions: {available}"
+                f"Action '{name}' entry point failed to load"
             )
 
-        return self._actions[name]
+        # Action not found
+        available = list(self._actions.keys()) + list(
+            self._entry_points.keys()
+        )
+        raise ActionRegistryError(
+            f"Action '{name}' not found. Available actions: {available}"
+        )
 
     def execute_action(
         self,
@@ -260,7 +371,7 @@ class ActionRegistry:
             if "uses" in step:
                 action_name = step["uses"]
                 if not self.has_action(action_name):
-                    available = list(self._actions.keys())
+                    available = self.get_available_action_names()
                     errors.append(
                         f"Step '{step.get('name', 'unnamed')}' uses "
                         f"unknown action '{action_name}'. Available: "

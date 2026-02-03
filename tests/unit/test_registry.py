@@ -169,3 +169,185 @@ def test_registry_lines_64_76_256(monkeypatch):
     setattr(mock_module, "ProblematicAction", ProblematicAction)
     result = registry._scan_module_for_actions("test_module", mock_module)
     assert result is None
+
+
+# Test Python < 3.10 entry point discovery branch (lines 104-107).
+def test_entry_point_discovery_python_39_branch(monkeypatch):
+    """Test the Python < 3.10 entry point discovery code path."""
+
+    # Mock sys.version_info to simulate Python 3.9
+    monkeypatch.setattr(sys, "version_info", (3, 9, 0))
+
+    # Create a mock entry point
+    class MockEntryPoint:
+        def __init__(self, name: str):
+            self.name = name
+
+    # Create mock entry_points function that returns dict-like object
+    def mock_entry_points_legacy():
+        return {"causaliq.actions": [MockEntryPoint("test-legacy")]}
+
+    monkeypatch.setattr(
+        "importlib.metadata.entry_points", mock_entry_points_legacy
+    )
+
+    registry = ActionRegistry()
+    registry._entry_points = {}  # Clear any existing
+
+    # Force re-discovery
+    registry._discover_entry_points()
+
+    # Should have discovered the entry point
+    assert "test-legacy" in registry._entry_points
+
+
+# Test entry point discovery exception handling (lines 117-118).
+def test_entry_point_discovery_exception(monkeypatch):
+    """Test that entry point discovery exceptions are logged and ignored."""
+    from importlib import metadata
+
+    # Make entry_points raise an exception
+    def mock_entry_points_error(*args, **kwargs):
+        raise RuntimeError("Entry point discovery failed")
+
+    monkeypatch.setattr(metadata, "entry_points", mock_entry_points_error)
+
+    registry = ActionRegistry()
+    registry._entry_points = {}  # Clear
+
+    # Should not raise, just log the error
+    registry._discover_entry_points()
+
+    # Entry points should remain empty
+    assert registry._entry_points == {}
+
+
+# Test _load_entry_point with successful load (lines 129-151).
+def test_load_entry_point_success(monkeypatch):
+    """Test successful entry point loading."""
+    from causaliq_workflow.registry import ActionRegistry
+
+    registry = ActionRegistry()
+
+    # Create a mock entry point that loads successfully
+    class MockEntryPoint:
+        name = "test-ep-success"
+
+        def load(self):
+            return CausalIQAction
+
+    registry._entry_points["test-ep-success"] = MockEntryPoint()
+
+    # Load the entry point
+    result = registry._load_entry_point("test-ep-success")
+
+    # Should return the class and cache it
+    assert result == CausalIQAction
+    assert "test-ep-success" in registry._actions
+
+
+# Test _load_entry_point with invalid class (lines 147-152).
+def test_load_entry_point_invalid_class():
+    """Test entry point that doesn't export a CausalIQAction subclass."""
+    registry = ActionRegistry()
+
+    # Create a mock entry point that returns a non-action class
+    class MockEntryPoint:
+        name = "test-ep-invalid"
+
+        def load(self):
+            return str  # Not a CausalIQAction subclass
+
+    registry._entry_points["test-ep-invalid"] = MockEntryPoint()
+
+    # Load the entry point
+    result = registry._load_entry_point("test-ep-invalid")
+
+    # Should return None and record an error
+    assert result is None
+    errors = registry.get_discovery_errors()
+    assert any("test-ep-invalid" in e for e in errors)
+    assert any("does not export a CausalIQAction" in e for e in errors)
+
+
+# Test _load_entry_point with load exception (lines 153-158).
+def test_load_entry_point_exception():
+    """Test entry point that raises an exception on load."""
+    registry = ActionRegistry()
+
+    # Create a mock entry point that raises on load
+    class MockEntryPoint:
+        name = "test-ep-error"
+
+        def load(self):
+            raise ImportError("Module not found")
+
+    registry._entry_points["test-ep-error"] = MockEntryPoint()
+
+    # Load the entry point
+    result = registry._load_entry_point("test-ep-error")
+
+    # Should return None and record an error
+    assert result is None
+    errors = registry.get_discovery_errors()
+    assert any("test-ep-error" in e for e in errors)
+    assert any("Error loading entry point" in e for e in errors)
+
+
+# Test _load_entry_point with unknown name (line 127-128).
+def test_load_entry_point_unknown():
+    """Test loading an entry point that doesn't exist."""
+    registry = ActionRegistry()
+
+    result = registry._load_entry_point("nonexistent-ep")
+
+    assert result is None
+
+
+# Test get_action_class with entry point load failure (lines 308-311).
+def test_get_action_class_entry_point_load_failure():
+    """Test get_action_class when entry point exists but fails to load."""
+    import pytest
+
+    from causaliq_workflow.registry import ActionRegistry, ActionRegistryError
+
+    registry = ActionRegistry()
+
+    # Create a mock entry point that fails to load
+    class MockEntryPoint:
+        name = "test-ep-fail"
+
+        def load(self):
+            raise ImportError("Failed to import")
+
+    registry._entry_points["test-ep-fail"] = MockEntryPoint()
+
+    # Should raise ActionRegistryError
+    with pytest.raises(ActionRegistryError) as exc_info:
+        registry.get_action_class("test-ep-fail")
+
+    assert "entry point failed to load" in str(exc_info.value)
+
+
+# Test get_action_class with successful entry point load (line 310).
+def test_get_action_class_entry_point_success():
+    """Test get_action_class successfully loads and returns entry point."""
+    from causaliq_workflow.registry import ActionRegistry
+
+    registry = ActionRegistry()
+
+    # Create a mock entry point that loads successfully
+    class MockEntryPoint:
+        name = "test-ep-get"
+
+        def load(self):
+            return CausalIQAction
+
+    registry._entry_points["test-ep-get"] = MockEntryPoint()
+
+    # Should return the action class
+    result = registry.get_action_class("test-ep-get")
+
+    assert result == CausalIQAction
+    # Should also be cached now
+    assert "test-ep-get" in registry._actions

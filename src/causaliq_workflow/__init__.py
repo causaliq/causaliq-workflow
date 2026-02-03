@@ -9,7 +9,7 @@ from .registry import ActionRegistry, ActionRegistryError, WorkflowContext
 from .status import TaskStatus  # noqa: F401
 from .workflow import WorkflowExecutionError, WorkflowExecutor
 
-__version__ = "0.1.1.dev1"
+__version__ = "0.1.1.dev3"
 __author__ = "CausalIQ"
 __email__ = "info@causaliq.com"
 
