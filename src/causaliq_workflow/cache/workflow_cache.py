@@ -351,7 +351,7 @@ class WorkflowCache:
         )
 
     # ========================================================================
-    # Statistics
+    # Statistics and listing
     # ========================================================================
 
     def entry_count(self, entry_type: str | None = None) -> int:
@@ -364,6 +364,39 @@ class WorkflowCache:
             Number of matching entries.
         """
         return self.token_cache.entry_count(entry_type)
+
+    def list_entries(
+        self,
+        entry_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """List all cache entries with details.
+
+        Returns entry details including matrix_values (parsed from key_json),
+        created_at timestamp, and metadata.
+
+        Args:
+            entry_type: If provided, list only entries of this type.
+
+        Returns:
+            List of entry dictionaries with keys: hash, entry_type,
+            matrix_values (dict), created_at (str), metadata (raw bytes).
+        """
+        raw_entries = self.token_cache.list_entries(entry_type)
+        entries = []
+        for entry in raw_entries:
+            # Parse key_json back to matrix_values dict
+            key_json = entry["key_json"]
+            matrix_values = json.loads(key_json) if key_json else {}
+            entries.append(
+                {
+                    "hash": entry["hash"],
+                    "entry_type": entry["entry_type"],
+                    "matrix_values": matrix_values,
+                    "created_at": entry["created_at"],
+                    "metadata": entry["metadata"],
+                }
+            )
+        return entries
 
     def list_entry_types(self) -> list[str]:
         """List all distinct entry types in the cache.
@@ -380,3 +413,231 @@ class WorkflowCache:
             Number of tokens.
         """
         return self.token_cache.token_count()
+
+    # ========================================================================
+    # Export operations
+    # ========================================================================
+
+    def export(
+        self,
+        output_path: str | Path,
+        entry_type: str,
+        matrix_keys: list[str] | None = None,
+    ) -> int:
+        """Export cache entries to directory or zip file.
+
+        Creates a hierarchical directory structure based on matrix variable
+        values in the order specified by matrix_keys. Each entry is exported
+        as a pair of files: <timestamp>.graphml and <timestamp>.json.
+
+        The output format is determined by the path extension:
+        - Path ending in .zip: creates a zip archive
+        - Otherwise: creates a directory structure
+
+        Args:
+            output_path: Path to output directory or .zip file.
+            entry_type: Type of entries to export (e.g., 'graph').
+            matrix_keys: Ordered list of matrix variable names for directory
+                hierarchy. If None, uses alphabetical order.
+
+        Returns:
+            Number of entries exported.
+
+        Raises:
+            KeyError: If no encoder is registered for entry_type.
+            ValueError: If entry has matrix values not in matrix_keys.
+
+        Example:
+            >>> with WorkflowCache("cache.db") as cache:
+            ...     # Export to dir: asia/pc/2026-02-06T14-30-00.graphml
+            ...     cache.export("./out", "graph", ["dataset", "algorithm"])
+            ...     # Export to zip file
+            ...     cache.export("./out.zip", "graph", ["dataset"])
+        """
+        output_path = Path(output_path)
+        is_zip = output_path.suffix.lower() == ".zip"
+
+        if is_zip:
+            return self._export_to_zip(output_path, entry_type, matrix_keys)
+        else:
+            return self._export_to_dir(output_path, entry_type, matrix_keys)
+
+    def _build_entry_path(
+        self,
+        matrix_values: dict[str, Any],
+        created_at: str,
+        matrix_keys: list[str] | None,
+    ) -> Path:
+        """Build hierarchical path from matrix values.
+
+        Args:
+            matrix_values: Dictionary of matrix variable values.
+            created_at: ISO timestamp for filename.
+            matrix_keys: Ordered list of keys for path hierarchy.
+
+        Returns:
+            Relative path like: asia/pc/2026-02-06T14-30-00
+        """
+        if matrix_keys is None:
+            matrix_keys = sorted(matrix_values.keys())
+
+        # Build path segments from matrix values in specified order
+        segments = []
+        for key in matrix_keys:
+            if key in matrix_values:
+                # Sanitise value for filesystem (replace problematic chars)
+                value = str(matrix_values[key])
+                safe_value = value.replace("/", "_").replace("\\", "_")
+                segments.append(safe_value)
+
+        # Convert timestamp to filesystem-safe format
+        safe_timestamp = created_at.replace(":", "-")
+
+        if segments:
+            return Path(*segments) / safe_timestamp
+        else:
+            return Path(safe_timestamp)
+
+    def _export_to_dir(
+        self,
+        output_dir: Path,
+        entry_type: str,
+        matrix_keys: list[str] | None,
+    ) -> int:
+        """Export entries to a directory structure.
+
+        Args:
+            output_dir: Root directory for export.
+            entry_type: Type of entries to export.
+            matrix_keys: Ordered list of matrix variable names.
+
+        Returns:
+            Number of entries exported.
+        """
+        entries = self.list_entries(entry_type)
+        encoder = self.get_encoder(entry_type)
+        if encoder is None:
+            raise KeyError(
+                f"No encoder registered for entry type: {entry_type}"
+            )
+
+        count = 0
+        for entry in entries:
+            # Get data and metadata
+            result = self.get_with_metadata(entry["matrix_values"], entry_type)
+            if result is None:
+                continue
+
+            data, metadata = result
+
+            # Build path
+            rel_path = self._build_entry_path(
+                entry["matrix_values"],
+                entry["created_at"],
+                matrix_keys,
+            )
+
+            # Create directories
+            full_dir = output_dir / rel_path.parent
+            full_dir.mkdir(parents=True, exist_ok=True)
+
+            # Export data using encoder's export method
+            ext = encoder.default_export_format
+            data_path = output_dir / f"{rel_path}.{ext}"
+            encoder.export(data, data_path)
+
+            # Export metadata as JSON with _meta suffix to avoid collision
+            meta_path = output_dir / f"{rel_path}_meta.json"
+            meta_content = {
+                "matrix_values": entry["matrix_values"],
+                "created_at": entry["created_at"],
+                "entry_type": entry_type,
+            }
+            if metadata is not None:
+                meta_content["metadata"] = metadata
+            meta_path.write_text(
+                json.dumps(meta_content, indent=2, sort_keys=False),
+                encoding="utf-8",
+            )
+
+            count += 1
+
+        return count
+
+    def _export_to_zip(
+        self,
+        zip_path: Path,
+        entry_type: str,
+        matrix_keys: list[str] | None,
+    ) -> int:
+        """Export entries to a zip archive.
+
+        Args:
+            zip_path: Path to output zip file.
+            entry_type: Type of entries to export.
+            matrix_keys: Ordered list of matrix variable names.
+
+        Returns:
+            Number of entries exported.
+        """
+        import zipfile
+
+        entries = self.list_entries(entry_type)
+        encoder = self.get_encoder(entry_type)
+        if encoder is None:
+            raise KeyError(
+                f"No encoder registered for entry type: {entry_type}"
+            )
+
+        # Ensure parent directory exists
+        zip_path.parent.mkdir(parents=True, exist_ok=True)
+
+        count = 0
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for entry in entries:
+                # Get data and metadata
+                result = self.get_with_metadata(
+                    entry["matrix_values"], entry_type
+                )
+                if result is None:
+                    continue
+
+                data, metadata = result
+
+                # Build path
+                rel_path = self._build_entry_path(
+                    entry["matrix_values"],
+                    entry["created_at"],
+                    matrix_keys,
+                )
+
+                # Export data to in-memory buffer then to zip
+                ext = encoder.default_export_format
+                data_name = f"{rel_path}.{ext}"
+
+                # Use a temporary file for encoder export
+                import tempfile
+
+                with tempfile.NamedTemporaryFile(
+                    suffix=f".{ext}", delete=False
+                ) as tmp:
+                    tmp_path = Path(tmp.name)
+                encoder.export(data, tmp_path)
+                zf.write(tmp_path, data_name)
+                tmp_path.unlink()
+
+                # Export metadata as JSON with _meta suffix to avoid collision
+                meta_name = f"{rel_path}_meta.json"
+                meta_content = {
+                    "matrix_values": entry["matrix_values"],
+                    "created_at": entry["created_at"],
+                    "entry_type": entry_type,
+                }
+                if metadata is not None:
+                    meta_content["metadata"] = metadata
+                meta_json = json.dumps(meta_content, indent=2, sort_keys=False)
+                zf.writestr(meta_name, meta_json)
+
+                count += 1
+
+        return count
