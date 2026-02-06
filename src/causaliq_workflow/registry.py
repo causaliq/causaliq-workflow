@@ -11,9 +11,12 @@ import json
 import logging
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from causaliq_workflow.action import ActionExecutionError, CausalIQAction
+
+if TYPE_CHECKING:  # pragma: no cover
+    from causaliq_workflow.cache import WorkflowCache
 
 logger = logging.getLogger(__name__)
 
@@ -23,21 +26,23 @@ HASH_LENGTH = 16
 
 @dataclass
 class WorkflowContext:
-    """Workflow context for action execution optimization.
+    """Workflow context for action execution optimisation.
 
-    Provides minimal context needed for actions to optimize across workflows.
+    Provides minimal context needed for actions to optimise across workflows.
     Actions receive specific data through inputs; context provides
     meta-information.
 
     Attributes:
         mode: Execution mode ('dry-run', 'run', 'compare')
-        matrix: Complete matrix definition for cross-job optimization
+        matrix: Complete matrix definition for cross-job optimisation
         matrix_values: Current job's specific matrix variable values
+        cache: Optional WorkflowCache for storing step results
     """
 
     mode: str
     matrix: Dict[str, List[Any]]
     matrix_values: Dict[str, Any] = field(default_factory=dict)
+    cache: Optional["WorkflowCache"] = None
 
     @property
     def matrix_key(self) -> str:

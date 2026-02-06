@@ -29,6 +29,7 @@ class MatrixTestAction(CausalIQAction):
             result["context_mode"] = context.mode
             result["context_matrix_values"] = context.matrix_values
             result["context_matrix_key"] = context.matrix_key
+            result["context_has_cache"] = context.cache is not None
 
         return result
 
@@ -412,3 +413,95 @@ def test_mode_parameter_without_context() -> None:
     )
     assert result["mode"] == "dry-run"
     assert "context_mode" not in result
+
+
+# ============================================================================
+# Cache integration tests
+# ============================================================================
+
+
+# Test WorkflowContext cache field defaults to None.
+def test_workflow_context_cache_defaults_to_none() -> None:
+    context = WorkflowContext(
+        mode="run",
+        matrix={"dataset": ["asia"]},
+    )
+    assert context.cache is None
+
+
+# Test WorkflowContext accepts cache parameter.
+def test_workflow_context_accepts_cache() -> None:
+    from causaliq_workflow.cache import WorkflowCache
+
+    with WorkflowCache(":memory:") as cache:
+        context = WorkflowContext(
+            mode="run",
+            matrix={"dataset": ["asia"]},
+            cache=cache,
+        )
+        assert context.cache is cache
+        assert context.cache.is_open
+
+
+# Test execute_workflow without cache (default behaviour).
+def test_execute_workflow_without_cache(executor: WorkflowExecutor) -> None:
+    workflow = {
+        "id": "no-cache-test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "No Cache Step",
+                "uses": "matrix_test_action",
+                "with": {"data": "{{dataset}}"},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run")
+    assert len(results) == 1
+    step_result = results[0]["steps"]["No Cache Step"]
+    assert step_result["context_has_cache"] is False
+
+
+# Test execute_workflow passes cache to context.
+def test_execute_workflow_with_cache(executor: WorkflowExecutor) -> None:
+    from causaliq_workflow.cache import WorkflowCache
+
+    workflow = {
+        "id": "cache-test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "Cache Step",
+                "uses": "matrix_test_action",
+                "with": {"data": "{{dataset}}"},
+            }
+        ],
+    }
+    with WorkflowCache(":memory:") as cache:
+        results = executor.execute_workflow(workflow, mode="run", cache=cache)
+        assert len(results) == 1
+        step_result = results[0]["steps"]["Cache Step"]
+        assert step_result["context_has_cache"] is True
+
+
+# Test cache passed to all jobs in matrix execution.
+def test_cache_passed_to_all_matrix_jobs(executor: WorkflowExecutor) -> None:
+    from causaliq_workflow.cache import WorkflowCache
+
+    workflow = {
+        "id": "multi-job-cache-test",
+        "matrix": {"dataset": ["asia", "cancer"], "algorithm": ["pc", "ges"]},
+        "steps": [
+            {
+                "name": "Multi Job Step",
+                "uses": "matrix_test_action",
+                "with": {"data": "{{dataset}}", "algo": "{{algorithm}}"},
+            }
+        ],
+    }
+    with WorkflowCache(":memory:") as cache:
+        results = executor.execute_workflow(workflow, mode="run", cache=cache)
+        assert len(results) == 4
+        for result in results:
+            step_result = result["steps"]["Multi Job Step"]
+            assert step_result["context_has_cache"] is True

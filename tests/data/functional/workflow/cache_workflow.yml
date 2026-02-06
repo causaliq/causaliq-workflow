@@ -1,0 +1,13 @@
+id: "cache-test-001"
+description: "Workflow for testing cache integration"
+
+matrix:
+  dataset: ["asia", "cancer"]
+  algorithm: ["pc", "ges"]
+
+steps:
+  - name: "Cache Capture Step"
+    uses: "cache_capturing_action"
+    with:
+      data: "{{dataset}}"
+      algo: "{{algorithm}}"

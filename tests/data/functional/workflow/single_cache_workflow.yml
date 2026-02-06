@@ -1,0 +1,11 @@
+id: "single-cache-test"
+description: "Single job workflow for cache testing"
+
+matrix:
+  dataset: ["asia"]
+
+steps:
+  - name: "Cache Capture Step"
+    uses: "cache_capturing_action"
+    with:
+      data: "{{dataset}}"

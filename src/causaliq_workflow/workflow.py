@@ -8,7 +8,16 @@ matrix strategy support for causal discovery experiments.
 import itertools
 import re
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
 from causaliq_workflow.registry import ActionRegistry, WorkflowContext
 from causaliq_workflow.schema import (
@@ -16,6 +25,9 @@ from causaliq_workflow.schema import (
     load_workflow_file,
     validate_workflow,
 )
+
+if TYPE_CHECKING:  # pragma: no cover
+    from causaliq_workflow.cache import WorkflowCache
 
 
 class WorkflowExecutionError(Exception):
@@ -287,6 +299,7 @@ class WorkflowExecutor:
         mode: str = "dry-run",
         cli_params: Optional[Dict[str, Any]] = None,
         step_logger: Optional[Callable[[str, str, str], None]] = None,
+        cache: Optional["WorkflowCache"] = None,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
 
@@ -295,6 +308,7 @@ class WorkflowExecutor:
             mode: Execution mode ('dry-run', 'run', 'compare')
             cli_params: Additional parameters from CLI
             step_logger: Optional function to log step execution
+            cache: Optional WorkflowCache for storing step results
 
         Returns:
             List of job results from matrix expansion
@@ -317,6 +331,7 @@ class WorkflowExecutor:
                     mode=mode,
                     matrix=matrix,
                     matrix_values=job,
+                    cache=cache,
                 )
 
                 # Execute job steps
