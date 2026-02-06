@@ -641,3 +641,170 @@ class WorkflowCache:
                 count += 1
 
         return count
+
+    # ========================================================================
+    # Import operations
+    # ========================================================================
+
+    def import_entries(
+        self,
+        input_path: str | Path,
+        entry_type: str,
+    ) -> int:
+        """Import cache entries from directory or zip file.
+
+        Reads entries exported by `export()` and stores them back into
+        the cache. The input format is determined by the path:
+        - Path ending in .zip: reads from a zip archive
+        - Otherwise: reads from a directory structure
+
+        Uses metadata files to reconstruct matrix_values and entry metadata.
+        Data files are imported using the registered encoder's import_ method.
+
+        Args:
+            input_path: Path to input directory or .zip file.
+            entry_type: Type of entries to import (e.g., 'graph').
+
+        Returns:
+            Number of entries imported.
+
+        Raises:
+            KeyError: If no encoder is registered for entry_type.
+            FileNotFoundError: If input_path does not exist.
+
+        Example:
+            >>> with WorkflowCache("cache.db") as cache:
+            ...     # Import from directory
+            ...     cache.import_entries("./exported", "graph")
+            ...     # Import from zip file
+            ...     cache.import_entries("./exported.zip", "graph")
+        """
+        input_path = Path(input_path)
+        is_zip = input_path.suffix.lower() == ".zip"
+
+        if is_zip:
+            return self._import_from_zip(input_path, entry_type)
+        else:
+            return self._import_from_dir(input_path, entry_type)
+
+    def _import_from_dir(
+        self,
+        input_dir: Path,
+        entry_type: str,
+    ) -> int:
+        """Import entries from a directory structure.
+
+        Args:
+            input_dir: Root directory containing exported entries.
+            entry_type: Type of entries to import.
+
+        Returns:
+            Number of entries imported.
+
+        Raises:
+            KeyError: If no encoder is registered for entry_type.
+            FileNotFoundError: If input_dir does not exist.
+        """
+        if not input_dir.exists():
+            raise FileNotFoundError(f"Input directory not found: {input_dir}")
+
+        encoder = self.get_encoder(entry_type)
+        if encoder is None:
+            raise KeyError(
+                f"No encoder registered for entry type: {entry_type}"
+            )
+
+        ext = encoder.default_export_format
+        count = 0
+
+        # Find all metadata files recursively
+        for meta_path in input_dir.rglob("*_meta.json"):
+            # Derive data file path from metadata path
+            # meta: path/to/timestamp_meta.json -> data: path/to/timestamp.ext
+            stem = meta_path.stem.replace("_meta", "")
+            data_path = meta_path.parent / f"{stem}.{ext}"
+
+            if not data_path.exists():
+                continue
+
+            # Read metadata
+            meta_content = json.loads(meta_path.read_text(encoding="utf-8"))
+            matrix_values = meta_content.get("matrix_values", {})
+            metadata = meta_content.get("metadata")
+
+            # Import data using encoder
+            data = encoder.import_(data_path)
+
+            # Store in cache
+            self.put(matrix_values, entry_type, data, metadata)
+            count += 1
+
+        return count
+
+    def _import_from_zip(
+        self,
+        zip_path: Path,
+        entry_type: str,
+    ) -> int:
+        """Import entries from a zip archive.
+
+        Args:
+            zip_path: Path to input zip file.
+            entry_type: Type of entries to import.
+
+        Returns:
+            Number of entries imported.
+
+        Raises:
+            KeyError: If no encoder is registered for entry_type.
+            FileNotFoundError: If zip_path does not exist.
+        """
+        import tempfile
+        import zipfile
+
+        if not zip_path.exists():
+            raise FileNotFoundError(f"Zip file not found: {zip_path}")
+
+        encoder = self.get_encoder(entry_type)
+        if encoder is None:
+            raise KeyError(
+                f"No encoder registered for entry type: {entry_type}"
+            )
+
+        ext = encoder.default_export_format
+        count = 0
+
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            # Find all metadata files
+            meta_names = [n for n in zf.namelist() if n.endswith("_meta.json")]
+
+            for meta_name in meta_names:
+                # Derive data file name
+                stem = meta_name.replace("_meta.json", "")
+                data_name = f"{stem}.{ext}"
+
+                if data_name not in zf.namelist():
+                    continue
+
+                # Read metadata
+                meta_content = json.loads(zf.read(meta_name).decode("utf-8"))
+                matrix_values = meta_content.get("matrix_values", {})
+                metadata = meta_content.get("metadata")
+
+                # Extract data to temp file for encoder import
+                with tempfile.NamedTemporaryFile(
+                    suffix=f".{ext}", delete=False
+                ) as tmp:
+                    tmp.write(zf.read(data_name))
+                    tmp_path = Path(tmp.name)
+
+                try:
+                    data = encoder.import_(tmp_path)
+                finally:
+                    tmp_path.unlink()
+
+                # Store in cache
+                self.put(matrix_values, entry_type, data, metadata)
+                count += 1
+
+        return count

@@ -702,3 +702,253 @@ steps:
     assert result.exit_code == 0
     assert "[test-action] STEP EXECUTING Test Step" in result.output
     assert "[test-action] STEP " in result.output
+
+
+# ============================================================================
+# Cache import CLI tests
+# ============================================================================
+
+
+# Test cache import command missing required arguments.
+def test_cli_cache_import_missing_args(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(cli, ["cache", "import"])
+    assert result.exit_code != 0
+    assert "Missing argument" in result.output or "Usage:" in result.output
+
+
+# Test cache import command with nonexistent input path.
+def test_cli_cache_import_nonexistent_input(
+    cli_runner: CliRunner, tmp_path
+) -> None:
+    input_path = tmp_path / "nonexistent"
+    cache_path = tmp_path / "cache.db"
+    result = cli_runner.invoke(
+        cli,
+        ["cache", "import", str(input_path), "--into", str(cache_path)],
+    )
+    # Click validates exists=True and returns exit code 2
+    assert result.exit_code == 2
+    assert "does not exist" in result.output
+
+
+# Test cache import command from directory.
+def test_cli_cache_import_from_directory(
+    cli_runner: CliRunner, tmp_path
+) -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    source_cache = tmp_path / "source.db"
+    export_dir = tmp_path / "exported"
+    dest_cache = tmp_path / "dest.db"
+
+    # Create and export source cache
+    with WorkflowCache(source_cache) as cache:
+        cache.register_encoder("json", JsonEncoder())
+        cache.put({"dataset": "asia"}, "json", {"value": 42})
+        cache.export(export_dir, "json")
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "cache",
+            "import",
+            str(export_dir),
+            "--into",
+            str(dest_cache),
+            "-t",
+            "json",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "IMPORTING from:" in result.output
+    assert "IMPORTED 1 entries into:" in result.output
+
+    # Verify imported data
+    with WorkflowCache(dest_cache) as cache:
+        cache.register_encoder("json", JsonEncoder())
+        assert cache.exists({"dataset": "asia"}, "json")
+
+
+# Test cache import command from zip file.
+def test_cli_cache_import_from_zip(cli_runner: CliRunner, tmp_path) -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    source_cache = tmp_path / "source.db"
+    zip_path = tmp_path / "exported.zip"
+    dest_cache = tmp_path / "dest.db"
+
+    # Create and export source cache
+    with WorkflowCache(source_cache) as cache:
+        cache.register_encoder("json", JsonEncoder())
+        cache.put({"dataset": "sachs"}, "json", {"value": 99})
+        cache.export(zip_path, "json")
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "cache",
+            "import",
+            str(zip_path),
+            "-i",
+            str(dest_cache),
+            "-t",
+            "json",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "IMPORTED 1 entries" in result.output
+
+
+# Test cache import KeyError handling.
+def test_cli_cache_import_keyerror(
+    cli_runner: CliRunner, tmp_path, monkeypatch
+) -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    source_cache = tmp_path / "source.db"
+    export_dir = tmp_path / "exported"
+    dest_cache = tmp_path / "dest.db"
+
+    with WorkflowCache(source_cache) as cache:
+        cache.register_encoder("json", JsonEncoder())
+        cache.put({"a": "1"}, "json", {"v": 1})
+        cache.export(export_dir, "json")
+
+    def raise_key_error(*args, **kwargs):
+        raise KeyError("No encoder found")
+
+    monkeypatch.setattr(WorkflowCache, "import_entries", raise_key_error)
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "cache",
+            "import",
+            str(export_dir),
+            "-i",
+            str(dest_cache),
+            "-t",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Import failed" in result.output
+
+
+# Test cache import general Exception handling.
+def test_cli_cache_import_general_exception(
+    cli_runner: CliRunner, tmp_path, monkeypatch
+) -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    source_cache = tmp_path / "source.db"
+    export_dir = tmp_path / "exported"
+    dest_cache = tmp_path / "dest.db"
+
+    with WorkflowCache(source_cache) as cache:
+        cache.register_encoder("json", JsonEncoder())
+        cache.put({"a": "1"}, "json", {"v": 1})
+        cache.export(export_dir, "json")
+
+    def raise_runtime_error(*args, **kwargs):
+        raise RuntimeError("Test runtime error")
+
+    monkeypatch.setattr(WorkflowCache, "import_entries", raise_runtime_error)
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "cache",
+            "import",
+            str(export_dir),
+            "-i",
+            str(dest_cache),
+            "-t",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Import failed" in result.output
+
+
+# Test cache import KeyboardInterrupt handling.
+def test_cli_cache_import_keyboard_interrupt(
+    cli_runner: CliRunner, tmp_path, monkeypatch
+) -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    source_cache = tmp_path / "source.db"
+    export_dir = tmp_path / "exported"
+    dest_cache = tmp_path / "dest.db"
+
+    with WorkflowCache(source_cache) as cache:
+        cache.register_encoder("json", JsonEncoder())
+        cache.put({"a": "1"}, "json", {"v": 1})
+        cache.export(export_dir, "json")
+
+    def raise_keyboard_interrupt(*args, **kwargs):
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(
+        WorkflowCache, "import_entries", raise_keyboard_interrupt
+    )
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "cache",
+            "import",
+            str(export_dir),
+            "-i",
+            str(dest_cache),
+            "-t",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 130
+    assert "Import interrupted by user" in result.output
+
+
+# Test cache import ImportError handling.
+def test_cli_cache_import_import_error(
+    cli_runner: CliRunner, tmp_path, monkeypatch
+) -> None:
+    export_dir = tmp_path / "exported"
+    export_dir.mkdir()
+    dest_cache = tmp_path / "dest.db"
+
+    def raise_import_error(*args, **kwargs):
+        raise ImportError("Missing causaliq_core")
+
+    monkeypatch.setattr(
+        "causaliq_workflow.cache.WorkflowCache", raise_import_error
+    )
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "cache",
+            "import",
+            str(export_dir),
+            "-i",
+            str(dest_cache),
+            "-t",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Missing required dependencies" in result.output

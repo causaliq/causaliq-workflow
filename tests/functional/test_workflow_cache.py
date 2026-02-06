@@ -431,3 +431,316 @@ def test_cache_export_zip_skips_missing_entries(monkeypatch) -> None:
 
         # Only one entry should be exported
         assert count == 1
+
+
+# ============================================================================
+# Import tests
+# ============================================================================
+
+
+# Test cache import from directory.
+def test_cache_import_from_directory() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source_cache = Path(tmpdir) / "source.db"
+        export_dir = Path(tmpdir) / "exported"
+        dest_cache = Path(tmpdir) / "dest.db"
+
+        # Create and export source cache
+        with WorkflowCache(source_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.put({"dataset": "asia", "method": "pc"}, "json", {"v": 1})
+            cache.put({"dataset": "asia", "method": "ges"}, "json", {"v": 2})
+            cache.put({"dataset": "sachs", "method": "pc"}, "json", {"v": 3})
+            cache.export(export_dir, "json")
+
+        # Import into new cache
+        with WorkflowCache(dest_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            count = cache.import_entries(export_dir, "json")
+            assert count == 3
+
+            # Verify imported entries
+            assert cache.exists({"dataset": "asia", "method": "pc"}, "json")
+            assert cache.exists({"dataset": "asia", "method": "ges"}, "json")
+            assert cache.exists({"dataset": "sachs", "method": "pc"}, "json")
+
+            # Check data integrity
+            data = cache.get({"dataset": "asia", "method": "pc"}, "json")
+            assert data == {"v": 1}
+
+
+# Test cache import from zip file.
+def test_cache_import_from_zip() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source_cache = Path(tmpdir) / "source.db"
+        zip_path = Path(tmpdir) / "exported.zip"
+        dest_cache = Path(tmpdir) / "dest.db"
+
+        # Create and export source cache
+        with WorkflowCache(source_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.put({"dataset": "asia"}, "json", {"v": 1})
+            cache.put({"dataset": "sachs"}, "json", {"v": 2})
+            cache.export(zip_path, "json")
+
+        # Import into new cache
+        with WorkflowCache(dest_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            count = cache.import_entries(zip_path, "json")
+            assert count == 2
+
+            # Verify imported entries
+            assert cache.exists({"dataset": "asia"}, "json")
+            assert cache.exists({"dataset": "sachs"}, "json")
+
+            # Check data integrity
+            data = cache.get({"dataset": "sachs"}, "json")
+            assert data == {"v": 2}
+
+
+# Test round-trip export then import preserves data.
+def test_cache_round_trip() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        original_cache = Path(tmpdir) / "original.db"
+        export_dir = Path(tmpdir) / "exported"
+        imported_cache = Path(tmpdir) / "imported.db"
+
+        original_data = [
+            ({"a": "1", "b": "2"}, {"data": "test1"}),
+            ({"a": "3", "b": "4"}, {"data": "test2"}),
+            ({"a": "5", "b": "6"}, {"data": "test3"}),
+        ]
+
+        # Create original cache
+        with WorkflowCache(original_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            for key, data in original_data:
+                cache.put(key, "json", data)
+            cache.export(export_dir, "json")
+
+        # Import into new cache
+        with WorkflowCache(imported_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.import_entries(export_dir, "json")
+
+            # Verify all data preserved
+            for key, expected_data in original_data:
+                assert cache.exists(key, "json")
+                actual_data = cache.get(key, "json")
+                assert actual_data == expected_data
+
+
+# Test round-trip with zip file.
+def test_cache_round_trip_zip() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        original_cache = Path(tmpdir) / "original.db"
+        zip_path = Path(tmpdir) / "exported.zip"
+        imported_cache = Path(tmpdir) / "imported.db"
+
+        original_data = [
+            ({"x": "a"}, {"value": 100}),
+            ({"x": "b"}, {"value": 200}),
+        ]
+
+        # Create original cache
+        with WorkflowCache(original_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            for key, data in original_data:
+                cache.put(key, "json", data)
+            cache.export(zip_path, "json")
+
+        # Import into new cache
+        with WorkflowCache(imported_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.import_entries(zip_path, "json")
+
+            for key, expected_data in original_data:
+                assert cache.exists(key, "json")
+                assert cache.get(key, "json") == expected_data
+
+
+# Test import with metadata preserves metadata.
+def test_cache_import_with_metadata() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source_cache = Path(tmpdir) / "source.db"
+        export_dir = Path(tmpdir) / "exported"
+        dest_cache = Path(tmpdir) / "dest.db"
+
+        # Create cache with metadata
+        with WorkflowCache(source_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.put(
+                {"key": "test"},
+                "json",
+                {"data": "value"},
+                metadata={"source": "test", "version": "1.0"},
+            )
+            cache.export(export_dir, "json")
+
+        # Import and check metadata
+        with WorkflowCache(dest_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.import_entries(export_dir, "json")
+
+            result = cache.get_with_metadata({"key": "test"}, "json")
+            assert result is not None
+            data, metadata = result
+            assert data == {"data": "value"}
+            assert metadata == {"source": "test", "version": "1.0"}
+
+
+# Test import from nonexistent directory raises FileNotFoundError.
+def test_cache_import_nonexistent_dir_raises_error() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cache_path = Path(tmpdir) / "cache.db"
+        missing_dir = Path(tmpdir) / "missing"
+
+        with WorkflowCache(cache_path) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            with pytest.raises(FileNotFoundError, match="Input directory"):
+                cache.import_entries(missing_dir, "json")
+
+
+# Test import from nonexistent zip raises FileNotFoundError.
+def test_cache_import_nonexistent_zip_raises_error() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cache_path = Path(tmpdir) / "cache.db"
+        missing_zip = Path(tmpdir) / "missing.zip"
+
+        with WorkflowCache(cache_path) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            with pytest.raises(FileNotFoundError, match="Zip file"):
+                cache.import_entries(missing_zip, "json")
+
+
+# Test import with no encoder raises KeyError.
+def test_cache_import_no_encoder_raises_error() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source_cache = Path(tmpdir) / "source.db"
+        export_dir = Path(tmpdir) / "exported"
+        dest_cache = Path(tmpdir) / "dest.db"
+
+        # Create and export
+        with WorkflowCache(source_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.put({"a": "1"}, "json", {"v": 1})
+            cache.export(export_dir, "json")
+
+        # Try import without registering encoder
+        with WorkflowCache(dest_cache) as cache:
+            with pytest.raises(KeyError, match="No encoder registered"):
+                cache.import_entries(export_dir, "json")
+
+
+# Test import from zip with no encoder raises KeyError.
+def test_cache_import_zip_no_encoder_raises_error() -> None:
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source_cache = Path(tmpdir) / "source.db"
+        zip_path = Path(tmpdir) / "exported.zip"
+        dest_cache = Path(tmpdir) / "dest.db"
+
+        # Create and export
+        with WorkflowCache(source_cache) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            cache.put({"a": "1"}, "json", {"v": 1})
+            cache.export(zip_path, "json")
+
+        # Try import without registering encoder
+        with WorkflowCache(dest_cache) as cache:
+            with pytest.raises(KeyError, match="No encoder registered"):
+                cache.import_entries(zip_path, "json")
+
+
+# Test import skips entries without matching data file.
+def test_cache_import_skips_missing_data_file() -> None:
+    import json
+
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        export_dir = Path(tmpdir) / "partial"
+        export_dir.mkdir()
+        cache_path = Path(tmpdir) / "cache.db"
+
+        # Create metadata file without corresponding data file
+        meta_content = {
+            "matrix_values": {"key": "orphan"},
+            "created_at": "2026-02-06T12:00:00",
+            "entry_type": "json",
+        }
+        meta_path = export_dir / "2026-02-06T12-00-00_meta.json"
+        meta_path.write_text(json.dumps(meta_content))
+
+        # Also create a complete entry
+        data_path = export_dir / "2026-02-06T12-01-00.json"
+        data_path.write_text('{"complete": true}')
+        meta_path2 = export_dir / "2026-02-06T12-01-00_meta.json"
+        meta_content2 = {
+            "matrix_values": {"key": "complete"},
+            "created_at": "2026-02-06T12:01:00",
+            "entry_type": "json",
+        }
+        meta_path2.write_text(json.dumps(meta_content2))
+
+        with WorkflowCache(cache_path) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            count = cache.import_entries(export_dir, "json")
+
+        # Only the complete entry should be imported
+        assert count == 1
+
+
+# Test import from zip skips entries without matching data file.
+def test_cache_import_zip_skips_missing_data_file() -> None:
+    import json
+    import zipfile
+
+    from causaliq_core.cache.encoders import JsonEncoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        zip_path = Path(tmpdir) / "partial.zip"
+        cache_path = Path(tmpdir) / "cache.db"
+
+        # Create zip with orphan metadata (no data file)
+        with zipfile.ZipFile(zip_path, "w") as zf:
+            # Orphan metadata
+            meta_content = {
+                "matrix_values": {"key": "orphan"},
+                "created_at": "2026-02-06T12:00:00",
+                "entry_type": "json",
+            }
+            zf.writestr("orphan_meta.json", json.dumps(meta_content))
+
+            # Complete entry
+            zf.writestr("complete.json", '{"complete": true}')
+            meta_content2 = {
+                "matrix_values": {"key": "complete"},
+                "created_at": "2026-02-06T12:01:00",
+                "entry_type": "json",
+            }
+            zf.writestr("complete_meta.json", json.dumps(meta_content2))
+
+        with WorkflowCache(cache_path) as cache:
+            cache.register_encoder("json", JsonEncoder())
+            count = cache.import_entries(zip_path, "json")
+
+        # Only the complete entry should be imported
+        assert count == 1

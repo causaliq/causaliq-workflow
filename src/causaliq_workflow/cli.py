@@ -290,6 +290,87 @@ def cache_export(
         sys.exit(1)
 
 
+@cache_group.command(name="import")
+@click.argument(
+    "input_path",
+    metavar="INPUT_PATH",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+)
+@click.option(
+    "--into",
+    "-i",
+    "cache_file",
+    required=True,
+    type=click.Path(path_type=Path),
+    help="Destination cache database file",
+)
+@click.option(
+    "--entry-type",
+    "-t",
+    default="graph",
+    help="Entry type to import (default: graph)",
+)
+def cache_import(
+    input_path: Path,
+    cache_file: Path,
+    entry_type: str,
+) -> None:
+    """Import cache entries from directory or zip file.
+
+    INPUT_PATH is the path to an exported directory or .zip file.
+
+    Reads entries previously exported by 'cache export' and stores them
+    into the specified cache database. Creates the cache file if it
+    does not exist.
+
+    Examples:
+
+        causaliq-workflow cache import ./results --into cache.db
+
+        causaliq-workflow cache import results.zip -i cache.db
+
+        causaliq-workflow cache import ./out -i cache.db -t graph
+    """
+    try:
+        from causaliq_core.cache.encoders import JsonEncoder
+
+        from causaliq_workflow.cache import WorkflowCache
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        click.echo(
+            f"{timestamp} [causaliq-workflow] IMPORTING from: {input_path}"
+        )
+
+        with WorkflowCache(cache_file) as cache:
+            if not cache.has_encoder("json"):
+                cache.register_encoder("json", JsonEncoder())
+
+            try:
+                imported = cache.import_entries(input_path, entry_type)
+                click.echo(
+                    f"{timestamp} [causaliq-workflow] "
+                    f"IMPORTED {imported} entries into: {cache_file}"
+                )
+            except KeyError as e:
+                _log_cli_error(f"Import failed: {e}")
+                sys.exit(1)
+            except Exception as e:
+                _log_cli_error(f"Import failed: {e}")
+                sys.exit(1)
+
+    except FileNotFoundError:  # pragma: no cover
+        # Defensive: Click validates exists=True, but kept for safety
+        _log_cli_error(f"Input path not found: {input_path}")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        _log_cli_error("Import interrupted by user")
+        sys.exit(130)
+    except ImportError as e:
+        _log_cli_error(f"Missing required dependencies: {e}")
+        sys.exit(1)
+
+
 def main() -> None:
     """Entry point for the CLI."""
     cli(prog_name="causaliq-workflow")
