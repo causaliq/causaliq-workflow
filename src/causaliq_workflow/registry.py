@@ -5,15 +5,20 @@ Provides centralized management of actions from external packages using
 setuptools entry points for clean plugin architecture.
 """
 
+import hashlib
 import inspect
+import json
 import logging
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Type
 
 from causaliq_workflow.action import ActionExecutionError, CausalIQAction
 
 logger = logging.getLogger(__name__)
+
+# Length of truncated SHA-256 hash (16 hex chars = 64 bits)
+HASH_LENGTH = 16
 
 
 @dataclass
@@ -27,10 +32,43 @@ class WorkflowContext:
     Attributes:
         mode: Execution mode ('dry-run', 'run', 'compare')
         matrix: Complete matrix definition for cross-job optimization
+        matrix_values: Current job's specific matrix variable values
     """
 
     mode: str
     matrix: Dict[str, List[Any]]
+    matrix_values: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def matrix_key(self) -> str:
+        """Compute cache key from matrix values.
+
+        Returns a truncated SHA-256 hash (16 hex characters) of the
+        matrix variable values, suitable for use as a cache key.
+
+        The hash is computed from JSON-serialised matrix_values with
+        sorted keys for deterministic ordering.
+
+        Returns:
+            Truncated hex hash string (16 characters), or empty string
+            if matrix_values is empty.
+
+        Example:
+            >>> context = WorkflowContext(
+            ...     mode="run",
+            ...     matrix={"algorithm": ["pc", "ges"]},
+            ...     matrix_values={"algorithm": "pc"}
+            ... )
+            >>> len(context.matrix_key)
+            16
+        """
+        if not self.matrix_values:
+            return ""
+        key_json = json.dumps(
+            self.matrix_values, sort_keys=True, separators=(",", ":")
+        )
+        full_hash = hashlib.sha256(key_json.encode("utf-8")).hexdigest()
+        return full_hash[:HASH_LENGTH]
 
 
 class ActionRegistryError(Exception):

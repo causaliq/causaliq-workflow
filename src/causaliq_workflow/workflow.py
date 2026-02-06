@@ -316,6 +316,7 @@ class WorkflowExecutor:
                 context = WorkflowContext(
                     mode=mode,
                     matrix=matrix,
+                    matrix_values=job,
                 )
 
                 # Execute job steps
