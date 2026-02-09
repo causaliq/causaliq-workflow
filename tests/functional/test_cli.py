@@ -25,7 +25,8 @@ def test_cli_no_args_shows_help() -> None:
     assert result.exit_code == 0
     assert "Usage:" in result.output
     assert "run" in result.output
-    assert "cache" in result.output
+    assert "export_cache" in result.output
+    assert "import_cache" in result.output
 
 
 # Test run subcommand missing workflow argument.
@@ -353,30 +354,30 @@ def test_cli_run_file_not_found_direct_error(
     assert "[causaliq-workflow] ERROR Workflow file not found" in result.output
 
 
-# Test cache export command missing required arguments.
-def test_cli_cache_export_missing_args(cli_runner: CliRunner) -> None:
-    result = cli_runner.invoke(cli, ["cache", "export"])
+# Test export_cache command missing required arguments.
+def test_cli_export_cache_missing_args(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(cli, ["export_cache"])
     assert result.exit_code != 0
-    assert "Missing argument" in result.output or "Usage:" in result.output
+    assert "Missing option" in result.output or "Usage:" in result.output
 
 
-# Test cache export command with nonexistent cache file.
-def test_cli_cache_export_nonexistent_cache(
+# Test export_cache command with nonexistent cache file.
+def test_cli_export_cache_nonexistent_cache(
     cli_runner: CliRunner, tmp_path
 ) -> None:
     cache_path = tmp_path / "nonexistent.db"
     output_dir = tmp_path / "output"
     result = cli_runner.invoke(
         cli,
-        ["cache", "export", str(cache_path), "-o", str(output_dir)],
+        ["export_cache", "-c", str(cache_path), "-o", str(output_dir)],
     )
     # Click validates exists=True and returns exit code 2
     assert result.exit_code == 2
     assert "does not exist" in result.output
 
 
-# Test cache export command to directory.
-def test_cli_cache_export_to_directory(
+# Test export_cache command to directory.
+def test_cli_export_cache_to_directory(
     cli_runner: CliRunner, tmp_path
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -394,8 +395,8 @@ def test_cli_cache_export_to_directory(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -408,8 +409,8 @@ def test_cli_cache_export_to_directory(
     assert output_dir.exists()
 
 
-# Test cache export command to zip.
-def test_cli_cache_export_to_zip(cli_runner: CliRunner, tmp_path) -> None:
+# Test export_cache command to zip.
+def test_cli_export_cache_to_zip(cli_runner: CliRunner, tmp_path) -> None:
     import zipfile
 
     from causaliq_core.cache.encoders import JsonEncoder
@@ -427,8 +428,8 @@ def test_cli_cache_export_to_zip(cli_runner: CliRunner, tmp_path) -> None:
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(zip_path),
@@ -446,8 +447,8 @@ def test_cli_cache_export_to_zip(cli_runner: CliRunner, tmp_path) -> None:
         assert len(names) == 2  # data + metadata
 
 
-# Test cache export command empty cache.
-def test_cli_cache_export_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
+# Test export_cache command empty cache.
+def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
 
     from causaliq_workflow.cache import WorkflowCache
@@ -462,8 +463,8 @@ def test_cli_cache_export_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -475,8 +476,8 @@ def test_cli_cache_export_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     assert "No entries of type 'json' found in cache" in result.output
 
 
-# Test cache export with matrix-keys option (covers line 244).
-def test_cli_cache_export_with_matrix_keys(
+# Test export_cache with matrix-keys option.
+def test_cli_export_cache_with_matrix_keys(
     cli_runner: CliRunner, tmp_path
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -493,8 +494,8 @@ def test_cli_cache_export_with_matrix_keys(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -511,8 +512,8 @@ def test_cli_cache_export_with_matrix_keys(
     assert (output_dir / "asia" / "pc").exists()
 
 
-# Test cache export general Exception handling (covers lines 282-283).
-def test_cli_cache_export_general_exception(
+# Test export_cache general Exception handling.
+def test_cli_export_cache_general_exception(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -535,8 +536,8 @@ def test_cli_cache_export_general_exception(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -549,8 +550,8 @@ def test_cli_cache_export_general_exception(
     assert "Export failed" in result.output
 
 
-# Test cache export KeyError from export method (covers lines 274-279).
-def test_cli_cache_export_keyerror_from_export(
+# Test export_cache KeyError from export method.
+def test_cli_export_cache_keyerror_from_export(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -572,8 +573,8 @@ def test_cli_cache_export_keyerror_from_export(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -586,8 +587,8 @@ def test_cli_cache_export_keyerror_from_export(
     assert "Export failed" in result.output
 
 
-# Test cache export KeyboardInterrupt handling (covers lines 288-289).
-def test_cli_cache_export_keyboard_interrupt(
+# Test export_cache KeyboardInterrupt handling.
+def test_cli_export_cache_keyboard_interrupt(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -609,8 +610,8 @@ def test_cli_cache_export_keyboard_interrupt(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -623,8 +624,8 @@ def test_cli_cache_export_keyboard_interrupt(
     assert "Export interrupted by user" in result.output
 
 
-# Test cache export ImportError handling (covers lines 291-292 area).
-def test_cli_cache_export_import_error(
+# Test export_cache ImportError handling.
+def test_cli_export_cache_import_error(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     cache_path = tmp_path / "import_error.db"
@@ -643,8 +644,8 @@ def test_cli_cache_export_import_error(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "export",
+            "export_cache",
+            "-c",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -705,34 +706,34 @@ steps:
 
 
 # ============================================================================
-# Cache import CLI tests
+# import_cache CLI tests
 # ============================================================================
 
 
-# Test cache import command missing required arguments.
-def test_cli_cache_import_missing_args(cli_runner: CliRunner) -> None:
-    result = cli_runner.invoke(cli, ["cache", "import"])
+# Test import_cache command missing required arguments.
+def test_cli_import_cache_missing_args(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(cli, ["import_cache"])
     assert result.exit_code != 0
-    assert "Missing argument" in result.output or "Usage:" in result.output
+    assert "Missing option" in result.output or "Usage:" in result.output
 
 
-# Test cache import command with nonexistent input path.
-def test_cli_cache_import_nonexistent_input(
+# Test import_cache command with nonexistent input path.
+def test_cli_import_cache_nonexistent_input(
     cli_runner: CliRunner, tmp_path
 ) -> None:
     input_path = tmp_path / "nonexistent"
     cache_path = tmp_path / "cache.db"
     result = cli_runner.invoke(
         cli,
-        ["cache", "import", str(input_path), "--into", str(cache_path)],
+        ["import_cache", "-i", str(input_path), "-c", str(cache_path)],
     )
     # Click validates exists=True and returns exit code 2
     assert result.exit_code == 2
     assert "does not exist" in result.output
 
 
-# Test cache import command from directory.
-def test_cli_cache_import_from_directory(
+# Test import_cache command from directory.
+def test_cli_import_cache_from_directory(
     cli_runner: CliRunner, tmp_path
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -752,10 +753,10 @@ def test_cli_cache_import_from_directory(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "import",
+            "import_cache",
+            "-i",
             str(export_dir),
-            "--into",
+            "-c",
             str(dest_cache),
             "-t",
             "json",
@@ -771,8 +772,8 @@ def test_cli_cache_import_from_directory(
         assert cache.exists({"dataset": "asia"}, "json")
 
 
-# Test cache import command from zip file.
-def test_cli_cache_import_from_zip(cli_runner: CliRunner, tmp_path) -> None:
+# Test import_cache command from zip file.
+def test_cli_import_cache_from_zip(cli_runner: CliRunner, tmp_path) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
 
     from causaliq_workflow.cache import WorkflowCache
@@ -790,10 +791,10 @@ def test_cli_cache_import_from_zip(cli_runner: CliRunner, tmp_path) -> None:
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "import",
-            str(zip_path),
+            "import_cache",
             "-i",
+            str(zip_path),
+            "-c",
             str(dest_cache),
             "-t",
             "json",
@@ -803,8 +804,8 @@ def test_cli_cache_import_from_zip(cli_runner: CliRunner, tmp_path) -> None:
     assert "IMPORTED 1 entries" in result.output
 
 
-# Test cache import KeyError handling.
-def test_cli_cache_import_keyerror(
+# Test import_cache KeyError handling.
+def test_cli_import_cache_keyerror(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -828,10 +829,10 @@ def test_cli_cache_import_keyerror(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "import",
-            str(export_dir),
+            "import_cache",
             "-i",
+            str(export_dir),
+            "-c",
             str(dest_cache),
             "-t",
             "json",
@@ -842,8 +843,8 @@ def test_cli_cache_import_keyerror(
     assert "Import failed" in result.output
 
 
-# Test cache import general Exception handling.
-def test_cli_cache_import_general_exception(
+# Test import_cache general Exception handling.
+def test_cli_import_cache_general_exception(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -867,10 +868,10 @@ def test_cli_cache_import_general_exception(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "import",
-            str(export_dir),
+            "import_cache",
             "-i",
+            str(export_dir),
+            "-c",
             str(dest_cache),
             "-t",
             "json",
@@ -881,8 +882,8 @@ def test_cli_cache_import_general_exception(
     assert "Import failed" in result.output
 
 
-# Test cache import KeyboardInterrupt handling.
-def test_cli_cache_import_keyboard_interrupt(
+# Test import_cache KeyboardInterrupt handling.
+def test_cli_import_cache_keyboard_interrupt(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     from causaliq_core.cache.encoders import JsonEncoder
@@ -908,10 +909,10 @@ def test_cli_cache_import_keyboard_interrupt(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "import",
-            str(export_dir),
+            "import_cache",
             "-i",
+            str(export_dir),
+            "-c",
             str(dest_cache),
             "-t",
             "json",
@@ -922,8 +923,8 @@ def test_cli_cache_import_keyboard_interrupt(
     assert "Import interrupted by user" in result.output
 
 
-# Test cache import ImportError handling.
-def test_cli_cache_import_import_error(
+# Test import_cache ImportError handling.
+def test_cli_import_cache_import_error(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
     export_dir = tmp_path / "exported"
@@ -940,10 +941,10 @@ def test_cli_cache_import_import_error(
     result = cli_runner.invoke(
         cli,
         [
-            "cache",
-            "import",
-            str(export_dir),
+            "import_cache",
             "-i",
+            str(export_dir),
+            "-c",
             str(dest_cache),
             "-t",
             "json",

@@ -32,8 +32,9 @@ def _log_cli_error(message: str) -> None:
 def cli(ctx: click.Context) -> None:
     """CausalIQ Workflow - Execute and manage causal discovery workflows.
 
-    Use 'causaliq-workflow run' to execute workflows.
-    Use 'causaliq-workflow cache' for cache operations.
+    Use 'cqwork run' to execute workflows.
+    Use 'cqwork export_cache' to export cache entries.
+    Use 'cqwork import_cache' to import cache entries.
     """
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
@@ -172,47 +173,40 @@ def _report_results(
 
 
 # ============================================================================
-# Cache command group
+# Cache export command
 # ============================================================================
 
 
-@cli.group(name="cache")
-def cache_group() -> None:
-    """Cache management commands.
-
-    Use 'causaliq-workflow cache export' to export cache entries.
-    """
-    pass
-
-
-@cache_group.command(name="export")
-@click.argument(
+@cli.command(name="export_cache")
+@click.option(
+    "--cache",
+    "-c",
     "cache_file",
-    metavar="CACHE_FILE",
     required=True,
     type=click.Path(exists=True, path_type=Path),
+    help="Path to WorkflowCache database file (.db) to export from.",
 )
 @click.option(
     "--output",
     "-o",
     required=True,
     type=click.Path(path_type=Path),
-    help="Output directory or .zip file path",
+    help="Output directory or .zip file path for exported entries.",
 )
 @click.option(
     "--entry-type",
     "-t",
     default="graph",
-    help="Entry type to export (default: graph)",
+    help="Entry type to export (default: graph).",
 )
 @click.option(
     "--matrix-keys",
     "-k",
     default=None,
     help="Comma-separated list of matrix variable names for directory "
-    "hierarchy order (default: alphabetical)",
+    "hierarchy order (default: alphabetical).",
 )
-def cache_export(
+def export_cache(
     cache_file: Path,
     output: Path,
     entry_type: str,
@@ -220,19 +214,18 @@ def cache_export(
 ) -> None:
     """Export cache entries to directory or zip file.
 
-    CACHE_FILE is the path to a WorkflowCache SQLite database.
-
-    The export creates a hierarchical directory structure based on matrix
-    variable values. Each entry is exported as a pair of files:
-    <timestamp>.graphml and <timestamp>.json (metadata).
+    Reads entries from a WorkflowCache database and exports them to a
+    hierarchical directory structure based on matrix variable values.
+    Each entry is exported as a pair of files: <timestamp>.graphml and
+    <timestamp>.json (metadata).
 
     Examples:
 
-        causaliq-workflow cache export cache.db --output ./results
+        cqwork export_cache -c cache.db -o ./results
 
-        causaliq-workflow cache export cache.db -o results.zip
+        cqwork export_cache -c cache.db -o results.zip
 
-        causaliq-workflow cache export cache.db -o ./out -k dataset,algorithm
+        cqwork export_cache -c cache.db -o ./out -k dataset,algorithm
     """
     try:
         from causaliq_core.cache.encoders import JsonEncoder
@@ -290,47 +283,47 @@ def cache_export(
         sys.exit(1)
 
 
-@cache_group.command(name="import")
-@click.argument(
+@cli.command(name="import_cache")
+@click.option(
+    "--input",
+    "-i",
     "input_path",
-    metavar="INPUT_PATH",
     required=True,
     type=click.Path(exists=True, path_type=Path),
+    help="Path to exported directory or .zip file to import from.",
 )
 @click.option(
-    "--into",
-    "-i",
+    "--cache",
+    "-c",
     "cache_file",
     required=True,
     type=click.Path(path_type=Path),
-    help="Destination cache database file",
+    help="Destination WorkflowCache database file (.db).",
 )
 @click.option(
     "--entry-type",
     "-t",
     default="graph",
-    help="Entry type to import (default: graph)",
+    help="Entry type to import (default: graph).",
 )
-def cache_import(
+def import_cache(
     input_path: Path,
     cache_file: Path,
     entry_type: str,
 ) -> None:
     """Import cache entries from directory or zip file.
 
-    INPUT_PATH is the path to an exported directory or .zip file.
-
-    Reads entries previously exported by 'cache export' and stores them
+    Reads entries previously exported by 'export_cache' and stores them
     into the specified cache database. Creates the cache file if it
     does not exist.
 
     Examples:
 
-        causaliq-workflow cache import ./results --into cache.db
+        cqwork import_cache -i ./results -c cache.db
 
-        causaliq-workflow cache import results.zip -i cache.db
+        cqwork import_cache -i results.zip -c cache.db
 
-        causaliq-workflow cache import ./out -i cache.db -t graph
+        cqwork import_cache -i ./out -c cache.db -t graph
     """
     try:
         from causaliq_core.cache.encoders import JsonEncoder
