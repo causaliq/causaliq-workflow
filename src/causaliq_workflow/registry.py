@@ -371,13 +371,16 @@ class ActionRegistry:
     ) -> Dict[str, Any]:
         """Execute action with inputs and workflow context.
 
+        After execution, automatically calls get_action_metadata() and
+        includes the metadata in the result under 'action_metadata' key.
+
         Args:
             name: Action name
             inputs: Action input parameters
             context: Complete workflow context
 
         Returns:
-            Action outputs dictionary
+            Action outputs dictionary with 'action_metadata' key added
 
         Raises:
             ActionRegistryError: If action not found or execution fails
@@ -390,7 +393,12 @@ class ActionRegistry:
             logger.info(f"Executing action '{name}' in mode '{context.mode}'")
 
             # Execute action with mode and context
-            return action.run(inputs, mode=context.mode, context=context)
+            result = action.run(inputs, mode=context.mode, context=context)
+
+            # Automatically capture action metadata after execution
+            result["action_metadata"] = action.get_action_metadata()
+
+            return result
 
         except Exception as e:
             raise ActionExecutionError(

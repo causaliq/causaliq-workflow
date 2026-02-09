@@ -32,6 +32,10 @@ class CausalIQAction(BaseAction):
         "Performs simple analysis on CSV files using built-in Python libraries"
     )
 
+    def __init__(self) -> None:
+        """Initialise analysis action."""
+        super().__init__()
+
     def run(self, inputs: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Execute the simple analysis action."""
 

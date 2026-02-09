@@ -72,6 +72,10 @@ class CausalIQAction(BaseAction):
         "status": "Action execution status",
     }
 
+    def __init__(self) -> None:
+        """Initialise test action."""
+        super().__init__()
+
     def run(
         self,
         inputs: Dict[str, Any],

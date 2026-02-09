@@ -180,3 +180,29 @@ def test_registry_line_76_builtin_module_skip(monkeypatch):
 
     # Call list_actions_by_package which contains line 256
     registry.list_actions_by_package()
+
+
+# Test execute_action automatically includes action_metadata in result.
+def test_execute_action_includes_action_metadata():
+    """execute_action automatically calls get_action_metadata."""
+    from causaliq_workflow.registry import WorkflowContext
+
+    registry = ActionRegistry()
+
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix={},
+    )
+
+    inputs = {
+        "data_path": "/test/input.csv",
+        "output_dir": "/test/output",
+        "message": "Test",
+    }
+
+    result = registry.execute_action("test_action", inputs, context)
+
+    # Result should contain action_metadata key
+    assert "action_metadata" in result
+    assert result["action_metadata"]["action_name"] == "test-action"
+    assert result["action_metadata"]["action_version"] == "1.0.0"
