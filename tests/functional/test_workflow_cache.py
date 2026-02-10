@@ -201,11 +201,10 @@ def test_cache_export_to_zip() -> None:
         assert count == 2
         assert zip_path.exists()
 
-        # Verify zip contents
+        # Verify zip contents - single JSON file per entry (merged metadata)
         with zipfile.ZipFile(zip_path, "r") as zf:
             names = zf.namelist()
-            # Should have data + metadata files for each entry
-            assert len(names) == 4  # 2 entries * 2 files each
+            assert len(names) == 2  # 1 JSON file per entry
             assert any("asia/pc/" in n for n in names)
             assert any("sachs/ges/" in n for n in names)
 
@@ -326,15 +325,16 @@ def test_cache_export_with_metadata() -> None:
 
         assert count == 1
 
-        # Check metadata file contains the metadata
+        # Check JSON file contains merged metadata
         import json
 
-        meta_files = list(output_dir.glob("**/*_meta.json"))
-        assert len(meta_files) == 1
+        json_files = list(output_dir.glob("**/*.json"))
+        assert len(json_files) == 1
 
-        meta_content = json.loads(meta_files[0].read_text())
-        assert "metadata" in meta_content
-        assert meta_content["metadata"]["source"] == "test"
+        json_content = json.loads(json_files[0].read_text())
+        assert "workflow_metadata" in json_content
+        assert json_content["workflow_metadata"]["source"] == "test"
+        assert json_content["matrix_values"]["dataset"] == "test"
 
 
 # Test cache export to zip with metadata.
@@ -361,14 +361,14 @@ def test_cache_export_zip_with_metadata() -> None:
 
         assert count == 1
 
-        # Check metadata in zip contains the metadata
+        # Check JSON in zip contains merged metadata
         with zipfile.ZipFile(zip_path, "r") as zf:
-            meta_files = [n for n in zf.namelist() if n.endswith("_meta.json")]
-            assert len(meta_files) == 1
+            json_files = [n for n in zf.namelist() if n.endswith(".json")]
+            assert len(json_files) == 1
 
-            meta_content = json.loads(zf.read(meta_files[0]))
-            assert "metadata" in meta_content
-            assert meta_content["metadata"]["source"] == "test"
+            json_content = json.loads(zf.read(json_files[0]))
+            assert "workflow_metadata" in json_content
+            assert json_content["workflow_metadata"]["source"] == "test"
 
 
 # Test export skips entries where get_with_metadata returns None (line 529).
@@ -595,7 +595,9 @@ def test_cache_import_with_metadata() -> None:
             result = cache.get_with_metadata({"key": "test"}, "json")
             assert result is not None
             data, metadata = result
-            assert data == {"data": "value"}
+            # Data now includes merged workflow metadata fields
+            assert "data" in data
+            assert data["data"] == "value"
             assert metadata == {"source": "test", "version": "1.0"}
 
 
@@ -680,31 +682,21 @@ def test_cache_import_skips_missing_data_file() -> None:
         export_dir.mkdir()
         cache_path = Path(tmpdir) / "cache.db"
 
-        # Create metadata file without corresponding data file
-        meta_content = {
-            "matrix_values": {"key": "orphan"},
-            "created_at": "2026-02-06T12:00:00",
-            "entry_type": "json",
-        }
-        meta_path = export_dir / "2026-02-06T12-00-00_meta.json"
-        meta_path.write_text(json.dumps(meta_content))
-
-        # Also create a complete entry
-        data_path = export_dir / "2026-02-06T12-01-00.json"
-        data_path.write_text('{"complete": true}')
-        meta_path2 = export_dir / "2026-02-06T12-01-00_meta.json"
-        meta_content2 = {
+        # Create JSON file with proper merged format
+        data_content = {
+            "data": "complete",
             "matrix_values": {"key": "complete"},
             "created_at": "2026-02-06T12:01:00",
             "entry_type": "json",
         }
-        meta_path2.write_text(json.dumps(meta_content2))
+        data_path = export_dir / "2026-02-06T12-01-00.json"
+        data_path.write_text(json.dumps(data_content))
 
         with WorkflowCache(cache_path) as cache:
             cache.register_encoder("json", JsonEncoder())
             count = cache.import_entries(export_dir, "json")
 
-        # Only the complete entry should be imported
+        # Entry should be imported
         assert count == 1
 
 
@@ -719,28 +711,20 @@ def test_cache_import_zip_skips_missing_data_file() -> None:
         zip_path = Path(tmpdir) / "partial.zip"
         cache_path = Path(tmpdir) / "cache.db"
 
-        # Create zip with orphan metadata (no data file)
+        # Create zip with JSON file in merged format
         with zipfile.ZipFile(zip_path, "w") as zf:
-            # Orphan metadata
-            meta_content = {
-                "matrix_values": {"key": "orphan"},
-                "created_at": "2026-02-06T12:00:00",
-                "entry_type": "json",
-            }
-            zf.writestr("orphan_meta.json", json.dumps(meta_content))
-
-            # Complete entry
-            zf.writestr("complete.json", '{"complete": true}')
-            meta_content2 = {
+            # Complete entry with merged metadata
+            complete_content = {
+                "data": "complete",
                 "matrix_values": {"key": "complete"},
                 "created_at": "2026-02-06T12:01:00",
                 "entry_type": "json",
             }
-            zf.writestr("complete_meta.json", json.dumps(meta_content2))
+            zf.writestr("complete.json", json.dumps(complete_content))
 
         with WorkflowCache(cache_path) as cache:
             cache.register_encoder("json", JsonEncoder())
             count = cache.import_entries(zip_path, "json")
 
-        # Only the complete entry should be imported
+        # Entry should be imported
         assert count == 1

@@ -441,10 +441,11 @@ def test_cli_export_cache_to_zip(cli_runner: CliRunner, tmp_path) -> None:
     assert "EXPORTED 1 entries" in result.output
     assert zip_path.exists()
 
-    # Verify zip contents
+    # Verify zip contents - single JSON file with merged metadata
     with zipfile.ZipFile(zip_path, "r") as zf:
         names = zf.namelist()
-        assert len(names) == 2  # data + metadata
+        assert len(names) == 1
+        assert names[0].endswith(".json")
 
 
 # Test export_cache command empty cache.

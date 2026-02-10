@@ -40,6 +40,9 @@ class CausalIQAction(BaseAction):
     Action interface that all external packages should implement.
     """
 
+    # Prevent pytest from trying to collect this as a test class
+    __test__ = False
+
     name = "test-action"
     version = "1.0.0"
     description = "Test action that creates a simple output file"

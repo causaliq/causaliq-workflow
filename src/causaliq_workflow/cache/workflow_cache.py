@@ -546,19 +546,20 @@ class WorkflowCache:
             data_path = output_dir / f"{rel_path}.{ext}"
             encoder.export(data, data_path)
 
-            # Export metadata as JSON with _meta suffix to avoid collision
-            meta_path = output_dir / f"{rel_path}_meta.json"
-            meta_content = {
-                "matrix_values": entry["matrix_values"],
-                "created_at": entry["created_at"],
-                "entry_type": entry_type,
-            }
-            if metadata is not None:
-                meta_content["metadata"] = metadata
-            meta_path.write_text(
-                json.dumps(meta_content, indent=2, sort_keys=False),
-                encoding="utf-8",
-            )
+            # Merge workflow metadata into the JSON file
+            json_path = data_path.with_suffix(".json")
+            if json_path.exists():
+                exported_data = json.loads(json_path.read_text())
+                # Add workflow metadata at top level
+                exported_data["matrix_values"] = entry["matrix_values"]
+                exported_data["created_at"] = entry["created_at"]
+                exported_data["entry_type"] = entry_type
+                if metadata is not None:
+                    exported_data["workflow_metadata"] = metadata
+                json_path.write_text(
+                    json.dumps(exported_data, indent=2, sort_keys=False),
+                    encoding="utf-8",
+                )
 
             count += 1
 
@@ -580,6 +581,7 @@ class WorkflowCache:
         Returns:
             Number of entries exported.
         """
+        import tempfile
         import zipfile
 
         entries = self.list_entries(entry_type)
@@ -611,32 +613,35 @@ class WorkflowCache:
                     matrix_keys,
                 )
 
-                # Export data to in-memory buffer then to zip
+                # Export data to temporary directory then to zip
                 ext = encoder.default_export_format
-                data_name = f"{rel_path}.{ext}"
 
-                # Use a temporary file for encoder export
-                import tempfile
+                with tempfile.TemporaryDirectory() as tmp_dir:
+                    tmp_path = Path(tmp_dir) / f"export.{ext}"
+                    encoder.export(data, tmp_path)
 
-                with tempfile.NamedTemporaryFile(
-                    suffix=f".{ext}", delete=False
-                ) as tmp:
-                    tmp_path = Path(tmp.name)
-                encoder.export(data, tmp_path)
-                zf.write(tmp_path, data_name)
-                tmp_path.unlink()
+                    # Add all files encoder created (may include .graphml)
+                    for tmp_file in Path(tmp_dir).glob("export.*"):
+                        arc_name = f"{rel_path}{tmp_file.suffix}"
 
-                # Export metadata as JSON with _meta suffix to avoid collision
-                meta_name = f"{rel_path}_meta.json"
-                meta_content = {
-                    "matrix_values": entry["matrix_values"],
-                    "created_at": entry["created_at"],
-                    "entry_type": entry_type,
-                }
-                if metadata is not None:
-                    meta_content["metadata"] = metadata
-                meta_json = json.dumps(meta_content, indent=2, sort_keys=False)
-                zf.writestr(meta_name, meta_json)
+                        # For JSON files, merge in workflow metadata
+                        if tmp_file.suffix == ".json":
+                            exported_data = json.loads(tmp_file.read_text())
+                            exported_data["matrix_values"] = entry[
+                                "matrix_values"
+                            ]
+                            exported_data["created_at"] = entry["created_at"]
+                            exported_data["entry_type"] = entry_type
+                            if metadata is not None:
+                                exported_data["workflow_metadata"] = metadata
+                            zf.writestr(
+                                arc_name,
+                                json.dumps(
+                                    exported_data, indent=2, sort_keys=False
+                                ),
+                            )
+                        else:
+                            zf.write(tmp_file, arc_name)
 
                 count += 1
 
@@ -717,26 +722,26 @@ class WorkflowCache:
         ext = encoder.default_export_format
         count = 0
 
-        # Find all metadata files recursively
-        for meta_path in input_dir.rglob("*_meta.json"):
-            # Derive data file path from metadata path
-            # meta: path/to/timestamp_meta.json -> data: path/to/timestamp.ext
-            stem = meta_path.stem.replace("_meta", "")
-            data_path = meta_path.parent / f"{stem}.{ext}"
-
-            if not data_path.exists():
+        # Find all data files recursively (excluding _meta.json files)
+        for data_path in input_dir.rglob(f"*.{ext}"):
+            # Skip _meta.json files (legacy format)
+            if "_meta" in data_path.stem:
                 continue
 
-            # Read metadata
-            meta_content = json.loads(meta_path.read_text(encoding="utf-8"))
-            matrix_values = meta_content.get("matrix_values", {})
-            metadata = meta_content.get("metadata")
+            # Read the JSON file to extract workflow metadata
+            json_content = json.loads(data_path.read_text(encoding="utf-8"))
 
-            # Import data using encoder
-            data = encoder.import_(data_path)
+            # Extract workflow metadata (added during export)
+            matrix_values = json_content.pop("matrix_values", {})
+            json_content.pop("created_at", None)  # Remove, will be regenerated
+            json_content.pop("entry_type", None)
+            workflow_metadata = json_content.pop("workflow_metadata", None)
+
+            # Use the cleaned json_content as data (without workflow metadata)
+            data = json_content
 
             # Store in cache
-            self.put(matrix_values, entry_type, data, metadata)
+            self.put(matrix_values, entry_type, data, workflow_metadata)
             count += 1
 
         return count
@@ -759,7 +764,6 @@ class WorkflowCache:
             KeyError: If no encoder is registered for entry_type.
             FileNotFoundError: If zip_path does not exist.
         """
-        import tempfile
         import zipfile
 
         if not zip_path.exists():
@@ -775,36 +779,28 @@ class WorkflowCache:
         count = 0
 
         with zipfile.ZipFile(zip_path, "r") as zf:
-            # Find all metadata files
-            meta_names = [n for n in zf.namelist() if n.endswith("_meta.json")]
+            # Find all data files (JSON files, excluding _meta.json)
+            data_names = [
+                n
+                for n in zf.namelist()
+                if n.endswith(f".{ext}") and "_meta" not in n
+            ]
 
-            for meta_name in meta_names:
-                # Derive data file name
-                stem = meta_name.replace("_meta.json", "")
-                data_name = f"{stem}.{ext}"
+            for data_name in data_names:
+                # Read JSON content to extract workflow metadata
+                json_content = json.loads(zf.read(data_name).decode("utf-8"))
 
-                if data_name not in zf.namelist():
-                    continue
+                # Extract workflow metadata (added during export)
+                matrix_values = json_content.pop("matrix_values", {})
+                json_content.pop("created_at", None)
+                json_content.pop("entry_type", None)
+                workflow_metadata = json_content.pop("workflow_metadata", None)
 
-                # Read metadata
-                meta_content = json.loads(zf.read(meta_name).decode("utf-8"))
-                matrix_values = meta_content.get("matrix_values", {})
-                metadata = meta_content.get("metadata")
-
-                # Extract data to temp file for encoder import
-                with tempfile.NamedTemporaryFile(
-                    suffix=f".{ext}", delete=False
-                ) as tmp:
-                    tmp.write(zf.read(data_name))
-                    tmp_path = Path(tmp.name)
-
-                try:
-                    data = encoder.import_(tmp_path)
-                finally:
-                    tmp_path.unlink()
+                # Use the cleaned json_content as data (without workflow meta)
+                data = json_content
 
                 # Store in cache
-                self.put(matrix_values, entry_type, data, metadata)
+                self.put(matrix_values, entry_type, data, workflow_metadata)
                 count += 1
 
         return count
