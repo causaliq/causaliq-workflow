@@ -4,24 +4,24 @@ import pytest
 
 from causaliq_workflow.registry import WorkflowContext
 from causaliq_workflow.workflow import WorkflowExecutor
-from tests.functional.fixtures.test_action import CausalIQAction
+from tests.functional.fixtures.test_action import ActionProvider
 
 
-class MatrixTestAction(CausalIQAction):
+class MatrixTestAction(ActionProvider):
     """Test action that captures WorkflowContext matrix for verification."""
 
     name = "matrix-test-action"
     version = "1.0.0"
     description = "Test action that captures matrix context"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> dict:
         mode = kwargs.get("mode", "run")
         context = kwargs.get("context")
 
         result = {
             "status": "success",
             "mode": mode,
-            "inputs": inputs,
+            "parameters": parameters,
         }
 
         if context:
@@ -407,7 +407,8 @@ def test_mode_parameter_compare_execution(executor: WorkflowExecutor) -> None:
 def test_mode_parameter_without_context() -> None:
     action = MatrixTestAction()
     result = action.run(
-        inputs={"data_path": "/test/data.csv"},
+        action="",
+        parameters={"data_path": "/test/data.csv"},
         mode="dry-run",
         context=None,
     )

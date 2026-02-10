@@ -1,7 +1,7 @@
 """
 My Analysis Action Package
 
-A simple custom action following the causaliq-workflow convention.
+A simple custom action provider following the causaliq-workflow convention.
 This demonstrates creating your own action package with minimal dependencies.
 
 Usage in workflow:
@@ -20,11 +20,11 @@ import csv
 from pathlib import Path
 from typing import Any, Dict
 
-from causaliq_workflow.action import CausalIQAction as BaseAction
+from causaliq_workflow.action import BaseActionProvider
 
 
-class CausalIQAction(BaseAction):
-    """Simple data analysis action with no external dependencies."""
+class ActionProvider(BaseActionProvider):
+    """Simple data analysis action provider with no external dependencies."""
 
     name = "my-analysis-action"
     version = "1.0.0"

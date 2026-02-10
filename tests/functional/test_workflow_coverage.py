@@ -12,9 +12,9 @@ from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
 @pytest.fixture
 def executor():
     executor = WorkflowExecutor()
-    from tests.functional.fixtures.test_action import CausalIQAction
+    from tests.functional.fixtures.test_action import ActionProvider
 
-    class MockWorkflowCausalIQAction(CausalIQAction):
+    class MockWorkflowAction(ActionProvider):
         name = "mock-workflow-action"
         version = "1.0.0"
         description = "Mock action for workflow testing"
@@ -31,7 +31,7 @@ def executor():
                 result["context_mode"] = context.mode
             return result
 
-    class MockFailingCausalIQAction(CausalIQAction):
+    class MockFailingAction(ActionProvider):
         name = "mock-failing-action"
         version = "1.0.0"
         description = "Mock action that always fails"
@@ -40,10 +40,10 @@ def executor():
             raise Exception("Mock action failure")
 
     executor.action_registry._actions["mock_workflow_action"] = (
-        MockWorkflowCausalIQAction
+        MockWorkflowAction
     )
     executor.action_registry._actions["mock_failing_action"] = (
-        MockFailingCausalIQAction
+        MockFailingAction
     )
     return executor
 

@@ -11,7 +11,7 @@ import pytest
 
 # Import test_action to register it for testing
 import test_action  # noqa: F401
-from test_action import CausalIQAction as TestAction
+from test_action import ActionProvider as TestAction
 
 from causaliq_workflow.action import ActionExecutionError
 
@@ -31,13 +31,13 @@ def test_run_creates_valid_output_file():
     try:
         # Execute action
         action = TestAction()
-        inputs = {
+        parameters = {
             "data_path": str(test_csv),
             "output_dir": str(output_dir),
             "message": "Test execution",
         }
 
-        result = action.run(inputs, mode="run")
+        result = action.run("", parameters, mode="run")
 
         # Verify output file exists
         expected_path = output_dir / "test_output.txt"
@@ -74,13 +74,13 @@ def test_run_creates_output_directory_structure():
     try:
         # Execute action
         action = TestAction()
-        inputs = {
+        parameters = {
             "data_path": str(test_csv),
             "output_dir": str(output_dir),
             "message": "Nested test",
         }
 
-        result = action.run(inputs, mode="run")
+        result = action.run("", parameters, mode="run")
 
         # Verify directory structure created
         assert output_dir.exists()
@@ -109,13 +109,13 @@ def test_run_with_custom_message():
         # Execute action with custom message
         action = TestAction()
         custom_message = "This is a custom test message!"
-        inputs = {
+        parameters = {
             "data_path": str(test_csv),
             "output_dir": str(output_dir),
             "message": custom_message,
         }
 
-        result = action.run(inputs, mode="run")
+        result = action.run("", parameters, mode="run")
 
         # Verify outputs include expected values
         assert result["message_count"] == len(custom_message)
@@ -145,14 +145,14 @@ def test_run_with_nonexistent_data_file():
 
     try:
         action = TestAction()
-        inputs = {
+        parameters = {
             "data_path": str(missing_file),
             "output_dir": str(output_dir),
             "message": "Should fail",
         }
 
         with pytest.raises(ActionExecutionError) as exc_info:
-            action.run(inputs, mode="run")
+            action.run("", parameters, mode="run")
 
         # Verify error message is informative
         assert "not found" in str(exc_info.value).lower()
@@ -174,13 +174,13 @@ def test_dry_run_mode():
 
     # Execute action in dry-run mode
     action = TestAction()
-    inputs = {
+    parameters = {
         "data_path": str(test_csv),
         "output_dir": str(output_dir),
         "message": "Dry run test",
     }
 
-    result = action.run(inputs, mode="dry-run")
+    result = action.run("", parameters, mode="dry-run")
 
     # Verify dry-run results
     assert result["status"] == "dry-run-success"
@@ -193,15 +193,15 @@ def test_dry_run_mode():
 
 
 def test_missing_required_inputs():
-    """Test action fails gracefully with missing required inputs."""
+    """Test action fails gracefully with missing required parameters."""
     action = TestAction()
 
     # Test missing data_path
     with pytest.raises(ActionExecutionError) as exc_info:
-        action.run({"output_dir": "/tmp"}, mode="dry-run")
-    assert "Missing required input: data_path" in str(exc_info.value)
+        action.run("", {"output_dir": "/tmp"}, mode="dry-run")
+    assert "Missing required parameter: data_path" in str(exc_info.value)
 
     # Test missing output_dir
     with pytest.raises(ActionExecutionError) as exc_info:
-        action.run({"data_path": "/tmp/test.csv"}, mode="dry-run")
-    assert "Missing required input: output_dir" in str(exc_info.value)
+        action.run("", {"data_path": "/tmp/test.csv"}, mode="dry-run")
+    assert "Missing required parameter: output_dir" in str(exc_info.value)

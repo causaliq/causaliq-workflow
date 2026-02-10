@@ -1,13 +1,13 @@
 """
-Action framework for CausalIQ workflow components.
+Action provider framework for CausalIQ workflow components.
 
 This module provides the base classes and interfaces for implementing
-reusable workflow actions that follow GitHub Actions patterns.
+action providers that expose multiple workflow actions.
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Set
 
 if TYPE_CHECKING:
     from causaliq_workflow.logger import WorkflowLogger
@@ -16,7 +16,11 @@ if TYPE_CHECKING:
 
 @dataclass
 class ActionInput:
-    """Define action input specification."""
+    """Define action input specification.
+
+    Note: This class defines parameter specifications for actions.
+    The name 'ActionInput' is retained for backward compatibility.
+    """
 
     name: str
     description: str
@@ -34,53 +38,67 @@ class ActionOutput:
     value: Any
 
 
-class CausalIQAction(ABC):
-    """Base class for all workflow actions.
+class BaseActionProvider(ABC):
+    """Base class for action providers that expose multiple workflow actions.
 
-    Actions can capture execution metadata during run() which can be
+    Action providers group related actions together. Each provider must
+    declare which actions it supports via the supported_actions attribute.
+    The 'action' input parameter selects which action to execute.
+
+    Providers can capture execution metadata during run() which can be
     retrieved via get_action_metadata() after execution completes.
     This supports workflow caching and auditing use cases.
 
     Attributes:
-        name: Action identifier for workflow 'uses' field.
-        version: Action version string.
+        name: Provider identifier for workflow 'uses' field.
+        version: Provider version string.
         description: Human-readable description.
-        author: Action author/maintainer.
+        author: Provider author/maintainer.
+        supported_actions: Set of action names this provider supports.
         inputs: Input parameter specifications.
         outputs: Output name to description mapping.
         _execution_metadata: Internal storage for execution metadata.
     """
 
-    # Action metadata
+    # Provider metadata
     name: str = ""
     version: str = "1.0.0"
     description: str = ""
     author: str = "CausalIQ"
+
+    # Actions supported by this provider
+    supported_actions: Set[str] = set()
 
     # Input/output specifications
     inputs: Dict[str, ActionInput] = {}
     outputs: Dict[str, str] = {}  # name -> description mapping
 
     def __init__(self) -> None:
-        """Initialise action with empty execution metadata."""
+        """Initialise provider with empty execution metadata."""
         self._execution_metadata: Dict[str, Any] = {}
 
     @abstractmethod
     def run(
         self,
-        inputs: Dict[str, Any],
+        action: str,
+        parameters: Dict[str, Any],
         mode: str = "dry-run",
         context: Optional["WorkflowContext"] = None,
         logger: Optional["WorkflowLogger"] = None,
     ) -> Dict[str, Any]:
-        """Execute action with validated inputs, return outputs.
+        """Execute the specified action with validated parameters.
+
+        The action parameter specifies which action to execute.
+        Implementations should validate that action is in supported_actions.
 
         Implementations should populate self._execution_metadata with
         relevant metadata during execution for later retrieval via
         get_action_metadata().
 
         Args:
-            inputs: Dictionary of input values keyed by input name
+            action: Name of the action to execute (must be in
+                supported_actions)
+            parameters: Dictionary of parameter values for the action
             mode: Execution mode ('dry-run', 'run', 'compare')
             context: Workflow context for optimisation and intelligence
             logger: Optional logger for task execution reporting
@@ -90,25 +108,40 @@ class CausalIQAction(ABC):
 
         Raises:
             ActionExecutionError: If action execution fails
+            ActionValidationError: If action is not supported
         """
         pass
 
-    def validate_inputs(self, inputs: Dict[str, Any]) -> bool:
-        """Validate input values against input specifications.
+    def validate_parameters(
+        self, action: str, parameters: Dict[str, Any]
+    ) -> bool:
+        """Validate action and parameters against specifications.
+
+        Validates that:
+        1. The action is in supported_actions (if specified)
+        2. All required parameters are provided
 
         Args:
-            inputs: Dictionary of input values to validate
+            action: Name of the action to validate
+            parameters: Dictionary of parameter values to validate
 
         Returns:
-            True if all inputs are valid
+            True if action and parameters are valid
 
         Raises:
             ActionValidationError: If validation fails
         """
-        return True  # Default: accept all inputs
+        # Validate action is supported if supported_actions is defined
+        if self.supported_actions:
+            if action not in self.supported_actions:
+                raise ActionValidationError(
+                    f"Unsupported action '{action}'. "
+                    f"Supported: {self.supported_actions}"
+                )
+        return True  # Default: accept all parameters
 
     def get_action_metadata(self) -> Dict[str, Any]:
-        """Return metadata about the action execution.
+        """Return metadata about the provider execution.
 
         Called after run() completes to retrieve execution metadata
         for workflow caching and auditing purposes. Subclasses should
@@ -118,7 +151,7 @@ class CausalIQAction(ABC):
         standard fields (action_name, action_version) added.
 
         Returns:
-            Dictionary of metadata relevant to this action type.
+            Dictionary of metadata relevant to this provider.
             Always includes 'action_name' and 'action_version'.
         """
         base_metadata = {

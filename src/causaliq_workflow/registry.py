@@ -1,8 +1,8 @@
 """
 Action registry for dynamic discovery and execution of workflow actions.
 
-Provides centralized management of actions from external packages using
-setuptools entry points for clean plugin architecture.
+Provides centralised management of action providers from external packages
+using setuptools entry points for clean plugin architecture.
 """
 
 import hashlib
@@ -13,7 +13,10 @@ import sys
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
-from causaliq_workflow.action import ActionExecutionError, CausalIQAction
+from causaliq_workflow.action import (
+    ActionExecutionError,
+    BaseActionProvider,
+)
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.cache import WorkflowCache
@@ -96,12 +99,13 @@ class ActionRegistry:
     packages are imported. No configuration needed - just import the package
     and use 'uses: package-name' in workflows.
 
-    Convention: Action packages should export a CausalIQAction subclass named
-    'CausalIQAction' in their __init__.py file to avoid namespace collisions.
+    Convention: Action packages should export a BaseActionProvider subclass
+    named 'ActionProvider' in their __init__.py file to avoid namespace
+    collisions.
 
     Attributes:
         _instance: Singleton instance of the ActionRegistry
-        _actions: Dictionary mapping action names to CausalIQAction classes
+        _actions: Dictionary mapping action names to BaseActionProvider classes
         _entry_points: Dictionary of lazy-loadable entry points
         _discovery_errors: List of errors encountered during action discovery
     """
@@ -109,14 +113,14 @@ class ActionRegistry:
     _instance: Optional["ActionRegistry"] = None
 
     def __init__(self) -> None:
-        """Initialize registry and discover available actions.
+        """Initialise registry and discover available action providers.
 
-        Initializes:
-            _actions: Dictionary mapping action names to CausalIQAction classes
+        Initialises:
+            _actions: Dictionary mapping action names to BaseActionProvider
             _entry_points: Dictionary of entry points for lazy loading
             _discovery_errors: List to collect any discovery errors
         """
-        self._actions: Dict[str, Type[CausalIQAction]] = {}
+        self._actions: Dict[str, Type[BaseActionProvider]] = {}
         self._entry_points: Dict[str, Any] = {}  # Lazy-loaded entry points
         self._discovery_errors: List[str] = []
         self._discover_actions()
@@ -160,7 +164,9 @@ class ActionRegistry:
         except Exception as e:
             logger.debug(f"Entry point discovery not available: {e}")
 
-    def _load_entry_point(self, name: str) -> Optional[Type[CausalIQAction]]:
+    def _load_entry_point(
+        self, name: str
+    ) -> Optional[Type[BaseActionProvider]]:
         """Load an entry point on demand.
 
         Args:
@@ -177,8 +183,8 @@ class ActionRegistry:
             action_class = ep.load()
             if (
                 inspect.isclass(action_class)
-                and issubclass(action_class, CausalIQAction)
-                and action_class != CausalIQAction
+                and issubclass(action_class, BaseActionProvider)
+                and action_class is not BaseActionProvider
             ):
                 # Cache the loaded class
                 self._actions[name] = action_class
@@ -189,7 +195,7 @@ class ActionRegistry:
                 return action_class
             else:
                 error_msg = (
-                    f"Entry point {name} does not export a CausalIQAction"
+                    f"Entry point {name} does not export ActionProvider"
                 )
                 self._discovery_errors.append(error_msg)
                 logger.warning(error_msg)
@@ -201,10 +207,10 @@ class ActionRegistry:
             return None
 
     def _discover_via_modules(self) -> None:
-        """Discover actions by scanning imported modules for CausalIQAction."""
-        logger.info("Scanning imported modules for actions...")
+        """Discover actions by scanning imported modules for ActionProvider."""
+        logger.info("Scanning imported modules for action providers...")
 
-        # Scan all imported modules for CausalIQAction classes
+        # Scan all imported modules for ActionProvider classes
         for module_name, module in sys.modules.items():
             if module is None:
                 continue  # type: ignore[unreachable]
@@ -224,17 +230,21 @@ class ActionRegistry:
             self._scan_module_for_actions(module_name, module)
 
     def _scan_module_for_actions(self, module_name: str, module: Any) -> None:
-        """Scan a specific module for CausalIQAction classes."""
+        """Scan a specific module for ActionProvider classes."""
         try:
-            # Look for a CausalIQAction class exported at module level
-            if hasattr(module, "CausalIQAction"):
-                action_class = getattr(module, "CausalIQAction")
+            # Look for ActionProvider class exported at module level
+            provider_class = None
+            if hasattr(module, "ActionProvider"):
+                provider_class = getattr(module, "ActionProvider")
 
-                # Verify it's actually a CausalIQAction subclass
+            if provider_class is not None:
+                action_class = provider_class
+
+                # Verify it's actually a BaseActionProvider subclass
                 if (
                     inspect.isclass(action_class)
-                    and issubclass(action_class, CausalIQAction)
-                    and action_class != CausalIQAction
+                    and issubclass(action_class, BaseActionProvider)
+                    and action_class is not BaseActionProvider
                 ):
 
                     # Use the root package name as action name
@@ -267,12 +277,12 @@ class ActionRegistry:
 
     @classmethod
     def register_action(
-        cls, package_name: str, action_class: Type[CausalIQAction]
+        cls, package_name: str, action_class: Type[BaseActionProvider]
     ) -> None:
-        """Register an action class from a package.
+        """Register an action provider class from a package.
 
         This is called automatically when packages are imported that follow
-        the convention of exporting a 'CausalIQAction' class.
+        the convention of exporting an 'ActionProvider' class.
         """
         # Get the global registry instance (singleton pattern)
         if ActionRegistry._instance is None:
@@ -283,7 +293,7 @@ class ActionRegistry:
             f"Registered action: {package_name} -> {action_class.__name__}"
         )
 
-    def get_available_actions(self) -> Dict[str, Type[CausalIQAction]]:
+    def get_available_actions(self) -> Dict[str, Type[BaseActionProvider]]:
         """Get dictionary of available action names to classes.
 
         Note: Entry points that haven't been loaded yet will not appear
@@ -291,7 +301,7 @@ class ActionRegistry:
         get all available action names including lazy-loadable ones.
 
         Returns:
-            Dictionary mapping action names to CausalIQAction classes
+            Dictionary mapping action names to BaseActionProvider classes
 
         """
         return self._actions.copy()
@@ -329,14 +339,14 @@ class ActionRegistry:
         """
         return name in self._actions or name in self._entry_points
 
-    def get_action_class(self, name: str) -> Type[CausalIQAction]:
+    def get_action_class(self, name: str) -> Type[BaseActionProvider]:
         """Get action class by name, loading from entry point if needed.
 
         Args:
             name: Action name
 
         Returns:
-            CausalIQAction class
+            BaseActionProvider class
 
         Raises:
             ActionRegistryError: If action not found or fails to load
@@ -371,12 +381,15 @@ class ActionRegistry:
     ) -> Dict[str, Any]:
         """Execute action with inputs and workflow context.
 
+        Extracts the 'action' key from inputs and passes it separately
+        to the provider's run() method along with the remaining parameters.
+
         After execution, automatically calls get_action_metadata() and
         includes the metadata in the result under 'action_metadata' key.
 
         Args:
-            name: Action name
-            inputs: Action input parameters
+            name: Provider name (e.g., 'causaliq/knowledge')
+            inputs: Action parameters including 'action' key
             context: Complete workflow context
 
         Returns:
@@ -388,15 +401,24 @@ class ActionRegistry:
         """
         try:
             action_class = self.get_action_class(name)
-            action = action_class()
+            action_instance = action_class()
 
-            logger.info(f"Executing action '{name}' in mode '{context.mode}'")
+            # Extract action name from inputs, remaining are parameters
+            action_name = inputs.get("action", "")
+            parameters = {k: v for k, v in inputs.items() if k != "action"}
 
-            # Execute action with mode and context
-            result = action.run(inputs, mode=context.mode, context=context)
+            logger.info(
+                f"Executing action '{action_name}' from provider '{name}' "
+                f"in mode '{context.mode}'"
+            )
+
+            # Execute action with separated action and parameters
+            result = action_instance.run(
+                action_name, parameters, mode=context.mode, context=context
+            )
 
             # Automatically capture action metadata after execution
-            result["action_metadata"] = action.get_action_metadata()
+            result["action_metadata"] = action_instance.get_action_metadata()
 
             return result
 

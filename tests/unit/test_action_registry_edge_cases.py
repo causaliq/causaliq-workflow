@@ -7,11 +7,11 @@ Tests edge cases, error paths, and discovery scenarios.
 import sys
 from types import ModuleType
 
-from causaliq_workflow.action import CausalIQAction
+from causaliq_workflow.action import BaseActionProvider
 from causaliq_workflow.registry import ActionRegistry
 
 
-class MockCausalIQAction(CausalIQAction):
+class MockActionProvider(BaseActionProvider):
     """Mock action for testing discovery."""
 
     name = "mock-action"
@@ -23,7 +23,7 @@ class MockCausalIQAction(CausalIQAction):
 
 
 class InvalidAction:
-    """Invalid action class that doesn't inherit from CausalIQAction."""
+    """Invalid action class that doesn't inherit from BaseActionProvider."""
 
     name = "invalid"
 
@@ -54,7 +54,7 @@ def test_discovery_skips_builtin_modules():
     # Create a mock built-in module
     mock_builtin = ModuleType("test_builtin")
     mock_builtin.__file__ = None
-    mock_builtin.CausalIQAction = MockCausalIQAction
+    mock_builtin.ActionProvider = MockActionProvider
 
     original_modules = sys.modules.copy()
     try:
@@ -76,7 +76,7 @@ def test_discovery_skips_underscore_modules():
     # Create a mock private module
     mock_private = ModuleType("_private_module")
     mock_private.__file__ = "/fake/path/_private_module.py"
-    mock_private.CausalIQAction = MockCausalIQAction
+    mock_private.ActionProvider = MockActionProvider
 
     original_modules = sys.modules.copy()
     try:
@@ -99,7 +99,7 @@ def test_discovery_skips_stdlib_submodules():
     # This test verifies current behavior rather than expected skipping
     mock_stdlib_sub = ModuleType("os.path.test")
     mock_stdlib_sub.__file__ = "/fake/path/os/path/test.py"
-    mock_stdlib_sub.CausalIQAction = MockCausalIQAction
+    mock_stdlib_sub.ActionProvider = MockActionProvider
 
     original_modules = sys.modules.copy()
     try:
@@ -111,7 +111,7 @@ def test_discovery_skips_stdlib_submodules():
         # The registry extracts root module name 'os' from 'os.path.test'
         # This documents current behavior
         if "os" in actions:
-            assert actions["os"] == MockCausalIQAction
+            assert actions["os"] == MockActionProvider
 
     finally:
         sys.modules.clear()

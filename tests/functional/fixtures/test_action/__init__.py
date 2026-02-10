@@ -1,11 +1,11 @@
 """
 Test Action Package
 
-Example of an external action package following the causaliq-workflow
+Example of an external action provider package following the causaliq-workflow
 convention. This demonstrates the production-ready pattern:
 
-1. Export a class named 'CausalIQAction' that inherits from
-   causaliq_workflow.action.CausalIQAction
+1. Export a class named 'ActionProvider' that inherits from
+   causaliq_workflow.action.BaseActionProvider
 2. Import this package and it becomes available as 'uses: test_action'
 3. Zero configuration required - clean namespace with no conflicts
 
@@ -26,18 +26,19 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from causaliq_workflow.action import (
     ActionExecutionError,
     ActionInput,
+    BaseActionProvider,
 )
-from causaliq_workflow.action import CausalIQAction as BaseAction
 
 if TYPE_CHECKING:
     from causaliq_workflow.registry import WorkflowContext
 
 
-class CausalIQAction(BaseAction):
-    """Test action for demonstrating the causaliq-workflow plugin system.
+class ActionProvider(BaseActionProvider):
+    """Test action provider for demonstrating the causaliq-workflow plugin.
 
-    This action creates a simple test output file, demonstrating the standard
-    Action interface that all external packages should implement.
+    This provider creates a simple test output file, demonstrating the
+    standard ActionProvider interface that all external packages should
+    implement.
     """
 
     # Prevent pytest from trying to collect this as a test class
@@ -81,14 +82,16 @@ class CausalIQAction(BaseAction):
 
     def run(
         self,
-        inputs: Dict[str, Any],
+        action: str,
+        parameters: Dict[str, Any],
         mode: str = "dry-run",
         context: Optional["WorkflowContext"] = None,
     ) -> Dict[str, Any]:
         """Execute test action.
 
         Args:
-            inputs: Action input parameters
+            action: Name of the action to execute
+            parameters: Action parameters
             mode: Execution mode ('dry-run', 'run', 'compare')
             context: Workflow execution context
 
@@ -100,25 +103,25 @@ class CausalIQAction(BaseAction):
         """
         # Handle dry-run mode
         if mode == "dry-run":
-            # Validate inputs without creating files
+            # Validate parameters without creating files
             required_keys = ["data_path", "output_dir"]
             for key in required_keys:
-                if key not in inputs:
+                if key not in parameters:
                     raise ActionExecutionError(
-                        f"Missing required input: {key}"
+                        f"Missing required parameter: {key}"
                     )
 
-            message = inputs.get("message", "Hello from test_action!")
+            message = parameters.get("message", "Hello from test_action!")
             return {
-                "output_file": f"{inputs['output_dir']}/test_output.txt",
+                "output_file": f"{parameters['output_dir']}/test_output.txt",
                 "message_count": len(message),
                 "status": "dry-run-success",
             }
 
         try:
-            data_path = Path(inputs["data_path"])
-            output_dir = Path(inputs["output_dir"])
-            message = inputs.get("message", "Hello from test_action!")
+            data_path = Path(parameters["data_path"])
+            output_dir = Path(parameters["output_dir"])
+            message = parameters.get("message", "Hello from test_action!")
 
             # Validate input file exists (only in run mode)
             if not data_path.exists():

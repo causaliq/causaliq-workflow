@@ -7,17 +7,17 @@ Covers shell command execution, action outputs, and registry package grouping.
 import pytest
 
 from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
-from tests.functional.fixtures.test_action import CausalIQAction
+from tests.functional.fixtures.test_action import ActionProvider
 
 
-class MockActionWithOutputs(CausalIQAction):
+class MockActionWithOutputs(ActionProvider):
     """Mock action that returns outputs."""
 
     name = "mock-action-with-outputs"
     version = "1.0.0"
     description = "Mock action that returns outputs"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> dict:
         return {
             "status": "success",
             "outputs": {"result_file": "output.csv", "score": 0.95},
@@ -118,23 +118,23 @@ def test_registry_get_actions_by_package_edge_cases():
     # Test with actions from different module hierarchies
 
     # Create mock actions with different module structures
-    class MockActionNoModule(CausalIQAction):
+    class MockActionNoModule(ActionProvider):
         name = "no-module-action"
         version = "1.0.0"
         description = "Action with no module"
 
-        def run(self, inputs: dict, **kwargs) -> dict:
+        def run(self, action: str, parameters: dict, **kwargs) -> dict:
             return {"status": "success"}
 
     # Simulate an action with empty module parts
     MockActionNoModule.__module__ = ""
 
-    class MockActionDeepModule(CausalIQAction):
+    class MockActionDeepModule(ActionProvider):
         name = "deep-module-action"
         version = "1.0.0"
         description = "Action with deep module hierarchy"
 
-        def run(self, inputs: dict, **kwargs) -> dict:
+        def run(self, action: str, parameters: dict, **kwargs) -> dict:
             return {"status": "success"}
 
     MockActionDeepModule.__module__ = "very.deep.package.structure.action"
@@ -179,4 +179,4 @@ def test_registry_package_grouping_existing_actions():
 def test_conditional_workflow_context_import():
     import causaliq_workflow.action
 
-    assert hasattr(causaliq_workflow.action, "CausalIQAction")
+    assert hasattr(causaliq_workflow.action, "BaseActionProvider")

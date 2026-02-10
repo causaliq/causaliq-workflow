@@ -11,7 +11,7 @@ import pytest
 
 from causaliq_workflow.cache import WorkflowCache
 from causaliq_workflow.workflow import WorkflowExecutor
-from tests.functional.fixtures.test_action import CausalIQAction
+from tests.functional.fixtures.test_action import ActionProvider
 
 # Test data directory
 TEST_DATA_DIR = (
@@ -19,18 +19,18 @@ TEST_DATA_DIR = (
 )
 
 
-class CacheCapturingAction(CausalIQAction):
+class CacheCapturingAction(ActionProvider):
     """Test action that captures cache from context."""
 
     name = "cache-capturing-action"
     version = "1.0.0"
     description = "Test action that captures cache context"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> dict:
         context = kwargs.get("context")
         result = {
             "status": "success",
-            "inputs": inputs,
+            "parameters": parameters,
             "has_cache": context.cache is not None if context else False,
             "cache_is_open": False,
         }

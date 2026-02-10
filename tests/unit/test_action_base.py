@@ -12,7 +12,7 @@ from causaliq_workflow.action import (
     ActionExecutionError,
     ActionInput,
     ActionValidationError,
-    CausalIQAction,
+    BaseActionProvider,
 )
 from causaliq_workflow.logger import WorkflowLogger
 
@@ -53,23 +53,27 @@ def test_action_backward_compatibility_no_logger():
     """Actions work correctly without logger parameter
     (backward compatibility)."""
 
-    class BackwardCompatibleAction(CausalIQAction):
+    class BackwardCompatibleAction(BaseActionProvider):
         name = "backward-compatible"
         description = "Action that works without logger"
 
-        def run(self, inputs, mode="dry-run", context=None, logger=None):
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
             # Should work fine when logger is None
             return {"status": "success", "mode": mode}
 
     action = BackwardCompatibleAction()
 
     # Test old-style call without logger
-    result = action.run({"param": "value"}, mode="run")
+    result = action.run("test", {"param": "value"}, mode="run")
     assert result["status"] == "success"
     assert result["mode"] == "run"
 
     # Test with explicit None logger
-    result = action.run({"param": "value"}, mode="dry-run", logger=None)
+    result = action.run(
+        "test", {"param": "value"}, mode="dry-run", logger=None
+    )
     assert result["status"] == "success"
     assert result["mode"] == "dry-run"
 
@@ -78,39 +82,40 @@ def test_action_backward_compatibility_no_logger():
 def test_action_logger_parameter_type_validation():
     """Action properly handles different logger parameter types."""
 
-    class ValidatingAction(CausalIQAction):
+    class ValidatingAction(BaseActionProvider):
         name = "validating-action"
         description = "Action that validates logger parameter"
 
-        def run(self, inputs, mode="dry-run", context=None, logger=None):
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
             logger_type = type(logger).__name__ if logger else "None"
             return {"logger_type": logger_type}
 
     action = ValidatingAction()
 
     # Test with None
-    result = action.run({})
+    result = action.run("test", {})
     assert result["logger_type"] == "None"
 
     # Test with WorkflowLogger
     logger = WorkflowLogger(terminal=False)
-    result = action.run({}, logger=logger)
+    result = action.run("test", {}, logger=logger)
     assert result["logger_type"] == "WorkflowLogger"
 
 
-# Test existing actions continue to work unchanged
-def test_existing_action_interface_unchanged():
-    """Existing action implementations continue to work without
-    modification."""
+# Test action interface with kwargs pattern
+def test_action_interface_with_kwargs():
+    """Action implementations can use **kwargs for optional parameters."""
 
-    class ExistingStyleAction(CausalIQAction):
-        """Simulates existing action using **kwargs pattern."""
+    class KwargsStyleAction(BaseActionProvider):
+        """Action using **kwargs pattern for optional parameters."""
 
-        name = "existing-style"
-        description = "Action using existing interface patterns"
+        name = "kwargs-style"
+        description = "Action using kwargs interface pattern"
 
-        def run(self, inputs, **kwargs):
-            # Old style using **kwargs (common pattern in existing actions)
+        def run(self, action, parameters, **kwargs):
+            # Using **kwargs for optional parameters
             mode = kwargs.get("mode", "dry-run")
             context = kwargs.get("context")
             logger = kwargs.get("logger")
@@ -121,17 +126,17 @@ def test_existing_action_interface_unchanged():
                 "has_logger": logger is not None,
             }
 
-    action = ExistingStyleAction()
+    action_instance = KwargsStyleAction()
 
-    # Test old-style call
-    result = action.run({"input": "test"})
+    # Test basic call
+    result = action_instance.run("test", {"input": "test"})
     assert result["has_mode"] is True  # default mode
     assert result["has_context"] is False
     assert result["has_logger"] is False
 
-    # Test with new logger parameter
+    # Test with logger parameter
     logger = WorkflowLogger(terminal=False)
-    result = action.run({"input": "test"}, logger=logger)
+    result = action_instance.run("test", {"input": "test"}, logger=logger)
     assert result["has_mode"] is True
     assert result["has_context"] is False
     assert result["has_logger"] is True
@@ -141,11 +146,13 @@ def test_existing_action_interface_unchanged():
 def test_action_registry_logger_integration():
     """Action registry properly passes logger parameter to actions."""
 
-    class LoggerAwareAction(CausalIQAction):
+    class LoggerAwareAction(BaseActionProvider):
         name = "logger-aware-action"
         description = "Action that reports logger usage"
 
-        def run(self, inputs, mode="dry-run", context=None, logger=None):
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
             return {
                 "logger_received": logger is not None,
                 "logger_terminal": (
@@ -155,11 +162,13 @@ def test_action_registry_logger_integration():
             }
 
     # Simulate what action registry would do
-    action = LoggerAwareAction()
+    action_instance = LoggerAwareAction()
     logger = WorkflowLogger(terminal=True, log_file=None)
 
     # Test direct action call with logger
-    result = action.run({"input": "test"}, mode="run", logger=logger)
+    result = action_instance.run(
+        "test", {"input": "test"}, mode="run", logger=logger
+    )
 
     assert result["logger_received"] is True
     assert result["logger_terminal"] is True
@@ -189,16 +198,16 @@ def test_action_validation_error_inheritance():
     assert isinstance(error, Exception)
 
 
-class ConcreteTestAction(CausalIQAction):
+class ConcreteTestAction(BaseActionProvider):
     """Concrete Action implementation for testing base class."""
 
     name = "test-concrete-action"
     version = "1.0.0"
     description = "Test concrete action"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> dict:
         """Test implementation of run method."""
-        return {"status": "success", "inputs_received": inputs}
+        return {"status": "success", "parameters_received": parameters}
 
 
 # Test concrete Action can be instantiated
@@ -212,20 +221,20 @@ def test_concrete_action_instantiation():
 # Test concrete Action run method
 def test_concrete_action_run():
     action = ConcreteTestAction()
-    inputs = {"param1": "value1", "param2": "value2"}
+    parameters = {"param1": "value1", "param2": "value2"}
 
-    result = action.run(inputs)
+    result = action.run("test", parameters)
 
     assert result["status"] == "success"
-    assert result["inputs_received"] == inputs
+    assert result["parameters_received"] == parameters
 
 
-# Test default validate_inputs returns True
-def test_validate_inputs_default_implementation():
+# Test default validate_parameters returns True
+def test_validate_parameters_default_implementation():
     action = ConcreteTestAction()
-    inputs = {"any": "inputs"}
+    parameters = {"any": "parameters"}
 
-    result = action.validate_inputs(inputs)
+    result = action.validate_parameters("test", parameters)
 
     assert result is True
 
@@ -233,9 +242,9 @@ def test_validate_inputs_default_implementation():
 # Test that Action abstract class cannot be instantiated directly
 def test_action_cannot_be_instantiated_directly():
     with pytest.raises(
-        TypeError, match="Can't instantiate abstract class CausalIQAction"
+        TypeError, match="Can't instantiate abstract class BaseActionProvider"
     ):
-        CausalIQAction()  # type: ignore
+        BaseActionProvider()  # type: ignore
 
 
 # Test that WorkflowContext is available for type hints
@@ -260,7 +269,7 @@ def test_action_module_type_checking_coverage():
     # Verify that during static type checking, WorkflowContext would be
     # available but at runtime it's not imported into the module namespace
     action_module = causaliq_workflow.action
-    assert hasattr(action_module, "CausalIQAction")
+    assert hasattr(action_module, "BaseActionProvider")
     assert hasattr(action_module, "ActionInput")
     assert hasattr(action_module, "ActionExecutionError")
     assert hasattr(action_module, "ActionValidationError")
@@ -295,30 +304,32 @@ def test_get_action_metadata_empty_execution_metadata():
 def test_execution_metadata_populated_during_run():
     """Action can populate _execution_metadata during run()."""
 
-    class MetadataCapturingAction(CausalIQAction):
+    class MetadataCapturingAction(BaseActionProvider):
         name = "metadata-capturing"
         version = "2.0.0"
 
-        def run(self, inputs, mode="dry-run", context=None, logger=None):
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
             # Simulate capturing metadata during execution
             self._execution_metadata = {
-                "input_count": len(inputs),
+                "parameter_count": len(parameters),
                 "mode_used": mode,
                 "custom_field": "custom_value",
             }
             return {"status": "success"}
 
-    action = MetadataCapturingAction()
+    action_instance = MetadataCapturingAction()
 
     # Run the action
-    action.run({"a": 1, "b": 2}, mode="run")
+    action_instance.run("test", {"a": 1, "b": 2}, mode="run")
 
     # Get metadata after execution
-    metadata = action.get_action_metadata()
+    metadata = action_instance.get_action_metadata()
 
     assert metadata["action_name"] == "metadata-capturing"
     assert metadata["action_version"] == "2.0.0"
-    assert metadata["input_count"] == 2
+    assert metadata["parameter_count"] == 2
     assert metadata["mode_used"] == "run"
     assert metadata["custom_field"] == "custom_value"
 
@@ -327,19 +338,21 @@ def test_execution_metadata_populated_during_run():
 def test_execution_metadata_is_instance_specific():
     """Each action instance has its own _execution_metadata."""
 
-    class CountingAction(CausalIQAction):
+    class CountingAction(BaseActionProvider):
         name = "counting-action"
         version = "1.0.0"
 
-        def run(self, inputs, mode="dry-run", context=None, logger=None):
-            self._execution_metadata = {"call_id": inputs.get("id", 0)}
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
+            self._execution_metadata = {"call_id": parameters.get("id", 0)}
             return {"status": "success"}
 
     action1 = CountingAction()
     action2 = CountingAction()
 
-    action1.run({"id": 100})
-    action2.run({"id": 200})
+    action1.run("test", {"id": 100})
+    action2.run("test", {"id": 200})
 
     assert action1.get_action_metadata()["call_id"] == 100
     assert action2.get_action_metadata()["call_id"] == 200
@@ -349,11 +362,13 @@ def test_execution_metadata_is_instance_specific():
 def test_base_metadata_not_overwritten():
     """Base metadata (action_name, action_version) is always included."""
 
-    class OverwriteAttemptAction(CausalIQAction):
+    class OverwriteAttemptAction(BaseActionProvider):
         name = "original-name"
         version = "1.0.0"
 
-        def run(self, inputs, mode="dry-run", context=None, logger=None):
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
             # Try to overwrite base fields (should be overwritten by base)
             self._execution_metadata = {
                 "action_name": "hacked-name",
@@ -362,10 +377,10 @@ def test_base_metadata_not_overwritten():
             }
             return {"status": "success"}
 
-    action = OverwriteAttemptAction()
-    action.run({})
+    action_instance = OverwriteAttemptAction()
+    action_instance.run("test", {})
 
-    metadata = action.get_action_metadata()
+    metadata = action_instance.get_action_metadata()
 
     # Base metadata comes first, then _execution_metadata overwrites
     # So if we want base to take precedence, we'd need to swap order
@@ -373,3 +388,30 @@ def test_base_metadata_not_overwritten():
     # This means _execution_metadata can overwrite base fields
     # Let's verify current behaviour
     assert metadata["other_field"] == "preserved"
+
+
+# Test validate_parameters rejects unsupported action
+def test_validate_parameters_rejects_unsupported_action():
+    """Validates that ActionValidationError raised for unsupported action."""
+
+    class RestrictedAction(BaseActionProvider):
+        name = "restricted-action"
+        supported_actions = {"action_a", "action_b"}
+
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
+            return {"status": "success"}
+
+    action = RestrictedAction()
+
+    # Valid action should pass
+    assert action.validate_parameters("action_a", {}) is True
+    assert action.validate_parameters("action_b", {}) is True
+
+    # Unsupported action should raise
+    with pytest.raises(
+        ActionValidationError,
+        match=r"Unsupported action 'invalid_action'.*Supported:",
+    ):
+        action.validate_parameters("invalid_action", {})

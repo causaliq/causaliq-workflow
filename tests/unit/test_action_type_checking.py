@@ -25,7 +25,7 @@ def test_type_checking_import_coverage():
         import causaliq_workflow.action
 
         # Verify the module imported successfully
-        assert hasattr(causaliq_workflow.action, "CausalIQAction")
+        assert hasattr(causaliq_workflow.action, "BaseActionProvider")
 
     finally:
         # Restore the original TYPE_CHECKING value

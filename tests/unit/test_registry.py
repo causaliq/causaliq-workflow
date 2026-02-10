@@ -6,7 +6,7 @@ import sys
 from types import ModuleType
 
 from causaliq_workflow.registry import ActionRegistry
-from tests.functional.fixtures.test_action import CausalIQAction
+from tests.functional.fixtures.test_action import ActionProvider
 
 
 # Test that None modules are skipped (line 64)
@@ -22,7 +22,7 @@ def test_underscore_module_skip():
     # Create a module starting with underscore
     mock_private = ModuleType("_private_test")
     mock_private.__file__ = "/fake/_private_test.py"
-    mock_private.CausalIQAction = CausalIQAction
+    mock_private.ActionProvider = ActionProvider
 
     # Add to sys.modules temporarily
     original_modules = dict(sys.modules)
@@ -49,14 +49,14 @@ def test_scan_module_for_actions_direct():
     # Create a test module
     test_module = ModuleType("test_direct")
     test_module.__file__ = "/fake/test_direct.py"
-    test_module.CausalIQAction = CausalIQAction
+    test_module.ActionProvider = ActionProvider
 
     # Call directly
     registry._scan_module_for_actions("test_direct", test_module)
 
     # Should have registered the action
     actions = registry.get_available_actions()
-    assert "tests" in actions  # CausalIQAction has name="tests"
+    assert "test-action" in actions  # ActionProvider has name="test-action"
 
 
 # Test exception handling in _scan_module_for_actions (lines 104-107)
@@ -68,7 +68,7 @@ def test_scan_module_exception_handling():
         __file__ = "/fake/problematic.py"
 
         @property
-        def CausalIQAction(self):
+        def ActionProvider(self):
             raise RuntimeError("Test exception")
 
     problematic = ProblematicModule()
@@ -86,7 +86,7 @@ def test_unknown_package_fallback():
     registry = ActionRegistry()
 
     # Create an action with a module that would result in empty parts
-    class TestAction(CausalIQAction):
+    class TestAction(ActionProvider):
         name = "test-unknown"
         version = "1.0"
         description = "Test action"
@@ -234,7 +234,7 @@ def test_load_entry_point_success(monkeypatch):
         name = "test-ep-success"
 
         def load(self):
-            return CausalIQAction
+            return ActionProvider
 
     registry._entry_points["test-ep-success"] = MockEntryPoint()
 
@@ -242,13 +242,13 @@ def test_load_entry_point_success(monkeypatch):
     result = registry._load_entry_point("test-ep-success")
 
     # Should return the class and cache it
-    assert result == CausalIQAction
+    assert result == ActionProvider
     assert "test-ep-success" in registry._actions
 
 
 # Test _load_entry_point with invalid class (lines 147-152).
 def test_load_entry_point_invalid_class():
-    """Test entry point that doesn't export a CausalIQAction subclass."""
+    """Test entry point that doesn't export an ActionProvider subclass."""
     registry = ActionRegistry()
 
     # Create a mock entry point that returns a non-action class
@@ -256,7 +256,7 @@ def test_load_entry_point_invalid_class():
         name = "test-ep-invalid"
 
         def load(self):
-            return str  # Not a CausalIQAction subclass
+            return str  # Not an ActionProvider subclass
 
     registry._entry_points["test-ep-invalid"] = MockEntryPoint()
 
@@ -267,7 +267,7 @@ def test_load_entry_point_invalid_class():
     assert result is None
     errors = registry.get_discovery_errors()
     assert any("test-ep-invalid" in e for e in errors)
-    assert any("does not export a CausalIQAction" in e for e in errors)
+    assert any("does not export ActionProvider" in e for e in errors)
 
 
 # Test _load_entry_point with load exception (lines 153-158).
@@ -341,13 +341,13 @@ def test_get_action_class_entry_point_success():
         name = "test-ep-get"
 
         def load(self):
-            return CausalIQAction
+            return ActionProvider
 
     registry._entry_points["test-ep-get"] = MockEntryPoint()
 
     # Should return the action class
     result = registry.get_action_class("test-ep-get")
 
-    assert result == CausalIQAction
+    assert result == ActionProvider
     # Should also be cached now
     assert "test-ep-get" in registry._actions

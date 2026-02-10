@@ -6,7 +6,7 @@ All external dependencies are mocked.
 """
 
 import pytest
-from test_action import CausalIQAction as TestAction
+from test_action import ActionProvider as TestAction
 
 from causaliq_workflow.action import ActionExecutionError
 
@@ -106,13 +106,13 @@ def test_run_with_valid_inputs(monkeypatch):
 
     # Execute action
     action = TestAction()
-    inputs = {
+    parameters = {
         "data_path": "/data/test.csv",
         "output_dir": "/output/test",
         "message": "Test message",
     }
 
-    result = action.run(inputs, mode="run")
+    result = action.run("", parameters, mode="run")
 
     # Verify Path calls
     assert "/data/test.csv" in path_calls
@@ -143,7 +143,7 @@ def test_run_with_missing_data_file(monkeypatch):
 
     # Execute action
     action = TestAction()
-    inputs = {
+    parameters = {
         "data_path": "/missing/data.csv",
         "output_dir": "/output/test",
         "dataset": "asia",
@@ -153,7 +153,7 @@ def test_run_with_missing_data_file(monkeypatch):
     with pytest.raises(
         ActionExecutionError, match="Input data file not found"
     ):
-        action.run(inputs, mode="run")
+        action.run("", parameters, mode="run")
 
 
 # Test action execution handles filesystem errors gracefully
@@ -180,7 +180,7 @@ def test_run_with_filesystem_error(monkeypatch):
 
     # Execute action
     action = TestAction()
-    inputs = {
+    parameters = {
         "data_path": "/data/test.csv",
         "output_dir": "/readonly/output",
         "dataset": "asia",
@@ -190,20 +190,20 @@ def test_run_with_filesystem_error(monkeypatch):
     with pytest.raises(
         ActionExecutionError, match="Test action execution failed"
     ):
-        action.run(inputs, mode="run")
+        action.run("", parameters, mode="run")
 
 
-# Test default validate_inputs method returns True
-def test_validate_inputs_default_implementation():
-    """Test default validate_inputs method returns True."""
+# Test default validate_parameters method returns True
+def test_validate_parameters_default_implementation():
+    """Test default validate_parameters method returns True."""
     action = TestAction()
-    inputs = {
+    parameters = {
         "data_path": "/test/path.csv",
         "output_dir": "/test/output",
         "dataset": "test",
         "algorithm": "test",
     }
 
-    result = action.validate_inputs(inputs)
+    result = action.validate_parameters("", parameters)
 
     assert result is True

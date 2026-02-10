@@ -18,7 +18,7 @@ def test_init_discovers_actions():
 
     # test_action should be discovered automatically
     assert "test_action" in available_actions
-    assert available_actions["test_action"].__name__ == "CausalIQAction"
+    assert available_actions["test_action"].__name__ == "ActionProvider"
 
 
 # Test get_available_actions returns a copy, not the internal dict
@@ -45,7 +45,7 @@ def test_get_action_class():
     registry = ActionRegistry()
 
     action_class = registry.get_action_class("test_action")
-    assert action_class.__name__ == "CausalIQAction"
+    assert action_class.__name__ == "ActionProvider"
     assert action_class.name == "test-action"
 
 
@@ -72,7 +72,7 @@ def test_get_discovery_errors():
 # Test register_action class method creates singleton
 def test_singleton_register_action():
     # This tests the static registration method
-    from test_action import CausalIQAction as TestAction
+    from test_action import ActionProvider as TestAction
 
     # The singleton pattern means all instances share the same registry
     # So we can't test isolated registration. Instead, test that the

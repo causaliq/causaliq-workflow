@@ -4,17 +4,17 @@ import pytest
 
 from causaliq_workflow.action import ActionExecutionError
 from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
-from tests.functional.fixtures.test_action import CausalIQAction
+from tests.functional.fixtures.test_action import ActionProvider
 
 
-class MockWorkflowCausalIQAction(CausalIQAction):
+class MockWorkflowAction(ActionProvider):
     """Mock action for workflow testing."""
 
     name = "mock-workflow-action"
     version = "1.0.0"
     description = "Mock action for workflow testing"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> dict:
         mode = kwargs.get("mode", "run")
         context = kwargs.get("context")
         kwargs.get("logger")
@@ -22,7 +22,7 @@ class MockWorkflowCausalIQAction(CausalIQAction):
         result = {
             "status": "validated" if mode == "dry-run" else "executed",
             "mode": mode,
-            "inputs": inputs,
+            "parameters": parameters,
         }
 
         if context:
@@ -31,14 +31,14 @@ class MockWorkflowCausalIQAction(CausalIQAction):
         return result
 
 
-class MockFailingCausalIQAction(CausalIQAction):
+class MockFailingAction(ActionProvider):
     """Mock action that fails during execution."""
 
     name = "mock-failing-action"
     version = "1.0.0"
     description = "Mock action that always fails"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> dict:
         raise ActionExecutionError("Mock action failure")
 
 
@@ -47,10 +47,10 @@ def executor() -> WorkflowExecutor:
     """Pytest fixture for executor setup."""
     executor = WorkflowExecutor()
     executor.action_registry._actions["mock_workflow_action"] = (
-        MockWorkflowCausalIQAction
+        MockWorkflowAction
     )
     executor.action_registry._actions["mock_failing_action"] = (
-        MockFailingCausalIQAction
+        MockFailingAction
     )
     return executor
 
@@ -196,7 +196,7 @@ def test_execute_workflow_run_mode(executor: WorkflowExecutor) -> None:
     step_result = results[0]["steps"]["Test Step"]
     assert step_result["status"] == "executed"
     assert step_result["mode"] == "run"
-    assert step_result["inputs"]["input"] == "asia.csv"
+    assert step_result["parameters"]["input"] == "asia.csv"
 
 
 # Test executing workflow with CLI parameters.
@@ -221,8 +221,8 @@ def test_execute_workflow_with_cli_params(executor: WorkflowExecutor) -> None:
     )
     assert len(results) == 1
     step_result = results[0]["steps"]["Test Step"]
-    assert "extra_param" in step_result["inputs"]
-    assert step_result["inputs"]["extra_param"] == "cli_value"
+    assert "extra_param" in step_result["parameters"]
+    assert step_result["parameters"]["extra_param"] == "cli_value"
 
 
 # Test executing workflow with multiple matrix combinations.
@@ -251,8 +251,8 @@ def test_execute_workflow_multiple_matrix(executor: WorkflowExecutor) -> None:
         step_result = result["steps"]["Test Step"]
         combinations.append(
             (
-                step_result["inputs"]["dataset"],
-                step_result["inputs"]["algorithm"],
+                step_result["parameters"]["dataset"],
+                step_result["parameters"]["algorithm"],
             )
         )
     expected_combinations = [
