@@ -415,3 +415,45 @@ def test_validate_parameters_rejects_unsupported_action():
         match=r"Unsupported action 'invalid_action'.*Supported:",
     ):
         action.validate_parameters("invalid_action", {})
+
+
+# Test serialise raises NotImplementedError by default.
+def test_serialise_not_implemented():
+    """Test serialise raises NotImplementedError in base class."""
+
+    class TestAction(BaseActionProvider):
+        name = "test-action"
+
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
+            return {"status": "success"}
+
+    action = TestAction()
+
+    with pytest.raises(NotImplementedError) as exc_info:
+        action.serialise("graph", {})
+
+    assert "does not support serialising" in str(exc_info.value)
+    assert "test-action" in str(exc_info.value)
+
+
+# Test deserialise raises NotImplementedError by default.
+def test_deserialise_not_implemented():
+    """Test deserialise raises NotImplementedError in base class."""
+
+    class TestAction(BaseActionProvider):
+        name = "test-action"
+
+        def run(
+            self, action, parameters, mode="dry-run", context=None, logger=None
+        ):
+            return {"status": "success"}
+
+    action = TestAction()
+
+    with pytest.raises(NotImplementedError) as exc_info:
+        action.deserialise("graph", "content")
+
+    assert "does not support deserialising" in str(exc_info.value)
+    assert "test-action" in str(exc_info.value)

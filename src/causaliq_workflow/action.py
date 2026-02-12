@@ -160,6 +160,60 @@ class BaseActionProvider(ABC):
         }
         return {**base_metadata, **self._execution_metadata}
 
+    def serialise(
+        self,
+        data_type: str,
+        data: Any,
+    ) -> str:
+        """Serialise data to an open-standard format string.
+
+        Converts internal data objects to interchange format strings
+        (e.g., GraphML, JSON). Subclasses should override this to
+        support their data types. The format is determined by the
+        provider implementation.
+
+        Args:
+            data_type: Type of data to serialise (e.g., 'graph').
+            data: The data object to serialise.
+
+        Returns:
+            String representation of the data.
+
+        Raises:
+            NotImplementedError: If the data type is not supported.
+        """
+        raise NotImplementedError(
+            f"Provider '{self.name}' does not support serialising "
+            f"data_type '{data_type}'"
+        )
+
+    def deserialise(
+        self,
+        data_type: str,
+        content: str,
+    ) -> Any:
+        """Deserialise data from an open-standard format string.
+
+        Converts interchange format strings (e.g., GraphML, JSON) to
+        internal data objects. Subclasses should override this to
+        support their data types. The format is determined by the
+        provider implementation.
+
+        Args:
+            data_type: Type of data to deserialise (e.g., 'graph').
+            content: String representation of the data.
+
+        Returns:
+            The deserialised data object.
+
+        Raises:
+            NotImplementedError: If the data type is not supported.
+        """
+        raise NotImplementedError(
+            f"Provider '{self.name}' does not support deserialising "
+            f"data_type '{data_type}'"
+        )
+
 
 class ActionExecutionError(Exception):
     """Raised when action execution fails."""
