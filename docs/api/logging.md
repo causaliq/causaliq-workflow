@@ -183,11 +183,18 @@ results = executor.execute_workflow(workflow, mode="run")
 Actions will receive the logger as an optional parameter for task-level logging:
 
 ```python
-# Future action integration
-def run(self, inputs, mode="dry-run", logger=None):
+# Action integration pattern
+def run(
+    self,
+    action: str,
+    parameters: Dict[str, Any],
+    mode: str = "dry-run",
+    context=None,
+    logger=None,
+) -> Dict[str, Any]:
     if logger:
         # Log task execution details
-        pass
+        logger.info(f"Executing action: {action}")
     return results
 ```
 

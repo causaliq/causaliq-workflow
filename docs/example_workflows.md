@@ -80,7 +80,7 @@ single step:
 - **uses** - the step must define which CausalIQ package it uses
 
 and then has a variable number of parameters following the **with:** statment that
-defines the processing to be undertaken by the package through its *CausalIQAction* interface. In this example, these are:
+defines the processing to be undertaken by the package through its *ActionProvider* interface. In this example, these are:
 
 - **action** - this parameter is always present and defines what particular action
 the package is required to do
@@ -408,7 +408,7 @@ Available context: id, description, dataset
 ## Example Action Implementation
 
 ```python
-class DummyStructureLearnerAction(CausalIQAction):
+class DummyStructureLearnerAction(BaseActionProvider):
     """Reference action implementation."""
     
     name = "dummy-structure-learner"
@@ -441,7 +441,14 @@ class DummyStructureLearnerAction(CausalIQAction):
         ),
     }
     
-    def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def run(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str = "dry-run",
+        context: Optional["WorkflowContext"] = None,
+        logger: Optional["WorkflowLogger"] = None,
+    ) -> Dict[str, Any]:
         """Create GraphML output file."""
         # Implementation creates valid GraphML file
         # Returns graph_path, node_count, edge_count

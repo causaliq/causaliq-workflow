@@ -204,34 +204,42 @@ steps:
 
 ```python
 # custom_actions/causal_discovery.py
-from causaliq_workflow.action import CausalIQAction, ActionExecutionError
+from causaliq_workflow.action import BaseActionProvider, ActionExecutionError
 from typing import Any, Dict
 import pandas as pd
 import networkx as nx
 
-class PCAlgorithmAction(CausalIQAction):
+class PCAlgorithmAction(BaseActionProvider):
     """PC algorithm for causal structure learning."""
     
     name = "pc-algorithm"
     version = "2.1.0"
     description = "Peter-Clark algorithm for causal discovery"
+    supported_actions = {"learn_structure"}
     
-    def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def run(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str = "dry-run",
+        context=None,
+        logger=None,
+    ) -> Dict[str, Any]:
         """Execute PC algorithm."""
         try:
             # Load data
-            data_path = inputs["data_path"]
+            data_path = parameters["data_path"]
             data = pd.read_csv(data_path)
             
             # PC algorithm parameters
-            alpha = inputs.get("alpha", 0.05)
-            max_depth = inputs.get("max_depth", 3)
+            alpha = parameters.get("alpha", 0.05)
+            max_depth = parameters.get("max_depth", 3)
             
             # Run PC algorithm (simplified example)
             graph = self._run_pc_algorithm(data, alpha, max_depth)
             
             # Save results
-            output_path = inputs["output_path"]
+            output_path = parameters["output_path"]
             nx.write_graphml(graph, output_path)
             
             return {
@@ -254,18 +262,26 @@ class PCAlgorithmAction(CausalIQAction):
         # Add some edges based on correlations (simplified)
         return G
 
-class NetworkAnalysisAction(CausalIQAction):
+class NetworkAnalysisAction(BaseActionProvider):
     """Network analysis and metrics calculation."""
     
     name = "network-analysis" 
     version = "1.3.0"
     description = "Compute network topology metrics"
+    supported_actions = {"analyse_network"}
     
-    def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """Analyze network structure."""
+    def run(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str = "dry-run",
+        context=None,
+        logger=None,
+    ) -> Dict[str, Any]:
+        """Analyse network structure."""
         try:
             # Load structure
-            structure_path = inputs["structure_path"]
+            structure_path = parameters["structure_path"]
             graph = nx.read_graphml(structure_path)
             
             # Compute metrics
@@ -283,7 +299,7 @@ class NetworkAnalysisAction(CausalIQAction):
             metrics["avg_centrality"] = sum(centrality.values()) / len(centrality)
             
             # Save metrics
-            output_path = inputs["output_path"]
+            output_path = parameters["output_path"]
             import json
             with open(output_path, "w") as f:
                 json.dump(metrics, f, indent=2)

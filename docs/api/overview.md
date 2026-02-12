@@ -9,7 +9,7 @@ The API is organized into several key modules:
 ### [Action Framework](actions.md)
 Base classes and interfaces for creating reusable workflow actions that follow GitHub Actions patterns.
 
-- **CausalIQAction** - Abstract base class for all workflow actions
+- **BaseActionProvider** - Abstract base class for all workflow actions
 - **ActionInput/ActionOutput** - Type-safe input/output specifications  
 - **ActionExecutionError/ActionValidationError** - Exception handling
 

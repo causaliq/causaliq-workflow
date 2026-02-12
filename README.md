@@ -35,11 +35,12 @@
 
 ## Brief Example Usage
 
-**Example Workflow Definition**, experiment.xml:
+**Example Workflow Definition**, experiment.yml:
 
 ```yaml
 description: "Causal Discovery Experiment"
 id: "experiment-001"
+workflow_cache: "results/{{id}}_cache.db"  # All results stored here
 
 matrix:
   network: ["asia", "cancer"]
@@ -52,8 +53,8 @@ steps:
     with:
       algorithm: "{{algorithm}}"
       sample_size: "{{sample_size}}"
-      dataset: "/data/{{network}}"
-      output: "/results/{{id}}/{{algorithm}}/{{network}}/{{sample_size}}"
+      dataset: "data/{{network}}"
+      # Results cached with key: {network, algorithm, sample_size}
 ```
 
 **Execute with modes:**

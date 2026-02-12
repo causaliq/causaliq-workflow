@@ -133,10 +133,17 @@ logger.log_task(
 Actions will report their execution status using TaskStatus values:
 
 ```python
-# Future action integration example  
-def run(self, inputs, mode="dry-run", logger=None):
+# Action integration example
+def run(
+    self,
+    action: str,
+    parameters: Dict[str, Any],
+    mode: str = "dry-run",
+    context=None,
+    logger=None,
+) -> Dict[str, Any]:
     if mode == "dry-run":
-        if self._outputs_exist(inputs):
+        if self._outputs_exist(parameters):
             return {"status": TaskStatus.WOULD_SKIP}
         else:
             return {"status": TaskStatus.WOULD_EXECUTE}
