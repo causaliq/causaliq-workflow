@@ -20,10 +20,10 @@ import csv
 from pathlib import Path
 from typing import Any, Dict
 
-from causaliq_workflow.action import BaseActionProvider
+from causaliq_core import ActionResult, CausalIQActionProvider
 
 
-class ActionProvider(BaseActionProvider):
+class ActionProvider(CausalIQActionProvider):
     """Simple data analysis action provider with no external dependencies."""
 
     name = "my-analysis-action"
@@ -36,7 +36,7 @@ class ActionProvider(BaseActionProvider):
         """Initialise analysis action."""
         super().__init__()
 
-    def run(self, inputs: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+    def run(self, inputs: Dict[str, Any], **kwargs) -> ActionResult:
         """Execute the simple analysis action."""
 
         # Get input parameters
@@ -52,8 +52,7 @@ class ActionProvider(BaseActionProvider):
 
         if mode == "dry-run":
             # In dry-run mode, just validate inputs and show what would happen
-            result = {
-                "status": "dry-run-success",
+            metadata = {
                 "message": (
                     f"Would analyze {input_file} with {analysis_type} analysis"
                 ),
@@ -65,6 +64,7 @@ class ActionProvider(BaseActionProvider):
                 ),
                 "user_message": message,
             }
+            return ("skipped", metadata, [])
         else:
             # In run mode, perform actual analysis
             try:
@@ -121,7 +121,6 @@ class ActionProvider(BaseActionProvider):
                     analysis_result = f"Basic info saved to {output_file}"
 
                 result = {
-                    "status": "success",
                     "message": f"Successfully analyzed {input_file}",
                     "analysis_type": analysis_type,
                     "input_rows": len(rows),
@@ -133,10 +132,10 @@ class ActionProvider(BaseActionProvider):
 
             except Exception as e:
                 result = {
-                    "status": "error",
                     "message": f"Analysis failed: {str(e)}",
                     "analysis_type": analysis_type,
                     "input_file": input_file,
                 }
+                return ("error", result, [])
 
-        return result
+        return ("success", result, [])

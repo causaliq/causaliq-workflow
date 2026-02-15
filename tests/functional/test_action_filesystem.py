@@ -11,9 +11,8 @@ import pytest
 
 # Import test_action to register it for testing
 import test_action  # noqa: F401
+from causaliq_core import ActionExecutionError
 from test_action import ActionProvider as TestAction
-
-from causaliq_workflow.action import ActionExecutionError
 
 
 def test_run_creates_valid_output_file():
@@ -39,16 +38,18 @@ def test_run_creates_valid_output_file():
 
         result = action.run("", parameters, mode="run")
 
+        # Unpack tuple result
+        status, metadata, objects = result
+
         # Verify output file exists
         expected_path = output_dir / "test_output.txt"
         assert expected_path.exists()
 
         # Verify result structure
-        assert "output_file" in result
-        assert "message_count" in result
-        assert "status" in result
-        assert result["status"] == "success"
-        assert result["message_count"] > 0
+        assert "output_file" in metadata
+        assert "message_count" in metadata
+        assert status == "success"
+        assert metadata["message_count"] > 0
 
         # Verify file content
         content = expected_path.read_text()
@@ -82,13 +83,16 @@ def test_run_creates_output_directory_structure():
 
         result = action.run("", parameters, mode="run")
 
+        # Unpack tuple result
+        status, metadata, objects = result
+
         # Verify directory structure created
         assert output_dir.exists()
         output_file = output_dir / "test_output.txt"
         assert output_file.exists()
 
         # Verify result
-        assert result["status"] == "success"
+        assert status == "success"
 
     finally:
         # Cleanup
@@ -117,12 +121,15 @@ def test_run_with_custom_message():
 
         result = action.run("", parameters, mode="run")
 
+        # Unpack tuple result
+        status, metadata, objects = result
+
         # Verify outputs include expected values
-        assert result["message_count"] == len(custom_message)
-        assert result["status"] == "success"
+        assert metadata["message_count"] == len(custom_message)
+        assert status == "success"
 
         # Verify file content includes custom message
-        output_file = Path(result["output_file"])
+        output_file = Path(metadata["output_file"])
         content = output_file.read_text()
         assert custom_message in content
 
@@ -182,13 +189,16 @@ def test_dry_run_mode():
 
     result = action.run("", parameters, mode="dry-run")
 
+    # Unpack tuple result
+    status, metadata, objects = result
+
     # Verify dry-run results
-    assert result["status"] == "dry-run-success"
-    assert result["message_count"] == len("Dry run test")
-    assert "output_file" in result
+    assert status == "skipped"
+    assert metadata["message_count"] == len("Dry run test")
+    assert "output_file" in metadata
 
     # Verify no files were actually created
-    output_file = Path(result["output_file"])
+    output_file = Path(metadata["output_file"])
     assert not output_file.exists()
 
 

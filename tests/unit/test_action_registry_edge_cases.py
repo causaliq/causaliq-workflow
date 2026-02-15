@@ -6,24 +6,26 @@ Tests edge cases, error paths, and discovery scenarios.
 
 import sys
 from types import ModuleType
+from typing import Any, Dict
 
-from causaliq_workflow.action import BaseActionProvider
+from causaliq_core import ActionResult, CausalIQActionProvider
+
 from causaliq_workflow.registry import ActionRegistry
 
 
-class MockActionProvider(BaseActionProvider):
+class MockActionProvider(CausalIQActionProvider):
     """Mock action for testing discovery."""
 
     name = "mock-action"
     version = "1.0.0"
     description = "Mock action for testing"
 
-    def run(self, inputs: dict, **kwargs) -> dict:
-        return {"status": "success"}
+    def run(self, inputs: Dict[str, Any], **kwargs) -> ActionResult:
+        return ("success", {}, [])
 
 
 class InvalidAction:
-    """Invalid action class that doesn't inherit from BaseActionProvider."""
+    """Invalid action - doesn't inherit from CausalIQActionProvider."""
 
     name = "invalid"
 

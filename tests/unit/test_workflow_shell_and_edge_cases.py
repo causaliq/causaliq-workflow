@@ -5,6 +5,7 @@ Covers shell command execution, action outputs, and registry package grouping.
 """
 
 import pytest
+from causaliq_core import ActionResult
 
 from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
 from tests.functional.fixtures.test_action import ActionProvider
@@ -17,11 +18,11 @@ class MockActionWithOutputs(ActionProvider):
     version = "1.0.0"
     description = "Mock action that returns outputs"
 
-    def run(self, action: str, parameters: dict, **kwargs) -> dict:
-        return {
-            "status": "success",
+    def run(self, action: str, parameters: dict, **kwargs) -> ActionResult:
+        metadata = {
             "outputs": {"result_file": "output.csv", "score": 0.95},
         }
+        return ("success", metadata, [])
 
 
 # Test that shell command execution raises not implemented error
@@ -173,10 +174,3 @@ def test_registry_package_grouping_existing_actions():
         assert isinstance(action_names, list)
         for action_name in action_names:
             assert isinstance(action_name, str)
-
-
-# Force test of conditional import of WorkflowContext
-def test_conditional_workflow_context_import():
-    import causaliq_workflow.action
-
-    assert hasattr(causaliq_workflow.action, "BaseActionProvider")

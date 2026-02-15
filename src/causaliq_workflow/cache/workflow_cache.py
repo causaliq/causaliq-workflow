@@ -421,14 +421,14 @@ class WorkflowCache:
     def export(
         self,
         output_path: str | Path,
-        entry_type: str,
+        entry_type: str | None = None,
         matrix_keys: list[str] | None = None,
     ) -> int:
         """Export cache entries to directory or zip file.
 
-        Creates a hierarchical directory structure based on matrix variable
-        values in the order specified by matrix_keys. Each entry is exported
-        as a pair of files: <timestamp>.graphml and <timestamp>.json.
+        Uses provider-based serialisation driven by the objects array
+        in entry metadata. Creates a hierarchical directory structure
+        based on matrix variable values.
 
         The output format is determined by the path extension:
         - Path ending in .zip: creates a zip archive
@@ -437,215 +437,23 @@ class WorkflowCache:
         Args:
             output_path: Path to output directory or .zip file.
             entry_type: Type of entries to export (e.g., 'graph').
+                If None, exports all entries.
             matrix_keys: Ordered list of matrix variable names for directory
                 hierarchy. If None, uses alphabetical order.
 
         Returns:
             Number of entries exported.
 
-        Raises:
-            KeyError: If no encoder is registered for entry_type.
-            ValueError: If entry has matrix values not in matrix_keys.
-
         Example:
             >>> with WorkflowCache("cache.db") as cache:
-            ...     # Export to dir: asia/pc/2026-02-06T14-30-00.graphml
+            ...     # Export to dir: asia/pc/graph.graphml
             ...     cache.export("./out", "graph", ["dataset", "algorithm"])
             ...     # Export to zip file
             ...     cache.export("./out.zip", "graph", ["dataset"])
         """
-        output_path = Path(output_path)
-        is_zip = output_path.suffix.lower() == ".zip"
+        from causaliq_workflow.cache.export import export_entries
 
-        if is_zip:
-            return self._export_to_zip(output_path, entry_type, matrix_keys)
-        else:
-            return self._export_to_dir(output_path, entry_type, matrix_keys)
-
-    def _build_entry_path(
-        self,
-        matrix_values: dict[str, Any],
-        created_at: str,
-        matrix_keys: list[str] | None,
-    ) -> Path:
-        """Build hierarchical path from matrix values.
-
-        Args:
-            matrix_values: Dictionary of matrix variable values.
-            created_at: ISO timestamp for filename.
-            matrix_keys: Ordered list of keys for path hierarchy.
-
-        Returns:
-            Relative path like: asia/pc/2026-02-06T14-30-00
-        """
-        if matrix_keys is None:
-            matrix_keys = sorted(matrix_values.keys())
-
-        # Build path segments from matrix values in specified order
-        segments = []
-        for key in matrix_keys:
-            if key in matrix_values:
-                # Sanitise value for filesystem (replace problematic chars)
-                value = str(matrix_values[key])
-                safe_value = value.replace("/", "_").replace("\\", "_")
-                segments.append(safe_value)
-
-        # Convert timestamp to filesystem-safe format
-        safe_timestamp = created_at.replace(":", "-")
-
-        if segments:
-            return Path(*segments) / safe_timestamp
-        else:
-            return Path(safe_timestamp)
-
-    def _export_to_dir(
-        self,
-        output_dir: Path,
-        entry_type: str,
-        matrix_keys: list[str] | None,
-    ) -> int:
-        """Export entries to a directory structure.
-
-        Args:
-            output_dir: Root directory for export.
-            entry_type: Type of entries to export.
-            matrix_keys: Ordered list of matrix variable names.
-
-        Returns:
-            Number of entries exported.
-        """
-        entries = self.list_entries(entry_type)
-        encoder = self.get_encoder(entry_type)
-        if encoder is None:
-            raise KeyError(
-                f"No encoder registered for entry type: {entry_type}"
-            )
-
-        count = 0
-        for entry in entries:
-            # Get data and metadata
-            result = self.get_with_metadata(entry["matrix_values"], entry_type)
-            if result is None:
-                continue
-
-            data, metadata = result
-
-            # Build path
-            rel_path = self._build_entry_path(
-                entry["matrix_values"],
-                entry["created_at"],
-                matrix_keys,
-            )
-
-            # Create directories
-            full_dir = output_dir / rel_path.parent
-            full_dir.mkdir(parents=True, exist_ok=True)
-
-            # Export data using encoder's export method
-            ext = encoder.default_export_format
-            data_path = output_dir / f"{rel_path}.{ext}"
-            encoder.export(data, data_path)
-
-            # Merge workflow metadata into the JSON file
-            json_path = data_path.with_suffix(".json")
-            if json_path.exists():
-                exported_data = json.loads(json_path.read_text())
-                # Add workflow metadata at top level
-                exported_data["matrix_values"] = entry["matrix_values"]
-                exported_data["created_at"] = entry["created_at"]
-                exported_data["entry_type"] = entry_type
-                if metadata is not None:
-                    exported_data["workflow_metadata"] = metadata
-                json_path.write_text(
-                    json.dumps(exported_data, indent=2, sort_keys=False),
-                    encoding="utf-8",
-                )
-
-            count += 1
-
-        return count
-
-    def _export_to_zip(
-        self,
-        zip_path: Path,
-        entry_type: str,
-        matrix_keys: list[str] | None,
-    ) -> int:
-        """Export entries to a zip archive.
-
-        Args:
-            zip_path: Path to output zip file.
-            entry_type: Type of entries to export.
-            matrix_keys: Ordered list of matrix variable names.
-
-        Returns:
-            Number of entries exported.
-        """
-        import tempfile
-        import zipfile
-
-        entries = self.list_entries(entry_type)
-        encoder = self.get_encoder(entry_type)
-        if encoder is None:
-            raise KeyError(
-                f"No encoder registered for entry type: {entry_type}"
-            )
-
-        # Ensure parent directory exists
-        zip_path.parent.mkdir(parents=True, exist_ok=True)
-
-        count = 0
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            for entry in entries:
-                # Get data and metadata
-                result = self.get_with_metadata(
-                    entry["matrix_values"], entry_type
-                )
-                if result is None:
-                    continue
-
-                data, metadata = result
-
-                # Build path
-                rel_path = self._build_entry_path(
-                    entry["matrix_values"],
-                    entry["created_at"],
-                    matrix_keys,
-                )
-
-                # Export data to temporary directory then to zip
-                ext = encoder.default_export_format
-
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    tmp_path = Path(tmp_dir) / f"export.{ext}"
-                    encoder.export(data, tmp_path)
-
-                    # Add all files encoder created (may include .graphml)
-                    for tmp_file in Path(tmp_dir).glob("export.*"):
-                        arc_name = f"{rel_path}{tmp_file.suffix}"
-
-                        # For JSON files, merge in workflow metadata
-                        if tmp_file.suffix == ".json":
-                            exported_data = json.loads(tmp_file.read_text())
-                            exported_data["matrix_values"] = entry[
-                                "matrix_values"
-                            ]
-                            exported_data["created_at"] = entry["created_at"]
-                            exported_data["entry_type"] = entry_type
-                            if metadata is not None:
-                                exported_data["workflow_metadata"] = metadata
-                            zf.writestr(
-                                arc_name,
-                                json.dumps(
-                                    exported_data, indent=2, sort_keys=False
-                                ),
-                            )
-                        else:
-                            zf.write(tmp_file, arc_name)
-
-                count += 1
-
-        return count
+        return export_entries(self, output_path, entry_type, matrix_keys)
 
     # ========================================================================
     # Import operations
@@ -699,6 +507,13 @@ class WorkflowCache:
     ) -> int:
         """Import entries from a directory structure.
 
+        Reads exported entries where each entry directory contains:
+        - One or more JSON files (with matrix_values embedded)
+        - Optional GraphML files
+
+        All files in the same directory are grouped as one entry.
+        The objects array is reconstructed from file contents.
+
         Args:
             input_dir: Root directory containing exported entries.
             entry_type: Type of entries to import.
@@ -707,41 +522,77 @@ class WorkflowCache:
             Number of entries imported.
 
         Raises:
-            KeyError: If no encoder is registered for entry_type.
             FileNotFoundError: If input_dir does not exist.
         """
         if not input_dir.exists():
             raise FileNotFoundError(f"Input directory not found: {input_dir}")
 
-        encoder = self.get_encoder(entry_type)
-        if encoder is None:
-            raise KeyError(
-                f"No encoder registered for entry type: {entry_type}"
-            )
-
-        ext = encoder.default_export_format
         count = 0
+        processed_dirs: set[Path] = set()
 
-        # Find all data files recursively (excluding _meta.json files)
-        for data_path in input_dir.rglob(f"*.{ext}"):
+        # Find all JSON files (they contain matrix_values)
+        for json_path in input_dir.rglob("*.json"):
             # Skip _meta.json files (legacy format)
-            if "_meta" in data_path.stem:
+            if "_meta" in json_path.stem:
                 continue
 
-            # Read the JSON file to extract workflow metadata
-            json_content = json.loads(data_path.read_text(encoding="utf-8"))
+            entry_dir = json_path.parent
 
-            # Extract workflow metadata (added during export)
+            # Skip if we've already processed this directory
+            if entry_dir in processed_dirs:
+                continue
+            processed_dirs.add(entry_dir)
+
+            # Read JSON to get matrix_values and workflow_metadata
+            json_content = json.loads(json_path.read_text(encoding="utf-8"))
             matrix_values = json_content.pop("matrix_values", {})
-            json_content.pop("created_at", None)  # Remove, will be regenerated
+            json_content.pop("created_at", None)
             json_content.pop("entry_type", None)
             workflow_metadata = json_content.pop("workflow_metadata", None)
 
-            # Use the cleaned json_content as data (without workflow metadata)
-            data = json_content
+            # Build objects array from all files in this directory
+            objects: list[dict[str, Any]] = []
+
+            # Add JSON files as objects
+            for jp in entry_dir.glob("*.json"):
+                if "_meta" in jp.stem:
+                    continue
+                content = jp.read_text(encoding="utf-8")
+                # Clean exported metadata from JSON content
+                try:
+                    data = json.loads(content)
+                    data.pop("matrix_values", None)
+                    data.pop("created_at", None)
+                    data.pop("entry_type", None)
+                    data.pop("workflow_metadata", None)
+                    content = json.dumps(data, indent=2)
+                except json.JSONDecodeError:
+                    pass
+                objects.append(
+                    {
+                        "type": "json",
+                        "name": jp.stem,
+                        "content": content,
+                    }
+                )
+
+            # Add GraphML files as objects
+            for gp in entry_dir.glob("*.graphml"):
+                content = gp.read_text(encoding="utf-8")
+                objects.append(
+                    {
+                        "type": "graphml",
+                        "name": gp.stem,
+                        "content": content,
+                    }
+                )
+
+            # Build metadata with objects array
+            metadata = workflow_metadata or {}
+            metadata["objects"] = objects
 
             # Store in cache
-            self.put(matrix_values, entry_type, data, workflow_metadata)
+            self.put(matrix_values, entry_type, {}, metadata)
             count += 1
 
         return count
@@ -753,6 +604,13 @@ class WorkflowCache:
     ) -> int:
         """Import entries from a zip archive.
 
+        Reads exported entries where each entry directory contains:
+        - One or more JSON files (with matrix_values embedded)
+        - Optional GraphML files
+
+        All files in the same directory are grouped as one entry.
+        The objects array is reconstructed from file contents.
+
         Args:
             zip_path: Path to input zip file.
             entry_type: Type of entries to import.
@@ -761,46 +619,92 @@ class WorkflowCache:
             Number of entries imported.
 
         Raises:
-            KeyError: If no encoder is registered for entry_type.
             FileNotFoundError: If zip_path does not exist.
         """
         import zipfile
+        from pathlib import PurePosixPath
 
         if not zip_path.exists():
             raise FileNotFoundError(f"Zip file not found: {zip_path}")
 
-        encoder = self.get_encoder(entry_type)
-        if encoder is None:
-            raise KeyError(
-                f"No encoder registered for entry type: {entry_type}"
-            )
-
-        ext = encoder.default_export_format
         count = 0
 
         with zipfile.ZipFile(zip_path, "r") as zf:
-            # Find all data files (JSON files, excluding _meta.json)
-            data_names = [
-                n
-                for n in zf.namelist()
-                if n.endswith(f".{ext}") and "_meta" not in n
-            ]
+            # Group files by directory
+            dirs_files: dict[str, list[str]] = {}
+            for name in zf.namelist():
+                if name.endswith("/"):
+                    continue
+                parent = str(PurePosixPath(name).parent)
+                if parent not in dirs_files:
+                    dirs_files[parent] = []
+                dirs_files[parent].append(name)
 
-            for data_name in data_names:
-                # Read JSON content to extract workflow metadata
-                json_content = json.loads(zf.read(data_name).decode("utf-8"))
+            processed_dirs: set[str] = set()
 
-                # Extract workflow metadata (added during export)
+            # Find directories with JSON files (they contain matrix_values)
+            for name in zf.namelist():
+                if not name.endswith(".json") or "_meta" in name:
+                    continue
+
+                entry_dir = str(PurePosixPath(name).parent)
+                if entry_dir in processed_dirs:
+                    continue
+                processed_dirs.add(entry_dir)
+
+                # Read JSON to get matrix_values and workflow_metadata
+                json_content = json.loads(zf.read(name).decode("utf-8"))
                 matrix_values = json_content.pop("matrix_values", {})
                 json_content.pop("created_at", None)
                 json_content.pop("entry_type", None)
                 workflow_metadata = json_content.pop("workflow_metadata", None)
 
-                # Use the cleaned json_content as data (without workflow meta)
-                data = json_content
+                # Build objects array from all files in this directory
+                objects: list[dict[str, Any]] = []
+                dir_files = dirs_files.get(entry_dir, [])
+
+                for file_name in dir_files:
+                    fname = PurePosixPath(file_name).name
+                    stem = PurePosixPath(file_name).stem
+
+                    if "_meta" in stem:
+                        continue
+
+                    content = zf.read(file_name).decode("utf-8")
+
+                    if fname.endswith(".json"):
+                        # Clean exported metadata from JSON content
+                        try:
+                            data = json.loads(content)
+                            data.pop("matrix_values", None)
+                            data.pop("created_at", None)
+                            data.pop("entry_type", None)
+                            data.pop("workflow_metadata", None)
+                            content = json.dumps(data, indent=2)
+                        except json.JSONDecodeError:
+                            pass
+                        objects.append(
+                            {
+                                "type": "json",
+                                "name": stem,
+                                "content": content,
+                            }
+                        )
+                    elif fname.endswith(".graphml"):
+                        objects.append(
+                            {
+                                "type": "graphml",
+                                "name": stem,
+                                "content": content,
+                            }
+                        )
+
+                # Build metadata with objects array
+                metadata = workflow_metadata or {}
+                metadata["objects"] = objects
 
                 # Store in cache
-                self.put(matrix_values, entry_type, data, workflow_metadata)
+                self.put(matrix_values, entry_type, {}, metadata)
                 count += 1
 
         return count

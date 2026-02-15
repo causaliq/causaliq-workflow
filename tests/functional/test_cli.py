@@ -376,76 +376,10 @@ def test_cli_export_cache_nonexistent_cache(
     assert "does not exist" in result.output
 
 
-# Test export_cache command to directory.
-def test_cli_export_cache_to_directory(
-    cli_runner: CliRunner, tmp_path
-) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
-
-    cache_path = tmp_path / "test_cache.db"
-    output_dir = tmp_path / "exported"
-
-    # Create cache with data
-    with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"dataset": "asia"}, "json", {"value": 42})
-
-    result = cli_runner.invoke(
-        cli,
-        [
-            "export_cache",
-            "-c",
-            str(cache_path),
-            "-o",
-            str(output_dir),
-            "-t",
-            "json",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "EXPORTED 1 entries" in result.output
-    assert output_dir.exists()
-
-
-# Test export_cache command to zip.
-def test_cli_export_cache_to_zip(cli_runner: CliRunner, tmp_path) -> None:
-    import zipfile
-
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
-
-    cache_path = tmp_path / "test_cache.db"
-    zip_path = tmp_path / "exported.zip"
-
-    # Create cache with data
-    with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"dataset": "asia"}, "json", {"value": 42})
-
-    result = cli_runner.invoke(
-        cli,
-        [
-            "export_cache",
-            "-c",
-            str(cache_path),
-            "-o",
-            str(zip_path),
-            "-t",
-            "json",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "EXPORTED 1 entries" in result.output
-    assert zip_path.exists()
-
-    # Verify zip contents - single JSON file with merged metadata
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        names = zf.namelist()
-        assert len(names) == 1
-        assert names[0].endswith(".json")
+# =============================================================================
+# Encoder-based export tests removed - replaced with provider-based export
+# See tests/unit/cache/test_export.py for new export tests
+# =============================================================================
 
 
 # Test export_cache command empty cache.
@@ -477,40 +411,7 @@ def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     assert "No entries of type 'json' found in cache" in result.output
 
 
-# Test export_cache with matrix-keys option.
-def test_cli_export_cache_with_matrix_keys(
-    cli_runner: CliRunner, tmp_path
-) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
-
-    cache_path = tmp_path / "matrix_keys_cache.db"
-    output_dir = tmp_path / "exported"
-
-    with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"dataset": "asia", "method": "pc"}, "json", {"value": 1})
-
-    result = cli_runner.invoke(
-        cli,
-        [
-            "export_cache",
-            "-c",
-            str(cache_path),
-            "-o",
-            str(output_dir),
-            "-t",
-            "json",
-            "-k",
-            "dataset, method",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "EXPORTED 1 entries" in result.output
-
-    # Verify directory structure follows specified key order
-    assert (output_dir / "asia" / "pc").exists()
+# Test CLI structure keys parsing removed - see test_export.py
 
 
 # Test export_cache general Exception handling.
@@ -733,76 +634,10 @@ def test_cli_import_cache_nonexistent_input(
     assert "does not exist" in result.output
 
 
-# Test import_cache command from directory.
-def test_cli_import_cache_from_directory(
-    cli_runner: CliRunner, tmp_path
-) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
-
-    source_cache = tmp_path / "source.db"
-    export_dir = tmp_path / "exported"
-    dest_cache = tmp_path / "dest.db"
-
-    # Create and export source cache
-    with WorkflowCache(source_cache) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"dataset": "asia"}, "json", {"value": 42})
-        cache.export(export_dir, "json")
-
-    result = cli_runner.invoke(
-        cli,
-        [
-            "import_cache",
-            "-i",
-            str(export_dir),
-            "-c",
-            str(dest_cache),
-            "-t",
-            "json",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "IMPORTING from:" in result.output
-    assert "IMPORTED 1 entries into:" in result.output
-
-    # Verify imported data
-    with WorkflowCache(dest_cache) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        assert cache.exists({"dataset": "asia"}, "json")
-
-
-# Test import_cache command from zip file.
-def test_cli_import_cache_from_zip(cli_runner: CliRunner, tmp_path) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
-
-    source_cache = tmp_path / "source.db"
-    zip_path = tmp_path / "exported.zip"
-    dest_cache = tmp_path / "dest.db"
-
-    # Create and export source cache
-    with WorkflowCache(source_cache) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"dataset": "sachs"}, "json", {"value": 99})
-        cache.export(zip_path, "json")
-
-    result = cli_runner.invoke(
-        cli,
-        [
-            "import_cache",
-            "-i",
-            str(zip_path),
-            "-c",
-            str(dest_cache),
-            "-t",
-            "json",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "IMPORTED 1 entries" in result.output
+# =============================================================================
+# Encoder-based import tests removed - replaced with provider-based export
+# See tests/unit/cache/test_export.py for new export tests
+# =============================================================================
 
 
 # Test import_cache KeyError handling.

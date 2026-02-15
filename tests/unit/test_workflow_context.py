@@ -1,6 +1,7 @@
 """Unit tests for WorkflowContext matrix field setup and propagation."""
 
 import pytest
+from causaliq_core import ActionResult
 
 from causaliq_workflow.registry import WorkflowContext
 from causaliq_workflow.workflow import WorkflowExecutor
@@ -14,24 +15,23 @@ class MatrixTestAction(ActionProvider):
     version = "1.0.0"
     description = "Test action that captures matrix context"
 
-    def run(self, action: str, parameters: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> ActionResult:
         mode = kwargs.get("mode", "run")
         context = kwargs.get("context")
 
-        result = {
-            "status": "success",
+        metadata = {
             "mode": mode,
             "parameters": parameters,
         }
 
         if context:
-            result["context_matrix"] = context.matrix
-            result["context_mode"] = context.mode
-            result["context_matrix_values"] = context.matrix_values
-            result["context_matrix_key"] = context.matrix_key
-            result["context_has_cache"] = context.cache is not None
+            metadata["context_matrix"] = context.matrix
+            metadata["context_mode"] = context.mode
+            metadata["context_matrix_values"] = context.matrix_values
+            metadata["context_matrix_key"] = context.matrix_key
+            metadata["context_has_cache"] = context.cache is not None
 
-        return result
+        return ("success", metadata, [])
 
 
 @pytest.fixture
@@ -406,14 +406,14 @@ def test_mode_parameter_compare_execution(executor: WorkflowExecutor) -> None:
 # Test action receives mode even when no context is provided.
 def test_mode_parameter_without_context() -> None:
     action = MatrixTestAction()
-    result = action.run(
+    status, metadata, objects = action.run(
         action="",
         parameters={"data_path": "/test/data.csv"},
         mode="dry-run",
         context=None,
     )
-    assert result["mode"] == "dry-run"
-    assert "context_mode" not in result
+    assert metadata["mode"] == "dry-run"
+    assert "context_mode" not in metadata
 
 
 # ============================================================================

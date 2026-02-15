@@ -6,9 +6,8 @@ All external dependencies are mocked.
 """
 
 import pytest
+from causaliq_core import ActionExecutionError
 from test_action import ActionProvider as TestAction
-
-from causaliq_workflow.action import ActionExecutionError
 
 
 class MockPath:
@@ -112,16 +111,16 @@ def test_run_with_valid_inputs(monkeypatch):
         "message": "Test message",
     }
 
-    result = action.run("", parameters, mode="run")
+    status, metadata, objects = action.run("", parameters, mode="run")
 
     # Verify Path calls
     assert "/data/test.csv" in path_calls
     assert "/output/test" in path_calls
 
     # Verify outputs
-    assert result["message_count"] == 12  # "Test message" has 12 characters
-    assert result["status"] == "success"
-    assert "output_file" in result
+    assert metadata["message_count"] == 12  # "Test message" has 12 characters
+    assert status == "success"
+    assert "output_file" in metadata
 
 
 # Test action execution fails with missing data file
@@ -191,19 +190,3 @@ def test_run_with_filesystem_error(monkeypatch):
         ActionExecutionError, match="Test action execution failed"
     ):
         action.run("", parameters, mode="run")
-
-
-# Test default validate_parameters method returns True
-def test_validate_parameters_default_implementation():
-    """Test default validate_parameters method returns True."""
-    action = TestAction()
-    parameters = {
-        "data_path": "/test/path.csv",
-        "output_dir": "/test/output",
-        "dataset": "test",
-        "algorithm": "test",
-    }
-
-    result = action.validate_parameters("", parameters)
-
-    assert result is True

@@ -5,7 +5,7 @@ Example of an external action provider package following the causaliq-workflow
 convention. This demonstrates the production-ready pattern:
 
 1. Export a class named 'ActionProvider' that inherits from
-   causaliq_workflow.action.BaseActionProvider
+   causaliq_core.CausalIQActionProvider
 2. Import this package and it becomes available as 'uses: test_action'
 3. Zero configuration required - clean namespace with no conflicts
 
@@ -23,17 +23,18 @@ steps:
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from causaliq_workflow.action import (
+from causaliq_core import (
     ActionExecutionError,
     ActionInput,
-    BaseActionProvider,
+    ActionResult,
+    CausalIQActionProvider,
 )
 
 if TYPE_CHECKING:
     from causaliq_workflow.registry import WorkflowContext
 
 
-class ActionProvider(BaseActionProvider):
+class ActionProvider(CausalIQActionProvider):
     """Test action provider for demonstrating the causaliq-workflow plugin.
 
     This provider creates a simple test output file, demonstrating the
@@ -86,7 +87,8 @@ class ActionProvider(BaseActionProvider):
         parameters: Dict[str, Any],
         mode: str = "dry-run",
         context: Optional["WorkflowContext"] = None,
-    ) -> Dict[str, Any]:
+        logger: Optional[Any] = None,
+    ) -> ActionResult:
         """Execute test action.
 
         Args:
@@ -94,9 +96,10 @@ class ActionProvider(BaseActionProvider):
             parameters: Action parameters
             mode: Execution mode ('dry-run', 'run', 'compare')
             context: Workflow execution context
+            logger: Optional workflow logger
 
         Returns:
-            Dictionary containing output values
+            Tuple of (status, metadata, objects)
 
         Raises:
             ActionExecutionError: If execution fails
@@ -112,11 +115,11 @@ class ActionProvider(BaseActionProvider):
                     )
 
             message = parameters.get("message", "Hello from test_action!")
-            return {
+            metadata = {
                 "output_file": f"{parameters['output_dir']}/test_output.txt",
                 "message_count": len(message),
-                "status": "dry-run-success",
             }
+            return ("skipped", metadata, [])
 
         try:
             data_path = Path(parameters["data_path"])
@@ -150,11 +153,11 @@ This demonstrates a working causaliq-workflow action package!
 
             output_file.write_text(content, encoding="utf-8")
 
-            return {
+            metadata = {
                 "output_file": str(output_file),
                 "message_count": len(message),
-                "status": "success",
             }
+            return ("success", metadata, [])
 
         except Exception as e:
             raise ActionExecutionError(

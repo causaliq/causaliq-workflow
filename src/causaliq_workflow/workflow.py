@@ -406,6 +406,30 @@ class WorkflowExecutor:
                     action_name, resolved_inputs, context
                 )
 
+                # Store results to cache if successful and objects present
+                if (
+                    context.cache is not None
+                    and step_result.get("status") == "success"
+                    and step_result.get("objects")
+                ):
+                    from causaliq_workflow.cache import store_action_result
+
+                    # Extract objects from result (not part of metadata)
+                    objects = step_result.get("objects", [])
+                    # Metadata is everything except status and objects
+                    metadata = {
+                        k: v
+                        for k, v in step_result.items()
+                        if k not in ("status", "objects")
+                    }
+                    store_action_result(
+                        cache=context.cache,
+                        context=context,
+                        entry_type="graph",
+                        metadata=metadata,
+                        objects=objects,
+                    )
+
                 # Log step completion in real-time if logger provided
                 if step_logger:
                     # Use same display name for consistency

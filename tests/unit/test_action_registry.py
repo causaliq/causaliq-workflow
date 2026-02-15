@@ -102,15 +102,16 @@ def test_execute_action_with_context():
 
     result = registry.execute_action("test_action", inputs, context)
 
-    # Should get dry-run results
-    assert result["status"] == "dry-run-success"
+    # Should get dry-run results (status is "skipped" in dry-run mode)
+    assert result["status"] == "skipped"
     assert result["message_count"] == len("Test message")
     assert "output_file" in result
 
 
 # Test execute_action raises error for missing action
 def test_execute_action_not_found():
-    from causaliq_workflow.action import ActionExecutionError
+    from causaliq_core import ActionExecutionError
+
     from causaliq_workflow.registry import WorkflowContext
 
     registry = ActionRegistry()
@@ -182,9 +183,9 @@ def test_registry_line_76_builtin_module_skip(monkeypatch):
     registry.list_actions_by_package()
 
 
-# Test execute_action automatically includes action_metadata in result.
-def test_execute_action_includes_action_metadata():
-    """execute_action automatically calls get_action_metadata."""
+# Test execute_action returns proper result structure.
+def test_execute_action_returns_result_structure():
+    """execute_action returns result with status and objects."""
     from causaliq_workflow.registry import WorkflowContext
 
     registry = ActionRegistry()
@@ -202,7 +203,6 @@ def test_execute_action_includes_action_metadata():
 
     result = registry.execute_action("test_action", inputs, context)
 
-    # Result should contain action_metadata key
-    assert "action_metadata" in result
-    assert result["action_metadata"]["action_name"] == "test-action"
-    assert result["action_metadata"]["action_version"] == "1.0.0"
+    # Result should contain status and objects
+    assert "status" in result
+    assert "objects" in result

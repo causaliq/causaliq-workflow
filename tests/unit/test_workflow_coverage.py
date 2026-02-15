@@ -1,8 +1,8 @@
 """Unit tests for WorkflowExecutor coverage."""
 
 import pytest
+from causaliq_core import ActionExecutionError, ActionResult
 
-from causaliq_workflow.action import ActionExecutionError
 from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
 from tests.functional.fixtures.test_action import ActionProvider
 
@@ -14,21 +14,21 @@ class MockWorkflowAction(ActionProvider):
     version = "1.0.0"
     description = "Mock action for workflow testing"
 
-    def run(self, action: str, parameters: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> ActionResult:
         mode = kwargs.get("mode", "run")
         context = kwargs.get("context")
         kwargs.get("logger")
 
-        result = {
-            "status": "validated" if mode == "dry-run" else "executed",
+        metadata = {
             "mode": mode,
             "parameters": parameters,
         }
 
         if context:
-            result["context_mode"] = context.mode
+            metadata["context_mode"] = context.mode
 
-        return result
+        status = "validated" if mode == "dry-run" else "executed"
+        return (status, metadata, [])
 
 
 class MockFailingAction(ActionProvider):
@@ -38,7 +38,7 @@ class MockFailingAction(ActionProvider):
     version = "1.0.0"
     description = "Mock action that always fails"
 
-    def run(self, action: str, parameters: dict, **kwargs) -> dict:
+    def run(self, action: str, parameters: dict, **kwargs) -> ActionResult:
         raise ActionExecutionError("Mock action failure")
 
 
