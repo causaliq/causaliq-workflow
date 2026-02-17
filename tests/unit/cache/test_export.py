@@ -49,46 +49,42 @@ def test_type_extensions_contains_expected() -> None:
 def test_build_entry_path_with_matrix_keys() -> None:
     """Test path created correctly with specified matrix keys."""
     matrix_values = {"dataset": "asia", "method": "pc"}
-    created_at = "2026-02-13T10:30:00"
 
     result = build_entry_path(
         matrix_values,
-        created_at,
         matrix_keys=["dataset", "method"],
     )
 
-    assert result == Path("asia/pc/2026-02-13T10-30-00")
+    assert result == Path("asia/pc")
 
 
 # Test build_entry_path uses alphabetical order without matrix keys.
 def test_build_entry_path_alphabetical_order() -> None:
     """Test path uses alphabetical key order when no keys specified."""
     matrix_values = {"method": "pc", "dataset": "asia"}
-    created_at = "2026-02-13T10:30:00"
 
-    result = build_entry_path(matrix_values, created_at)
+    result = build_entry_path(matrix_values)
 
     # Should be dataset/method (alphabetical)
-    assert result == Path("asia/pc/2026-02-13T10-30-00")
+    assert result == Path("asia/pc")
 
 
 # Test build_entry_path sanitises special characters.
 def test_build_entry_path_sanitises_characters() -> None:
     """Test path sanitises slashes in values."""
     matrix_values = {"dataset": "path/to/data"}
-    created_at = "2026-02-13T10:30:00"
 
-    result = build_entry_path(matrix_values, created_at)
+    result = build_entry_path(matrix_values)
 
-    assert "path_to_data" in str(result)
+    assert result == Path("path_to_data")
 
 
 # Test build_entry_path handles empty matrix values.
 def test_build_entry_path_empty_matrix() -> None:
     """Test path with no matrix values."""
-    result = build_entry_path({}, "2026-02-13T10:30:00")
+    result = build_entry_path({})
 
-    assert result == Path("2026-02-13T10-30-00")
+    assert result == Path("default")
 
 
 # =============================================================================

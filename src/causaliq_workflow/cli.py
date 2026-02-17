@@ -3,7 +3,7 @@
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import click
 
@@ -193,48 +193,24 @@ def _report_results(
     type=click.Path(path_type=Path),
     help="Output directory or .zip file path for exported entries.",
 )
-@click.option(
-    "--entry-type",
-    "-t",
-    default="graph",
-    help="Entry type to export (default: graph).",
-)
-@click.option(
-    "--matrix-keys",
-    "-k",
-    default=None,
-    help="Comma-separated list of matrix variable names for directory "
-    "hierarchy order (default: alphabetical).",
-)
 def export_cache(
     cache_file: Path,
     output: Path,
-    entry_type: str,
-    matrix_keys: Optional[str],
 ) -> None:
     """Export cache entries to directory or zip file.
 
-    Reads entries from a WorkflowCache database and exports them to a
-    hierarchical directory structure based on matrix variable values.
-    Each entry is exported as a pair of files: <timestamp>.graphml and
-    <timestamp>.json (metadata).
+    Reads all entries from a WorkflowCache database and exports them
+    to a hierarchical directory structure based on matrix variable
+    values. Each entry's objects are exported to separate files.
 
     Examples:
 
-        cqwork export_cache -c cache.db -o ./results
+        cqflow export_cache -c cache.db -o ./results
 
-        cqwork export_cache -c cache.db -o results.zip
-
-        cqwork export_cache -c cache.db -o ./out -k dataset,algorithm
+        cqflow export_cache -c cache.db -o results.zip
     """
     try:
-        from causaliq_core.cache.encoders import JsonEncoder
-
         from causaliq_workflow.cache import WorkflowCache
-
-        keys_list: Optional[List[str]] = None
-        if matrix_keys:
-            keys_list = [k.strip() for k in matrix_keys.split(",")]
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         click.echo(
@@ -242,31 +218,25 @@ def export_cache(
         )
 
         with WorkflowCache(cache_file) as cache:
-            if not cache.has_encoder("json"):
-                cache.register_encoder("json", JsonEncoder())
-
-            entry_count = cache.entry_count(entry_type)
+            entry_count = cache.entry_count()
             if entry_count == 0:
                 click.echo(
                     f"{timestamp} [causaliq-workflow] "
-                    f"No entries of type '{entry_type}' found in cache"
+                    "No entries found in cache"
                 )
                 sys.exit(0)
 
             click.echo(
                 f"{timestamp} [causaliq-workflow] "
-                f"Found {entry_count} entries of type '{entry_type}'"
+                f"Found {entry_count} entries"
             )
 
             try:
-                exported = cache.export(output, entry_type, keys_list)
+                exported = cache.export(output)
                 click.echo(
                     f"{timestamp} [causaliq-workflow] "
                     f"EXPORTED {exported} entries to: {output}"
                 )
-            except KeyError as e:
-                _log_cli_error(f"Export failed: {e}")
-                sys.exit(1)
             except Exception as e:
                 _log_cli_error(f"Export failed: {e}")
                 sys.exit(1)
@@ -300,16 +270,9 @@ def export_cache(
     type=click.Path(path_type=Path),
     help="Destination WorkflowCache database file (.db).",
 )
-@click.option(
-    "--entry-type",
-    "-t",
-    default="graph",
-    help="Entry type to import (default: graph).",
-)
 def import_cache(
     input_path: Path,
     cache_file: Path,
-    entry_type: str,
 ) -> None:
     """Import cache entries from directory or zip file.
 
@@ -322,12 +285,8 @@ def import_cache(
         cqwork import_cache -i ./results -c cache.db
 
         cqwork import_cache -i results.zip -c cache.db
-
-        cqwork import_cache -i ./out -c cache.db -t graph
     """
     try:
-        from causaliq_core.cache.encoders import JsonEncoder
-
         from causaliq_workflow.cache import WorkflowCache
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -336,11 +295,8 @@ def import_cache(
         )
 
         with WorkflowCache(cache_file) as cache:
-            if not cache.has_encoder("json"):
-                cache.register_encoder("json", JsonEncoder())
-
             try:
-                imported = cache.import_entries(input_path, entry_type)
+                imported = cache.import_entries(input_path)
                 click.echo(
                     f"{timestamp} [causaliq-workflow] "
                     f"IMPORTED {imported} entries into: {cache_file}"

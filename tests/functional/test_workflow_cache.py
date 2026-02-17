@@ -49,64 +49,78 @@ def executor() -> WorkflowExecutor:
     return executor
 
 
-# Test workflow execution with file-based cache.
-def test_workflow_with_file_cache(executor: WorkflowExecutor) -> None:
+def _set_step_output(workflow: dict, step_name: str, output_path: str) -> None:
+    """Helper to set output parameter on a step."""
+    for step in workflow.get("steps", []):
+        if step.get("name") == step_name:
+            if "with" not in step:
+                step["with"] = {}
+            step["with"]["output"] = output_path
+            return
+
+
+# Test step with output parameter creates file-based cache.
+def test_step_with_output_creates_cache(
+    executor: WorkflowExecutor,
+) -> None:
     workflow_path = TEST_DATA_DIR / "single_cache_workflow.yml"
     workflow = executor.parse_workflow(str(workflow_path))
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cache_path = Path(tmpdir) / "test_cache.db"
-        with WorkflowCache(cache_path) as cache:
-            results = executor.execute_workflow(
-                workflow, mode="run", cache=cache
-            )
-            assert len(results) == 1
-            step_result = results[0]["steps"]["Cache Capture Step"]
-            assert step_result["has_cache"] is True
-            assert step_result["cache_is_open"] is True
-        assert cache_path.exists()
+        _set_step_output(workflow, "Cache Capture Step", str(cache_path))
 
-
-# Test workflow execution with in-memory cache.
-def test_workflow_with_memory_cache(executor: WorkflowExecutor) -> None:
-    workflow_path = TEST_DATA_DIR / "single_cache_workflow.yml"
-    workflow = executor.parse_workflow(str(workflow_path))
-
-    with WorkflowCache(":memory:") as cache:
-        results = executor.execute_workflow(workflow, mode="run", cache=cache)
+        results = executor.execute_workflow(workflow, mode="run")
         assert len(results) == 1
         step_result = results[0]["steps"]["Cache Capture Step"]
         assert step_result["has_cache"] is True
         assert step_result["cache_is_open"] is True
-        assert cache.is_memory
+        assert cache_path.exists()
+
+
+# Test step without output parameter does not create cache.
+def test_step_without_output_no_cache(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow_path = TEST_DATA_DIR / "single_cache_workflow.yml"
+    workflow = executor.parse_workflow(str(workflow_path))
+    # No output parameter set on step
+
+    results = executor.execute_workflow(workflow, mode="run")
+    assert len(results) == 1
+    step_result = results[0]["steps"]["Cache Capture Step"]
+    assert step_result["has_cache"] is False
 
 
 # Test cache persists across multiple workflow executions.
 def test_cache_persists_across_executions(executor: WorkflowExecutor) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
+    from causaliq_workflow.cache import CacheEntry
 
     workflow_path = TEST_DATA_DIR / "single_cache_workflow.yml"
-    workflow = executor.parse_workflow(str(workflow_path))
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cache_path = Path(tmpdir) / "persistent_cache.db"
 
-        # First execution - write to cache
+        # First execution - creates cache
+        workflow = executor.parse_workflow(str(workflow_path))
+        _set_step_output(workflow, "Cache Capture Step", str(cache_path))
+        executor.execute_workflow(workflow, mode="run")
+
+        # Manually add an entry to verify persistence
         with WorkflowCache(cache_path) as cache:
-            cache.register_encoder("json", JsonEncoder())
-            cache.put({"dataset": "asia"}, "json", {"value": 42})
-            executor.execute_workflow(workflow, mode="run", cache=cache)
+            entry = CacheEntry(metadata={"value": 42})
+            cache.put({"dataset": "asia"}, entry)
 
         # Second execution - verify cache persisted
         with WorkflowCache(cache_path) as cache:
-            cache.register_encoder("json", JsonEncoder())
-            assert cache.exists({"dataset": "asia"}, "json")
-            data = cache.get({"dataset": "asia"}, "json")
-            assert data == {"value": 42}
+            assert cache.exists({"dataset": "asia"})
+            result = cache.get({"dataset": "asia"})
+            assert result is not None
+            assert result.metadata == {"value": 42}
 
 
-# Test matrix execution with shared cache.
-def test_matrix_execution_with_shared_cache(
+# Test matrix execution stores entries with correct keys.
+def test_matrix_execution_with_cache(
     executor: WorkflowExecutor,
 ) -> None:
     workflow_path = TEST_DATA_DIR / "cache_workflow.yml"
@@ -114,31 +128,32 @@ def test_matrix_execution_with_shared_cache(
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cache_path = Path(tmpdir) / "matrix_cache.db"
-        with WorkflowCache(cache_path) as cache:
-            results = executor.execute_workflow(
-                workflow, mode="run", cache=cache
-            )
-            assert len(results) == 4
-            for result in results:
-                step_result = result["steps"]["Cache Capture Step"]
-                assert step_result["has_cache"] is True
-                assert step_result["cache_is_open"] is True
+        _set_step_output(workflow, "Cache Capture Step", str(cache_path))
+
+        results = executor.execute_workflow(workflow, mode="run")
+        assert len(results) == 4
+        for result in results:
+            step_result = result["steps"]["Cache Capture Step"]
+            assert step_result["has_cache"] is True
+            assert step_result["cache_is_open"] is True
 
 
-# Test dry-run mode with cache.
-def test_dry_run_with_cache(executor: WorkflowExecutor) -> None:
+# Test dry-run mode does not create cache even with output parameter.
+def test_dry_run_no_cache_created(executor: WorkflowExecutor) -> None:
     workflow_path = TEST_DATA_DIR / "single_cache_workflow.yml"
     workflow = executor.parse_workflow(str(workflow_path))
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cache_path = Path(tmpdir) / "dryrun_cache.db"
-        with WorkflowCache(cache_path) as cache:
-            results = executor.execute_workflow(
-                workflow, mode="dry-run", cache=cache
-            )
-            assert len(results) == 1
-            step_result = results[0]["steps"]["Cache Capture Step"]
-            assert step_result["has_cache"] is True
+        _set_step_output(workflow, "Cache Capture Step", str(cache_path))
+
+        results = executor.execute_workflow(workflow, mode="dry-run")
+        assert len(results) == 1
+        step_result = results[0]["steps"]["Cache Capture Step"]
+        # Cache should not be available in dry-run mode
+        assert step_result["has_cache"] is False
+        # Cache file should not exist
+        assert not cache_path.exists()
 
 
 # =============================================================================

@@ -9,7 +9,6 @@ import itertools
 import re
 from pathlib import Path
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -25,9 +24,6 @@ from causaliq_workflow.schema import (
     load_workflow_file,
     validate_workflow,
 )
-
-if TYPE_CHECKING:  # pragma: no cover
-    from causaliq_workflow.cache import WorkflowCache
 
 
 class WorkflowExecutionError(Exception):
@@ -299,16 +295,17 @@ class WorkflowExecutor:
         mode: str = "dry-run",
         cli_params: Optional[Dict[str, Any]] = None,
         step_logger: Optional[Callable[[str, str, str], None]] = None,
-        cache: Optional["WorkflowCache"] = None,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
+
+        Caching is controlled at the step level via the 'output' parameter
+        in each step's 'with' block. Each step can write to its own cache.
 
         Args:
             workflow: Parsed workflow dictionary
             mode: Execution mode ('dry-run', 'run', 'compare')
             cli_params: Additional parameters from CLI
             step_logger: Optional function to log step execution
-            cache: Optional WorkflowCache for storing step results
 
         Returns:
             List of job results from matrix expansion
@@ -326,12 +323,12 @@ class WorkflowExecutor:
 
             results = []
             for job_index, job in enumerate(jobs):
-                # Create workflow context
+                # Create workflow context (cache set per-step)
                 context = WorkflowContext(
                     mode=mode,
                     matrix=matrix,
                     matrix_values=job,
-                    cache=cache,
+                    cache=None,
                 )
 
                 # Execute job steps
@@ -392,53 +389,77 @@ class WorkflowExecutor:
                     action_inputs, variables
                 )
 
-                # Log step execution in real-time if logger provided
-                if step_logger:
-                    # Get action's display name from the class (with hyphens)
-                    action_class = self.action_registry.get_action_class(
-                        action_name
-                    )
-                    display_name = getattr(action_class, "name", action_name)
-                    step_logger(display_name, step_name, "EXECUTING")
+                # Handle step-level cache from output parameter
+                output_path = resolved_inputs.pop("output", None)
+                step_cache = None
 
-                # Execute action
-                step_result = self.action_registry.execute_action(
-                    action_name, resolved_inputs, context
+                # "none" is a special value meaning "no output"
+                should_cache = (
+                    output_path is not None
+                    and str(output_path).lower() != "none"
+                    and context.mode == "run"
                 )
+                if should_cache:
+                    from causaliq_workflow.cache import WorkflowCache
 
-                # Store results to cache if successful and objects present
-                if (
-                    context.cache is not None
-                    and step_result.get("status") == "success"
-                    and step_result.get("objects")
-                ):
-                    from causaliq_workflow.cache import store_action_result
+                    step_cache = WorkflowCache(output_path)
+                    step_cache.open()
+                    context.cache = step_cache
 
-                    # Extract objects from result (not part of metadata)
-                    objects = step_result.get("objects", [])
-                    # Metadata is everything except status and objects
-                    metadata = {
-                        k: v
-                        for k, v in step_result.items()
-                        if k not in ("status", "objects")
-                    }
-                    store_action_result(
-                        cache=context.cache,
-                        context=context,
-                        entry_type="graph",
-                        metadata=metadata,
-                        objects=objects,
+                try:
+                    # Log step execution in real-time if logger provided
+                    if step_logger:
+                        action_class = self.action_registry.get_action_class(
+                            action_name
+                        )
+                        display_name = getattr(
+                            action_class, "name", action_name
+                        )
+                        step_logger(display_name, step_name, "EXECUTING")
+
+                    # Execute action
+                    step_result = self.action_registry.execute_action(
+                        action_name, resolved_inputs, context
                     )
 
-                # Log step completion in real-time if logger provided
-                if step_logger:
-                    # Use same display name for consistency
-                    action_class = self.action_registry.get_action_class(
-                        action_name
-                    )
-                    display_name = getattr(action_class, "name", action_name)
-                    status = step_result.get("status", "unknown").upper()
-                    step_logger(display_name, step_name, status)
+                    # Store results to cache if successful and objects present
+                    if (
+                        context.cache is not None
+                        and step_result.get("status") == "success"
+                        and step_result.get("objects")
+                    ):
+                        from causaliq_workflow.cache import store_action_result
+
+                        objects = step_result.get("objects", [])
+                        metadata = {
+                            k: v
+                            for k, v in step_result.items()
+                            if k not in ("status", "objects")
+                        }
+                        store_action_result(
+                            cache=context.cache,
+                            context=context,
+                            entry_type="graph",
+                            metadata=metadata,
+                            objects=objects,
+                        )
+
+                    # Log step completion in real-time if logger provided
+                    if step_logger:
+                        action_class = self.action_registry.get_action_class(
+                            action_name
+                        )
+                        display_name = getattr(
+                            action_class, "name", action_name
+                        )
+                        status = step_result.get("status", "unknown").upper()
+                        step_logger(display_name, step_name, status)
+
+                finally:
+                    # Close step cache and reset context
+                    if step_cache is not None:
+                        step_cache.close()
+                        context.cache = None
 
                 step_results[step_name] = step_result
 

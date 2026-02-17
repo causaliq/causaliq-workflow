@@ -3,13 +3,14 @@ causaliq-workflow: Template package for CausalIQ repos
 """
 
 # Import core functionality
+from .action import ActionProvider, WorkflowActionProvider
 from .cache import WorkflowCache
 from .logger import LogLevel, WorkflowLogger  # noqa: F401
 from .registry import ActionRegistry, ActionRegistryError, WorkflowContext
 from .status import TaskStatus  # noqa: F401
 from .workflow import WorkflowExecutionError, WorkflowExecutor
 
-__version__ = "0.1.1.dev8"
+__version__ = "0.1.1.dev9"
 __author__ = "CausalIQ"
 __email__ = "info@causaliq.com"
 
@@ -28,6 +29,9 @@ __all__ = [
     "__author__",
     "__email__",
     "VERSION",
+    # Action provider for auto-discovery
+    "ActionProvider",
+    "WorkflowActionProvider",
     # Workflow components
     "ActionRegistry",
     "ActionRegistryError",

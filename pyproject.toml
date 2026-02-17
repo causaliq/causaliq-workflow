@@ -30,7 +30,7 @@ classifiers = [
 keywords = ["causaliq"]
 requires-python = ">=3.9"
 dependencies = [
-    "causaliq-core>=0.4.0.dev4",
+    "causaliq-core>=0.4.0.dev5",
     "click>=8.0.0",
     "jsonschema>=4.0.0",
     "PyYAML>=6.0.0",
@@ -73,6 +73,9 @@ Repository = "https://github.com/causaliq/causaliq-workflow"
 [project.scripts]
 causaliq-workflow = "causaliq_workflow.cli:main"
 cqflow = "causaliq_workflow.cli:main"
+
+[project.entry-points."causaliq.actions"]
+causaliq-workflow = "causaliq_workflow:ActionProvider"
 
 [tool.setuptools.dynamic]
 version = {attr = "causaliq_workflow.__version__"}

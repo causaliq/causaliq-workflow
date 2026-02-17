@@ -448,6 +448,7 @@ def test_workflow_context_accepts_cache() -> None:
 def test_execute_workflow_without_cache(executor: WorkflowExecutor) -> None:
     workflow = {
         "id": "no-cache-test",
+        "description": "Test workflow without output",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -463,45 +464,64 @@ def test_execute_workflow_without_cache(executor: WorkflowExecutor) -> None:
     assert step_result["context_has_cache"] is False
 
 
-# Test execute_workflow passes cache to context.
-def test_execute_workflow_with_cache(executor: WorkflowExecutor) -> None:
-    from causaliq_workflow.cache import WorkflowCache
+# Test step with output parameter creates cache.
+def test_step_with_output_creates_cache(executor: WorkflowExecutor) -> None:
+    import tempfile
+    from pathlib import Path
 
-    workflow = {
-        "id": "cache-test",
-        "matrix": {"dataset": ["asia"]},
-        "steps": [
-            {
-                "name": "Cache Step",
-                "uses": "matrix_test_action",
-                "with": {"data": "{{dataset}}"},
-            }
-        ],
-    }
-    with WorkflowCache(":memory:") as cache:
-        results = executor.execute_workflow(workflow, mode="run", cache=cache)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cache_path = Path(tmpdir) / "test.db"
+        workflow = {
+            "id": "cache-test",
+            "description": "Test step with output",
+            "matrix": {"dataset": ["asia"]},
+            "steps": [
+                {
+                    "name": "Cache Step",
+                    "uses": "matrix_test_action",
+                    "with": {
+                        "data": "{{dataset}}",
+                        "output": str(cache_path),
+                    },
+                }
+            ],
+        }
+        results = executor.execute_workflow(workflow, mode="run")
         assert len(results) == 1
         step_result = results[0]["steps"]["Cache Step"]
         assert step_result["context_has_cache"] is True
+        assert cache_path.exists()
 
 
-# Test cache passed to all jobs in matrix execution.
-def test_cache_passed_to_all_matrix_jobs(executor: WorkflowExecutor) -> None:
-    from causaliq_workflow.cache import WorkflowCache
+# Test cache available for all jobs in matrix execution.
+def test_cache_available_for_all_matrix_jobs(
+    executor: WorkflowExecutor,
+) -> None:
+    import tempfile
+    from pathlib import Path
 
-    workflow = {
-        "id": "multi-job-cache-test",
-        "matrix": {"dataset": ["asia", "cancer"], "algorithm": ["pc", "ges"]},
-        "steps": [
-            {
-                "name": "Multi Job Step",
-                "uses": "matrix_test_action",
-                "with": {"data": "{{dataset}}", "algo": "{{algorithm}}"},
-            }
-        ],
-    }
-    with WorkflowCache(":memory:") as cache:
-        results = executor.execute_workflow(workflow, mode="run", cache=cache)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cache_path = Path(tmpdir) / "matrix_test.db"
+        workflow = {
+            "id": "multi-job-cache-test",
+            "description": "Test matrix with step output",
+            "matrix": {
+                "dataset": ["asia", "cancer"],
+                "algorithm": ["pc", "ges"],
+            },
+            "steps": [
+                {
+                    "name": "Multi Job Step",
+                    "uses": "matrix_test_action",
+                    "with": {
+                        "data": "{{dataset}}",
+                        "algo": "{{algorithm}}",
+                        "output": str(cache_path),
+                    },
+                }
+            ],
+        }
+        results = executor.execute_workflow(workflow, mode="run")
         assert len(results) == 4
         for result in results:
             step_result = result["steps"]["Multi Job Step"]

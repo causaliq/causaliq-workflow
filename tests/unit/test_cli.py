@@ -45,5 +45,3 @@ def test_cli_export_cache_help(runner: CliRunner) -> None:
     assert result.exit_code == 0
     assert "--cache" in result.output
     assert "--output" in result.output
-    assert "--entry-type" in result.output
-    assert "--matrix-keys" in result.output

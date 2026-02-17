@@ -384,16 +384,14 @@ def test_cli_export_cache_nonexistent_cache(
 
 # Test export_cache command empty cache.
 def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
     from causaliq_workflow.cache import WorkflowCache
 
     cache_path = tmp_path / "empty_cache.db"
     output_dir = tmp_path / "exported"
 
     # Create empty cache
-    with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
+    with WorkflowCache(cache_path) as _:
+        pass  # Just create empty cache
 
     result = cli_runner.invoke(
         cli,
@@ -403,12 +401,10 @@ def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
             str(cache_path),
             "-o",
             str(output_dir),
-            "-t",
-            "json",
         ],
     )
     assert result.exit_code == 0
-    assert "No entries of type 'json' found in cache" in result.output
+    assert "No entries found in cache" in result.output
 
 
 # Test CLI structure keys parsing removed - see test_export.py
@@ -418,16 +414,15 @@ def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
 def test_cli_export_cache_general_exception(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
     cache_path = tmp_path / "exception_cache.db"
     output_dir = tmp_path / "exported"
 
     with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"a": "1"}, "json", {"value": 1})
+        entry = CacheEntry(metadata={"value": 1})
+        entry.add_object("data", "json", '{"v": 1}')
+        cache.put({"a": "1"}, entry)
 
     # Patch the export method to raise RuntimeError
     def raise_runtime_error(*args, **kwargs):
@@ -443,8 +438,6 @@ def test_cli_export_cache_general_exception(
             str(cache_path),
             "-o",
             str(output_dir),
-            "-t",
-            "json",
         ],
     )
 
@@ -456,16 +449,15 @@ def test_cli_export_cache_general_exception(
 def test_cli_export_cache_keyerror_from_export(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
     cache_path = tmp_path / "keyerror_export.db"
     output_dir = tmp_path / "exported"
 
     with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"a": "1"}, "json", {"value": 1})
+        entry = CacheEntry(metadata={"value": 1})
+        entry.add_object("data", "json", '{"v": 1}')
+        cache.put({"a": "1"}, entry)
 
     def raise_key_error(*args, **kwargs):
         raise KeyError("No encoder found")
@@ -480,8 +472,6 @@ def test_cli_export_cache_keyerror_from_export(
             str(cache_path),
             "-o",
             str(output_dir),
-            "-t",
-            "json",
         ],
     )
 
@@ -493,16 +483,15 @@ def test_cli_export_cache_keyerror_from_export(
 def test_cli_export_cache_keyboard_interrupt(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
     cache_path = tmp_path / "interrupt_cache.db"
     output_dir = tmp_path / "exported"
 
     with WorkflowCache(cache_path) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"a": "1"}, "json", {"value": 1})
+        entry = CacheEntry(metadata={"value": 1})
+        entry.add_object("data", "json", '{"v": 1}')
+        cache.put({"a": "1"}, entry)
 
     def raise_keyboard_interrupt(*args, **kwargs):
         raise KeyboardInterrupt()
@@ -517,8 +506,6 @@ def test_cli_export_cache_keyboard_interrupt(
             str(cache_path),
             "-o",
             str(output_dir),
-            "-t",
-            "json",
         ],
     )
 
@@ -551,8 +538,6 @@ def test_cli_export_cache_import_error(
             str(cache_path),
             "-o",
             str(output_dir),
-            "-t",
-            "json",
         ],
     )
 
@@ -644,18 +629,17 @@ def test_cli_import_cache_nonexistent_input(
 def test_cli_import_cache_keyerror(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
     source_cache = tmp_path / "source.db"
     export_dir = tmp_path / "exported"
     dest_cache = tmp_path / "dest.db"
 
     with WorkflowCache(source_cache) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"a": "1"}, "json", {"v": 1})
-        cache.export(export_dir, "json")
+        entry = CacheEntry(metadata={"v": 1})
+        entry.add_object("data", "json", '{"v": 1}')
+        cache.put({"a": "1"}, entry)
+        cache.export(export_dir)
 
     def raise_key_error(*args, **kwargs):
         raise KeyError("No encoder found")
@@ -670,8 +654,6 @@ def test_cli_import_cache_keyerror(
             str(export_dir),
             "-c",
             str(dest_cache),
-            "-t",
-            "json",
         ],
     )
 
@@ -683,18 +665,17 @@ def test_cli_import_cache_keyerror(
 def test_cli_import_cache_general_exception(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
     source_cache = tmp_path / "source.db"
     export_dir = tmp_path / "exported"
     dest_cache = tmp_path / "dest.db"
 
     with WorkflowCache(source_cache) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"a": "1"}, "json", {"v": 1})
-        cache.export(export_dir, "json")
+        entry = CacheEntry(metadata={"v": 1})
+        entry.add_object("data", "json", '{"v": 1}')
+        cache.put({"a": "1"}, entry)
+        cache.export(export_dir)
 
     def raise_runtime_error(*args, **kwargs):
         raise RuntimeError("Test runtime error")
@@ -709,8 +690,6 @@ def test_cli_import_cache_general_exception(
             str(export_dir),
             "-c",
             str(dest_cache),
-            "-t",
-            "json",
         ],
     )
 
@@ -722,18 +701,17 @@ def test_cli_import_cache_general_exception(
 def test_cli_import_cache_keyboard_interrupt(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
-    from causaliq_core.cache.encoders import JsonEncoder
-
-    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
     source_cache = tmp_path / "source.db"
     export_dir = tmp_path / "exported"
     dest_cache = tmp_path / "dest.db"
 
     with WorkflowCache(source_cache) as cache:
-        cache.register_encoder("json", JsonEncoder())
-        cache.put({"a": "1"}, "json", {"v": 1})
-        cache.export(export_dir, "json")
+        entry = CacheEntry(metadata={"v": 1})
+        entry.add_object("data", "json", '{"v": 1}')
+        cache.put({"a": "1"}, entry)
+        cache.export(export_dir)
 
     def raise_keyboard_interrupt(*args, **kwargs):
         raise KeyboardInterrupt()
@@ -750,8 +728,6 @@ def test_cli_import_cache_keyboard_interrupt(
             str(export_dir),
             "-c",
             str(dest_cache),
-            "-t",
-            "json",
         ],
     )
 
@@ -782,8 +758,6 @@ def test_cli_import_cache_import_error(
             str(export_dir),
             "-c",
             str(dest_cache),
-            "-t",
-            "json",
         ],
     )
 
