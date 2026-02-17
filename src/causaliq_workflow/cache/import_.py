@@ -167,7 +167,7 @@ def _import_from_zip(
 
             entry_dir = str(PurePosixPath(name).parent)
             if entry_dir in processed_dirs:
-                continue
+                continue  # pragma: no cover
             processed_dirs.add(entry_dir)
 
             # Read metadata

@@ -118,6 +118,22 @@ def test_echo_validates_nodes_range() -> None:
     assert "nodes" in str(exc_info.value).lower()
 
 
+# Test echo action validates nodes is convertible to int.
+def test_echo_validates_nodes_type() -> None:
+    """Test validation fails for nodes that cannot be converted to int."""
+    provider = WorkflowActionProvider()
+
+    with pytest.raises(ActionValidationError) as exc_info:
+        provider.run("echo", {"nodes": "abc"}, mode="dry-run")
+
+    assert "nodes" in str(exc_info.value).lower()
+
+    with pytest.raises(ActionValidationError) as exc_info:
+        provider.run("echo", {"nodes": None}, mode="dry-run")
+
+    assert "nodes" in str(exc_info.value).lower()
+
+
 # Test echo action creates correct graph structure.
 def test_echo_graph_structure() -> None:
     """Test graph has correct chain structure A->B->C->D."""

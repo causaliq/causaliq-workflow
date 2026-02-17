@@ -382,6 +382,32 @@ def test_cli_export_cache_nonexistent_cache(
 # =============================================================================
 
 
+# Test export_cache command success path.
+def test_cli_export_cache_success(cli_runner: CliRunner, tmp_path) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "success_export.db"
+    output_dir = tmp_path / "exported"
+
+    with WorkflowCache(cache_path) as cache:
+        entry = CacheEntry(metadata={"v": 1})
+        entry.add_object("data", "json", '{"key": "value"}')
+        cache.put({"test": "export"}, entry)
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "export_cache",
+            "-c",
+            str(cache_path),
+            "-o",
+            str(output_dir),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "EXPORTED 1 entries" in result.output
+
+
 # Test export_cache command empty cache.
 def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     from causaliq_workflow.cache import WorkflowCache
@@ -623,6 +649,34 @@ def test_cli_import_cache_nonexistent_input(
 # Encoder-based import tests removed - replaced with provider-based export
 # See tests/unit/cache/test_export.py for new export tests
 # =============================================================================
+
+
+# Test import_cache command success path.
+def test_cli_import_cache_success(cli_runner: CliRunner, tmp_path) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    source_cache = tmp_path / "source.db"
+    export_dir = tmp_path / "exported"
+    dest_cache = tmp_path / "dest.db"
+
+    with WorkflowCache(source_cache) as cache:
+        entry = CacheEntry(metadata={"v": 1})
+        entry.add_object("data", "json", '{"key": "value"}')
+        cache.put({"test": "import"}, entry)
+        cache.export(export_dir)
+
+    result = cli_runner.invoke(
+        cli,
+        [
+            "import_cache",
+            "-i",
+            str(export_dir),
+            "-c",
+            str(dest_cache),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "IMPORTED 1 entries" in result.output
 
 
 # Test import_cache KeyError handling.

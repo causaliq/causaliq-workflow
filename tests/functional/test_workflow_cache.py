@@ -157,6 +157,46 @@ def test_dry_run_no_cache_created(executor: WorkflowExecutor) -> None:
 
 
 # =============================================================================
-# Export/Import tests removed - replaced with provider-based serialisation
-# See tests/unit/cache/test_export.py for new export tests
+# Store action result tests
 # =============================================================================
+
+
+class ObjectReturningAction(ActionProvider):
+    """Test action that returns objects for caching."""
+
+    name = "object-returning-action"
+    version = "1.0.0"
+    description = "Test action that returns objects"
+
+    def run(self, action: str, parameters: dict, **kwargs) -> ActionResult:
+        objects = [{"type": "json", "name": "result", "content": '{"v":1}'}]
+        return ("success", {"algo": parameters.get("algo", "pc")}, objects)
+
+
+# Test workflow stores action results to cache when objects are returned.
+def test_workflow_stores_action_result_to_cache(tmp_path) -> None:
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["object_returning_action"] = (
+        ObjectReturningAction
+    )
+    cache_path = str(tmp_path / "cache.db")
+
+    workflow = {
+        "id": "test-workflow",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "object_returning_action",
+                "name": "Test Step",
+                "with": {"algo": "fci", "output": cache_path},
+            }
+        ],
+    }
+
+    executor.execute_workflow(workflow, mode="run")
+
+    # Verify that an entry was stored
+    with WorkflowCache(cache_path) as cache:
+        assert cache.entry_count() == 1
+        entries = cache.list_entries()
+        assert entries[0]["matrix_values"]["dataset"] == "asia"

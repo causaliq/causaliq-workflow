@@ -131,7 +131,9 @@ class WorkflowActionProvider(CausalIQActionProvider):
             return self._run_echo(parameters, mode)
 
         # Should not reach here after validation
-        raise ActionValidationError(f"Unknown action: {action}")
+        raise ActionValidationError(  # pragma: no cover
+            f"Unknown action: {action}"
+        )
 
     def _run_echo(
         self,

@@ -30,7 +30,7 @@ classifiers = [
 keywords = ["causaliq"]
 requires-python = ">=3.9"
 dependencies = [
-    "causaliq-core>=0.4.0.dev5",
+    "causaliq-core>=0.4.0.dev6",
     "click>=8.0.0",
     "jsonschema>=4.0.0",
     "PyYAML>=6.0.0",

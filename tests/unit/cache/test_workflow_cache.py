@@ -570,3 +570,78 @@ def test_put_from_action() -> None:
         assert result.metadata["node_count"] == 5
         assert result.has_object("graph")
         assert result.has_object("data")
+
+
+# ============================================================================
+# Compressor tests
+# ============================================================================
+
+
+# Test set_compressor sets compressor on token cache.
+def test_set_compressor() -> None:
+    from causaliq_core.cache.compressors import JsonCompressor
+
+    with WorkflowCache(":memory:") as cache:
+        # Default compressor is set on open()
+        assert cache.token_cache.has_compressor()
+
+        # Set a new compressor
+        new_compressor = JsonCompressor()
+        cache.set_compressor(new_compressor)
+        assert cache.token_cache.get_compressor() is new_compressor
+
+
+# ============================================================================
+# Matrix schema inconsistency tests
+# ============================================================================
+
+
+# Test get_matrix_schema raises for inconsistent schemas.
+def test_get_matrix_schema_inconsistent_raises() -> None:
+    with WorkflowCache(":memory:") as cache:
+        # Add first entry with schema {"algorithm", "dataset"}
+        entry1 = CacheEntry(metadata={"v": 1})
+        cache.put({"algorithm": "pc", "dataset": "asia"}, entry1)
+
+        # Manually insert entry with different schema {"method", "network"}
+        # must bypass validation by inserting directly into token_cache
+        key2 = {"method": "fci", "network": "alarm"}
+        hash_val = cache.compute_hash(key2)
+        key_json = cache._key_json(key2)
+        # Simply insert raw bytes with the different key_json
+        cache.token_cache.put_data(hash_val, b"{}", key_json=key_json)
+
+        with pytest.raises(MatrixSchemaError, match="Inconsistent"):
+            cache.get_matrix_schema()
+
+
+# ============================================================================
+# Import entries tests
+# ============================================================================
+
+
+# Test import_entries delegates to import module.
+def test_import_entries_delegates(tmp_path) -> None:
+    import json
+
+    # Create directory structure manually
+    entry_dir = tmp_path / "entry"
+    entry_dir.mkdir()
+    (entry_dir / "data.json").write_text('{"key": "value"}')
+    (entry_dir / "_meta.json").write_text(
+        json.dumps(
+            {
+                "matrix_values": {"test": "import"},
+                "created_at": "2026-01-01T00:00:00Z",
+                "metadata": {"imported": True},
+            }
+        )
+    )
+
+    with WorkflowCache(":memory:") as cache:
+        count = cache.import_entries(tmp_path)
+        assert count == 1
+
+        entry = cache.get({"test": "import"})
+        assert entry is not None
+        assert entry.metadata.get("imported") is True
