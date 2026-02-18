@@ -139,14 +139,14 @@ across diverse result types (graphs, traces, junction trees, etc.).
 
 The SDG class requires only:
 
-- `encode()` / `decode()` methods for compact blob representation
+- `compress()` / `decompress()` methods for compact blob representation
 - `to_graphml()` / `from_graphml()` for open format export
 
 Edge attributes are **not** added to SDG in this release.
 
 ### Graph Encoding Format
 
-The `SDG.encode()` method produces a compact binary representation that
+The `SDG.compress()` method produces a compact binary representation that
 leverages the Workflow Cache's shared token dictionary for variable names:
 
 **Header** (4 bytes):

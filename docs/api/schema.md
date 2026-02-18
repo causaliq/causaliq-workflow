@@ -247,4 +247,4 @@ validate_workflow(workflow_data, custom_schema_obj)
 
 ---
 
-**[← Previous: Workflow Engine](workflow.md)** | **[Back to API Overview](overview.md)** | **[Next: CLI Interface →](cli.md)**
+**[← Previous: Cache](cache.md)** | **[Back to API Overview](overview.md)** | **[Next: Status System →](status.md)**

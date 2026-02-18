@@ -177,4 +177,4 @@ The WorkflowExecutor provides detailed error reporting for:
 
 ---
 
-**[← Previous: Registry](registry.md)** | **[Back to API Overview](overview.md)** | **[Next: Schema Validation →](schema.md)**
+**[← Previous: Registry](registry.md)** | **[Back to API Overview](overview.md)** | **[Next: Cache →](cache.md)**

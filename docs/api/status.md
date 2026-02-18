@@ -168,4 +168,4 @@ Distinct statuses for dry-run vs run modes enable accurate workflow planning and
 
 ---
 
-**Next**: [CLI Interface](cli.md) | **Previous**: [Schema Validation](schema.md) | **Up**: [API Reference](overview.md)
+**[← Previous: Schema Validation](schema.md)** | **[Back to API Overview](overview.md)** | **[Next: Logging System →](logging.md)**

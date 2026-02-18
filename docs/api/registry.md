@@ -1,6 +1,19 @@
 # Action Registry
 
-The action registry provides centralized discovery, management, and execution of workflow actions with plugin architecture support.
+The action registry provides centralised discovery, management, and execution
+of workflow actions with plugin architecture support.
+
+The registry uses entry points to discover action providers from installed
+packages, enabling a clean plugin architecture where actions can be distributed
+as separate packages.
+
+## causaliq-core Integration
+
+The registry imports the following from causaliq-core:
+
+- **CausalIQActionProvider** - Base class that all discovered actions must
+  implement
+- **ActionExecutionError** - Exception type for action execution failures
 
 ## Core Classes
 
@@ -16,7 +29,7 @@ The action registry provides centralized discovery, management, and execution of
         - get_action_class
         - has_action
         - execute_action
-        - list_actions_by_package
+        - validate_workflow_actions
 
 ::: causaliq_workflow.registry.WorkflowContext
     options:
@@ -50,34 +63,42 @@ for action_name, action_class in actions.items():
     print(f"Action: {action_name} (v{action_class.version})")
 
 # Check if specific action exists
-if registry.has_action("my-structure-learner"):
-    action_class = registry.get_action_class("my-structure-learner")
+if registry.has_action("causaliq-workflow"):
+    action_class = registry.get_action_class("causaliq-workflow")
     print(f"Found action: {action_class.description}")
 
 # Execute action directly through registry
 try:
     result = registry.execute_action(
-        "my-structure-learner",
-        {"data_path": "/data/asia.csv", "alpha": 0.05}
+        "causaliq-workflow",
+        action="echo",
+        parameters={"message": "Hello", "nodes": 3},
+        mode="dry-run",
     )
     print(f"Execution result: {result}")
 except ActionRegistryError as e:
     print(f"Registry error: {e}")
 ```
 
-### Plugin Discovery
+### Entry Point Discovery
+
+Actions are discovered via Python entry points. Packages register their
+actions in `pyproject.toml`:
+
+```toml
+[project.entry-points."causaliq.actions"]
+my-package = "my_package:ActionProvider"
+```
+
+The registry discovers entry points at startup (metadata only) and loads them
+lazily on first use to avoid circular imports.
 
 ```python
-# List actions by package (useful for plugin systems)
-actions_by_package = registry.list_actions_by_package()
-for package, actions in actions_by_package.items():
-    print(f"Package: {package}")
-    for action in actions:
-        print(f"  - {action}")
+# Entry points are loaded when first accessed
+registry = ActionRegistry()
 
-# Discover actions from specific packages
-registry = ActionRegistry(packages=["my_custom_actions"])
-custom_actions = registry.get_available_actions()
+# Check discovered entry points
+print(f"Available actions: {list(registry.get_available_actions().keys())}")
 ```
 
 ### Workflow Context
@@ -89,27 +110,34 @@ from causaliq_workflow.registry import WorkflowContext
 context = WorkflowContext(
     mode="run",
     matrix={"dataset": ["asia", "cancer"], "algorithm": ["pc", "ges"]},
+    matrix_values={"dataset": "asia", "algorithm": "pc"},
 )
 
-# Context provides execution metadata for action optimization
+# Context provides execution metadata for action optimisation
 print(f"Execution mode: {context.mode}")
 print(f"Matrix definition: {context.matrix}")
+print(f"Current matrix values: {context.matrix_values}")
 
-# Actions can optimize across the full matrix space
-if len(context.matrix.get("dataset", [])) > 1:
-    print("Multi-dataset experiment - can pre-load data")
+# Get cache key for current matrix combination
+print(f"Matrix key: {context.matrix_key}")  # SHA-256 hash, 16 chars
 ```
 
 ## Architecture Notes
 
-The ActionRegistry uses Python's module discovery system to automatically find and register actions. Actions are discovered by:
+The ActionRegistry uses Python's entry point system to automatically find and
+register actions. Actions are discovered by:
 
-1. **Package scanning** - Searches specified packages for Action subclasses
-2. **Automatic registration** - Actions register themselves via class definition
-3. **Name-based lookup** - Actions identified by their `name` class attribute
-4. **Version tracking** - Support for action versioning and compatibility
+1. **Entry point scanning** - Discovers `causaliq.actions` entry points from
+   installed packages
+2. **Lazy loading** - Entry points recorded at startup but loaded on first use
+3. **Module fallback** - Also scans imported modules for CausalIQActionProvider
+   subclasses
+4. **Name-based lookup** - Actions identified by their entry point name or
+   `name` class attribute
 
-This design enables a flexible plugin architecture where actions can be distributed as separate packages and automatically discovered at runtime.
+This design enables a flexible plugin architecture where actions can be
+distributed as separate packages and automatically discovered at runtime,
+while avoiding circular import issues.
 
 ---
 

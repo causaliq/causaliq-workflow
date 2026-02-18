@@ -51,12 +51,13 @@ nav:
       - Algorithm Registry: architecture/action_auto_discovery_design.md
       - Workflow Executor: architecture/workflow_executor_design.md
       - Logging Architecture: architecture/logging_architecture_design.md
-      - Results Cache Design: architecture/results_cache_design.md
+      - Workflow Cache Design: architecture/workflow_cache_design.md
   - API Reference:
     - Overview: api/overview.md
     - Action Framework: api/actions.md
     - Action Registry: api/registry.md
     - Workflow Engine: api/workflow.md
+    - Workflow Cache: api/cache.md
     - Schema Validation: api/schema.md
     - Status System: api/status.md
     - Logging System: api/logging.md

@@ -6,7 +6,13 @@
 
 ## Welcome
 
-Welcome to the documentation for CausalIQ Workflow - a comprehensive solution for designing, executing, and reproducing causal discovery and inference experiments at scale. It is part of the [CausalIQ ecosystem](https://causaliq.org/) for intelligent causal discovery.
+Welcome to the documentation for CausalIQ Workflow - a comprehensive solution
+for designing, executing, and reproducing causal discovery and inference
+experiments at scale. It is part of the
+[CausalIQ ecosystem](https://causaliq.org/) for intelligent causal discovery.
+
+causaliq-workflow builds on causaliq-core for its action framework and caching
+infrastructure, ensuring consistency across the CausalIQ ecosystem.
 
 ---
 
