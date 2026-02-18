@@ -12,7 +12,7 @@
         <link rel="prev" href="../registry/">
       
       
-        <link rel="next" href="../schema/">
+        <link rel="next" href="../cache/">
       
       
         
@@ -753,14 +753,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -1301,6 +1301,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2026,6 +2054,8 @@ product. Each combination becomes a separate job configuration.</p>
     <div class="doc doc-contents ">
 
         <p>Execute complete workflow with matrix expansion.</p>
+<p>Caching is controlled at the step level via the 'output' parameter
+in each step's 'with' block. Each step can write to its own cache.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2296,7 +2326,7 @@ if &quot;matrix&quot; in workflow:
 <li><strong>Matrix errors</strong>: Invalid matrix definitions</li>
 </ul>
 <hr />
-<p><strong><a href="../registry/">← Previous: Registry</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../schema/">Next: Schema Validation →</a></strong></p>
+<p><strong><a href="../registry/">← Previous: Registry</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../cache/">Next: Cache →</a></strong></p>
 
 
 
@@ -2351,13 +2381,13 @@ if &quot;matrix&quot; in workflow:
         
         
           
-          <a href="../schema/" class="md-footer__link md-footer__link--next" aria-label="Next: Schema Validation">
+          <a href="../cache/" class="md-footer__link md-footer__link--next" aria-label="Next: Workflow Cache">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Schema Validation
+                Workflow Cache
               </div>
             </div>
             <div class="md-footer__button md-icon">

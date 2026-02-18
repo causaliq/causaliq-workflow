@@ -753,14 +753,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -969,6 +969,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#causaliq-core-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq-core Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-classes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1121,13 +1132,30 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_workflow.registry.ActionRegistry.list_actions_by_package" class="md-nav__link">
+  <a href="#causaliq_workflow.registry.ActionRegistry.validate_workflow_actions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        list_actions_by_package
+        validate_workflow_actions
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="validate_workflow_actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.registry.ActionRegistry.validate_workflow_actions(workflow)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1144,6 +1172,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="WorkflowContext">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.registry.WorkflowContext.matrix_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1204,10 +1249,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plugin-discovery" class="md-nav__link">
+  <a href="#entry-point-discovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Plugin Discovery
+        Entry Point Discovery
       
     </span>
   </a>
@@ -1265,6 +1310,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -1452,6 +1525,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#causaliq-core-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq-core Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-classes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1604,13 +1688,30 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#causaliq_workflow.registry.ActionRegistry.list_actions_by_package" class="md-nav__link">
+  <a href="#causaliq_workflow.registry.ActionRegistry.validate_workflow_actions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        list_actions_by_package
+        validate_workflow_actions
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="validate_workflow_actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.registry.ActionRegistry.validate_workflow_actions(workflow)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1627,6 +1728,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="WorkflowContext">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.registry.WorkflowContext.matrix_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1687,10 +1805,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plugin-discovery" class="md-nav__link">
+  <a href="#entry-point-discovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Plugin Discovery
+        Entry Point Discovery
       
     </span>
   </a>
@@ -1742,7 +1860,18 @@
 
 
 <h1 id="action-registry">Action Registry</h1>
-<p>The action registry provides centralized discovery, management, and execution of workflow actions with plugin architecture support.</p>
+<p>The action registry provides centralised discovery, management, and execution
+of workflow actions with plugin architecture support.</p>
+<p>The registry uses entry points to discover action providers from installed
+packages, enabling a clean plugin architecture where actions can be distributed
+as separate packages.</p>
+<h2 id="causaliq-core-integration">causaliq-core Integration</h2>
+<p>The registry imports the following from causaliq-core:</p>
+<ul>
+<li><strong>CausalIQActionProvider</strong> - Base class that all discovered actions must
+  implement</li>
+<li><strong>ActionExecutionError</strong> - Exception type for action execution failures</li>
+</ul>
 <h2 id="core-classes">Core Classes</h2>
 <h3 id="causaliq_workflowregistry">causaliq_workflow.registry</h3>
 
@@ -1766,8 +1895,9 @@
 <p>Uses import-time introspection to automatically discover actions when
 packages are imported. No configuration needed - just import the package
 and use 'uses: package-name' in workflows.</p>
-<p>Convention: Action packages should export a CausalIQAction subclass named
-'CausalIQAction' in their <strong>init</strong>.py file to avoid namespace collisions.</p>
+<p>Convention: Action packages should export a CausalIQActionProvider subclass
+named 'ActionProvider' in their <strong>init</strong>.py file to avoid namespace
+collisions.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -1782,10 +1912,19 @@ and use 'uses: package-name' in workflows.</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code><span title="causaliq_workflow.registry.ActionRegistry._actions">_actions</span></code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Type">Type</span>[<a class="autorefs autorefs-internal" title="            CausalIQAction (causaliq_workflow.action.CausalIQAction)" href="../actions/#causaliq_workflow.action.CausalIQAction">CausalIQAction</a>]]</code>)
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Type">Type</span>[<a class="autorefs autorefs-internal" title="            CausalIQActionProvider (causaliq_core.CausalIQActionProvider)" href="../actions/#causaliq_core.CausalIQActionProvider">CausalIQActionProvider</a>]]</code>)
           –
           <div class="doc-md-description">
-            <p>Dictionary mapping action names to CausalIQAction classes</p>
+            <p>Dictionary mapping action names to
+CausalIQActionProvider classes</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.registry.ActionRegistry._entry_points">_entry_points</span></code></b>
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary of lazy-loadable entry points</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -1800,9 +1939,10 @@ and use 'uses: package-name' in workflows.</p>
 
 
 
-<details class="initializes" open>
-  <summary>Initializes</summary>
-  <p>_actions: Dictionary mapping action names to CausalIQAction classes
+<details class="initialises" open>
+  <summary>Initialises</summary>
+  <p>_actions: Dictionary mapping action names to CausalIQActionProvider
+_entry_points: Dictionary of entry points for lazy loading
 _discovery_errors: List to collect any discovery errors</p>
 </details>
           
@@ -1830,7 +1970,7 @@ _discovery_errors: List to collect any discovery errors</p>
             <b><code><a class="autorefs autorefs-internal" title="            get_action_class (causaliq_workflow.registry.ActionRegistry.get_action_class)" href="#causaliq_workflow.registry.ActionRegistry.get_action_class">get_action_class</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Get action class by name.</p>
+              <p>Get action class by name, loading from entry point if needed.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -1848,10 +1988,10 @@ _discovery_errors: List to collect any discovery errors</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            list_actions_by_package (causaliq_workflow.registry.ActionRegistry.list_actions_by_package)" href="#causaliq_workflow.registry.ActionRegistry.list_actions_by_package">list_actions_by_package</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            validate_workflow_actions (causaliq_workflow.registry.ActionRegistry.validate_workflow_actions)" href="#causaliq_workflow.registry.ActionRegistry.validate_workflow_actions">validate_workflow_actions</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Group actions by source package for documentation.</p>
+              <p>Validate all actions in workflow exist and can run.</p>
             </div>
           </li>
     </ul>
@@ -1880,21 +2020,24 @@ _discovery_errors: List to collect any discovery errors</p>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_available_actions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Type">Type</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CausalIQAction (causaliq_workflow.action.CausalIQAction)" href="../actions/#causaliq_workflow.action.CausalIQAction">CausalIQAction</a></span><span class="p">]]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_available_actions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Type">Type</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CausalIQActionProvider (causaliq_core.CausalIQActionProvider)" href="../actions/#causaliq_core.CausalIQActionProvider">CausalIQActionProvider</a></span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Get dictionary of available action names to classes.</p>
+<p>Note: Entry points that haven't been loaded yet will not appear
+in the returned dictionary. Use get_available_action_names() to
+get all available action names including lazy-loadable ones.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Type">Type</span>[<a class="autorefs autorefs-internal" title="            CausalIQAction (causaliq_workflow.action.CausalIQAction)" href="../actions/#causaliq_workflow.action.CausalIQAction">CausalIQAction</a>]]</code>
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Type">Type</span>[<a class="autorefs autorefs-internal" title="            CausalIQActionProvider (causaliq_core.CausalIQActionProvider)" href="../actions/#causaliq_core.CausalIQActionProvider">CausalIQActionProvider</a>]]</code>
           –
           <div class="doc-md-description">
-            <p>Dictionary mapping action names to CausalIQAction classes</p>
+            <p>Dictionary mapping action names to CausalIQActionProvider classes</p>
           </div>
         </li>
     </ul>
@@ -1913,12 +2056,12 @@ _discovery_errors: List to collect any discovery errors</p>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_action_class</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="name (causaliq_workflow.registry.ActionRegistry.get_action_class(name))" href="#causaliq_workflow.registry.ActionRegistry.get_action_class(name)">name</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Type">Type</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CausalIQAction (causaliq_workflow.action.CausalIQAction)" href="../actions/#causaliq_workflow.action.CausalIQAction">CausalIQAction</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_action_class</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="name (causaliq_workflow.registry.ActionRegistry.get_action_class(name))" href="#causaliq_workflow.registry.ActionRegistry.get_action_class(name)">name</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Type">Type</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CausalIQActionProvider (causaliq_core.CausalIQActionProvider)" href="../actions/#causaliq_core.CausalIQActionProvider">CausalIQActionProvider</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Get action class by name.</p>
+        <p>Get action class by name, loading from entry point if needed.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1937,10 +2080,10 @@ _discovery_errors: List to collect any discovery errors</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="typing.Type">Type</span>[<a class="autorefs autorefs-internal" title="            CausalIQAction (causaliq_workflow.action.CausalIQAction)" href="../actions/#causaliq_workflow.action.CausalIQAction">CausalIQAction</a>]</code>
+              <code><span title="typing.Type">Type</span>[<a class="autorefs autorefs-internal" title="            CausalIQActionProvider (causaliq_core.CausalIQActionProvider)" href="../actions/#causaliq_core.CausalIQActionProvider">CausalIQActionProvider</a>]</code>
           –
           <div class="doc-md-description">
-            <p>CausalIQAction class</p>
+            <p>CausalIQActionProvider class</p>
           </div>
         </li>
     </ul>
@@ -1952,7 +2095,7 @@ _discovery_errors: List to collect any discovery errors</p>
               <code><a class="autorefs autorefs-internal" title="            ActionRegistryError (causaliq_workflow.registry.ActionRegistryError)" href="#causaliq_workflow.registry.ActionRegistryError">ActionRegistryError</a></code>
             –
           <div class="doc-md-description">
-            <p>If action not found</p>
+            <p>If action not found or fails to load</p>
           </div>
         </li>
     </ul>
@@ -1998,7 +2141,7 @@ _discovery_errors: List to collect any discovery errors</p>
               <code><span title="bool">bool</span></code>
           –
           <div class="doc-md-description">
-            <p>True if action is available</p>
+            <p>True if action is available (loaded or lazy-loadable)</p>
           </div>
         </li>
     </ul>
@@ -2030,6 +2173,8 @@ _discovery_errors: List to collect any discovery errors</p>
     <div class="doc doc-contents ">
 
         <p>Execute action with inputs and workflow context.</p>
+<p>Extracts the 'action' key from inputs and passes it separately
+to the provider's run() method along with the remaining parameters.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2039,7 +2184,7 @@ _discovery_errors: List to collect any discovery errors</p>
 </h5>              (<code><span title="str">str</span></code>)
           –
           <div class="doc-md-description">
-            <p>Action name</p>
+            <p>Provider name (e.g., 'causaliq/knowledge')</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2047,7 +2192,7 @@ _discovery_errors: List to collect any discovery errors</p>
 </h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
           –
           <div class="doc-md-description">
-            <p>Action input parameters</p>
+            <p>Action parameters including 'action' key</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2072,7 +2217,10 @@ _discovery_errors: List to collect any discovery errors</p>
               <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
           –
           <div class="doc-md-description">
-            <p>Action outputs dictionary</p>
+            <p>Action outputs dictionary with structure:
+- status: "success", "skipped", or "error"
+- **metadata: Execution metadata flattened into result
+- objects: List of object dicts</p>
           </div>
         </li>
     </ul>
@@ -2098,26 +2246,39 @@ _discovery_errors: List to collect any discovery errors</p>
 <div class="doc doc-object doc-function">
 
 
-<h4 id="causaliq_workflow.registry.ActionRegistry.list_actions_by_package" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">list_actions_by_package</span>
+<h4 id="causaliq_workflow.registry.ActionRegistry.validate_workflow_actions" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">validate_workflow_actions</span>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">list_actions_by_package</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_workflow_actions</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="workflow (causaliq_workflow.registry.ActionRegistry.validate_workflow_actions(workflow))" href="#causaliq_workflow.registry.ActionRegistry.validate_workflow_actions(workflow)">workflow</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Group actions by source package for documentation.</p>
+        <p>Validate all actions in workflow exist and can run.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.registry.ActionRegistry.validate_workflow_actions(workflow)" class="doc doc-heading doc-heading-parameter">              <b><code>workflow</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Parsed workflow dictionary</p>
+          </div>
+        </li>
+    </ul>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>]]</code>
+              <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
           –
           <div class="doc-md-description">
-            <p>Dictionary mapping package names to action lists</p>
+            <p>List of validation errors (empty if valid)</p>
           </div>
         </li>
     </ul>
@@ -2149,14 +2310,19 @@ _discovery_errors: List to collect any discovery errors</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowContext</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.registry.WorkflowContext(mode)">mode</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(matrix)">matrix</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]])</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowContext</span><span class="p">(</span>
+    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(mode)">mode</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(matrix)">matrix</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]],</span>
+    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(matrix_values)">matrix_values</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="dict">dict</span></span><span class="p">(),</span>
+    <span class="n"><span title="causaliq_workflow.registry.WorkflowContext(cache)">cache</span></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            WorkflowCache (causaliq_workflow.cache.WorkflowCache)" href="../cache/#causaliq_workflow.cache.WorkflowCache">WorkflowCache</a></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
 
 
-        <p>Workflow context for action execution optimization.</p>
-<p>Provides minimal context needed for actions to optimize across workflows.
+        <p>Workflow context for action execution optimisation.</p>
+<p>Provides minimal context needed for actions to optimise across workflows.
 Actions receive specific data through inputs; context provides
 meta-information.</p>
 
@@ -2176,7 +2342,23 @@ meta-information.</p>
               (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="typing.Any">Any</span>]]</code>)
           –
           <div class="doc-md-description">
-            <p>Complete matrix definition for cross-job optimization</p>
+            <p>Complete matrix definition for cross-job optimisation</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.registry.WorkflowContext.matrix_values">matrix_values</span></code></b>
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Current job's specific matrix variable values</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.registry.WorkflowContext.cache">cache</span></code></b>
+              (<code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            WorkflowCache (causaliq_workflow.cache.WorkflowCache)" href="../cache/#causaliq_workflow.cache.WorkflowCache">WorkflowCache</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Optional WorkflowCache for storing step results</p>
           </div>
         </li>
     </ul>
@@ -2204,6 +2386,71 @@ meta-information.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="causaliq_workflow.registry.WorkflowContext.matrix_key" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">matrix_key</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">matrix_key</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Compute cache key from matrix values.</p>
+<p>Returns a truncated SHA-256 hash (16 hex characters) of the
+matrix variable values, suitable for use as a cache key.</p>
+<p>The hash is computed from JSON-serialised matrix_values with
+sorted keys for deterministic ordering.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="str">str</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Truncated hex hash string (16 characters), or empty string</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><span title="str">str</span></code>
+          –
+          <div class="doc-md-description">
+            <p>if matrix_values is empty.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>context = WorkflowContext(
+...     mode="run",
+...     matrix={"algorithm": ["pc", "ges"]},
+...     matrix_values={"algorithm": "pc"}
+... )
+len(context.matrix_key)
+16</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+    </div>
+
+</div>
 
 
 
@@ -2268,31 +2515,35 @@ for action_name, action_class in actions.items():
     print(f&quot;Action: {action_name} (v{action_class.version})&quot;)
 
 # Check if specific action exists
-if registry.has_action(&quot;my-structure-learner&quot;):
-    action_class = registry.get_action_class(&quot;my-structure-learner&quot;)
+if registry.has_action(&quot;causaliq-workflow&quot;):
+    action_class = registry.get_action_class(&quot;causaliq-workflow&quot;)
     print(f&quot;Found action: {action_class.description}&quot;)
 
 # Execute action directly through registry
 try:
     result = registry.execute_action(
-        &quot;my-structure-learner&quot;,
-        {&quot;data_path&quot;: &quot;/data/asia.csv&quot;, &quot;alpha&quot;: 0.05}
+        &quot;causaliq-workflow&quot;,
+        action=&quot;echo&quot;,
+        parameters={&quot;message&quot;: &quot;Hello&quot;, &quot;nodes&quot;: 3},
+        mode=&quot;dry-run&quot;,
     )
     print(f&quot;Execution result: {result}&quot;)
 except ActionRegistryError as e:
     print(f&quot;Registry error: {e}&quot;)
 </code></pre>
-<h3 id="plugin-discovery">Plugin Discovery</h3>
-<pre><code class="language-python"># List actions by package (useful for plugin systems)
-actions_by_package = registry.list_actions_by_package()
-for package, actions in actions_by_package.items():
-    print(f&quot;Package: {package}&quot;)
-    for action in actions:
-        print(f&quot;  - {action}&quot;)
+<h3 id="entry-point-discovery">Entry Point Discovery</h3>
+<p>Actions are discovered via Python entry points. Packages register their
+actions in <code>pyproject.toml</code>:</p>
+<pre><code class="language-toml">[project.entry-points.&quot;causaliq.actions&quot;]
+my-package = &quot;my_package:ActionProvider&quot;
+</code></pre>
+<p>The registry discovers entry points at startup (metadata only) and loads them
+lazily on first use to avoid circular imports.</p>
+<pre><code class="language-python"># Entry points are loaded when first accessed
+registry = ActionRegistry()
 
-# Discover actions from specific packages
-registry = ActionRegistry(packages=[&quot;my_custom_actions&quot;])
-custom_actions = registry.get_available_actions()
+# Check discovered entry points
+print(f&quot;Available actions: {list(registry.get_available_actions().keys())}&quot;)
 </code></pre>
 <h3 id="workflow-context">Workflow Context</h3>
 <pre><code class="language-python">from causaliq_workflow.registry import WorkflowContext
@@ -2301,25 +2552,32 @@ custom_actions = registry.get_available_actions()
 context = WorkflowContext(
     mode=&quot;run&quot;,
     matrix={&quot;dataset&quot;: [&quot;asia&quot;, &quot;cancer&quot;], &quot;algorithm&quot;: [&quot;pc&quot;, &quot;ges&quot;]},
+    matrix_values={&quot;dataset&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;},
 )
 
-# Context provides execution metadata for action optimization
+# Context provides execution metadata for action optimisation
 print(f&quot;Execution mode: {context.mode}&quot;)
 print(f&quot;Matrix definition: {context.matrix}&quot;)
+print(f&quot;Current matrix values: {context.matrix_values}&quot;)
 
-# Actions can optimize across the full matrix space
-if len(context.matrix.get(&quot;dataset&quot;, [])) &gt; 1:
-    print(&quot;Multi-dataset experiment - can pre-load data&quot;)
+# Get cache key for current matrix combination
+print(f&quot;Matrix key: {context.matrix_key}&quot;)  # SHA-256 hash, 16 chars
 </code></pre>
 <h2 id="architecture-notes">Architecture Notes</h2>
-<p>The ActionRegistry uses Python's module discovery system to automatically find and register actions. Actions are discovered by:</p>
+<p>The ActionRegistry uses Python's entry point system to automatically find and
+register actions. Actions are discovered by:</p>
 <ol>
-<li><strong>Package scanning</strong> - Searches specified packages for Action subclasses</li>
-<li><strong>Automatic registration</strong> - Actions register themselves via class definition</li>
-<li><strong>Name-based lookup</strong> - Actions identified by their <code>name</code> class attribute</li>
-<li><strong>Version tracking</strong> - Support for action versioning and compatibility</li>
+<li><strong>Entry point scanning</strong> - Discovers <code>causaliq.actions</code> entry points from
+   installed packages</li>
+<li><strong>Lazy loading</strong> - Entry points recorded at startup but loaded on first use</li>
+<li><strong>Module fallback</strong> - Also scans imported modules for CausalIQActionProvider
+   subclasses</li>
+<li><strong>Name-based lookup</strong> - Actions identified by their entry point name or
+   <code>name</code> class attribute</li>
 </ol>
-<p>This design enables a flexible plugin architecture where actions can be distributed as separate packages and automatically discovered at runtime.</p>
+<p>This design enables a flexible plugin architecture where actions can be
+distributed as separate packages and automatically discovered at runtime,
+while avoiding circular import issues.</p>
 <hr />
 <p><strong><a href="../actions/">← Previous: Actions</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../workflow/">Next: Workflow Engine →</a></strong></p>
 

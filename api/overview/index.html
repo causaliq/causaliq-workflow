@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../../architecture/results_cache_design/">
+        <link rel="prev" href="../../architecture/workflow_cache_design/">
       
       
         <link rel="next" href="../actions/">
@@ -753,14 +753,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -913,6 +913,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#causaliq-core-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq-core Foundation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-components" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -951,6 +962,17 @@
     <span class="md-ellipsis">
       
         Workflow Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Cache
       
     </span>
   </a>
@@ -1011,6 +1033,17 @@
     <span class="md-ellipsis">
       
         Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Cache
       
     </span>
   </a>
@@ -1108,6 +1141,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -1295,6 +1356,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#causaliq-core-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq-core Foundation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-components" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1333,6 +1405,17 @@
     <span class="md-ellipsis">
       
         Workflow Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Cache
       
     </span>
   </a>
@@ -1400,6 +1483,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#using-the-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Cache
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1428,29 +1522,58 @@
 
 
 <h1 id="api-reference">API Reference</h1>
-<p>The CausalIQ Workflow framework provides a comprehensive API for building, validating, and executing data processing workflows. It is part of the <a href="https://causaliq.org/">CausalIQ ecosystem</a> for intelligent causal discovery.</p>
-<p>The API is organized into several key modules:</p>
+<p>The CausalIQ Workflow framework provides a comprehensive API for building,
+validating, and executing data processing workflows. It is part of the
+<a href="https://causaliq.org/">CausalIQ ecosystem</a> for intelligent causal discovery.</p>
+<h2 id="causaliq-core-foundation">causaliq-core Foundation</h2>
+<p>causaliq-workflow builds on causaliq-core for its action framework. The
+following components are imported from causaliq-core:</p>
+<ul>
+<li><strong>CausalIQActionProvider</strong> - Abstract base class for all action providers</li>
+<li><strong>ActionInput</strong> - Type-safe input specification for action parameters</li>
+<li><strong>ActionResult</strong> - Tuple type for action return values</li>
+<li><strong>ActionValidationError</strong> - Exception for parameter validation failures</li>
+<li><strong>ActionExecutionError</strong> - Exception for runtime execution failures</li>
+<li><strong>TokenCache</strong> - SQLite-based caching infrastructure for workflow results</li>
+<li><strong>JsonCompressor</strong> - JSON tokenisation for compact cache storage</li>
+</ul>
+<p>The API is organised into several key modules:</p>
 <h2 id="core-components">Core Components</h2>
 <h3 id="action-framework"><a href="../actions/">Action Framework</a></h3>
-<p>Base classes and interfaces for creating reusable workflow actions that follow GitHub Actions patterns.</p>
+<p>Base classes and interfaces for creating reusable workflow actions that follow
+GitHub Actions patterns.</p>
 <ul>
-<li><strong>CausalIQAction</strong> - Abstract base class for all workflow actions</li>
-<li><strong>ActionInput/ActionOutput</strong> - Type-safe input/output specifications  </li>
-<li><strong>ActionExecutionError/ActionValidationError</strong> - Exception handling</li>
+<li><strong>CausalIQActionProvider</strong> - Abstract base class for all workflow actions
+  (from causaliq-core)</li>
+<li><strong>ActionInput</strong> - Type-safe input specifications (from causaliq-core)</li>
+<li><strong>ActionResult</strong> - Standardised return type (from causaliq-core)</li>
+<li><strong>ActionExecutionError/ActionValidationError</strong> - Exception handling (from
+  causaliq-core)</li>
 </ul>
 <h3 id="action-registry"><a href="../registry/">Action Registry</a></h3>
-<p>Centralized discovery and execution system for workflow actions with plugin architecture support.</p>
+<p>Centralised discovery and execution system for workflow actions with plugin
+architecture support.</p>
 <ul>
-<li><strong>ActionRegistry</strong> - Dynamic action discovery and management</li>
-<li><strong>WorkflowContext</strong> - Complete workflow context for actions</li>
+<li><strong>ActionRegistry</strong> - Dynamic action discovery via entry points</li>
+<li><strong>WorkflowContext</strong> - Complete workflow context for actions including cache</li>
 <li><strong>ActionRegistryError</strong> - Registry-specific exceptions</li>
 </ul>
 <h3 id="workflow-engine"><a href="../workflow/">Workflow Engine</a></h3>
-<p>Powerful workflow parsing, validation, and execution engine with matrix expansion and templating.</p>
+<p>Powerful workflow parsing, validation, and execution engine with matrix
+expansion and templating.</p>
 <ul>
 <li><strong>WorkflowExecutor</strong> - Main workflow processing engine</li>
 <li><strong>WorkflowExecutionError</strong> - Workflow execution exceptions</li>
 <li><strong>Template system</strong> - Variable substitution and validation</li>
+</ul>
+<h3 id="workflow-cache"><a href="../cache/">Workflow Cache</a></h3>
+<p>SQLite-based caching for workflow step results, built on causaliq-core's
+TokenCache.</p>
+<ul>
+<li><strong>WorkflowCache</strong> - High-level cache for workflow results</li>
+<li><strong>CacheEntry</strong> - Entry model with metadata and named objects</li>
+<li><strong>MatrixSchemaError</strong> - Cache consistency exceptions</li>
+<li><strong>Export/Import</strong> - Convert cache entries to/from open formats</li>
 </ul>
 <h3 id="schema-validation"><a href="../schema/">Schema Validation</a></h3>
 <p>Robust workflow validation against JSON schemas with detailed error reporting.</p>
@@ -1460,24 +1583,31 @@
 <li><strong>WorkflowValidationError</strong> - Validation-specific exceptions</li>
 </ul>
 <h3 id="status-system"><a href="../status/">Status System</a></h3>
-<p>Comprehensive task execution status enumeration for workflow logging and monitoring.</p>
+<p>Comprehensive task execution status enumeration for workflow logging and
+monitoring.</p>
 <ul>
-<li><strong>TaskStatus</strong> - Standardized status reporting for all task execution outcomes</li>
-<li><strong>Status properties</strong> - Categorization helpers (success, error, execution, dry-run)</li>
-<li><strong>Status definitions</strong> - Complete coverage of execution, comparison, and error statuses</li>
+<li><strong>TaskStatus</strong> - Standardised status reporting for all task execution
+  outcomes</li>
+<li><strong>Status properties</strong> - Categorisation helpers (success, error, execution,
+  dry-run)</li>
+<li><strong>Status definitions</strong> - Complete coverage of execution, comparison, and
+  error statuses</li>
 </ul>
 <h3 id="logging-system"><a href="../logging/">Logging System</a></h3>
-<p>Centralized logging infrastructure with multiple output destinations for workflow execution monitoring.</p>
+<p>Centralised logging infrastructure with multiple output destinations for
+workflow execution monitoring.</p>
 <ul>
-<li><strong>WorkflowLogger</strong> - Multi-destination logging with file/terminal output support</li>
+<li><strong>WorkflowLogger</strong> - Multi-destination logging with file/terminal output
+  support</li>
 <li><strong>LogLevel</strong> - Verbosity control (NONE, SUMMARY, ALL)</li>
 <li><strong>Output configuration</strong> - Flexible logging destination management</li>
 </ul>
 <h3 id="cli-interface"><a href="../cli/">CLI Interface</a></h3>
 <p>Command-line interface for workflow execution and management.</p>
 <ul>
-<li><strong>Command-line tools</strong> - Direct workflow execution</li>
-<li><strong>Integration support</strong> - CI/CD pipeline integration</li>
+<li><strong>cqflow run</strong> - Execute workflow files</li>
+<li><strong>cqflow export_cache</strong> - Export cache entries to directory or zip</li>
+<li><strong>cqflow import_cache</strong> - Import cache entries from directory or zip</li>
 </ul>
 <hr />
 <h2 id="quick-start">Quick Start</h2>
@@ -1487,6 +1617,21 @@
 executor = WorkflowExecutor()
 workflow = executor.parse_workflow(&quot;my_workflow.yml&quot;)
 results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
+</code></pre>
+<h2 id="using-the-cache">Using the Cache</h2>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry
+
+# Store workflow results
+with WorkflowCache(&quot;results.db&quot;) as cache:
+    entry = CacheEntry()
+    entry.metadata[&quot;algorithm&quot;] = &quot;pc&quot;
+    entry.add_object(&quot;graph&quot;, &quot;graphml&quot;, &quot;&lt;graphml&gt;...&lt;/graphml&gt;&quot;)
+
+    key = {&quot;network&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;}
+    cache.put(key, entry)
+
+    # Retrieve later
+    result = cache.get(key)
 </code></pre>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
@@ -1532,7 +1677,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../architecture/results_cache_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Results Cache Design">
+          <a href="../../architecture/workflow_cache_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Cache Design">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1542,7 +1687,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
                 Previous
               </span>
               <div class="md-ellipsis">
-                Results Cache Design
+                Workflow Cache Design
               </div>
             </div>
           </a>

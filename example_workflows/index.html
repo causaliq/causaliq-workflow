@@ -1420,14 +1420,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -1609,6 +1609,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -2505,7 +2533,7 @@ single step:</p>
 <li><strong>uses</strong> - the step must define which CausalIQ package it uses</li>
 </ul>
 <p>and then has a variable number of parameters following the <strong>with:</strong> statment that
-defines the processing to be undertaken by the package through its <em>CausalIQAction</em> interface. In this example, these are:</p>
+defines the processing to be undertaken by the package through its <em>ActionProvider</em> interface. In this example, these are:</p>
 <ul>
 <li><strong>action</strong> - this parameter is always present and defines what particular action
 the package is required to do</li>
@@ -2780,7 +2808,7 @@ Available context: id, description, dataset
 <li><strong>100% Coverage</strong>: Complete test coverage including edge cases</li>
 </ul>
 <h2 id="example-action-implementation">Example Action Implementation</h2>
-<pre><code class="language-python">class DummyStructureLearnerAction(CausalIQAction):
+<pre><code class="language-python">class DummyStructureLearnerAction(BaseActionProvider):
     &quot;&quot;&quot;Reference action implementation.&quot;&quot;&quot;
 
     name = &quot;dummy-structure-learner&quot;
@@ -2813,7 +2841,14 @@ Available context: id, description, dataset
         ),
     }
 
-    def run(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
+    def run(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str = &quot;dry-run&quot;,
+        context: Optional[&quot;WorkflowContext&quot;] = None,
+        logger: Optional[&quot;WorkflowLogger&quot;] = None,
+    ) -&gt; Dict[str, Any]:
         &quot;&quot;&quot;Create GraphML output file.&quot;&quot;&quot;
         # Implementation creates valid GraphML file
         # Returns graph_path, node_count, edge_count

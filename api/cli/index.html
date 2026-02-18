@@ -753,14 +753,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -965,6 +965,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../schema/" class="md-nav__link">
         
   
@@ -1109,6 +1137,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#command-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1155,10 +1194,43 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#causaliq_workflow.cli.export_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cli.import_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        import_cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#causaliq_workflow.cli.main" class="md-nav__link">
     <span class="md-ellipsis">
       
         main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cli.run_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_workflow
       
     </span>
   </a>
@@ -1188,10 +1260,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-workflow-execution" class="md-nav__link">
+  <a href="#run-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic Workflow Execution
+        Run Command
       
     </span>
   </a>
@@ -1199,10 +1271,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#matrix-expansion" class="md-nav__link">
+  <a href="#export-cache-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Matrix Expansion
+        Export Cache Command
       
     </span>
   </a>
@@ -1210,10 +1282,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#workflow-validation" class="md-nav__link">
+  <a href="#import-cache-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow Validation
+        Import Cache Command
       
     </span>
   </a>
@@ -1248,44 +1320,22 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#jenkins-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Jenkins Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced-usage-patterns" class="md-nav__link">
+  <a href="#usage-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Advanced Usage Patterns
+        Usage Patterns
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Advanced Usage Patterns">
+    <nav class="md-nav" aria-label="Usage Patterns">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameterized-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameterized Execution
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#batch-processing" class="md-nav__link">
@@ -1299,10 +1349,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#matrix-job-distribution" class="md-nav__link">
+  <a href="#export-and-share-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Matrix Job Distribution
+        Export and Share Results
       
     </span>
   </a>
@@ -1315,80 +1365,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling-and-debugging" class="md-nav__link">
+  <a href="#exit-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error Handling and Debugging
+        Exit Codes
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Error Handling and Debugging">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#verbose-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verbose Output
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-recovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Recovery
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#configuration-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration File
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment Variables
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1463,6 +1446,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#command-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1509,10 +1503,43 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#causaliq_workflow.cli.export_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cli.import_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        import_cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#causaliq_workflow.cli.main" class="md-nav__link">
     <span class="md-ellipsis">
       
         main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cli.run_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_workflow
       
     </span>
   </a>
@@ -1542,10 +1569,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-workflow-execution" class="md-nav__link">
+  <a href="#run-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic Workflow Execution
+        Run Command
       
     </span>
   </a>
@@ -1553,10 +1580,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#matrix-expansion" class="md-nav__link">
+  <a href="#export-cache-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Matrix Expansion
+        Export Cache Command
       
     </span>
   </a>
@@ -1564,10 +1591,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#workflow-validation" class="md-nav__link">
+  <a href="#import-cache-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow Validation
+        Import Cache Command
       
     </span>
   </a>
@@ -1602,44 +1629,22 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#jenkins-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Jenkins Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced-usage-patterns" class="md-nav__link">
+  <a href="#usage-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Advanced Usage Patterns
+        Usage Patterns
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Advanced Usage Patterns">
+    <nav class="md-nav" aria-label="Usage Patterns">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameterized-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameterized Execution
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#batch-processing" class="md-nav__link">
@@ -1653,10 +1658,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#matrix-job-distribution" class="md-nav__link">
+  <a href="#export-and-share-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Matrix Job Distribution
+        Export and Share Results
       
     </span>
   </a>
@@ -1669,80 +1674,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling-and-debugging" class="md-nav__link">
+  <a href="#exit-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error Handling and Debugging
+        Exit Codes
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Error Handling and Debugging">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#verbose-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verbose Output
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-recovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Recovery
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#configuration-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration File
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment Variables
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1764,7 +1702,16 @@
 
 
 <h1 id="cli-interface">CLI Interface</h1>
-<p>The command-line interface provides direct workflow execution and management capabilities, with support for CI/CD pipeline integration.</p>
+<p>The command-line interface provides direct workflow execution and cache
+management capabilities.</p>
+<h2 id="command-overview">Command Overview</h2>
+<p>causaliq-workflow provides three main commands:</p>
+<ul>
+<li><strong>cqflow run</strong> - Execute workflow files</li>
+<li><strong>cqflow export_cache</strong> - Export cache entries to directory or zip file</li>
+<li><strong>cqflow import_cache</strong> - Import cache entries from directory or zip file</li>
+</ul>
+<p><code>cqflow</code> is an alias for <code>causaliq-workflow</code>.</p>
 <h2 id="core-interface">Core Interface</h2>
 <h3 id="causaliq_workflowcli">causaliq_workflow.cli</h3>
 
@@ -1801,7 +1748,21 @@
             <b><code><a class="autorefs autorefs-internal" title="            cli (causaliq_workflow.cli.cli)" href="#causaliq_workflow.cli.cli">cli</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Execute CausalIQ workflow files.</p>
+              <p>CausalIQ Workflow - Execute and manage causal discovery workflows.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            export_cache (causaliq_workflow.cli.export_cache)" href="#causaliq_workflow.cli.export_cache">export_cache</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Export cache entries to directory or zip file.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            import_cache (causaliq_workflow.cli.import_cache)" href="#causaliq_workflow.cli.import_cache">import_cache</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Import cache entries from directory or zip file.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -1809,6 +1770,13 @@
             –
             <div class="doc-md-description">
               <p>Entry point for the CLI.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            run_workflow (causaliq_workflow.cli.run_workflow)" href="#causaliq_workflow.cli.run_workflow">run_workflow</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Execute a CausalIQ workflow file.</p>
             </div>
           </li>
     </ul>
@@ -1836,19 +1804,73 @@
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cli</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cli.cli(workflow_file)">workflow_file</span></span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.cli(mode)">mode</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.cli(log_level)">log_level</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cli</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cli.cli(ctx)">ctx</span></span><span class="p">:</span> <span class="n"><span title="click.Context">Context</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Execute CausalIQ workflow files.</p>
-<p>WORKFLOW_FILE is the path to a YAML workflow file to execute.</p>
+        <p>CausalIQ Workflow - Execute and manage causal discovery workflows.</p>
+<p>Use 'cqwork run' to execute workflows.
+Use 'cqwork export_cache' to export cache entries.
+Use 'cqwork import_cache' to import cache entries.</p>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
 
 
-<p><span class="doc-section-title">Examples:</span></p>
-    <p>causaliq-workflow experiment.yml              # Validate and preview
-causaliq-workflow experiment.yml --mode=run  # Execute workflow
-causaliq-workflow experiment.yml --mode=dry-run --log-level=all              # Detailed preview</p>
+<h4 id="causaliq_workflow.cli.export_cache" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">export_cache</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">export_cache</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cli.export_cache(cache_file)">cache_file</span></span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.export_cache(output)">output</span></span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Export cache entries to directory or zip file.</p>
+<p>Reads all entries from a WorkflowCache database and exports them
+to a hierarchical directory structure based on matrix variable
+values. Each entry's objects are exported to separate files.</p>
+<p>Examples:</p>
+<pre><code>cqflow export_cache -c cache.db -o ./results
+
+cqflow export_cache -c cache.db -o results.zip
+</code></pre>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cli.import_cache" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">import_cache</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">import_cache</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cli.import_cache(input_path)">input_path</span></span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.import_cache(cache_file)">cache_file</span></span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Import cache entries from directory or zip file.</p>
+<p>Reads entries previously exported by 'export_cache' and stores them
+into the specified cache database. Creates the cache file if it
+does not exist.</p>
+<p>Examples:</p>
+<pre><code>cqwork import_cache -i ./results -c cache.db
+
+cqwork import_cache -i results.zip -c cache.db
+</code></pre>
 
           
 
@@ -1877,6 +1899,35 @@ causaliq-workflow experiment.yml --mode=dry-run --log-level=all              # D
 
 </div>
 
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cli.run_workflow" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">run_workflow</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_workflow</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cli.run_workflow(workflow_file)">workflow_file</span></span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.run_workflow(mode)">mode</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cli.run_workflow(log_level)">log_level</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Execute a CausalIQ workflow file.</p>
+<p>WORKFLOW_FILE is the path to a YAML workflow file to execute.</p>
+<p>Examples:</p>
+<pre><code>causaliq-workflow run experiment.yml
+
+causaliq-workflow run experiment.yml --mode=run
+
+causaliq-workflow run experiment.yml --mode=dry-run --log-level=all
+</code></pre>
+
+          
+
+    </div>
+
+</div>
+
 
 
   </div>
@@ -1885,39 +1936,48 @@ causaliq-workflow experiment.yml --mode=dry-run --log-level=all              # D
 
 </div><hr />
 <h2 id="command-line-usage">Command Line Usage</h2>
-<h3 id="basic-workflow-execution">Basic Workflow Execution</h3>
-<pre><code class="language-bash"># Execute a workflow file
-python -m causaliq_workflow experiments/my-workflow.yml
+<h3 id="run-command">Run Command</h3>
+<p>Execute a CausalIQ workflow file:</p>
+<pre><code class="language-bash"># Execute a workflow in dry-run mode (validate and preview - default)
+cqflow run experiment.yml
 
-# Execute with specific output directory
-python -m causaliq_workflow experiments/my-workflow.yml --output-dir /results
+# Execute a workflow in run mode (actually execute actions)
+cqflow run experiment.yml --mode=run
 
-# Dry-run mode (parse and validate without execution)
-python -m causaliq_workflow experiments/my-workflow.yml --dry-run
-
-# Verbose output for debugging
-python -m causaliq_workflow experiments/my-workflow.yml --verbose
+# Set logging level
+cqflow run experiment.yml --mode=run --log-level=all
 </code></pre>
-<h3 id="matrix-expansion">Matrix Expansion</h3>
-<pre><code class="language-bash"># Show matrix expansion without execution
-python -m causaliq_workflow experiments/matrix-workflow.yml --expand-matrix
+<p>Options:</p>
+<ul>
+<li><code>--mode</code> - Execution mode: <code>dry-run</code> (default) or <code>run</code></li>
+<li><code>--log-level</code> - Logging level: <code>none</code>, <code>summary</code> (default), or <code>all</code></li>
+</ul>
+<h3 id="export-cache-command">Export Cache Command</h3>
+<p>Export cache entries to a directory or zip file:</p>
+<pre><code class="language-bash"># Export to directory
+cqflow export_cache -c results.db -o ./exported
 
-# Execute specific matrix job
-python -m causaliq_workflow experiments/matrix-workflow.yml --matrix-job 0
-
-# Execute range of matrix jobs (useful for parallel execution)
-python -m causaliq_workflow experiments/matrix-workflow.yml --matrix-range 0-5
+# Export to zip file
+cqflow export_cache -c results.db -o results.zip
 </code></pre>
-<h3 id="workflow-validation">Workflow Validation</h3>
-<pre><code class="language-bash"># Validate workflow syntax and schema
-python -m causaliq_workflow validate experiments/my-workflow.yml
+<p>Options:</p>
+<ul>
+<li><code>-c, --cache</code> - Path to WorkflowCache database file (.db)</li>
+<li><code>-o, --output</code> - Output directory or .zip file path</li>
+</ul>
+<h3 id="import-cache-command">Import Cache Command</h3>
+<p>Import cache entries from a previously exported directory or zip:</p>
+<pre><code class="language-bash"># Import from directory
+cqflow import_cache -i ./exported -c new_cache.db
 
-# Validate all workflows in directory
-python -m causaliq_workflow validate experiments/
-
-# Validate with custom schema
-python -m causaliq_workflow validate experiments/my-workflow.yml --schema custom-schema.json
+# Import from zip file
+cqflow import_cache -i results.zip -c new_cache.db
 </code></pre>
+<p>Options:</p>
+<ul>
+<li><code>-i, --input</code> - Path to exported directory or .zip file</li>
+<li><code>-c, --cache</code> - Destination WorkflowCache database file (.db)</li>
+</ul>
 <h2 id="cicd-integration">CI/CD Integration</h2>
 <h3 id="github-actions-integration">GitHub Actions Integration</h3>
 <pre><code class="language-yaml">name: Execute Causal Discovery Workflow
@@ -1935,30 +1995,24 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
         pip install causaliq-workflow
 
-    - name: Validate workflows
+    - name: Validate workflows (dry-run)
       run: |
-        python -m causaliq_workflow validate workflows/
+        cqflow run workflows/experiment.yml --mode=dry-run
 
   execute:
     needs: validate
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        workflow: [
-          &quot;workflows/causal-discovery.yml&quot;,
-          &quot;workflows/model-validation.yml&quot;
-        ]
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
@@ -1966,163 +2020,42 @@ jobs:
 
     - name: Execute workflow
       run: |
-        python -m causaliq_workflow ${{ matrix.workflow }} --output-dir results/
+        cqflow run workflows/experiment.yml --mode=run --log-level=all
+
+    - name: Export results
+      run: |
+        cqflow export_cache -c results.db -o results.zip
 
     - name: Upload results
       uses: actions/upload-artifact@v3
       with:
         name: workflow-results
-        path: results/
+        path: results.zip
 </code></pre>
-<h3 id="jenkins-pipeline">Jenkins Pipeline</h3>
-<pre><code class="language-groovy">pipeline {
-    agent any
-
-    environment {
-        PYTHONPATH = &quot;${WORKSPACE}&quot;
-    }
-
-    stages {
-        stage('Setup') {
-            steps {
-                sh 'pip install causaliq-workflow'
-            }
-        }
-
-        stage('Validate') {
-            steps {
-                sh 'python -m causaliq_workflow validate workflows/'
-            }
-        }
-
-        stage('Execute Workflows') {
-            parallel {
-                stage('Causal Discovery') {
-                    steps {
-                        sh '''
-                            python -m causaliq_workflow workflows/causal-discovery.yml \\
-                                --output-dir results/causal-discovery/
-                        '''
-                    }
-                }
-                stage('Model Validation') {
-                    steps {
-                        sh '''
-                            python -m causaliq_workflow workflows/model-validation.yml \\
-                                --output-dir results/model-validation/
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Archive Results') {
-            steps {
-                archiveArtifacts artifacts: 'results/**/*', fingerprint: true
-            }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
-        }
-    }
-}
-</code></pre>
-<h2 id="advanced-usage-patterns">Advanced Usage Patterns</h2>
-<h3 id="parameterized-execution">Parameterized Execution</h3>
-<pre><code class="language-bash"># Execute workflow with environment variable substitution
-export DATASET_PATH=&quot;/data/experiments/asia.csv&quot;
-export ALPHA_VALUE=&quot;0.05&quot;
-python -m causaliq_workflow experiments/parameterized-workflow.yml
-
-# Execute with explicit parameter overrides
-python -m causaliq_workflow experiments/workflow.yml \\
-    --set dataset_path=/data/custom.csv \\
-    --set alpha=0.01 \\
-    --set output_format=graphml
-</code></pre>
+<h2 id="usage-patterns">Usage Patterns</h2>
 <h3 id="batch-processing">Batch Processing</h3>
 <pre><code class="language-bash"># Execute multiple workflows sequentially
 for workflow in workflows/*.yml; do
     echo &quot;Executing $workflow...&quot;
-    python -m causaliq_workflow &quot;$workflow&quot; --output-dir &quot;results/$(basename $workflow .yml)/&quot;
+    cqflow run &quot;$workflow&quot; --mode=run
 done
-
-# Parallel execution using GNU parallel
-find workflows/ -name &quot;*.yml&quot; | parallel python -m causaliq_workflow {} --output-dir &quot;results/{/.}/&quot;
 </code></pre>
-<h3 id="matrix-job-distribution">Matrix Job Distribution</h3>
-<pre><code class="language-bash"># Show total number of matrix jobs
-python -m causaliq_workflow experiments/large-matrix.yml --count-jobs
+<h3 id="export-and-share-results">Export and Share Results</h3>
+<pre><code class="language-bash"># Export cache to share with collaborators
+cqflow export_cache -c experiment.db -o results.zip
 
-# Execute jobs in parallel across multiple machines
-# Machine 1: jobs 0-9
-python -m causaliq_workflow experiments/large-matrix.yml --matrix-range 0-9
-
-# Machine 2: jobs 10-19  
-python -m causaliq_workflow experiments/large-matrix.yml --matrix-range 10-19
-
-# Machine 3: jobs 20-29
-python -m causaliq_workflow experiments/large-matrix.yml --matrix-range 20-29
+# Import shared results into local cache
+cqflow import_cache -i results.zip -c local_cache.db
 </code></pre>
-<h2 id="error-handling-and-debugging">Error Handling and Debugging</h2>
-<h3 id="verbose-output">Verbose Output</h3>
-<pre><code class="language-bash"># Enable debug logging
-python -m causaliq_workflow experiments/workflow.yml --verbose --log-level DEBUG
-
-# Output structured logs in JSON format
-python -m causaliq_workflow experiments/workflow.yml --log-format json
-
-# Save logs to file
-python -m causaliq_workflow experiments/workflow.yml --log-file execution.log
-</code></pre>
-<h3 id="error-recovery">Error Recovery</h3>
-<pre><code class="language-bash"># Continue execution on action failures
-python -m causaliq_workflow experiments/workflow.yml --continue-on-error
-
-# Retry failed actions
-python -m causaliq_workflow experiments/workflow.yml --retry-count 3 --retry-delay 5
-
-# Skip specific steps
-python -m causaliq_workflow experiments/workflow.yml --skip-steps &quot;step1,step3&quot;
-</code></pre>
-<h2 id="configuration">Configuration</h2>
-<h3 id="configuration-file">Configuration File</h3>
-<p>Create <code>~/.causaliq-workflow.toml</code>:</p>
-<pre><code class="language-toml">[execution]
-default_output_dir = &quot;/experiments/results&quot;
-continue_on_error = false
-retry_count = 1
-retry_delay = 2
-
-[logging]
-level = &quot;INFO&quot;
-format = &quot;structured&quot;
-file = &quot;~/.causaliq-workflow.log&quot;
-
-[registry]
-packages = [
-    &quot;causaliq_workflow.actions&quot;,
-    &quot;my_custom_actions&quot;
-]
-
-[validation]
-strict_mode = true
-schema_path = &quot;~/.causaliq-workflow-schema.json&quot;
-</code></pre>
-<h3 id="environment-variables">Environment Variables</h3>
-<pre><code class="language-bash"># Configure via environment
-export CAUSALIQ_OUTPUT_DIR=&quot;/experiments/results&quot;
-export CAUSALIQ_LOG_LEVEL=&quot;DEBUG&quot;
-export CAUSALIQ_RETRY_COUNT=&quot;3&quot;
-export CAUSALIQ_CONTINUE_ON_ERROR=&quot;true&quot;
-
-python -m causaliq_workflow experiments/workflow.yml
-</code></pre>
+<h2 id="exit-codes">Exit Codes</h2>
+<p>The CLI uses standard exit codes:</p>
+<ul>
+<li><strong>0</strong> - Success</li>
+<li><strong>1</strong> - General error (validation, execution failure)</li>
+<li><strong>130</strong> - Interrupted by user (Ctrl+C)</li>
+</ul>
 <hr />
-<p><strong><a href="../schema/">← Previous: Schema Validation</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../examples/">Next: Examples →</a></strong></p>
+<p><strong><a href="../logging/">← Previous: Logging System</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../examples/">Next: Examples →</a></strong></p>
 
 
 

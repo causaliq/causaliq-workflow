@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#action-auto-discovery-architecture" class="md-skip">
+        <a href="#action-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -753,10 +753,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#convention-based-action-definition" class="md-nav__link">
+  <a href="#entry-point-based-action-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Convention-Based Action Definition
+        Entry Point-Based Action Registration
       
     </span>
   </a>
@@ -1129,14 +1129,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../results_cache_design/" class="md-nav__link">
+      <a href="../workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -1318,6 +1318,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -1551,10 +1579,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#convention-based-action-definition" class="md-nav__link">
+  <a href="#entry-point-based-action-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Convention-Based Action Definition
+        Entry Point-Based Action Registration
       
     </span>
   </a>
@@ -1844,29 +1872,41 @@
 
 
 
-<h1 id="action-auto-discovery-architecture">Action Auto-Discovery Architecture</h1>
+<h1 id="action-architecture">Action Architecture</h1>
 <h2 id="overview">Overview</h2>
-<p>The action architecture provides reusable, automatically-discoverable workflow components following GitHub Actions patterns. Actions are <strong>zero-configuration plugins</strong> that become available immediately upon installation, with no registry files or manual setup required.</p>
+<p>The action architecture provides reusable, automatically-discoverable workflow
+components following GitHub Actions patterns. Actions are <strong>zero-configuration
+plugins</strong> that become available immediately upon installation, with no registry
+files or manual setup required.</p>
 <h2 id="auto-discovery-action-framework">Auto-Discovery Action Framework</h2>
 <h3 id="how-actions-are-found-and-used">How Actions Are Found and Used</h3>
 <h4 id="the-discovery-lifecycle">The Discovery Lifecycle</h4>
 <ol>
-<li><strong>Installation Phase</strong>: Developer installs action package (<code>pip install my-action</code>)</li>
-<li><strong>Discovery Phase</strong>: Framework scans Python environment for action packages  </li>
-<li><strong>Registration Phase</strong>: Actions are automatically registered by module name</li>
-<li><strong>Execution Phase</strong>: Workflows reference actions by name (<code>uses: "my-action"</code>)</li>
+<li><strong>Installation Phase</strong>: Developer installs action package
+   (<code>pip install my-action</code>)</li>
+<li><strong>Discovery Phase</strong>: Framework discovers entry points at startup (metadata
+   only)</li>
+<li><strong>Lazy Loading Phase</strong>: Action classes are loaded on first use</li>
+<li><strong>Execution Phase</strong>: Workflows reference actions by name
+   (<code>uses: "my-action"</code>)</li>
 </ol>
-<h4 id="convention-based-action-definition">Convention-Based Action Definition</h4>
-<p>Actions follow a simple naming convention for automatic discovery:</p>
-<pre><code class="language-python"># my_action/__init__.py - Must export class named 'CausalIQAction'
-from causaliq_workflow.action import CausalIQAction
+<h4 id="entry-point-based-action-registration">Entry Point-Based Action Registration</h4>
+<p>Actions register themselves using Python entry points in <code>pyproject.toml</code>:</p>
+<pre><code class="language-toml"># pyproject.toml
+[project.entry-points.&quot;causaliq.actions&quot;]
+my-action = &quot;my_action:ActionProvider&quot;
+</code></pre>
+<p>The action class implementation:</p>
+<pre><code class="language-python"># my_action/__init__.py
+from causaliq_workflow.action import BaseActionProvider
 
-class CausalIQAction(CausalIQAction):  # Must be named 'CausalIQAction'
+
+class ActionProvider(BaseActionProvider):
     name = &quot;my-action&quot;
     version = &quot;1.0.0&quot;
     description = &quot;Performs custom analysis&quot;
 
-    def run(self, inputs):
+    def run(self, inputs, **kwargs):
         # Implementation here
         return {&quot;status&quot;: &quot;complete&quot;}
 </code></pre>
@@ -1892,7 +1932,7 @@ class ActionOutput:
     description: str
     value: Any
 
-class CausalIQAction(ABC):
+class BaseActionProvider(ABC):
     &quot;&quot;&quot;Base class for all workflow actions.&quot;&quot;&quot;
 
     # Action metadata
@@ -1947,7 +1987,7 @@ class ActionRegistry:
     &quot;&quot;&quot;Automatically discover and manage workflow actions.&quot;&quot;&quot;
 
     def __init__(self):
-        self._actions: Dict[str, Type[CausalIQAction]] = {}
+        self._actions: Dict[str, Type[BaseActionProvider]] = {}
         self._discover_actions()  # Automatic discovery on initialization
 
     def _discover_actions(self):
@@ -1959,14 +1999,14 @@ class ActionRegistry:
                 # Attempt to import the module
                 module = importlib.import_module(module_name)
 
-                # Check if module exports a 'CausalIQAction' class
-                if hasattr(module, 'CausalIQAction'):
-                    action_class = getattr(module, 'CausalIQAction')
+                # Check if module exports an 'ActionProvider' class
+                if hasattr(module, 'ActionProvider'):
+                    action_class = getattr(module, 'ActionProvider')
 
-                    # Verify it's a proper CausalIQAction subclass
+                    # Verify it's a proper BaseActionProvider subclass
                     if (isinstance(action_class, type) and 
-                        issubclass(action_class, CausalIQAction) and 
-                        action_class != CausalIQAction):
+                        issubclass(action_class, BaseActionProvider) and 
+                        action_class != BaseActionProvider):
 
                         # Register using module name as action identifier
                         self._actions[module_name] = action_class
@@ -1975,11 +2015,11 @@ class ActionRegistry:
                 # Skip modules that can't be imported
                 continue
 
-    def get_available_actions(self) -&gt; Dict[str, Type[CausalIQAction]]:
+    def get_available_actions(self) -&gt; Dict[str, Type[BaseActionProvider]]:
         &quot;&quot;&quot;Return copy of available actions.&quot;&quot;&quot;
         return self._actions.copy()
 
-    def get_action_class(self, action_name: str) -&gt; Type[CausalIQAction]:
+    def get_action_class(self, action_name: str) -&gt; Type[BaseActionProvider]:
         &quot;&quot;&quot;Get action class by name.&quot;&quot;&quot;
         if action_name not in self._actions:
             raise ActionRegistryError(f&quot;Action '{action_name}' not found. Available actions: {list(self._actions.keys())}&quot;)
@@ -1990,9 +2030,9 @@ class ActionRegistry:
 <li><strong>Registry Initialization</strong>: When <code>ActionRegistry()</code> is created, discovery starts automatically</li>
 <li><strong>Module Scanning</strong>: Uses <code>pkgutil.iter_modules()</code> to iterate through all Python modules</li>
 <li><strong>Safe Import</strong>: Attempts to import each module, skipping those that fail</li>
-<li><strong>Convention Check</strong>: Looks for a class named 'CausalIQAction' in each module</li>
-<li><strong>Validation</strong>: Ensures the CausalIQAction class inherits from the base CausalIQAction class</li>
-<li><strong>Registration</strong>: Maps module name to CausalIQAction class for workflow lookup</li>
+<li><strong>Convention Check</strong>: Looks for a class named 'ActionProvider' in each module</li>
+<li><strong>Validation</strong>: Ensures the ActionProvider class inherits from the base BaseActionProvider class</li>
+<li><strong>Registration</strong>: Maps module name to ActionProvider class for workflow lookup</li>
 </ol>
 <h4 id="action-package-development-workflow">Action Package Development Workflow</h4>
 <p><strong>Step 1: Create Standard Python Package</strong></p>
@@ -2003,14 +2043,14 @@ cd my_custom_action
 <pre><code>my_custom_action/
 ├── pyproject.toml
 ├── my_custom_action/
-│   └── __init__.py  # Must export 'CausalIQAction' class
+│   └── __init__.py  # Must export 'ActionProvider' class
 └── README.md
 </code></pre>
 <p><strong>Step 3: Implement Action Convention</strong></p>
 <pre><code class="language-python"># my_custom_action/__init__.py
-from causaliq_workflow.action import CausalIQAction
+from causaliq_workflow.action import BaseActionProvider
 
-class CausalIQAction(CausalIQAction):  # Must be named 'CausalIQAction'
+class ActionProvider(BaseActionProvider):  # Must be named 'ActionProvider'
     name = &quot;my-custom-action&quot;
     version = &quot;1.0.0&quot; 
     description = &quot;Custom analysis action&quot;
@@ -2033,11 +2073,11 @@ causaliq-workflow my-experiment.yml  # Action automatically available
 
 ```python
 # causaliq_analysis/__init__.py
-from causaliq_workflow.action import CausalIQAction
+from causaliq_workflow.action import BaseActionProvider
 import pandas as pd
 import networkx as nx
 
-class CausalIQAction(CausalIQAction):  # Auto-discovered by this name
+class ActionProvider(BaseActionProvider):  # Auto-discovered by this name
     name = &quot;causaliq-analysis&quot;
     version = &quot;1.0.0&quot;
     description = &quot;Basic causal graph analysis&quot;
@@ -2066,11 +2106,11 @@ class CausalIQAction(CausalIQAction):  # Auto-discovered by this name
 <h3 id="example-2-data-loading-action">Example 2: Data Loading Action</h3>
 <p><strong>Package: causaliq_data</strong></p>
 <pre><code class="language-python"># causaliq_data/__init__.py  
-from causaliq_workflow.action import CausalIQAction
+from causaliq_workflow.action import BaseActionProvider
 import pandas as pd
 from pathlib import Path
 
-class CausalIQAction(CausalIQAction):
+class ActionProvider(BaseActionProvider):
     name = &quot;causaliq-data&quot;
     version = &quot;2.1.0&quot;
     description = &quot;Load and preprocess causal datasets&quot;
@@ -2105,11 +2145,11 @@ class CausalIQAction(CausalIQAction):
 <h3 id="example-3-algorithm-bridge-action">Example 3: Algorithm Bridge Action</h3>
 <p><strong>Package: causaliq_pc_algorithm</strong></p>
 <pre><code class="language-python"># causaliq_pc_algorithm/__init__.py
-from causaliq_workflow.action import CausalIQAction
+from causaliq_workflow.action import BaseActionProvider
 import pandas as pd
 import networkx as nx
 
-class CausalIQAction(CausalIQAction):
+class ActionProvider(BaseActionProvider):
     name = &quot;causaliq-pc-algorithm&quot; 
     version = &quot;1.5.2&quot;
     description = &quot;PC algorithm for causal structure learning&quot;
@@ -2170,7 +2210,7 @@ class CausalIQAction(CausalIQAction):
 <h3 id="algorithm-execution-actions">Algorithm Execution Actions</h3>
 <pre><code class="language-python">import networkx as nx
 
-class CausalDiscoveryAction(CausalIQAction):
+class CausalDiscoveryAction(BaseActionProvider):
     &quot;&quot;&quot;Execute causal discovery algorithm from various packages.&quot;&quot;&quot;
 
     name = &quot;causal-discovery&quot;
@@ -2308,10 +2348,10 @@ class CausalDiscoveryAction(CausalIQAction):
 <h3 id="cross-language-bridges">Cross-Language Bridges</h3>
 <p>Actions can bridge to R, Java, and other languages:</p>
 <pre><code class="language-python"># causaliq_bnlearn/__init__.py
-from causaliq_workflow.action import CausalIQAction
+from causaliq_workflow.action import BaseActionProvider
 import rpy2.robjects as ro
 
-class CausalIQAction(CausalIQAction):
+class ActionProvider(BaseActionProvider):
     name = &quot;causaliq-bnlearn&quot;
 
     def __init__(self):
@@ -2328,7 +2368,7 @@ class CausalIQAction(CausalIQAction):
 <h3 id="algorithm-collections">Algorithm Collections</h3>
 <p>Single packages can provide multiple related algorithms:</p>
 <pre><code class="language-python"># causaliq_constraint_based/__init__.py
-class CausalIQAction(CausalIQAction):
+class ActionProvider(BaseActionProvider):
     name = &quot;causaliq-constraint-based&quot;
 
     def run(self, inputs):

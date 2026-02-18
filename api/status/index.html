@@ -753,14 +753,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -945,6 +945,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -2826,10 +2854,17 @@ logger.log_task(
 </code></pre>
 <h3 id="action-development">Action Development</h3>
 <p>Actions will report their execution status using TaskStatus values:</p>
-<pre><code class="language-python"># Future action integration example  
-def run(self, inputs, mode=&quot;dry-run&quot;, logger=None):
+<pre><code class="language-python"># Action integration example
+def run(
+    self,
+    action: str,
+    parameters: Dict[str, Any],
+    mode: str = &quot;dry-run&quot;,
+    context=None,
+    logger=None,
+) -&gt; Dict[str, Any]:
     if mode == &quot;dry-run&quot;:
-        if self._outputs_exist(inputs):
+        if self._outputs_exist(parameters):
             return {&quot;status&quot;: TaskStatus.WOULD_SKIP}
         else:
             return {&quot;status&quot;: TaskStatus.WOULD_EXECUTE}
@@ -2847,7 +2882,7 @@ def run(self, inputs, mode=&quot;dry-run&quot;, logger=None):
 <h3 id="mode-awareness">Mode Awareness</h3>
 <p>Distinct statuses for dry-run vs run modes enable accurate workflow planning and execution reporting.</p>
 <hr />
-<p><strong>Next</strong>: <a href="../cli/">CLI Interface</a> | <strong>Previous</strong>: <a href="../schema/">Schema Validation</a> | <strong>Up</strong>: <a href="../overview/">API Reference</a></p>
+<p><strong><a href="../schema/">← Previous: Schema Validation</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../logging/">Next: Logging System →</a></strong></p>
 
 
 

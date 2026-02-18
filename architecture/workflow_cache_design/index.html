@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../action_architecture_design/">
+        <link rel="prev" href="../logging_architecture_design/">
       
       
-        <link rel="next" href="../workflow_executor_design/">
+        <link rel="next" href="../../api/overview/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Algorithm Registry - causaliq-workflow</title>
+        <title>Workflow Cache Design - causaliq-workflow</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#action-auto-discovery-design" class="md-skip">
+        <a href="#workflow-cache-design" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Algorithm Registry
+              Workflow Cache Design
             
           </span>
         </div>
@@ -672,37 +672,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Algorithm Registry
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../action_auto_discovery_design/" class="md-nav__link">
         
   
   
@@ -718,388 +691,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-auto-discovery-works-the-complete-journey" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How Auto-Discovery Works: The Complete Journey
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How Auto-Discovery Works: The Complete Journey">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#phase-1-system-initialisation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 1: System Initialisation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Phase 1: System Initialisation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-workflow-engine-starts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Workflow Engine Starts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-entry-point-discovery-lazy-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Entry Point Discovery (Lazy Loading)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-2-action-loading-on-demand" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 2: Action Loading (On Demand)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Phase 2: Action Loading (On Demand)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-3-first-use-triggers-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: First Use Triggers Loading
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-action-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Action Execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-3-fallback-module-scanning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 3: Fallback Module Scanning
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-plugin-developer-experience" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Plugin Developer Experience
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The Plugin Developer Experience">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#creating-an-action-package-step-by-step" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creating an Action Package: Step-by-Step
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Creating an Action Package: Step-by-Step">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-standard-python-package-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Standard Python Package Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-implement-the-action-class" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Implement the Action Class
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-installation-and-immediate-availability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Installation and Immediate Availability
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entry-point-discovery-implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entry Point Discovery Implementation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entry Point Discovery Implementation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-lazy-loading-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Lazy Loading Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#why-lazy-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Lazy Loading?
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ecosystem-integration-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ecosystem Integration Patterns
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Ecosystem Integration Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#distribution-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Distribution Strategy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dependency-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependency Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cross-language-bridge-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cross-Language Bridge Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#benefits-of-entry-point-discovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Benefits of Entry Point Discovery
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Benefits of Entry Point Discovery">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-users" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Users
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-developers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Developers
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-the-ecosystem" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For the Ecosystem
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-reference-creating-a-new-action" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Reference: Creating a New Action
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Reference: Creating a New Action">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#minimal-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Minimal Example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Checklist
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1165,10 +756,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../workflow_cache_design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1184,6 +802,348 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cache-entry-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Entry Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-key-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Key Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cache Key Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Derivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-confidences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edge Confidences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sdg-changes-minimal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDG Changes (Minimal)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graph-encoding-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph Encoding Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sqlite-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite Schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SQLite Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hash-collision-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hash Collision Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entry-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-mutability-and-cache-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Mutability and Cache Queries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Metadata Mutability and Cache Queries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mutable-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutable Metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-as-workflow-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache as Workflow Input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-selection-predicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Selection Predicates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-optimisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Optimisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#importexport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import/Export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Import/Export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export-to-open-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export to Open Formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-from-open-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import from Open Formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration with Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#writing-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-package-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Package Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1583,34 +1543,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-auto-discovery-works-the-complete-journey" class="md-nav__link">
+  <a href="#design-goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How Auto-Discovery Works: The Complete Journey
+        Design Goals
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="How Auto-Discovery Works: The Complete Journey">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#phase-1-system-initialisation" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 1: System Initialisation
+        Architecture Decisions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 1: System Initialisation">
+    <nav class="md-nav" aria-label="Architecture Decisions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-workflow-engine-starts" class="md-nav__link">
+  <a href="#cache-entry-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Workflow Engine Starts
+        Cache Entry Structure
       
     </span>
   </a>
@@ -1618,10 +1577,33 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-entry-point-discovery-lazy-loading" class="md-nav__link">
+  <a href="#cache-key-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Entry Point Discovery (Lazy Loading)
+        Cache Key Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cache Key Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Derivation
       
     </span>
   </a>
@@ -1634,22 +1616,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-2-action-loading-on-demand" class="md-nav__link">
+  <a href="#edge-confidences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 2: Action Loading (On Demand)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Phase 2: Action Loading (On Demand)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-3-first-use-triggers-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: First Use Triggers Loading
+        Edge Confidences
       
     </span>
   </a>
@@ -1657,26 +1627,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-4-action-execution" class="md-nav__link">
+  <a href="#sdg-changes-minimal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Action Execution
+        SDG Changes (Minimal)
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
           <li class="md-nav__item">
-  <a href="#phase-3-fallback-module-scanning" class="md-nav__link">
+  <a href="#graph-encoding-format" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 3: Fallback Module Scanning
+        Graph Encoding Format
       
     </span>
   </a>
@@ -1689,100 +1654,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-plugin-developer-experience" class="md-nav__link">
+  <a href="#sqlite-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Plugin Developer Experience
+        SQLite Schema
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The Plugin Developer Experience">
+    <nav class="md-nav" aria-label="SQLite Schema">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#creating-an-action-package-step-by-step" class="md-nav__link">
+  <a href="#hash-collision-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Creating an Action Package: Step-by-Step
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Creating an Action Package: Step-by-Step">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-standard-python-package-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Standard Python Package Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-implement-the-action-class" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Implement the Action Class
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-installation-and-immediate-availability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Installation and Immediate Availability
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entry-point-discovery-implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entry Point Discovery Implementation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entry Point Discovery Implementation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-lazy-loading-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Lazy Loading Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#why-lazy-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Lazy Loading?
+        Hash Collision Handling
       
     </span>
   </a>
@@ -1795,22 +1682,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ecosystem-integration-patterns" class="md-nav__link">
+  <a href="#entry-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ecosystem Integration Patterns
+        Entry Types
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Ecosystem Integration Patterns">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-mutability-and-cache-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Mutability and Cache Queries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Metadata Mutability and Cache Queries">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#distribution-strategy" class="md-nav__link">
+  <a href="#mutable-metadata" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Distribution Strategy
+        Mutable Metadata
       
     </span>
   </a>
@@ -1818,10 +1716,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dependency-management" class="md-nav__link">
+  <a href="#cache-as-workflow-input" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependency Management
+        Cache as Workflow Input
       
     </span>
   </a>
@@ -1829,10 +1727,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cross-language-bridge-pattern" class="md-nav__link">
+  <a href="#entry-selection-predicates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cross-Language Bridge Pattern
+        Entry Selection Predicates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-optimisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Optimisation
       
     </span>
   </a>
@@ -1845,22 +1754,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#benefits-of-entry-point-discovery" class="md-nav__link">
+  <a href="#importexport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Benefits of Entry Point Discovery
+        Import/Export
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Benefits of Entry Point Discovery">
+    <nav class="md-nav" aria-label="Import/Export">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-users" class="md-nav__link">
+  <a href="#export-to-open-formats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For Users
+        Export to Open Formats
       
     </span>
   </a>
@@ -1868,21 +1777,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#for-developers" class="md-nav__link">
+  <a href="#import-from-open-formats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For Developers
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-the-ecosystem" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For the Ecosystem
+        Import from Open Formats
       
     </span>
   </a>
@@ -1895,22 +1793,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-reference-creating-a-new-action" class="md-nav__link">
+  <a href="#integration-with-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Reference: Creating a New Action
+        Integration with Workflows
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Quick Reference: Creating a New Action">
+    <nav class="md-nav" aria-label="Integration with Workflows">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#minimal-example" class="md-nav__link">
+  <a href="#writing-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Minimal Example
+        Writing Results
       
     </span>
   </a>
@@ -1918,10 +1816,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#checklist" class="md-nav__link">
+  <a href="#conservative-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Checklist
+        Conservative Execution
       
     </span>
   </a>
@@ -1930,6 +1828,28 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-package-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Package Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Considerations
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1950,354 +1870,552 @@
 
 
 
-<h1 id="action-auto-discovery-design">Action Auto-Discovery Design</h1>
+<h1 id="workflow-cache-design">Workflow Cache Design</h1>
 <h2 id="overview">Overview</h2>
-<p>The auto-discovery system implements a <strong>plugin architecture</strong> using Python
-entry points where actions are automatically found and registered without
-any configuration files. This design eliminates the need for manual registry
-management while providing a seamless plugin ecosystem for causal discovery
-workflows.</p>
-<p>The system uses <strong>lazy loading</strong> to avoid circular import issues - entry
-points are discovered at startup (metadata only), but the actual action
-classes are only loaded when first used.</p>
-<h2 id="how-auto-discovery-works-the-complete-journey">How Auto-Discovery Works: The Complete Journey</h2>
-<h3 id="phase-1-system-initialisation">Phase 1: System Initialisation</h3>
-<h4 id="step-1-workflow-engine-starts">Step 1: Workflow Engine Starts</h4>
-<p>When a user runs <code>causaliq-workflow experiment.yml</code>:</p>
-<ol>
-<li><strong>WorkflowExecutor initialisation</strong>: Creates a new <code>WorkflowExecutor</code>
-   instance</li>
-<li><strong>ActionRegistry creation</strong>: Instantiates <code>ActionRegistry()</code> which triggers
-   discovery</li>
-<li><strong>Entry point discovery</strong>: The registry scans for <code>causaliq.actions</code> entry
-   points</li>
-</ol>
-<h4 id="step-2-entry-point-discovery-lazy-loading">Step 2: Entry Point Discovery (Lazy Loading)</h4>
-<p>The system discovers actions without importing them:</p>
-<ol>
-<li><strong>Entry point enumeration</strong>: Uses <code>importlib.metadata.entry_points()</code> to
-   find all packages that declare <code>causaliq.actions</code> entry points</li>
-<li><strong>Metadata recording</strong>: Stores entry point metadata (name, module path)
-   without loading</li>
-<li><strong>Deferred loading</strong>: Actual imports happen only when an action is first
-   used</li>
-</ol>
-<p>This lazy loading approach is critical for avoiding circular imports, since
-action packages (like <code>causaliq-knowledge</code>) depend on <code>causaliq-workflow</code>.</p>
-<h3 id="phase-2-action-loading-on-demand">Phase 2: Action Loading (On Demand)</h3>
-<h4 id="step-3-first-use-triggers-loading">Step 3: First Use Triggers Loading</h4>
-<p>When a workflow references an action:</p>
-<pre><code class="language-yaml">steps:
-  - name: &quot;Generate Graph&quot;
-    uses: &quot;causaliq-knowledge&quot;  # Triggers lazy load
-    with:
-      action: &quot;generate_graph&quot;
-</code></pre>
-<p>The system:</p>
-<ol>
-<li><strong>Entry point lookup</strong>: Finds the entry point for "causaliq-knowledge"</li>
-<li><strong>Class loading</strong>: Calls <code>entry_point.load()</code> to import the action class</li>
-<li><strong>Type validation</strong>: Verifies it's a valid <code>BaseActionProvider</code> subclass</li>
-<li><strong>Caching</strong>: Stores the loaded class for future use</li>
-</ol>
-<h4 id="step-4-action-execution">Step 4: Action Execution</h4>
-<p>Once loaded:</p>
-<ol>
-<li><strong>Parameter preparation</strong>: Collects parameters from the <code>with</code> block</li>
-<li><strong>Input validation</strong>: Action validates its own inputs using schemas</li>
-<li><strong>Execution</strong>: Calls <code>action.run(inputs)</code> with validated parameters</li>
-<li><strong>Output handling</strong>: Processes and stores action outputs</li>
-</ol>
-<h3 id="phase-3-fallback-module-scanning">Phase 3: Fallback Module Scanning</h3>
-<p>For backwards compatibility and development scenarios, the registry also
-supports module scanning:</p>
-<ol>
-<li><strong>Module enumeration</strong>: Scans <code>sys.modules</code> for already-imported modules</li>
-<li><strong>Convention detection</strong>: Looks for modules exporting <code>ActionProvider</code></li>
-<li><strong>Registration</strong>: Adds discovered actions to the registry</li>
-</ol>
-<h2 id="the-plugin-developer-experience">The Plugin Developer Experience</h2>
-<h3 id="creating-an-action-package-step-by-step">Creating an Action Package: Step-by-Step</h3>
-<h4 id="step-1-standard-python-package-setup">Step 1: Standard Python Package Setup</h4>
-<p>Developers start with familiar Python packaging:</p>
-<pre><code class="language-bash">mkdir causaliq-pc-algorithm
-cd causaliq-pc-algorithm
-</code></pre>
-<p><strong>File: pyproject.toml</strong></p>
-<pre><code class="language-toml">[build-system]
-requires = [&quot;setuptools&gt;=61.0&quot;, &quot;wheel&quot;]
-build-backend = &quot;setuptools.build_meta&quot;
-
-[project]
-name = &quot;causaliq-pc-algorithm&quot;
-version = &quot;1.0.0&quot;
-description = &quot;PC algorithm implementation for CausalIQ workflows&quot;
-dependencies = [
-    &quot;causaliq-workflow&gt;=0.1.1&quot;,
-    &quot;networkx&gt;=2.8.0&quot;,
-    &quot;pandas&gt;=1.5.0&quot;
-]
-
-# CRITICAL: Register your action as an entry point
-[project.entry-points.&quot;causaliq.actions&quot;]
-causaliq-pc-algorithm = &quot;causaliq_pc_algorithm:ActionProvider&quot;
-</code></pre>
-<p>The entry point declaration tells <code>causaliq-workflow</code> where to find your
-action class. The format is:</p>
-<pre><code>action-name = &quot;module.path:ClassName&quot;
-</code></pre>
-<h4 id="step-2-implement-the-action-class">Step 2: Implement the Action Class</h4>
-<p><strong>File: src/causaliq_pc_algorithm/<strong>init</strong>.py</strong></p>
-<pre><code class="language-python">&quot;&quot;&quot;PC algorithm action for CausalIQ workflows.&quot;&quot;&quot;
-
-from causaliq_workflow.action import BaseActionProvider
-import pandas as pd
-import networkx as nx
-
-
-# The class name can be anything, but must match the entry point
-class ActionProvider(BaseActionProvider):
-    &quot;&quot;&quot;PC algorithm for causal structure learning.&quot;&quot;&quot;
-
-    name = &quot;causaliq-pc-algorithm&quot;
-    version = &quot;1.0.0&quot;
-    description = &quot;PC algorithm for causal structure learning&quot;
-
-    def run(self, inputs, **kwargs):
-        &quot;&quot;&quot;Execute the PC algorithm.
-
-        Args:
-            inputs: Dictionary containing:
-                - dataset: Path to CSV data file
-                - alpha: Significance level (default: 0.05)
-                - output_path: Where to save results
-
-        Returns:
-            Dictionary with graph_path, nodes, and edges count.
-        &quot;&quot;&quot;
-        # Read data
-        data = pd.read_csv(inputs[&quot;dataset&quot;])
-
-        # Run PC algorithm
-        alpha = inputs.get(&quot;alpha&quot;, 0.05)
-        graph = self._pc_algorithm(data, alpha)
-
-        # Save results
-        output_path = inputs[&quot;output_path&quot;]
-        nx.write_graphml(graph, f&quot;{output_path}/graph.xml&quot;)
-
-        return {
-            &quot;graph_path&quot;: f&quot;{output_path}/graph.xml&quot;,
-            &quot;nodes&quot;: len(graph.nodes),
-            &quot;edges&quot;: len(graph.edges),
-        }
-
-    def _pc_algorithm(self, data, alpha):
-        &quot;&quot;&quot;PC algorithm implementation.&quot;&quot;&quot;
-        # Implementation here
-        pass
-</code></pre>
-<h4 id="step-3-installation-and-immediate-availability">Step 3: Installation and Immediate Availability</h4>
-<pre><code class="language-bash"># Install the package (editable mode for development)
-pip install -e .
-
-# Action is immediately available in workflows
-causaliq-workflow my-experiment.yml
-</code></pre>
-<p><strong>File: my-experiment.yml</strong></p>
-<pre><code class="language-yaml">description: &quot;PC Algorithm Test&quot;
-id: pc-test
-
-steps:
-  - name: &quot;Learn Structure&quot;
-    uses: &quot;causaliq-pc-algorithm&quot;  # Automatically discovered via entry point
-    with:
-      dataset: &quot;/data/asia.csv&quot;
-      alpha: 0.01
-      output_path: &quot;/results/pc&quot;
-</code></pre>
-<h2 id="entry-point-discovery-implementation">Entry Point Discovery Implementation</h2>
-<h3 id="the-lazy-loading-pattern">The Lazy Loading Pattern</h3>
-<pre><code class="language-python">import sys
-from importlib.metadata import entry_points
-from typing import Dict, Optional, Type
-
-class ActionRegistry:
-    def __init__(self):
-        self._actions: Dict[str, Type[BaseActionProvider]] = {}
-        self._entry_points: Dict[str, Any] = {}  # Metadata only
-        self._discover_entry_points()
-
-    def _discover_entry_points(self) -&gt; None:
-        &quot;&quot;&quot;Discover entry points WITHOUT importing them.&quot;&quot;&quot;
-        # Python 3.10+ API
-        if sys.version_info &gt;= (3, 10):
-            eps = entry_points(group=&quot;causaliq.actions&quot;)
-        else:
-            # Python 3.9 compatibility
-            all_eps = entry_points()
-            eps = all_eps.get(&quot;causaliq.actions&quot;, [])
-
-        for ep in eps:
-            # Store metadata only - no imports yet!
-            self._entry_points[ep.name] = ep
-
-    def _load_entry_point(self, name: str) -&gt; Optional[Type[BaseActionProvider]]:
-        &quot;&quot;&quot;Load an entry point on first use.&quot;&quot;&quot;
-        if name not in self._entry_points:
-            return None
-
-        ep = self._entry_points[name]
-        action_class = ep.load()  # Import happens here
-
-        # Validate and cache
-        if issubclass(action_class, BaseActionProvider):
-            self._actions[name] = action_class
-            return action_class
-        return None
-
-    def get_action_class(self, name: str) -&gt; Type[BaseActionProvider]:
-        &quot;&quot;&quot;Get action class, loading from entry point if needed.&quot;&quot;&quot;
-        # Return cached action
-        if name in self._actions:
-            return self._actions[name]
-
-        # Try lazy loading from entry point
-        if name in self._entry_points:
-            action_class = self._load_entry_point(name)
-            if action_class:
-                return action_class
-
-        raise ActionRegistryError(f&quot;Action '{name}' not found&quot;)
-</code></pre>
-<h3 id="why-lazy-loading">Why Lazy Loading?</h3>
-<p>Lazy loading solves a critical circular import problem:</p>
-<pre><code>causaliq-workflow (provides BaseActionProvider base class)
-       ↑
-       └── causaliq-knowledge (imports BaseActionProvider, exports action)
-</code></pre>
-<p>If <code>causaliq-workflow</code> eagerly imported <code>causaliq-knowledge</code> during registry
-initialisation, it would fail because <code>causaliq-knowledge</code> needs to import
-from <code>causaliq-workflow</code> first.</p>
-<p>By deferring the import until the action is actually used, we ensure:
-1. <code>causaliq-workflow</code> initialises completely first
-2. <code>causaliq-knowledge</code> can import from it safely
-3. The action class is then loaded on demand</p>
-<h2 id="ecosystem-integration-patterns">Ecosystem Integration Patterns</h2>
-<h3 id="distribution-strategy">Distribution Strategy</h3>
-<p>Action packages follow standard Python distribution:</p>
-<ol>
-<li><strong>PyPI publishing</strong>: <code>pip install causaliq-tetrad-bridge</code></li>
-<li><strong>GitHub releases</strong>: Direct installation from repositories</li>
-<li><strong>Local development</strong>: <code>pip install -e .</code> for development packages</li>
-<li><strong>Version management</strong>: Standard semantic versioning</li>
-</ol>
-<h3 id="dependency-management">Dependency Management</h3>
-<p>Actions declare their dependencies naturally:</p>
-<pre><code class="language-toml"># Action package dependencies
-dependencies = [
-    &quot;causaliq-workflow&gt;=0.1.1&quot;,    # Framework dependency
-    &quot;rpy2&gt;=3.5.0&quot;,                 # R interface (if needed)
-    &quot;jpype1&gt;=1.4.0&quot;,               # Java interface (if needed)
-    &quot;scikit-learn&gt;=1.2.0&quot;          # Algorithm dependencies
-]
-
-# REQUIRED: Entry point registration
-[project.entry-points.&quot;causaliq.actions&quot;]
-my-action = &quot;my_action:ActionProvider&quot;
-</code></pre>
-<h3 id="cross-language-bridge-pattern">Cross-Language Bridge Pattern</h3>
-<p>For R and Java integrations:</p>
-<pre><code class="language-python">class RBridgeAction(BaseActionProvider):
-    &quot;&quot;&quot;Bridge to R-based causal discovery algorithms.&quot;&quot;&quot;
-
-    name = &quot;r-bridge-action&quot;
-    version = &quot;1.0.0&quot;
-    description = &quot;Execute R algorithms via rpy2&quot;
-
-    def __init__(self):
-        super().__init__()
-        # Initialise R environment
-        self.r_session = self._setup_r_environment()
-
-    def run(self, inputs, **kwargs):
-        # Execute R code through rpy2
-        result = self.r_session.run_algorithm(inputs)
-        return self._convert_r_output(result)
-</code></pre>
-<h2 id="benefits-of-entry-point-discovery">Benefits of Entry Point Discovery</h2>
-<h3 id="for-users">For Users</h3>
-<ol>
-<li><strong>Zero configuration</strong>: Install and use immediately</li>
-<li><strong>No registry management</strong>: No config files to maintain</li>
-<li><strong>Standard workflow</strong>: Familiar <code>pip install</code> → use pattern</li>
-<li><strong>Automatic updates</strong>: New action versions available immediately</li>
-</ol>
-<h3 id="for-developers">For Developers</h3>
-<ol>
-<li><strong>Standard Python packaging</strong>: Use pyproject.toml entry points</li>
-<li><strong>Simple registration</strong>: One line in pyproject.toml</li>
-<li><strong>Full Python ecosystem</strong>: Use any Python dependencies</li>
-<li><strong>Independent development</strong>: No coordination with core framework needed</li>
-<li><strong>No circular imports</strong>: Lazy loading handles dependencies correctly</li>
-</ol>
-<h3 id="for-the-ecosystem">For the Ecosystem</h3>
-<ol>
-<li><strong>Organic growth</strong>: Easy to create and share actions</li>
-<li><strong>Version management</strong>: Standard semantic versioning</li>
-<li><strong>Quality control</strong>: Actions are regular Python packages with testing</li>
-<li><strong>Documentation</strong>: Standard Python documentation tools apply</li>
-</ol>
-<h2 id="quick-reference-creating-a-new-action">Quick Reference: Creating a New Action</h2>
-<h3 id="minimal-example">Minimal Example</h3>
-<p><strong>pyproject.toml:</strong></p>
-<pre><code class="language-toml">[build-system]
-requires = [&quot;setuptools&gt;=61.0&quot;, &quot;wheel&quot;]
-build-backend = &quot;setuptools.build_meta&quot;
-
-[project]
-name = &quot;my-causaliq-action&quot;
-version = &quot;1.0.0&quot;
-dependencies = [&quot;causaliq-workflow&gt;=0.1.1&quot;]
-
-[project.entry-points.&quot;causaliq.actions&quot;]
-my-causaliq-action = &quot;my_causaliq_action:ActionProvider&quot;
-
-[tool.setuptools.packages.find]
-where = [&quot;src&quot;]
-</code></pre>
-<p><strong>src/my_causaliq_action/<strong>init</strong>.py:</strong></p>
-<pre><code class="language-python">from causaliq_workflow.action import BaseActionProvider
-
-
-class ActionProvider(BaseActionProvider):
-    name = &quot;my-causaliq-action&quot;
-    version = &quot;1.0.0&quot;
-    description = &quot;My custom action&quot;
-
-    def run(self, inputs, **kwargs):
-        # Your implementation here
-        return {&quot;status&quot;: &quot;complete&quot;, &quot;result&quot;: inputs.get(&quot;value&quot;, 0) * 2}
-</code></pre>
-<p><strong>Usage in workflow.yaml:</strong></p>
-<pre><code class="language-yaml">description: &quot;Test my action&quot;
-id: test-my-action
-
-steps:
-  - name: &quot;Run my action&quot;
-    uses: &quot;my-causaliq-action&quot;
-    with:
-      value: 42
-</code></pre>
-<h3 id="checklist">Checklist</h3>
+<p>Workflow Caches provide persistent storage for workflow step results in a
+compact, fast SQLite database. This enables <em>conservative execution</em> (skipping
+work if results exist) and supports reproducibility of research over many
+years.</p>
+<p>The cache is built on common infrastructure (<code>TokenCache</code>, <code>JsonEncoder</code>)
+shared with LLM response caching. This common infrastructure currently resides
+in causaliq-knowledge but will migrate to causaliq-core.</p>
+<h2 id="design-goals">Design Goals</h2>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Compact storage</strong></td>
+<td>SQLite with tokenised blobs, not unwieldy file trees</td>
+</tr>
+<tr>
+<td><strong>Fast lookup</strong></td>
+<td>Quick existence checks for conservative execution</td>
+</tr>
+<tr>
+<td><strong>Flexibility</strong></td>
+<td>Multiple entry types without schema changes</td>
+</tr>
+<tr>
+<td><strong>Open export</strong></td>
+<td>Convert to GraphML, JSON, CSV for archival</td>
+</tr>
+<tr>
+<td><strong>Reproducibility</strong></td>
+<td>Results persist and can be replicated years later</td>
+</tr>
+</tbody>
+</table>
+<h2 id="architecture-decisions">Architecture Decisions</h2>
+<h3 id="cache-entry-structure">Cache Entry Structure</h3>
+<p>Each cache entry consists of a <strong>metadata blob</strong> and <strong>multiple data blobs</strong>:</p>
+<p>| Component | Storage | Purpose |
+|-----------|---------|---------||
+| <strong>Metadata blob</strong> | Tokenised JSON | Provenance, metrics, type-specific attributes |
+| <strong>Data blobs</strong> | Type-specific encoded objects | One or more result objects (e.g., graph, trace) |</p>
+<p>For example, a structure learning result might include:</p>
 <ul>
-<li>[ ] Create <code>pyproject.toml</code> with entry point registration</li>
-<li>[ ] Implement action class inheriting from <code>BaseActionProvider</code></li>
-<li>[ ] Set <code>name</code>, <code>version</code>, <code>description</code> class attributes</li>
-<li>[ ] Implement <code>run(self, inputs, **kwargs)</code> method</li>
-<li>[ ] Return a dictionary from <code>run()</code></li>
-<li>[ ] Install with <code>pip install -e .</code> for development</li>
-<li>[ ] Test with <code>causaliq-workflow --dry-run workflow.yaml</code></li>
+<li>A <code>graph</code> data blob (the learned SDG)</li>
+<li>A <code>trace</code> data blob (iteration-by-iteration execution trace)</li>
+<li>Metadata (algorithm, timing, scores, hyperparameters)</li>
+</ul>
+<p>This design:</p>
+<ul>
+<li>Supports composite results with multiple artefacts</li>
+<li>Avoids schema changes when adding new result types</li>
+<li>Keeps object-level attributes (e.g., edge confidences) in metadata</li>
+<li>Allows flexible metadata structure per entry type</li>
+</ul>
+<h3 id="cache-key-strategy">Cache Key Strategy</h3>
+<h4 id="schema-binding">Schema Binding</h4>
+<p>A Workflow Cache is bound to its <strong>matrix variable structure</strong> (the set of
+variable names), not to specific values. This means:</p>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Permitted</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add new value to existing variable</td>
+<td>✓ Yes</td>
+<td>New entries created, existing entries unchanged</td>
+</tr>
+<tr>
+<td>Remove value from variable</td>
+<td>✓ Yes</td>
+<td>Existing entries remain accessible</td>
+</tr>
+<tr>
+<td>Add new matrix variable</td>
+<td>✗ No</td>
+<td>Changes key structure, requires new cache</td>
+</tr>
+<tr>
+<td>Remove matrix variable</td>
+<td>✗ No</td>
+<td>Changes key structure, requires new cache</td>
+</tr>
+<tr>
+<td>Rename matrix variable</td>
+<td>✗ No</td>
+<td>Changes key structure, requires new cache</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example - permitted change:</strong></p>
+<pre><code class="language-yaml"># Original
+matrix:
+  algorithm: [pc, ges]
+
+# Extended (same cache works)
+matrix:
+  algorithm: [pc, ges, fci, tabu]  # Added values
+</code></pre>
+<p><strong>Example - requires new cache:</strong></p>
+<pre><code class="language-yaml"># Original
+matrix:
+  algorithm: [pc, ges]
+
+# Extended with new dimension (new cache needed)
+matrix:
+  algorithm: [pc, ges]
+  network: [asia, cancer]  # New variable
+</code></pre>
+<p>This constraint keeps the implementation simple. Future versions may support
+schema migration if needed.</p>
+<h4 id="key-derivation">Key Derivation</h4>
+<p>The cache key is a SHA-256 hash (truncated to 16 hex characters) of the
+<strong>workflow matrix variable values</strong> for that step execution:</p>
+<pre><code class="language-python"># Example: workflow with matrix expansion
+matrix_values = {
+    &quot;network&quot;: &quot;cancer&quot;,
+    &quot;llm_model&quot;: &quot;groq/llama-3.1-8b&quot;,
+    &quot;prompt_detail&quot;: &quot;standard&quot;
+}
+key = sha256(json.dumps(matrix_values, sort_keys=True))[:16]
+</code></pre>
+<p><strong>Rationale</strong>: Matrix values capture the experimental design - they define
+what distinguishes one result from another. This aligns cache keys with
+research intent rather than implementation details.</p>
+<p><strong>Deferred</strong>: Complex key strategies (action params, step names) can be
+added if the simple approach proves insufficient.</p>
+<h3 id="edge-confidences">Edge Confidences</h3>
+<p>Edge confidences from LLM graph generation are stored in <strong>metadata JSON</strong>,
+not as SDG edge attributes:</p>
+<pre><code class="language-json">{
+  &quot;provenance&quot;: {
+    &quot;generator&quot;: &quot;llm&quot;,
+    &quot;model&quot;: &quot;groq/llama-3.1-8b-instant&quot;,
+    &quot;timestamp&quot;: &quot;2026-02-04T10:30:00Z&quot;
+  },
+  &quot;edge_confidences&quot;: {
+    &quot;A-&gt;B&quot;: 0.95,
+    &quot;B-&gt;C&quot;: 0.72
+  },
+  &quot;evaluation&quot;: {
+    &quot;shd&quot;: 3,
+    &quot;precision&quot;: 0.85
+  }
+}
+</code></pre>
+<p><strong>Rationale</strong>: Edge confidences are method-specific (LLM output), not
+intrinsic graph properties. Keeping them in metadata maintains consistency
+across diverse result types (graphs, traces, junction trees, etc.).</p>
+<h3 id="sdg-changes-minimal">SDG Changes (Minimal)</h3>
+<p>The SDG class requires only:</p>
+<ul>
+<li><code>compress()</code> / <code>decompress()</code> methods for compact blob representation</li>
+<li><code>to_graphml()</code> / <code>from_graphml()</code> for open format export</li>
+</ul>
+<p>Edge attributes are <strong>not</strong> added to SDG in this release.</p>
+<h3 id="graph-encoding-format">Graph Encoding Format</h3>
+<p>The <code>SDG.compress()</code> method produces a compact binary representation that
+leverages the Workflow Cache's shared token dictionary for variable names:</p>
+<p><strong>Header</strong> (4 bytes):</p>
+<p>| Bytes | Content |
+|-------|---------||
+| 0-1 | Node count (uint16, max 65,535 nodes) |
+| 2-3 | Edge count (uint16, max 65,535 edges) |</p>
+<p><strong>Node table</strong> (2 bytes per node):</p>
+<p>Each node is a token ID (uint16) referencing the token dictionary.
+Variable names like "BMI", "Age", "Smoking" are stored once in the
+token dictionary and referenced by ID.</p>
+<p><strong>Edge list</strong> (5 bytes per edge):</p>
+<p>Each edge is packed into 36 bits (padded to 5 bytes):</p>
+<p>| Bits | Content |
+|------|---------||
+| 0-15 | Source node token ID (uint16) |
+| 16-31 | Target node token ID (uint16) |
+| 32-33 | Source endpoint type (2 bits: <code>-</code>, <code>&gt;</code>, <code>o</code>) |
+| 34-35 | Target endpoint type (2 bits: <code>-</code>, <code>&gt;</code>, <code>o</code>) |</p>
+<p><strong>Example</strong>: A graph with 20 nodes and 25 edges:</p>
+<ul>
+<li>Header: 4 bytes</li>
+<li>Nodes: 20 × 2 = 40 bytes</li>
+<li>Edges: 25 × 5 = 125 bytes</li>
+<li><strong>Total: 169 bytes</strong> (vs ~2KB for JSON representation)</li>
+</ul>
+<p>The token dictionary is shared across all cache entries, so common
+variable names are stored only once regardless of how many graphs
+reference them.</p>
+<h2 id="sqlite-schema">SQLite Schema</h2>
+<pre><code class="language-sql">-- Shared token dictionary for compression (includes variable names)
+CREATE TABLE tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token TEXT UNIQUE NOT NULL,
+    frequency INTEGER DEFAULT 1
+);
+
+-- Cache entries with metadata
+CREATE TABLE cache_entries (
+    hash TEXT NOT NULL,
+    seq INTEGER NOT NULL DEFAULT 0,  -- Collision sequence (0 = first entry)
+    key_json TEXT NOT NULL,          -- Original key for collision detection
+    metadata BLOB,
+    created_at TEXT NOT NULL,
+    hit_count INTEGER DEFAULT 0,
+    last_accessed_at TEXT,
+    PRIMARY KEY (hash, seq)
+);
+
+-- Data blobs associated with cache entries
+CREATE TABLE cache_data (
+    hash TEXT NOT NULL,
+    seq INTEGER NOT NULL DEFAULT 0,
+    data_type TEXT NOT NULL,        -- 'graph', 'trace', etc.
+    data BLOB NOT NULL,
+    PRIMARY KEY (hash, seq, data_type),
+    FOREIGN KEY (hash, seq) REFERENCES cache_entries(hash, seq) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_created_at ON cache_entries(created_at);
+CREATE INDEX idx_data_type ON cache_data(data_type);
+</code></pre>
+<h3 id="hash-collision-handling">Hash Collision Handling</h3>
+<p>With truncated SHA-256 hashes (16 hex chars = 64 bits), collisions are rare
+but possible. The <code>seq</code> column handles multiple entries with the same hash:</p>
+<pre><code class="language-python">def put(self, key_data: dict, data: dict[str, bytes], metadata: dict) -&gt; None:
+    hash = self._compute_hash(key_data)
+    key_json = json.dumps(key_data, sort_keys=True)
+
+    # Find existing entry with same key, or next available seq
+    rows = self.conn.execute(
+        &quot;SELECT seq, key_json FROM cache_entries WHERE hash = ? ORDER BY seq&quot;,
+        (hash,)
+    ).fetchall()
+
+    seq = 0
+    for row_seq, row_key_json in rows:
+        if row_key_json == key_json:
+            # Exact match - update existing entry
+            seq = row_seq
+            self._delete_entry(hash, seq)  # Remove old data blobs
+            break
+        seq = row_seq + 1  # Collision - use next sequence number
+
+    # Insert entry and data blobs
+    self.conn.execute(
+        &quot;INSERT INTO cache_entries (hash, seq, key_json, metadata, created_at) &quot;
+        &quot;VALUES (?, ?, ?, ?, ?)&quot;,
+        (hash, seq, key_json, self._encode_metadata(metadata), datetime.utcnow())
+    )
+    for data_type, blob in data.items():
+        self.conn.execute(
+            &quot;INSERT INTO cache_data (hash, seq, data_type, data) VALUES (?, ?, ?, ?)&quot;,
+            (hash, seq, data_type, blob)
+        )
+    self.conn.commit()
+
+
+def get(self, key_data: dict, data_type: str) -&gt; bytes | None:
+    hash = self._compute_hash(key_data)
+    key_json = json.dumps(key_data, sort_keys=True)
+
+    # Find entry matching both hash and key
+    rows = self.conn.execute(
+        &quot;SELECT seq, key_json FROM cache_entries WHERE hash = ?&quot;, (hash,)
+    ).fetchall()
+
+    for seq, row_key_json in rows:
+        if row_key_json == key_json:
+            # Found matching entry - fetch data blob
+            data_row = self.conn.execute(
+                &quot;SELECT data FROM cache_data &quot;
+                &quot;WHERE hash = ? AND seq = ? AND data_type = ?&quot;,
+                (hash, seq, data_type)
+            ).fetchone()
+            return data_row[0] if data_row else None
+
+    return None  # No matching entry found
+</code></pre>
+<p>In practice, collisions are extremely rare with 64-bit hashes (birthday problem
+suggests ~4 billion entries before 50% collision probability), but the schema
+handles them correctly when they occur.</p>
+<h2 id="entry-types">Entry Types</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Data Blob</th>
+<th>Metadata</th>
+<th>Encoder</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>graph</code></td>
+<td>Encoded SDG</td>
+<td>Provenance, edge confidences, scores</td>
+<td><code>GraphEntryEncoder</code></td>
+</tr>
+<tr>
+<td><code>trace</code></td>
+<td>Encoded DataFrame</td>
+<td>Algorithm, iterations, timing</td>
+<td><code>TraceEntryEncoder</code></td>
+</tr>
+<tr>
+<td><code>llm</code></td>
+<td>Tokenised JSON</td>
+<td>Provider, tokens, cost</td>
+<td><code>LLMEntryEncoder</code></td>
+</tr>
+</tbody>
+</table>
+<p>New types can be added by implementing <code>EntryEncoder</code> - no schema changes.</p>
+<h2 id="metadata-mutability-and-cache-queries">Metadata Mutability and Cache Queries</h2>
+<h3 id="mutable-metadata">Mutable Metadata</h3>
+<p>While <strong>matrix keys are immutable</strong> (they define entry identity), <strong>metadata
+can be updated</strong> after entry creation. This enables analysis workflows that
+enrich cached results:</p>
+<pre><code class="language-python"># Update metadata for an existing entry
+cache.update_metadata(
+    key={&quot;algorithm&quot;: &quot;pc&quot;, &quot;network&quot;: &quot;asia&quot;},
+    metadata_updates={&quot;bic_score&quot;: -1523.4, &quot;evaluated_at&quot;: &quot;2026-02-04&quot;}
+)
+</code></pre>
+<p><strong>Use cases:</strong>
+- Scoring workflows that evaluate cached graphs
+- Adding benchmark results to existing entries
+- Annotating entries with review status or notes</p>
+<h3 id="cache-as-workflow-input">Cache as Workflow Input</h3>
+<p>Workflow steps can use a Workflow Cache as an <strong>input source</strong>, selecting
+entries via predicates:</p>
+<pre><code class="language-yaml">name: &quot;Score cached graphs&quot;
+steps:
+  - action: score_graphs
+    cache_input:
+      source: &quot;results/discovery_cache.db&quot;
+      select:
+        # Matrix key predicates (indexed lookup)
+        algorithm: [pc, ges]
+        # Metadata predicates (may require scan)
+        bic_score: null            # Not yet scored
+    cache_output: &quot;results/discovery_cache.db&quot;  # Update same cache
+</code></pre>
+<h3 id="entry-selection-predicates">Entry Selection Predicates</h3>
+<p>Predicates can filter on matrix keys or metadata:</p>
+<table>
+<thead>
+<tr>
+<th>Predicate Type</th>
+<th>Index</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Matrix key equality</td>
+<td>✓ Hash lookup</td>
+<td><code>algorithm: pc</code></td>
+</tr>
+<tr>
+<td>Matrix key in list</td>
+<td>✓ Multiple lookups</td>
+<td><code>algorithm: [pc, ges]</code></td>
+</tr>
+<tr>
+<td>Metadata equality</td>
+<td>✗ Full scan</td>
+<td><code>evaluated: true</code></td>
+</tr>
+<tr>
+<td>Metadata comparison</td>
+<td>✗ Full scan</td>
+<td><code>bic_score: {gt: -1000}</code></td>
+</tr>
+<tr>
+<td>Metadata null check</td>
+<td>✗ Full scan</td>
+<td><code>bic_score: null</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">def select_entries(
+    self,
+    matrix_predicates: dict[str, Any] | None = None,
+    metadata_predicates: dict[str, Any] | None = None,
+) -&gt; Iterator[CacheEntry]:
+    &quot;&quot;&quot;Select entries matching predicates.
+
+    Args:
+        matrix_predicates: Filter on matrix key values (indexed).
+        metadata_predicates: Filter on metadata fields (scan).
+
+    Yields:
+        Matching cache entries.
+    &quot;&quot;&quot;
+    if matrix_predicates:
+        # Build candidate set from matrix key lookups
+        candidates = self._lookup_by_matrix(matrix_predicates)
+    else:
+        # No matrix filter - full cache scan
+        candidates = self._scan_all_entries()
+
+    # Apply metadata filters
+    for entry in candidates:
+        if self._matches_metadata(entry, metadata_predicates):
+            yield entry
+</code></pre>
+<h3 id="query-optimisation">Query Optimisation</h3>
+<p>When matrix predicates are provided, selection is efficient:</p>
+<pre><code class="language-python"># Indexed: O(k) where k = number of matching matrix combinations
+select(matrix_predicates={&quot;algorithm&quot;: &quot;pc&quot;, &quot;network&quot;: &quot;asia&quot;})
+
+# Scan: O(n) where n = total entries
+select(metadata_predicates={&quot;bic_score&quot;: {&quot;gt&quot;: -1000}})
+
+# Hybrid: O(k) lookups + filter
+select(
+    matrix_predicates={&quot;algorithm&quot;: [&quot;pc&quot;, &quot;ges&quot;]},
+    metadata_predicates={&quot;bic_score&quot;: null}
+)
+</code></pre>
+<p><strong>Future optimisation</strong>: Add optional indexes on frequently-queried metadata
+fields if scan performance becomes a bottleneck.</p>
+<h2 id="importexport">Import/Export</h2>
+<h3 id="export-to-open-formats">Export to Open Formats</h3>
+<pre><code class="language-bash">cqflow cache export workflow.db --output ./exported/
+</code></pre>
+<p>The export creates a <strong>hierarchical directory structure mirroring the matrix
+parameters</strong>, making results human-navigable:</p>
+<pre><code>exported/
+├── pc/                          # algorithm (1st matrix variable)
+│   ├── asia/                    # network (2nd matrix variable)
+│   │   ├── graph.graphml
+│   │   ├── trace.csv            # (if present)
+│   │   └── metadata.json
+│   └── cancer/
+│       ├── graph.graphml
+│       └── metadata.json
+├── ges/
+│   ├── asia/
+│   │   ├── graph.graphml
+│   │   └── metadata.json
+│   └── cancer/
+│       ├── graph.graphml
+│       └── metadata.json
+└── manifest.json                # Index with full matrix key mappings
+</code></pre>
+<p>The directory hierarchy follows the order of matrix variables as defined in
+the workflow. The <code>manifest.json</code> provides a complete index mapping directory
+paths to cache hashes and full matrix key values:</p>
+<pre><code class="language-json">{
+  &quot;matrix_variables&quot;: [&quot;algorithm&quot;, &quot;network&quot;],
+  &quot;entries&quot;: [
+    {
+      &quot;path&quot;: &quot;pc/asia&quot;,
+      &quot;hash&quot;: &quot;a3f7b2c1e9d4f8a2&quot;,
+      &quot;key&quot;: {&quot;algorithm&quot;: &quot;pc&quot;, &quot;network&quot;: &quot;asia&quot;},
+      &quot;data_types&quot;: [&quot;graph&quot;, &quot;trace&quot;]
+    },
+    {
+      &quot;path&quot;: &quot;pc/cancer&quot;,
+      &quot;hash&quot;: &quot;b4e8c3d2f1a5e9b3&quot;,
+      &quot;key&quot;: {&quot;algorithm&quot;: &quot;pc&quot;, &quot;network&quot;: &quot;cancer&quot;},
+      &quot;data_types&quot;: [&quot;graph&quot;]
+    }
+  ]
+}
+</code></pre>
+<h3 id="import-from-open-formats">Import from Open Formats</h3>
+<pre><code class="language-bash">cqflow cache import ./exported/ --into results.db
+</code></pre>
+<p>Useful for:</p>
+<ul>
+<li>Populating test fixtures</li>
+<li>Sharing results between researchers</li>
+<li>Restoring from Zenodo archives</li>
+</ul>
+<h2 id="integration-with-workflows">Integration with Workflows</h2>
+<h3 id="writing-results">Writing Results</h3>
+<p>Actions write results via the workflow context:</p>
+<pre><code class="language-python">def run(self, inputs, mode, context, logger):
+    # ... generate graph and trace ...
+
+    if context and context.cache:
+        context.cache.put(
+            key_data=context.matrix_values,  # Original key dict
+            data={                           # Multiple data blobs
+                &quot;graph&quot;: graph,
+                &quot;trace&quot;: trace,              # Optional
+            },
+            metadata={
+                &quot;provenance&quot;: {...},
+                &quot;edge_confidences&quot;: {...}
+            }
+        )
+</code></pre>
+<h3 id="conservative-execution">Conservative Execution</h3>
+<p>The workflow executor checks cache before running steps:</p>
+<pre><code class="language-python">if cache.exists(context.matrix_values):
+    logger.info(&quot;Skipping: result already cached&quot;)
+    return cache.get(context.matrix_values, &quot;graph&quot;)
+</code></pre>
+<h2 id="cross-package-dependencies">Cross-Package Dependencies</h2>
+<p>Workflow Caches span three packages:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>causaliq-core</strong></td>
+<td>v0.4.0</td>
+<td>TokenCache, JsonEncoder, SDG encode/decode/GraphML</td>
+</tr>
+<tr>
+<td><strong>causaliq-knowledge</strong></td>
+<td>v0.5.0</td>
+<td>GraphEntryEncoder, update generate_graph action</td>
+</tr>
+<tr>
+<td><strong>causaliq-workflow</strong></td>
+<td>v0.2.0</td>
+<td>WorkflowCache class, CLI commands, workflow integration</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementation order</strong>: core → knowledge → workflow (each depends on prior)</p>
+<h2 id="future-considerations">Future Considerations</h2>
+<p><strong>Deferred to later releases:</strong></p>
+<ul>
+<li>Metadata indexing for complex queries</li>
+<li>SDG edge attributes</li>
+<li>Cache key strategies beyond matrix values</li>
+<li>Cache comparison and diff tools</li>
 </ul>
 
 
@@ -2336,7 +2454,7 @@ steps:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../action_architecture_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Architecture">
+          <a href="../logging_architecture_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Logging Architecture">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2346,20 +2464,20 @@ steps:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Action Architecture
+                Logging Architecture
               </div>
             </div>
           </a>
         
         
           
-          <a href="../workflow_executor_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Workflow Executor">
+          <a href="../../api/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Workflow Executor
+                Overview
               </div>
             </div>
             <div class="md-footer__button md-icon">

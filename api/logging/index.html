@@ -753,14 +753,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -945,6 +945,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -2867,11 +2895,18 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
 </code></pre>
 <h3 id="action-integration">Action Integration</h3>
 <p>Actions will receive the logger as an optional parameter for task-level logging:</p>
-<pre><code class="language-python"># Future action integration
-def run(self, inputs, mode=&quot;dry-run&quot;, logger=None):
+<pre><code class="language-python"># Action integration pattern
+def run(
+    self,
+    action: str,
+    parameters: Dict[str, Any],
+    mode: str = &quot;dry-run&quot;,
+    context=None,
+    logger=None,
+) -&gt; Dict[str, Any]:
     if logger:
         # Log task execution details
-        pass
+        logger.info(f&quot;Executing action: {action}&quot;)
     return results
 </code></pre>
 <h3 id="cli-integration">CLI Integration</h3>
@@ -2898,7 +2933,7 @@ except Exception as e:
     print(f&quot;Workflow failed: {e}&quot;)
 </code></pre>
 <hr />
-<p><strong>Next</strong>: <a href="../cli/">CLI Interface</a> | <strong>Previous</strong>: <a href="../status/">Status System</a> | <strong>Up</strong>: <a href="../overview/">API Reference</a></p>
+<p><strong><a href="../status/">← Previous: Status System</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../cli/">Next: CLI Interface →</a></strong></p>
 
 
 

@@ -751,14 +751,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/results_cache_design/" class="md-nav__link">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Results Cache Design
+    Workflow Cache Design
   
 
     
@@ -943,6 +943,34 @@
     
   
     Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
   
 
     
@@ -1852,34 +1880,42 @@ steps:
 <h2 id="custom-actions">Custom Actions</h2>
 <h3 id="creating-domain-specific-actions">Creating Domain-Specific Actions</h3>
 <pre><code class="language-python"># custom_actions/causal_discovery.py
-from causaliq_workflow.action import CausalIQAction, ActionExecutionError
+from causaliq_workflow.action import BaseActionProvider, ActionExecutionError
 from typing import Any, Dict
 import pandas as pd
 import networkx as nx
 
-class PCAlgorithmAction(CausalIQAction):
+class PCAlgorithmAction(BaseActionProvider):
     &quot;&quot;&quot;PC algorithm for causal structure learning.&quot;&quot;&quot;
 
     name = &quot;pc-algorithm&quot;
     version = &quot;2.1.0&quot;
     description = &quot;Peter-Clark algorithm for causal discovery&quot;
+    supported_actions = {&quot;learn_structure&quot;}
 
-    def run(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
+    def run(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str = &quot;dry-run&quot;,
+        context=None,
+        logger=None,
+    ) -&gt; Dict[str, Any]:
         &quot;&quot;&quot;Execute PC algorithm.&quot;&quot;&quot;
         try:
             # Load data
-            data_path = inputs[&quot;data_path&quot;]
+            data_path = parameters[&quot;data_path&quot;]
             data = pd.read_csv(data_path)
 
             # PC algorithm parameters
-            alpha = inputs.get(&quot;alpha&quot;, 0.05)
-            max_depth = inputs.get(&quot;max_depth&quot;, 3)
+            alpha = parameters.get(&quot;alpha&quot;, 0.05)
+            max_depth = parameters.get(&quot;max_depth&quot;, 3)
 
             # Run PC algorithm (simplified example)
             graph = self._run_pc_algorithm(data, alpha, max_depth)
 
             # Save results
-            output_path = inputs[&quot;output_path&quot;]
+            output_path = parameters[&quot;output_path&quot;]
             nx.write_graphml(graph, output_path)
 
             return {
@@ -1902,18 +1938,26 @@ class PCAlgorithmAction(CausalIQAction):
         # Add some edges based on correlations (simplified)
         return G
 
-class NetworkAnalysisAction(CausalIQAction):
+class NetworkAnalysisAction(BaseActionProvider):
     &quot;&quot;&quot;Network analysis and metrics calculation.&quot;&quot;&quot;
 
     name = &quot;network-analysis&quot; 
     version = &quot;1.3.0&quot;
     description = &quot;Compute network topology metrics&quot;
+    supported_actions = {&quot;analyse_network&quot;}
 
-    def run(self, inputs: Dict[str, Any]) -&gt; Dict[str, Any]:
-        &quot;&quot;&quot;Analyze network structure.&quot;&quot;&quot;
+    def run(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str = &quot;dry-run&quot;,
+        context=None,
+        logger=None,
+    ) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;Analyse network structure.&quot;&quot;&quot;
         try:
             # Load structure
-            structure_path = inputs[&quot;structure_path&quot;]
+            structure_path = parameters[&quot;structure_path&quot;]
             graph = nx.read_graphml(structure_path)
 
             # Compute metrics
@@ -1931,7 +1975,7 @@ class NetworkAnalysisAction(CausalIQAction):
             metrics[&quot;avg_centrality&quot;] = sum(centrality.values()) / len(centrality)
 
             # Save metrics
-            output_path = inputs[&quot;output_path&quot;]
+            output_path = parameters[&quot;output_path&quot;]
             import json
             with open(output_path, &quot;w&quot;) as f:
                 json.dump(metrics, f, indent=2)

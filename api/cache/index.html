@@ -1,0 +1,4548 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../workflow/">
+      
+      
+        <link rel="next" href="../schema/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Workflow Cache - causaliq-workflow</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="http://causaliq.org/css/mkdocs.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#workflow-cache-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="causaliq-workflow" class="md-header__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            causaliq-workflow
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Workflow Cache
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="light" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../roadmap/" class="md-tabs__link">
+          
+  
+  
+  Requirements
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="causaliq-workflow" class="md-nav__button md-logo" aria-label="causaliq-workflow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    causaliq-workflow
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Requirements
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../example_workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Documents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Documents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/matrix_expansion_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_auto_discovery_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/workflow_executor_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/logging_architecture_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/workflow_cache_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#causaliq-core-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq-core Foundation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcacheworkflowcache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.WorkflowCache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowCache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WorkflowCache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache(db_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        db_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        open
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        close
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.put" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        put
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="put">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.put(key_data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        key_data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.put(entry)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        entry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.get(key_data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        key_data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        exists
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="exists">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.exists(key_data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        key_data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.entry_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        entry_count
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.export(output_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        output_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.export(matrix_keys)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix_keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.import_entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        import_entries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="import_entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.import_entries(input_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        input_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcachecacheentry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.CacheEntry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheEntry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheEntry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="add_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object(obj_type)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        obj_type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object(content)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        content
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_action_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_action_result
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="from_action_result">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_action_result(metadata)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_action_result(objects)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_storage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="from_storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_storage(data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_storage(metadata)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.get_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.get_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.has_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        has_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="has_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.has_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.object_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        object_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.remove_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        remove_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="remove_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.remove_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.to_action_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_action_result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.to_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcachecacheobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.CacheObject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheObject
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheObject">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject.from_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_dict
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="from_dict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject.from_dict(data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject.to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exception Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcachematrixschemaerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.MatrixSchemaError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.MatrixSchemaError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MatrixSchemaError
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MatrixSchemaError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.MatrixSchemaError--cache-has-entries-with-keys-algorithm-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache has entries with keys {"algorithm", "dataset"}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.MatrixSchemaError--trying-to-add-entry-with-algorithm-network-raises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trying to add entry with {"algorithm", "network"} raises
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-cache-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Cache Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-key-hashing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Key Hashing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-schema-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Schema Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-and-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export and Import
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-memory-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-Memory Cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#causaliq-core-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq-core Foundation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcacheworkflowcache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.WorkflowCache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowCache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WorkflowCache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache(db_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        db_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        open
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        close
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.put" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        put
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="put">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.put(key_data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        key_data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.put(entry)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        entry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.get(key_data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        key_data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        exists
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="exists">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.exists(key_data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        key_data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.entry_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        entry_count
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.export(output_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        output_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.export(matrix_keys)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        matrix_keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.import_entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        import_entries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="import_entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.WorkflowCache.import_entries(input_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        input_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcachecacheentry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.CacheEntry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheEntry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheEntry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="add_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object(obj_type)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        obj_type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.add_object(content)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        content
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_action_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_action_result
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="from_action_result">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_action_result(metadata)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_action_result(objects)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_storage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="from_storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_storage(data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.from_storage(metadata)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.get_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.get_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.has_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        has_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="has_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.has_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.object_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        object_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.remove_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        remove_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="remove_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.remove_object(name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.to_action_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_action_result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheEntry.to_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcachecacheobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.CacheObject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheObject
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheObject">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject.from_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_dict
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="from_dict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject.from_dict(data)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.CacheObject.to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exception Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflowcachematrixschemaerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        causaliq_workflow.cache.MatrixSchemaError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.MatrixSchemaError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MatrixSchemaError
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MatrixSchemaError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.MatrixSchemaError--cache-has-entries-with-keys-algorithm-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache has entries with keys {"algorithm", "dataset"}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.cache.MatrixSchemaError--trying-to-add-entry-with-algorithm-network-raises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trying to add entry with {"algorithm", "network"} raises
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-cache-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Cache Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-key-hashing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Key Hashing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-schema-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Schema Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-and-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export and Import
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-memory-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-Memory Cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="workflow-cache-api">Workflow Cache API</h1>
+<p>The workflow cache provides SQLite-based storage for workflow step results,
+enabling conservative execution and reproducibility. It is built on
+causaliq-core's <code>TokenCache</code> infrastructure.</p>
+<h2 id="causaliq-core-foundation">causaliq-core Foundation</h2>
+<p>The workflow cache imports the following from causaliq-core:</p>
+<ul>
+<li><strong>TokenCache</strong> - SQLite-based caching with tokenised JSON storage</li>
+<li><strong>JsonCompressor</strong> - Compressor for JSON tokenisation</li>
+<li><strong>Compressor</strong> - Abstract compressor interface</li>
+</ul>
+<h2 id="core-classes">Core Classes</h2>
+<h3 id="causaliq_workflowcacheworkflowcache">causaliq_workflow.cache.WorkflowCache</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="causaliq_workflow.cache.WorkflowCache" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">WorkflowCache</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">WorkflowCache</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="db_path (causaliq_workflow.cache.WorkflowCache(db_path))" href="#causaliq_workflow.cache.WorkflowCache(db_path)">db_path</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+        <p>High-level cache for workflow step results.</p>
+<p>Provides a simplified interface for storing and retrieving workflow
+results as CacheEntry objects. Uses matrix variable values as cache
+keys, with SHA-256 hashing for compact storage.</p>
+<p>Each entry contains metadata and named objects (e.g., 'graph',
+'confidences'), allowing a single workflow step to produce multiple
+outputs that are stored together.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.cache.WorkflowCache.db_path">db_path</span></code></b>
+          –
+          <div class="doc-md-description">
+            <p>Path to SQLite database file, or ":memory:" for in-memory.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>from causaliq_workflow.cache import WorkflowCache, CacheEntry
+with WorkflowCache(":memory:") as cache:
+...     entry = CacheEntry()
+...     entry.metadata["node_count"] = 5
+...     entry.add_object("graph", "graphml", "<graphml>...</graphml>")
+...     key = {"algorithm": "pc", "network": "asia"}
+...     cache.put(key, entry)
+...     result = cache.get(key)
+...     print(result.metadata)
+{'node_count': 5}</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h4 id="causaliq_workflow.cache.WorkflowCache(db_path)" class="doc doc-heading doc-heading-parameter">              <b><code>db_path</code></b>
+</h4>              (<code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to SQLite database file. Use ":memory:" for
+in-memory database (fast, non-persistent).</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            open (causaliq_workflow.cache.WorkflowCache.open)" href="#causaliq_workflow.cache.WorkflowCache.open">open</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Open the database connection and initialise schema.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            close (causaliq_workflow.cache.WorkflowCache.close)" href="#causaliq_workflow.cache.WorkflowCache.close">close</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Close the database connection.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            put (causaliq_workflow.cache.WorkflowCache.put)" href="#causaliq_workflow.cache.WorkflowCache.put">put</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Store a workflow entry in the cache.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            get (causaliq_workflow.cache.WorkflowCache.get)" href="#causaliq_workflow.cache.WorkflowCache.get">get</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Retrieve a workflow entry from the cache.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            exists (causaliq_workflow.cache.WorkflowCache.exists)" href="#causaliq_workflow.cache.WorkflowCache.exists">exists</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Check if a cache entry exists.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            entry_count (causaliq_workflow.cache.WorkflowCache.entry_count)" href="#causaliq_workflow.cache.WorkflowCache.entry_count">entry_count</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Count cache entries.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            export (causaliq_workflow.cache.WorkflowCache.export)" href="#causaliq_workflow.cache.WorkflowCache.export">export</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Export cache entries to directory or zip file.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            import_entries (causaliq_workflow.cache.WorkflowCache.import_entries)" href="#causaliq_workflow.cache.WorkflowCache.import_entries">import_entries</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Import cache entries from directory or zip file.</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.open" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">open</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">open</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            WorkflowCache (causaliq_workflow.cache.workflow_cache.WorkflowCache)" href="#causaliq_workflow.cache.WorkflowCache">WorkflowCache</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Open the database connection and initialise schema.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            WorkflowCache (causaliq_workflow.cache.workflow_cache.WorkflowCache)" href="#causaliq_workflow.cache.WorkflowCache">WorkflowCache</a></code>
+          –
+          <div class="doc-md-description">
+            <p>self for method chaining.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="RuntimeError">RuntimeError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>If already connected.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.close" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">close</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Close the database connection.</p>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.put" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">put</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">put</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="key_data (causaliq_workflow.cache.WorkflowCache.put(key_data))" href="#causaliq_workflow.cache.WorkflowCache.put(key_data)">key_data</a></span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="entry (causaliq_workflow.cache.WorkflowCache.put(entry))" href="#causaliq_workflow.cache.WorkflowCache.put(entry)">entry</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store a workflow entry in the cache.</p>
+<p>If an entry with the same key already exists, it is replaced.</p>
+<p>Validates that key_data uses the same matrix variable names as
+existing entries to ensure cache consistency.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.put(key_data)" class="doc doc-heading doc-heading-parameter">              <b><code>key_data</code></b>
+</h5>              (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary of matrix variable values (cache key).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.put(entry)" class="doc doc-heading doc-heading-parameter">              <b><code>entry</code></b>
+</h5>              (<code><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>CacheEntry containing metadata and objects.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="str">str</span></code>
+          –
+          <div class="doc-md-description">
+            <p>The hash key used for storage.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            MatrixSchemaError (causaliq_workflow.cache.workflow_cache.MatrixSchemaError)" href="#causaliq_workflow.cache.MatrixSchemaError">MatrixSchemaError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If key_data uses different variable names
+than existing entries.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with WorkflowCache(":memory:") as cache:
+...     entry = CacheEntry()
+...     entry.metadata["result"] = "ok"
+...     key = {"algorithm": "pc"}
+...     hash_key = cache.put(key, entry)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.get" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="key_data (causaliq_workflow.cache.WorkflowCache.get(key_data))" href="#causaliq_workflow.cache.WorkflowCache.get(key_data)">key_data</a></span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieve a workflow entry from the cache.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.get(key_data)" class="doc doc-heading doc-heading-parameter">              <b><code>key_data</code></b>
+</h5>              (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary of matrix variable values (cache key).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a> | None</code>
+          –
+          <div class="doc-md-description">
+            <p>CacheEntry if found, None otherwise.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with WorkflowCache(":memory:") as cache:
+...     entry = CacheEntry()
+...     entry.metadata["result"] = "ok"
+...     cache.put({"algo": "pc"}, entry)
+...     result = cache.get({"algo": "pc"})
+...     print(result.metadata)
+{'result': 'ok'}</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.exists" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">exists</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">exists</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="key_data (causaliq_workflow.cache.WorkflowCache.exists(key_data))" href="#causaliq_workflow.cache.WorkflowCache.exists(key_data)">key_data</a></span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Check if a cache entry exists.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.exists(key_data)" class="doc doc-heading doc-heading-parameter">              <b><code>key_data</code></b>
+</h5>              (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary of matrix variable values (cache key).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="bool">bool</span></code>
+          –
+          <div class="doc-md-description">
+            <p>True if entry exists, False otherwise.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with WorkflowCache(":memory:") as cache:
+...     cache.exists({"algo": "pc"})  # False
+...     cache.put({"algo": "pc"}, CacheEntry())
+...     cache.exists({"algo": "pc"})  # True</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.entry_count" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">entry_count</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">entry_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="int">int</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Count cache entries.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="int">int</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Number of entries in the cache.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.export" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">export</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">export</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="output_path (causaliq_workflow.cache.WorkflowCache.export(output_path))" href="#causaliq_workflow.cache.WorkflowCache.export(output_path)">output_path</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="matrix_keys (causaliq_workflow.cache.WorkflowCache.export(matrix_keys))" href="#causaliq_workflow.cache.WorkflowCache.export(matrix_keys)">matrix_keys</a></span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="int">int</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Export cache entries to directory or zip file.</p>
+<p>Creates a hierarchical directory structure based on matrix variable
+values. Each entry's objects are written as individual files.</p>
+<p>The output format is determined by the path extension:
+- Path ending in .zip: creates a zip archive
+- Otherwise: creates a directory structure</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.export(output_path)" class="doc doc-heading doc-heading-parameter">              <b><code>output_path</code></b>
+</h5>              (<code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to output directory or .zip file.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.export(matrix_keys)" class="doc doc-heading doc-heading-parameter">              <b><code>matrix_keys</code></b>
+</h5>              (<code><span title="list">list</span>[<span title="str">str</span>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Ordered list of matrix variable names for directory
+hierarchy. If None, uses alphabetical order.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="int">int</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Number of entries exported.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with WorkflowCache("cache.db") as cache:
+...     # Export to dir: asia/pc/graph.graphml
+...     cache.export("./out", ["dataset", "algorithm"])
+...     # Export to zip file
+...     cache.export("./out.zip", ["dataset"])</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.WorkflowCache.import_entries" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">import_entries</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">import_entries</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="input_path (causaliq_workflow.cache.WorkflowCache.import_entries(input_path))" href="#causaliq_workflow.cache.WorkflowCache.import_entries(input_path)">input_path</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="int">int</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Import cache entries from directory or zip file.</p>
+<p>Reads entries exported by <code>export()</code> and stores them back into
+the cache. The input format is determined by the path:
+- Path ending in .zip: reads from a zip archive
+- Otherwise: reads from a directory structure</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.WorkflowCache.import_entries(input_path)" class="doc doc-heading doc-heading-parameter">              <b><code>input_path</code></b>
+</h5>              (<code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to input directory or .zip file.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="int">int</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Number of entries imported.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>If input_path does not exist.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with WorkflowCache("cache.db") as cache:
+...     # Import from directory
+...     cache.import_entries("./exported")
+...     # Import from zip file
+...     cache.import_entries("./exported.zip")</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="causaliq_workflowcachecacheentry">causaliq_workflow.cache.CacheEntry</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="causaliq_workflow.cache.CacheEntry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CacheEntry</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CacheEntry</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cache.CacheEntry(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="dict">dict</span></span><span class="p">(),</span> <span class="n"><span title="causaliq_workflow.cache.CacheEntry(objects)">objects</span></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheObject
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheObject)" href="#causaliq_workflow.cache.CacheObject">CacheObject</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="dict">dict</span></span><span class="p">())</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+        <p>A cached workflow result containing metadata and named objects.</p>
+<p>Represents a single cache entry identified by matrix variable values.
+Contains workflow metadata and zero or more named objects, each with
+a type and content.</p>
+<p>The entry structure maps directly to TokenCache storage:
+- metadata → TokenCache metadata field
+- objects → TokenCache data field</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.cache.CacheEntry.metadata">metadata</span></code></b>
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Workflow metadata dictionary.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.cache.CacheEntry.objects">objects</span></code></b>
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <a class="autorefs autorefs-internal" title="            CacheObject
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheObject)" href="#causaliq_workflow.cache.CacheObject">CacheObject</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Named objects dictionary (name → CacheObject).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>entry = CacheEntry()
+entry.metadata["node_count"] = 5
+entry.objects["graph"] = CacheObject(
+...     type="graphml",
+...     content="<graphml>...</graphml>"
+... )
+entry.objects["confidences"] = CacheObject(
+...     type="json",
+...     content='{"A-&gt;B": 0.95}'
+... )</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            add_object (causaliq_workflow.cache.CacheEntry.add_object)" href="#causaliq_workflow.cache.CacheEntry.add_object">add_object</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Add or replace a named object.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            from_action_result
+
+
+  
+      classmethod
+   (causaliq_workflow.cache.CacheEntry.from_action_result)" href="#causaliq_workflow.cache.CacheEntry.from_action_result">from_action_result</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Create from action result format.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            from_storage
+
+
+  
+      classmethod
+   (causaliq_workflow.cache.CacheEntry.from_storage)" href="#causaliq_workflow.cache.CacheEntry.from_storage">from_storage</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Create from TokenCache storage format.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            get_object (causaliq_workflow.cache.CacheEntry.get_object)" href="#causaliq_workflow.cache.CacheEntry.get_object">get_object</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Get a named object.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            has_object (causaliq_workflow.cache.CacheEntry.has_object)" href="#causaliq_workflow.cache.CacheEntry.has_object">has_object</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Check if a named object exists.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            object_names (causaliq_workflow.cache.CacheEntry.object_names)" href="#causaliq_workflow.cache.CacheEntry.object_names">object_names</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Get list of object names.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            remove_object (causaliq_workflow.cache.CacheEntry.remove_object)" href="#causaliq_workflow.cache.CacheEntry.remove_object">remove_object</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Remove a named object.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            to_action_result (causaliq_workflow.cache.CacheEntry.to_action_result)" href="#causaliq_workflow.cache.CacheEntry.to_action_result">to_action_result</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Convert to action result format.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            to_storage (causaliq_workflow.cache.CacheEntry.to_storage)" href="#causaliq_workflow.cache.CacheEntry.to_storage">to_storage</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Convert to storage format for TokenCache.</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.add_object" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">add_object</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_object</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="name (causaliq_workflow.cache.CacheEntry.add_object(name))" href="#causaliq_workflow.cache.CacheEntry.add_object(name)">name</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="obj_type (causaliq_workflow.cache.CacheEntry.add_object(obj_type))" href="#causaliq_workflow.cache.CacheEntry.add_object(obj_type)">obj_type</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="content (causaliq_workflow.cache.CacheEntry.add_object(content))" href="#causaliq_workflow.cache.CacheEntry.add_object(content)">content</a></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add or replace a named object.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.add_object(name)" class="doc doc-heading doc-heading-parameter">              <b><code>name</code></b>
+</h5>              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object name (e.g., 'graph', 'confidences').</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.add_object(obj_type)" class="doc doc-heading doc-heading-parameter">              <b><code>obj_type</code></b>
+</h5>              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object type (e.g., 'graphml', 'json').</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.add_object(content)" class="doc doc-heading doc-heading-parameter">              <b><code>content</code></b>
+</h5>              (<code><span title="typing.Any">Any</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object content.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>entry = CacheEntry()
+entry.add_object("graph", "graphml", "<graphml>...")</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.from_action_result" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">from_action_result</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_action_result</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="metadata (causaliq_workflow.cache.CacheEntry.from_action_result(metadata))" href="#causaliq_workflow.cache.CacheEntry.from_action_result(metadata)">metadata</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="objects (causaliq_workflow.cache.CacheEntry.from_action_result(objects))" href="#causaliq_workflow.cache.CacheEntry.from_action_result(objects)">objects</a></span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create from action result format.</p>
+<p>Converts the current action return format (metadata dict and
+objects list) to a CacheEntry.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.from_action_result(metadata)" class="doc doc-heading doc-heading-parameter">              <b><code>metadata</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Action metadata dictionary.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.from_action_result(objects)" class="doc doc-heading doc-heading-parameter">              <b><code>objects</code></b>
+</h5>              (<code><span title="list">list</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>List of object dicts with 'type', 'name', 'content'.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></code>
+          –
+          <div class="doc-md-description">
+            <p>CacheEntry instance.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>entry = CacheEntry.from_action_result(
+...     {"node_count": 5},
+...     [{"type": "graphml", "name": "graph", "content": "..."}]
+... )</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.from_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">from_storage</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_storage</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="data (causaliq_workflow.cache.CacheEntry.from_storage(data))" href="#causaliq_workflow.cache.CacheEntry.from_storage(data)">data</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="metadata (causaliq_workflow.cache.CacheEntry.from_storage(metadata))" href="#causaliq_workflow.cache.CacheEntry.from_storage(metadata)">metadata</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create from TokenCache storage format.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.from_storage(data)" class="doc doc-heading doc-heading-parameter">              <b><code>data</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Objects dict from TokenCache.get_data().</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.from_storage(metadata)" class="doc doc-heading doc-heading-parameter">              <b><code>metadata</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Metadata dict from TokenCache.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            CacheEntry
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheEntry)" href="#causaliq_workflow.cache.CacheEntry">CacheEntry</a></code>
+          –
+          <div class="doc-md-description">
+            <p>CacheEntry instance.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.get_object" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get_object</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_object</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="name (causaliq_workflow.cache.CacheEntry.get_object(name))" href="#causaliq_workflow.cache.CacheEntry.get_object(name)">name</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheObject
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheObject)" href="#causaliq_workflow.cache.CacheObject">CacheObject</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get a named object.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.get_object(name)" class="doc doc-heading doc-heading-parameter">              <b><code>name</code></b>
+</h5>              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object name to retrieve.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            CacheObject
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheObject)" href="#causaliq_workflow.cache.CacheObject">CacheObject</a> | None</code>
+          –
+          <div class="doc-md-description">
+            <p>CacheObject if found, None otherwise.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.has_object" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">has_object</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">has_object</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="name (causaliq_workflow.cache.CacheEntry.has_object(name))" href="#causaliq_workflow.cache.CacheEntry.has_object(name)">name</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Check if a named object exists.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.has_object(name)" class="doc doc-heading doc-heading-parameter">              <b><code>name</code></b>
+</h5>              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object name to check.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="bool">bool</span></code>
+          –
+          <div class="doc-md-description">
+            <p>True if object exists.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.object_names" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">object_names</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">object_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get list of object names.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="str">str</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>List of object names in the entry.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.remove_object" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">remove_object</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">remove_object</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="name (causaliq_workflow.cache.CacheEntry.remove_object(name))" href="#causaliq_workflow.cache.CacheEntry.remove_object(name)">name</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Remove a named object.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheEntry.remove_object(name)" class="doc doc-heading doc-heading-parameter">              <b><code>name</code></b>
+</h5>              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object name to remove.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="bool">bool</span></code>
+          –
+          <div class="doc-md-description">
+            <p>True if object was removed, False if not found.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.to_action_result" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">to_action_result</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_action_result</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert to action result format.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="tuple">tuple</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>], <span title="list">list</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple of (metadata, objects_list) matching action return format.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheEntry.to_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">to_storage</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_storage</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert to storage format for TokenCache.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple of (data, metadata) for TokenCache.put_data().</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+          –
+          <div class="doc-md-description">
+            <ul>
+<li>data: Objects dict serialised to dicts</li>
+</ul>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><span title="tuple">tuple</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>], <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+          –
+          <div class="doc-md-description">
+            <ul>
+<li>metadata: Entry metadata dict</li>
+</ul>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="causaliq_workflowcachecacheobject">causaliq_workflow.cache.CacheObject</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="causaliq_workflow.cache.CacheObject" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CacheObject</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CacheObject</span><span class="p">(</span><span class="n"><span title="causaliq_workflow.cache.CacheObject(type)">type</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="causaliq_workflow.cache.CacheObject(content)">content</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+        <p>A named object within a cache entry.</p>
+<p>Represents a single piece of data with a type identifier used for
+serialisation and export (e.g., graphml, json).</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.cache.CacheObject.type">type</span></code></b>
+              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Object type identifier (e.g., 'graphml', 'json').</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_workflow.cache.CacheObject.content">content</span></code></b>
+              (<code><span title="typing.Any">Any</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The object content (string for serialised formats).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>obj = CacheObject(type="graphml", content="<graphml>...</graphml>")
+obj.type
+'graphml'</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            from_dict
+
+
+  
+      classmethod
+   (causaliq_workflow.cache.CacheObject.from_dict)" href="#causaliq_workflow.cache.CacheObject.from_dict">from_dict</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Create from dictionary.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            to_dict (causaliq_workflow.cache.CacheObject.to_dict)" href="#causaliq_workflow.cache.CacheObject.to_dict">to_dict</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Convert to dictionary for serialisation.</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheObject.from_dict" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">from_dict</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_dict</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="data (causaliq_workflow.cache.CacheObject.from_dict(data))" href="#causaliq_workflow.cache.CacheObject.from_dict(data)">data</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CacheObject
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheObject)" href="#causaliq_workflow.cache.CacheObject">CacheObject</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create from dictionary.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.cache.CacheObject.from_dict(data)" class="doc doc-heading doc-heading-parameter">              <b><code>data</code></b>
+</h5>              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary with 'type' and 'content' keys.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            CacheObject
+
+
+  
+      dataclass
+   (causaliq_workflow.cache.entry.CacheObject)" href="#causaliq_workflow.cache.CacheObject">CacheObject</a></code>
+          –
+          <div class="doc-md-description">
+            <p>CacheObject instance.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="causaliq_workflow.cache.CacheObject.to_dict" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">to_dict</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert to dictionary for serialisation.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Dictionary with 'type' and 'content' keys.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="exception-handling">Exception Handling</h2>
+<h3 id="causaliq_workflowcachematrixschemaerror">causaliq_workflow.cache.MatrixSchemaError</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="causaliq_workflow.cache.MatrixSchemaError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">MatrixSchemaError</span>
+
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Raised when matrix variable keys don't match existing cache entries.</p>
+<p>Once a cache contains entries, all subsequent entries must use the
+same matrix variable names. This ensures cache consistency and
+prevents accidental data corruption from mismatched workflows.</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<h4 id="causaliq_workflow.cache.MatrixSchemaError--cache-has-entries-with-keys-algorithm-dataset">Cache has entries with keys {"algorithm", "dataset"}</h4>
+<h4 id="causaliq_workflow.cache.MatrixSchemaError--trying-to-add-entry-with-algorithm-network-raises">Trying to add entry with {"algorithm", "network"} raises</h4>
+<p>raise MatrixSchemaError(
+...     "Matrix keys mismatch: got {'algorithm', 'network'}, "
+...     "expected {'algorithm', 'dataset'}"
+... )</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div><hr />
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="basic-cache-operations">Basic Cache Operations</h3>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry
+
+# Create and use cache with context manager
+with WorkflowCache(&quot;results/experiment.db&quot;) as cache:
+    # Create an entry with metadata
+    entry = CacheEntry()
+    entry.metadata[&quot;algorithm&quot;] = &quot;pc&quot;
+    entry.metadata[&quot;alpha&quot;] = 0.05
+    entry.metadata[&quot;node_count&quot;] = 8
+
+    # Add a graph object
+    graphml_content = '''&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+    &lt;graphml xmlns=&quot;http://graphml.graphdrawing.org/xmlns&quot;&gt;
+      &lt;graph id=&quot;G&quot; edgedefault=&quot;directed&quot;&gt;
+        &lt;node id=&quot;A&quot;/&gt;&lt;node id=&quot;B&quot;/&gt;
+        &lt;edge source=&quot;A&quot; target=&quot;B&quot;/&gt;
+      &lt;/graph&gt;
+    &lt;/graphml&gt;'''
+    entry.add_object(&quot;graph&quot;, &quot;graphml&quot;, graphml_content)
+
+    # Store with matrix key
+    key = {&quot;network&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;, &quot;sample_size&quot;: &quot;1000&quot;}
+    cache.put(key, entry)
+
+    # Check existence
+    if cache.exists(key):
+        print(&quot;Entry found in cache&quot;)
+
+    # Retrieve entry
+    result = cache.get(key)
+    print(f&quot;Algorithm: {result.metadata['algorithm']}&quot;)
+</code></pre>
+<h3 id="matrix-key-hashing">Matrix Key Hashing</h3>
+<p>The cache uses SHA-256 hashing of matrix variable values as keys:</p>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache
+
+with WorkflowCache(&quot;:memory:&quot;) as cache:
+    # These keys produce different hashes
+    key1 = {&quot;algorithm&quot;: &quot;pc&quot;, &quot;network&quot;: &quot;asia&quot;}
+    key2 = {&quot;algorithm&quot;: &quot;ges&quot;, &quot;network&quot;: &quot;asia&quot;}
+
+    # Key order doesn't matter - sorted before hashing
+    key3 = {&quot;network&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;}  # Same hash as key1
+</code></pre>
+<h3 id="matrix-schema-validation">Matrix Schema Validation</h3>
+<p>Once a cache contains entries, all subsequent entries must use the same
+matrix variable names:</p>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry, MatrixSchemaError
+
+with WorkflowCache(&quot;:memory:&quot;) as cache:
+    entry = CacheEntry()
+
+    # First entry establishes schema
+    cache.put({&quot;algorithm&quot;: &quot;pc&quot;, &quot;network&quot;: &quot;asia&quot;}, entry)
+
+    # This raises MatrixSchemaError - wrong keys
+    try:
+        cache.put({&quot;method&quot;: &quot;pc&quot;, &quot;dataset&quot;: &quot;asia&quot;}, entry)
+    except MatrixSchemaError as e:
+        print(f&quot;Schema error: {e}&quot;)
+</code></pre>
+<h3 id="export-and-import">Export and Import</h3>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache
+from pathlib import Path
+
+# Export cache to directory
+with WorkflowCache(&quot;experiment.db&quot;) as cache:
+    exported = cache.export(Path(&quot;./exported&quot;))
+    print(f&quot;Exported {exported} entries&quot;)
+
+# Export to zip file
+with WorkflowCache(&quot;experiment.db&quot;) as cache:
+    exported = cache.export(Path(&quot;./results.zip&quot;))
+
+# Import from directory
+with WorkflowCache(&quot;new_cache.db&quot;) as cache:
+    imported = cache.import_entries(Path(&quot;./exported&quot;))
+    print(f&quot;Imported {imported} entries&quot;)
+</code></pre>
+<h3 id="in-memory-cache">In-Memory Cache</h3>
+<p>Use <code>:memory:</code> for fast, non-persistent caching:</p>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry
+
+# In-memory cache for testing
+with WorkflowCache(&quot;:memory:&quot;) as cache:
+    entry = CacheEntry()
+    entry.metadata[&quot;test&quot;] = True
+
+    cache.put({&quot;key&quot;: &quot;value&quot;}, entry)
+    assert cache.entry_count() == 1
+# Cache automatically closed and discarded
+</code></pre>
+<h2 id="architecture-notes">Architecture Notes</h2>
+<p>The WorkflowCache wraps causaliq-core's TokenCache with workflow-specific
+functionality:</p>
+<ul>
+<li><strong>Matrix key hashing</strong> - SHA-256 hash of sorted matrix values (16 hex chars)</li>
+<li><strong>Schema validation</strong> - Ensures consistent matrix variable names across
+  entries</li>
+<li><strong>Entry model</strong> - CacheEntry with metadata dict and named objects list</li>
+<li><strong>Export/Import</strong> - Convert entries to/from open standard formats (GraphML,
+  JSON)</li>
+</ul>
+<p>The cache design focuses on:</p>
+<ul>
+<li><strong>Speed</strong> - Fast existence checks and lookups via hash keys</li>
+<li><strong>Compactness</strong> - JSON tokenisation reduces storage size</li>
+<li><strong>Reproducibility</strong> - Entries can be exported to human-readable formats</li>
+</ul>
+<hr />
+<p><strong><a href="../workflow/">← Previous: Workflow Engine</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../schema/">Next: Schema Validation →</a></strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../workflow/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Engine">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Workflow Engine
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../schema/" class="md-footer__link md-footer__link--next" aria-label="Next: Schema Validation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Schema Validation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
