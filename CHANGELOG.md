@@ -8,22 +8,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Nothing yet
 
 ### Changed
+
 - Nothing yet
 
 ### Deprecated
+
 - Nothing yet
 
 ### Removed
+
 - Nothing yet
 
 ### Fixed
+
 - Nothing yet
 
 ### Security
+
 - Nothing yet
+
+## [0.2.0] Knowledge Workflows - 2026-02-18
+
+### Added
+
+- `WorkflowCache` class for storing workflow step results in SQLite databases,
+  built on causaliq-core's `TokenCache` infrastructure
+- `CacheEntry` model with metadata dictionary and named objects list for
+  storing action outputs
+- `CacheObject` model for typed objects (e.g., graphml, json) within entries
+- Matrix key generation using SHA-256 hash of matrix variable values for cache
+  lookups
+- `MatrixSchemaError` exception for detecting matrix variable name mismatches
+- `cqflow export_cache` CLI command to export cache entries to directory or zip
+  file
+- `cqflow import_cache` CLI command to import cache entries from directory or
+  zip file
+- Built-in `echo` action for testing workflow execution, cache storage, and
+  export/import functionality
+- `WorkflowContext.matrix_key` property for computing cache keys from matrix
+  values
+- Cache support for both file-based and in-memory (`:memory:`) databases
+
+### Changed
+
+- Action providers now inherit from `CausalIQActionProvider` (from
+  causaliq-core) instead of local base class
+- Action `run()` method now returns `ActionResult` tuple (status, metadata,
+  objects) instead of dictionary
+- Registry imports `ActionExecutionError` and `CausalIQActionProvider` from
+  causaliq-core
+- WorkflowCache uses `JsonCompressor` from causaliq-core for tokenised JSON
+  storage
+- Updated documentation to reflect causaliq-core integration
+
+### Dependencies
+
+- Requires causaliq-core >= 0.4.0
 
 ## [0.1.0] Workflow Foundations - 2026-02-01
 

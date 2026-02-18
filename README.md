@@ -20,17 +20,33 @@
 
 ✅ **Implemented Releases**
 
-- **Release v0.1.0 - Workflow Foundations**: Plug-in actions, basic workflow and CLI support, 100% test coverage
+- **Release v0.1.0 - Workflow Foundations**: Plug-in actions, basic workflow
+  and CLI support, 100% test coverage
+
+- **Release v0.2.0 - Knowledge Workflows**: Integrate with causaliq-knowledge
+  generate_graph action and write results to workflow caches.
 
 *See Git commit history for detailed implementation progress*
 
 🛣️ Upcoming Releases
 
-- **Release v0.2.0 - Knowledge Workflows**: Integrate with causaliq-knowledge generate_graph action.
-- **Release v0.3.0 - Result Caching**: Output action results and metadata store to the results cache
-- **Release v0.4.0 - Analysis Workflows**: Graph averaging and structural analysis workflows.
-- **Release v0.5.0 - Enhanced Workflow**: Dry and comparison runs, runtime estimation and processing summary
-- **Release v0.6.0 - Discovery Workflows**: Structure learning algorithms integrated
+
+- **Release v0.3.0 - Analysis Workflows**: Graph averaging and structural
+  analysis workflows.
+- **Release v0.4.0 - Enhanced Workflow**: Dry and comparison runs, runtime
+  estimation and processing summary
+- **Release v0.5.0 - Discovery Workflows**: Structure learning algorithms
+  integrated
+
+## causaliq-core Integration
+
+causaliq-workflow builds on causaliq-core for its action framework and caching
+infrastructure:
+
+- **CausalIQActionProvider** - Base class for all action providers
+- **ActionInput/ActionResult** - Type-safe action interfaces
+- **ActionValidationError/ActionExecutionError** - Exception handling
+- **TokenCache/JsonCompressor** - SQLite-based caching with JSON tokenisation
 
 
 ## Brief Example Usage
