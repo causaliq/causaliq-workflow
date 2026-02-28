@@ -389,6 +389,13 @@ class WorkflowExecutor:
                     action_inputs, variables
                 )
 
+                # Implicitly pass matrix variables to action if not specified
+                # This allows actions to receive matrix values without
+                # explicit {{variable}} templates in the workflow
+                for matrix_var, matrix_val in job.items():
+                    if matrix_var not in resolved_inputs:
+                        resolved_inputs[matrix_var] = matrix_val
+
                 # Handle step-level cache from output parameter
                 output_path = resolved_inputs.pop("output", None)
                 step_cache = None
@@ -431,17 +438,36 @@ class WorkflowExecutor:
                         from causaliq_workflow.cache import store_action_result
 
                         objects = step_result.get("objects", [])
-                        metadata = {
+                        raw_metadata = {
                             k: v
                             for k, v in step_result.items()
                             if k not in ("status", "objects")
                         }
+
+                        # Structure metadata by provider/action
+                        action_class = self.action_registry.get_action_class(
+                            action_name
+                        )
+                        provider_name = getattr(
+                            action_class, "name", action_name
+                        )
+                        action_method = resolved_inputs.get(
+                            "action", "default"
+                        )
+                        metadata = {
+                            provider_name: {action_method: raw_metadata}
+                        }
+
+                        # Pass matrix key order for export directory structure
+                        matrix_key_order = list(context.matrix.keys())
+
                         store_action_result(
                             cache=context.cache,
                             context=context,
                             entry_type="graph",
                             metadata=metadata,
                             objects=objects,
+                            matrix_key_order=matrix_key_order,
                         )
 
                     # Log step completion in real-time if logger provided

@@ -69,6 +69,9 @@ class WorkflowCache:
     # Length of truncated SHA-256 hash (16 hex chars = 64 bits)
     HASH_LENGTH = 16
 
+    # Reserved hash for cache configuration (e.g., matrix key order)
+    CONFIG_HASH = "__config__"
+
     def __init__(self, db_path: str | Path) -> None:
         """Initialise WorkflowCache.
 
@@ -181,6 +184,58 @@ class WorkflowCache:
             Canonical JSON string with sorted keys.
         """
         return json.dumps(key_data, sort_keys=True, separators=(",", ":"))
+
+    # ========================================================================
+    # Matrix key order (for export directory structure)
+    # ========================================================================
+
+    def set_matrix_key_order(self, keys: list[str]) -> None:
+        """Store the matrix key order for export.
+
+        This should be called when first storing entries to preserve the
+        order from the workflow definition for export directory structure.
+
+        Args:
+            keys: Ordered list of matrix variable names.
+
+        Example:
+            >>> with WorkflowCache(":memory:") as cache:
+            ...     cache.set_matrix_key_order(["network", "N", "seeds"])
+        """
+        config = self._get_config()
+        config["matrix_key_order"] = keys
+        self._put_config(config)
+
+    def get_matrix_key_order(self) -> list[str] | None:
+        """Get the stored matrix key order.
+
+        Returns:
+            Ordered list of matrix variable names, or None if not set.
+        """
+        config = self._get_config()
+        return config.get("matrix_key_order")
+
+    def _get_config(self) -> dict[str, Any]:
+        """Get cache configuration from reserved entry."""
+        result = self.token_cache.get_data_with_metadata(
+            hash=self.CONFIG_HASH,
+            key_json=self.CONFIG_HASH,
+        )
+        if result is None:
+            return {}
+        data, _ = result
+        if isinstance(data, dict):
+            return data
+        return {}
+
+    def _put_config(self, config: dict[str, Any]) -> None:
+        """Store cache configuration in reserved entry."""
+        self.token_cache.put_data(
+            hash=self.CONFIG_HASH,
+            data=config,
+            metadata={},
+            key_json=self.CONFIG_HASH,
+        )
 
     # ========================================================================
     # Cache operations
@@ -334,15 +389,19 @@ class WorkflowCache:
     # ========================================================================
 
     def entry_count(self) -> int:
-        """Count cache entries.
+        """Count cache entries (excluding internal config).
 
         Returns:
             Number of entries in the cache.
         """
-        return self.token_cache.entry_count()
+        # Subtract 1 if config entry exists
+        count = self.token_cache.entry_count()
+        if self._get_config():
+            count -= 1
+        return max(0, count)
 
     def list_entries(self) -> list[dict[str, Any]]:
-        """List all cache entries with details.
+        """List all cache entries with details (excluding internal config).
 
         Returns entry details including matrix_values (parsed from key_json)
         and created_at timestamp.
@@ -354,6 +413,9 @@ class WorkflowCache:
         raw_entries = self.token_cache.list_entries()
         entries = []
         for entry in raw_entries:
+            # Skip config entry
+            if entry["hash"] == self.CONFIG_HASH:
+                continue
             # Parse key_json back to matrix_values dict
             key_json = entry["key_json"]
             matrix_values = json.loads(key_json) if key_json else {}
@@ -468,7 +530,8 @@ class WorkflowCache:
         Args:
             output_path: Path to output directory or .zip file.
             matrix_keys: Ordered list of matrix variable names for directory
-                hierarchy. If None, uses alphabetical order.
+                hierarchy. If None, uses stored matrix key order from
+                workflow, or falls back to alphabetical order.
 
         Returns:
             Number of entries exported.
@@ -481,6 +544,10 @@ class WorkflowCache:
             ...     cache.export("./out.zip", ["dataset"])
         """
         from causaliq_workflow.cache.export import export_entries
+
+        # Use stored matrix key order if not explicitly provided
+        if matrix_keys is None:
+            matrix_keys = self.get_matrix_key_order()
 
         return export_entries(self, output_path, matrix_keys)
 

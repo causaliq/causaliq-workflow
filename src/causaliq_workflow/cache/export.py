@@ -257,6 +257,7 @@ def store_action_result(
     entry_type: str,
     metadata: dict[str, Any],
     objects: list[dict[str, Any]],
+    matrix_key_order: list[str] | None = None,
 ) -> str | None:
     """Store action result to workflow cache (legacy interface).
 
@@ -266,6 +267,9 @@ def store_action_result(
         entry_type: Unused (kept for compatibility).
         metadata: Action result metadata dictionary.
         objects: List of object dicts with type, name, content.
+        matrix_key_order: Optional ordered list of matrix variable names
+            for export directory structure. If provided and not already
+            set in cache, stores this order.
 
     Returns:
         Hash key used for storage, or None if no cache available.
@@ -273,6 +277,10 @@ def store_action_result(
     _ = entry_type  # No longer used
     if cache is None:
         return None
+
+    # Store matrix key order if provided and not already set
+    if matrix_key_order is not None and cache.get_matrix_key_order() is None:
+        cache.set_matrix_key_order(matrix_key_order)
 
     return cache.put_from_action(
         key_data=context.matrix_values,

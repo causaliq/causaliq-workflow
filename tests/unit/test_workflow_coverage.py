@@ -292,3 +292,70 @@ def test_execute_workflow_missing_action(executor: WorkflowExecutor) -> None:
         WorkflowExecutionError, match="Action 'nonexistent-action' not found"
     ):
         executor.execute_workflow(workflow, mode="run")
+
+
+# Test matrix variables are passed implicitly to actions without templates.
+def test_execute_workflow_implicit_matrix_params(
+    executor: WorkflowExecutor,
+) -> None:
+    """Matrix variables should be passed to actions even without {{var}}."""
+    workflow = {
+        "id": "test-workflow",
+        "matrix": {
+            "network": ["asia", "alarm"],
+            "sample_size": [100, 500],
+        },
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                # Note: no {{network}} or {{sample_size}} templates
+                "with": {"explicit_param": "value"},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run")
+
+    # Should have 4 combinations (2 networks × 2 sample_sizes)
+    assert len(results) == 4
+
+    # Verify each result has implicit matrix params
+    for result in results:
+        step_result = result["steps"]["Test Step"]
+        params = step_result["parameters"]
+
+        # Explicit param should be present
+        assert params["explicit_param"] == "value"
+
+        # Matrix variables should be implicitly passed
+        assert "network" in params
+        assert "sample_size" in params
+        assert params["network"] in ["asia", "alarm"]
+        assert params["sample_size"] in [100, 500]
+
+
+# Test implicit matrix params do not override explicit params.
+def test_execute_workflow_implicit_does_not_override_explicit(
+    executor: WorkflowExecutor,
+) -> None:
+    """Explicit action params should not be overridden by matrix variables."""
+    workflow = {
+        "id": "test-workflow",
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                # Explicit network param should take precedence
+                "with": {"network": "custom_value"},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run")
+    assert len(results) == 1
+
+    step_result = results[0]["steps"]["Test Step"]
+    params = step_result["parameters"]
+
+    # Explicit param should NOT be overridden
+    assert params["network"] == "custom_value"

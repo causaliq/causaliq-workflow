@@ -645,3 +645,24 @@ def test_import_entries_delegates(tmp_path) -> None:
         entry = cache.get({"test": "import"})
         assert entry is not None
         assert entry.metadata.get("imported") is True
+
+
+# ============================================================================
+# Config handling edge cases
+# ============================================================================
+
+
+# Test _get_config returns empty dict when config data is not a dict.
+def test_get_config_returns_empty_when_not_dict(
+    mocker: "pytest.MockerFixture",  # type: ignore[name-defined]
+) -> None:
+    """Cover defensive code path when config data is non-dict."""
+    with WorkflowCache(":memory:") as cache:
+        # Mock token_cache.get_data_with_metadata to return non-dict data
+        mocker.patch.object(
+            cache.token_cache,
+            "get_data_with_metadata",
+            return_value=("not a dict", {}),
+        )
+        result = cache._get_config()
+        assert result == {}
