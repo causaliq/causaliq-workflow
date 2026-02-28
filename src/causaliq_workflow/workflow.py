@@ -7,6 +7,7 @@ matrix strategy support for causal discovery experiments.
 
 import itertools
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
     Any,
@@ -30,6 +31,27 @@ class WorkflowExecutionError(Exception):
     """Raised when workflow execution fails."""
 
     pass
+
+
+@dataclass
+class AggregationConfig:
+    """Configuration for aggregation mode execution.
+
+    Aggregation mode is activated when a workflow step has:
+    - An `input` parameter specifying workflow cache(s)
+    - A matrix definition in the workflow
+
+    The matrix variables define the grouping dimensions for aggregation.
+    """
+
+    input_caches: List[str] = field(default_factory=list)
+    """List of input workflow cache paths."""
+
+    filter_expr: Optional[str] = None
+    """Optional filter expression to restrict input entries."""
+
+    matrix_vars: List[str] = field(default_factory=list)
+    """Matrix variables defining grouping dimensions."""
 
 
 class WorkflowExecutor:
@@ -225,6 +247,66 @@ class WorkflowExecutor:
             return result
         else:
             return obj
+
+    def _is_aggregation_step(
+        self,
+        step: Dict[str, Any],
+        matrix: Dict[str, List[Any]],
+    ) -> bool:
+        """Check if a step should execute in aggregation mode.
+
+        Aggregation mode is activated when:
+        1. The workflow has a matrix definition
+        2. The step has an `input` parameter specifying workflow cache(s)
+
+        Args:
+            step: Step configuration dictionary
+            matrix: Workflow matrix definition
+
+        Returns:
+            True if step should run in aggregation mode
+        """
+        if not matrix:
+            return False
+
+        step_inputs = step.get("with", {})
+        return "input" in step_inputs
+
+    def _get_aggregation_config(
+        self,
+        step: Dict[str, Any],
+        matrix: Dict[str, List[Any]],
+    ) -> Optional[AggregationConfig]:
+        """Get aggregation configuration for a step.
+
+        Returns None if the step is not an aggregation step.
+
+        Args:
+            step: Step configuration dictionary
+            matrix: Workflow matrix definition
+
+        Returns:
+            AggregationConfig if aggregation mode, None otherwise
+        """
+        if not self._is_aggregation_step(step, matrix):
+            return None
+
+        step_inputs = step.get("with", {})
+        input_param = step_inputs.get("input")
+
+        # Normalise input to list
+        if isinstance(input_param, str):
+            input_caches = [input_param]
+        elif isinstance(input_param, list):
+            input_caches = list(input_param)
+        else:
+            input_caches = []
+
+        return AggregationConfig(
+            input_caches=input_caches,
+            filter_expr=step_inputs.get("filter"),
+            matrix_vars=list(matrix.keys()),
+        )
 
     def _validate_required_variables(
         self, workflow: Dict[str, Any], cli_params: Dict[str, Any]

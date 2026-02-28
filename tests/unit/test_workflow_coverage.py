@@ -3,7 +3,11 @@
 import pytest
 from causaliq_core import ActionExecutionError, ActionResult
 
-from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
+from causaliq_workflow.workflow import (
+    AggregationConfig,
+    WorkflowExecutionError,
+    WorkflowExecutor,
+)
 from tests.functional.fixtures.test_action import ActionProvider
 
 
@@ -359,3 +363,125 @@ def test_execute_workflow_implicit_does_not_override_explicit(
 
     # Explicit param should NOT be overridden
     assert params["network"] == "custom_value"
+
+
+# ============================================================================
+# Aggregation mode detection tests
+# ============================================================================
+
+
+# Test _is_aggregation_step returns False when no matrix.
+def test_is_aggregation_step_no_matrix(executor: WorkflowExecutor) -> None:
+    step = {"uses": "action", "with": {"input": "cache.db"}}
+    assert executor._is_aggregation_step(step, {}) is False
+
+
+# Test _is_aggregation_step returns False when no input param.
+def test_is_aggregation_step_no_input(executor: WorkflowExecutor) -> None:
+    step = {"uses": "action", "with": {"other": "value"}}
+    matrix = {"network": ["asia"]}
+    assert executor._is_aggregation_step(step, matrix) is False
+
+
+# Test _is_aggregation_step returns True when matrix and input present.
+def test_is_aggregation_step_true(executor: WorkflowExecutor) -> None:
+    step = {"uses": "action", "with": {"input": "cache.db"}}
+    matrix = {"network": ["asia"]}
+    assert executor._is_aggregation_step(step, matrix) is True
+
+
+# Test _is_aggregation_step returns False when no with block.
+def test_is_aggregation_step_no_with_block(executor: WorkflowExecutor) -> None:
+    step = {"uses": "action"}
+    matrix = {"network": ["asia"]}
+    assert executor._is_aggregation_step(step, matrix) is False
+
+
+# Test _get_aggregation_config returns None for non-aggregation step.
+def test_get_aggregation_config_not_aggregation(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"other": "value"}}
+    matrix = {"network": ["asia"]}
+    config = executor._get_aggregation_config(step, matrix)
+    assert config is None
+
+
+# Test _get_aggregation_config with single input cache.
+def test_get_aggregation_config_single_input(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"input": "cache.db"}}
+    matrix = {"network": ["asia", "alarm"], "sample_size": [100, 500]}
+    config = executor._get_aggregation_config(step, matrix)
+
+    assert config is not None
+    assert isinstance(config, AggregationConfig)
+    assert config.input_caches == ["cache.db"]
+    assert config.filter_expr is None
+    assert set(config.matrix_vars) == {"network", "sample_size"}
+
+
+# Test _get_aggregation_config with list of input caches.
+def test_get_aggregation_config_multiple_inputs(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {
+        "uses": "action",
+        "with": {"input": ["cache1.db", "cache2.db"]},
+    }
+    matrix = {"network": ["asia"]}
+    config = executor._get_aggregation_config(step, matrix)
+
+    assert config is not None
+    assert config.input_caches == ["cache1.db", "cache2.db"]
+
+
+# Test _get_aggregation_config with filter expression.
+def test_get_aggregation_config_with_filter(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {
+        "uses": "action",
+        "with": {
+            "input": "cache.db",
+            "filter": "status == 'completed'",
+        },
+    }
+    matrix = {"network": ["asia"]}
+    config = executor._get_aggregation_config(step, matrix)
+
+    assert config is not None
+    assert config.filter_expr == "status == 'completed'"
+
+
+# Test _get_aggregation_config with non-string/list input value.
+def test_get_aggregation_config_invalid_input_type(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"input": 123}}
+    matrix = {"network": ["asia"]}
+    config = executor._get_aggregation_config(step, matrix)
+
+    assert config is not None
+    assert config.input_caches == []
+
+
+# Test AggregationConfig dataclass defaults.
+def test_aggregation_config_defaults() -> None:
+    config = AggregationConfig()
+    assert config.input_caches == []
+    assert config.filter_expr is None
+    assert config.matrix_vars == []
+
+
+# Test AggregationConfig with explicit values.
+def test_aggregation_config_with_values() -> None:
+    config = AggregationConfig(
+        input_caches=["a.db", "b.db"],
+        filter_expr="x > 5",
+        matrix_vars=["network", "sample_size"],
+    )
+    assert config.input_caches == ["a.db", "b.db"]
+    assert config.filter_expr == "x > 5"
+    assert config.matrix_vars == ["network", "sample_size"]

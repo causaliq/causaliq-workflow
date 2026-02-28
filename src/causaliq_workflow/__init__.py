@@ -8,7 +8,11 @@ from .cache import WorkflowCache
 from .logger import LogLevel, WorkflowLogger  # noqa: F401
 from .registry import ActionRegistry, ActionRegistryError, WorkflowContext
 from .status import TaskStatus  # noqa: F401
-from .workflow import WorkflowExecutionError, WorkflowExecutor
+from .workflow import (
+    AggregationConfig,
+    WorkflowExecutionError,
+    WorkflowExecutor,
+)
 
 __version__ = "0.2.0"
 __author__ = "CausalIQ"
@@ -35,6 +39,7 @@ __all__ = [
     # Workflow components
     "ActionRegistry",
     "ActionRegistryError",
+    "AggregationConfig",
     "WorkflowCache",
     "WorkflowContext",
     "WorkflowExecutor",

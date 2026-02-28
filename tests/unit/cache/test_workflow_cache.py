@@ -1,6 +1,7 @@
 """Unit tests for WorkflowCache class with CacheEntry API."""
 
 import pytest
+from pytest_mock import MockerFixture
 
 from causaliq_workflow.cache import (
     CacheEntry,
@@ -654,7 +655,7 @@ def test_import_entries_delegates(tmp_path) -> None:
 
 # Test _get_config returns empty dict when config data is not a dict.
 def test_get_config_returns_empty_when_not_dict(
-    mocker: "pytest.MockerFixture",  # type: ignore[name-defined]
+    mocker: MockerFixture,
 ) -> None:
     """Cover defensive code path when config data is non-dict."""
     with WorkflowCache(":memory:") as cache:
