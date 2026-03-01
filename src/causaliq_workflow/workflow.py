@@ -256,8 +256,10 @@ class WorkflowExecutor:
         """Check if a step should execute in aggregation mode.
 
         Aggregation mode is activated when:
-        1. The workflow has a matrix definition
-        2. The step has an `aggregate` parameter specifying workflow cache(s)
+        1. The workflow has a matrix definition, AND
+        2. Either:
+           a. The step has an `aggregate` parameter, OR
+           b. The step has an `input` parameter pointing to .db file(s)
 
         Args:
             step: Step configuration dictionary
@@ -270,7 +272,24 @@ class WorkflowExecutor:
             return False
 
         step_inputs = step.get("with", {})
-        return "aggregate" in step_inputs
+
+        # Explicit aggregate parameter
+        if "aggregate" in step_inputs:
+            return True
+
+        # Check if input points to .db cache file(s)
+        input_param = step_inputs.get("input")
+        if input_param:
+            inputs = (
+                [input_param]
+                if isinstance(input_param, str)
+                else (list(input_param) if input_param else [])
+            )
+            # Aggregation if any input is a .db file
+            if any(str(p).lower().endswith(".db") for p in inputs):
+                return True
+
+        return False
 
     def _get_aggregation_config(
         self,
@@ -292,15 +311,31 @@ class WorkflowExecutor:
             return None
 
         step_inputs = step.get("with", {})
-        aggregate_param = step_inputs.get("aggregate")
 
-        # Normalise aggregate to list of cache paths
-        if isinstance(aggregate_param, str):
-            input_caches = [aggregate_param]
-        elif isinstance(aggregate_param, list):
-            input_caches = list(aggregate_param)
-        else:
-            input_caches = []
+        # Get cache paths from either 'aggregate' or 'input' parameter
+        aggregate_param = step_inputs.get("aggregate")
+        input_param = step_inputs.get("input")
+
+        # Collect cache paths (.db files only)
+        input_caches: List[str] = []
+
+        if aggregate_param:
+            # Explicit aggregate parameter takes precedence
+            if isinstance(aggregate_param, str):
+                input_caches = [aggregate_param]
+            elif isinstance(aggregate_param, list):
+                input_caches = list(aggregate_param)
+        elif input_param:
+            # Implicit aggregation from input .db files
+            inputs = (
+                [input_param]
+                if isinstance(input_param, str)
+                else (list(input_param) if input_param else [])
+            )
+            # Filter to only .db files for cache scanning
+            input_caches = [
+                str(p) for p in inputs if str(p).lower().endswith(".db")
+            ]
 
         return AggregationConfig(
             input_caches=input_caches,

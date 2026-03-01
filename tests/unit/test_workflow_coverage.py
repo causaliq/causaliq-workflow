@@ -468,6 +468,58 @@ def test_get_aggregation_config_invalid_aggregate_type(
     assert config.input_caches == []
 
 
+# Test _is_aggregation_step returns True when input contains .db file.
+def test_is_aggregation_step_with_input_db(executor: WorkflowExecutor) -> None:
+    step = {"uses": "action", "with": {"input": "results.db"}}
+    matrix = {"network": ["asia"]}
+    assert executor._is_aggregation_step(step, matrix) is True
+
+
+# Test _is_aggregation_step with input list containing .db file.
+def test_is_aggregation_step_with_input_db_list(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"input": ["data.json", "cache.db"]}}
+    matrix = {"network": ["asia"]}
+    assert executor._is_aggregation_step(step, matrix) is True
+
+
+# Test _is_aggregation_step returns False when input has no .db files.
+def test_is_aggregation_step_input_no_db(executor: WorkflowExecutor) -> None:
+    step = {"uses": "action", "with": {"input": "data.graphml"}}
+    matrix = {"network": ["asia"]}
+    assert executor._is_aggregation_step(step, matrix) is False
+
+
+# Test _get_aggregation_config with implicit aggregation from input .db.
+def test_get_aggregation_config_implicit_from_input(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"input": "results.db"}}
+    matrix = {"network": ["asia"], "seed": [1, 2]}
+    config = executor._get_aggregation_config(step, matrix)
+
+    assert config is not None
+    assert config.input_caches == ["results.db"]
+    assert set(config.matrix_vars) == {"network", "seed"}
+
+
+# Test _get_aggregation_config with input list filters to .db only.
+def test_get_aggregation_config_input_list_filters_db(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {
+        "uses": "action",
+        "with": {"input": ["data.graphml", "cache.db", "other.json"]},
+    }
+    matrix = {"network": ["asia"]}
+    config = executor._get_aggregation_config(step, matrix)
+
+    assert config is not None
+    # Only .db files should be in input_caches
+    assert config.input_caches == ["cache.db"]
+
+
 # Test AggregationConfig dataclass defaults.
 def test_aggregation_config_defaults() -> None:
     config = AggregationConfig()

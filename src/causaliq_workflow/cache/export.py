@@ -21,6 +21,7 @@ if TYPE_CHECKING:  # pragma: no cover
 # Map object type to file extension
 TYPE_EXTENSIONS: dict[str, str] = {
     "graphml": ".graphml",
+    "pdg": ".graphml",  # PDG is stored as GraphML
     "json": ".json",
 }
 
@@ -99,11 +100,17 @@ def write_entry_to_dir(
         file_path = full_dir / f"{name}{ext}"
         file_path.write_text(content, encoding="utf-8")
 
+    # Build objects type mapping for metadata
+    objects_types = {
+        name: obj.get("type", "dat") for name, obj in objects.items()
+    }
+
     # Write metadata file
     meta_data = {
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
         "metadata": metadata,
+        "objects": objects_types,
     }
     meta_path = full_dir / "_meta.json"
     meta_path.write_text(
@@ -136,11 +143,17 @@ def write_entry_to_zip(
         arc_name = str(entry_path / f"{name}{ext}")
         zf.writestr(arc_name, content)
 
+    # Build objects type mapping for metadata
+    objects_types = {
+        name: obj.get("type", "dat") for name, obj in objects.items()
+    }
+
     # Write metadata file
     meta_data = {
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
         "metadata": metadata,
+        "objects": objects_types,
     }
     meta_arc = str(entry_path / "_meta.json")
     zf.writestr(meta_arc, json.dumps(meta_data, indent=2, sort_keys=False))
