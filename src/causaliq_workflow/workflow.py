@@ -257,7 +257,7 @@ class WorkflowExecutor:
 
         Aggregation mode is activated when:
         1. The workflow has a matrix definition
-        2. The step has an `input` parameter specifying workflow cache(s)
+        2. The step has an `aggregate` parameter specifying workflow cache(s)
 
         Args:
             step: Step configuration dictionary
@@ -270,7 +270,7 @@ class WorkflowExecutor:
             return False
 
         step_inputs = step.get("with", {})
-        return "input" in step_inputs
+        return "aggregate" in step_inputs
 
     def _get_aggregation_config(
         self,
@@ -292,13 +292,13 @@ class WorkflowExecutor:
             return None
 
         step_inputs = step.get("with", {})
-        input_param = step_inputs.get("input")
+        aggregate_param = step_inputs.get("aggregate")
 
-        # Normalise input to list
-        if isinstance(input_param, str):
-            input_caches = [input_param]
-        elif isinstance(input_param, list):
-            input_caches = list(input_param)
+        # Normalise aggregate to list of cache paths
+        if isinstance(aggregate_param, str):
+            input_caches = [aggregate_param]
+        elif isinstance(aggregate_param, list):
+            input_caches = list(aggregate_param)
         else:
             input_caches = []
 
@@ -635,6 +635,21 @@ class WorkflowExecutor:
                 for matrix_var, matrix_val in job.items():
                     if matrix_var not in resolved_inputs:
                         resolved_inputs[matrix_var] = matrix_val
+
+                # Handle aggregation mode: scan input caches for matching
+                # entries. Aggregation mode is activated when step has 'input'
+                # parameter and workflow has matrix definition.
+                matrix = workflow.get("matrix", {})
+                agg_config = self._get_aggregation_config(step, matrix)
+                if agg_config is not None:
+                    matching_entries = self._scan_aggregation_inputs(
+                        agg_config,
+                        job,  # Current matrix values
+                    )
+                    # Pass entries to action via special parameter
+                    resolved_inputs["_aggregation_entries"] = matching_entries
+                    # Remove 'aggregate' from resolved params (config only)
+                    resolved_inputs.pop("aggregate", None)
 
                 # Handle step-level cache from output parameter
                 output_path = resolved_inputs.pop("output", None)

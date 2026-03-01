@@ -373,20 +373,20 @@ def test_execute_workflow_implicit_does_not_override_explicit(
 
 # Test _is_aggregation_step returns False when no matrix.
 def test_is_aggregation_step_no_matrix(executor: WorkflowExecutor) -> None:
-    step = {"uses": "action", "with": {"input": "cache.db"}}
+    step = {"uses": "action", "with": {"aggregate": "cache.db"}}
     assert executor._is_aggregation_step(step, {}) is False
 
 
-# Test _is_aggregation_step returns False when no input param.
-def test_is_aggregation_step_no_input(executor: WorkflowExecutor) -> None:
+# Test _is_aggregation_step returns False when no aggregate param.
+def test_is_aggregation_step_no_aggregate(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"other": "value"}}
     matrix = {"network": ["asia"]}
     assert executor._is_aggregation_step(step, matrix) is False
 
 
-# Test _is_aggregation_step returns True when matrix and input present.
+# Test _is_aggregation_step returns True when matrix and aggregate present.
 def test_is_aggregation_step_true(executor: WorkflowExecutor) -> None:
-    step = {"uses": "action", "with": {"input": "cache.db"}}
+    step = {"uses": "action", "with": {"aggregate": "cache.db"}}
     matrix = {"network": ["asia"]}
     assert executor._is_aggregation_step(step, matrix) is True
 
@@ -408,11 +408,11 @@ def test_get_aggregation_config_not_aggregation(
     assert config is None
 
 
-# Test _get_aggregation_config with single input cache.
-def test_get_aggregation_config_single_input(
+# Test _get_aggregation_config with single aggregate cache.
+def test_get_aggregation_config_single_aggregate(
     executor: WorkflowExecutor,
 ) -> None:
-    step = {"uses": "action", "with": {"input": "cache.db"}}
+    step = {"uses": "action", "with": {"aggregate": "cache.db"}}
     matrix = {"network": ["asia", "alarm"], "sample_size": [100, 500]}
     config = executor._get_aggregation_config(step, matrix)
 
@@ -423,13 +423,13 @@ def test_get_aggregation_config_single_input(
     assert set(config.matrix_vars) == {"network", "sample_size"}
 
 
-# Test _get_aggregation_config with list of input caches.
-def test_get_aggregation_config_multiple_inputs(
+# Test _get_aggregation_config with list of aggregate caches.
+def test_get_aggregation_config_multiple_aggregates(
     executor: WorkflowExecutor,
 ) -> None:
     step = {
         "uses": "action",
-        "with": {"input": ["cache1.db", "cache2.db"]},
+        "with": {"aggregate": ["cache1.db", "cache2.db"]},
     }
     matrix = {"network": ["asia"]}
     config = executor._get_aggregation_config(step, matrix)
@@ -445,7 +445,7 @@ def test_get_aggregation_config_with_filter(
     step = {
         "uses": "action",
         "with": {
-            "input": "cache.db",
+            "aggregate": "cache.db",
             "filter": "status == 'completed'",
         },
     }
@@ -456,11 +456,11 @@ def test_get_aggregation_config_with_filter(
     assert config.filter_expr == "status == 'completed'"
 
 
-# Test _get_aggregation_config with non-string/list input value.
-def test_get_aggregation_config_invalid_input_type(
+# Test _get_aggregation_config with non-string/list aggregate value.
+def test_get_aggregation_config_invalid_aggregate_type(
     executor: WorkflowExecutor,
 ) -> None:
-    step = {"uses": "action", "with": {"input": 123}}
+    step = {"uses": "action", "with": {"aggregate": 123}}
     matrix = {"network": ["asia"]}
     config = executor._get_aggregation_config(step, matrix)
 
@@ -850,3 +850,120 @@ def test_scan_aggregation_inputs_filter_logging(
     # Log should include filter stats
     assert len(log_messages) == 1
     assert "filtered=1" in log_messages[0]
+
+
+# Test aggregation entries passed to action in _execute_job.
+def test_execute_job_aggregation_passes_entries(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache with entries
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry = CacheEntry(metadata={"provider": {"action": {"value": 42}}})
+        cache.put({"network": "asia"}, entry)
+
+    # Create mock action that captures parameters
+    captured_params: dict = {}
+
+    class CaptureAction:
+        name = "capture-action"
+        version = "1.0.0"
+        description = "Captures parameters"
+
+        def run(self, action, parameters, **kwargs):
+            captured_params.update(parameters)
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    # Setup executor with mock action
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["capture-action"] = CaptureAction
+
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "agg-step",
+                "uses": "capture-action",
+                "with": {
+                    "action": "do_aggregation",
+                    "aggregate": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    executor._execute_job(workflow, {"network": "asia"}, context, {})
+
+    # Verify aggregation entries were passed
+    assert "_aggregation_entries" in captured_params
+    entries = captured_params["_aggregation_entries"]
+    assert len(entries) == 1
+    assert entries[0]["matrix_values"]["network"] == "asia"
+
+    # Verify 'aggregate' was removed from parameters
+    assert "aggregate" not in captured_params
+
+
+# Test aggregation not triggered without matrix.
+def test_execute_job_no_aggregation_without_matrix(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    captured_params: dict = {}
+
+    class CaptureAction:
+        name = "capture-action"
+        version = "1.0.0"
+        description = "Captures parameters"
+
+        def run(self, action, parameters, **kwargs):
+            captured_params.update(parameters)
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["capture-action"] = CaptureAction
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+
+    # No matrix defined - should not trigger aggregation
+    workflow = {
+        "steps": [
+            {
+                "name": "normal-step",
+                "uses": "capture-action",
+                "with": {
+                    "action": "normal",
+                    "input": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix={},
+        matrix_values={},
+    )
+
+    executor._execute_job(workflow, {}, context, {})
+
+    # Without matrix, no aggregation triggered
+    assert "_aggregation_entries" not in captured_params
+    # 'input' should remain as normal parameter
+    assert "input" in captured_params
