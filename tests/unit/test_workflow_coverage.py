@@ -1,6 +1,7 @@
 """Unit tests for WorkflowExecutor coverage."""
 
 import pytest
+import pytest_mock
 from causaliq_core import ActionExecutionError, ActionResult
 
 from causaliq_workflow.workflow import (
@@ -485,3 +486,367 @@ def test_aggregation_config_with_values() -> None:
     assert config.input_caches == ["a.db", "b.db"]
     assert config.filter_expr == "x > 5"
     assert config.matrix_vars == ["network", "sample_size"]
+
+
+# ============================================================================
+# Aggregation scan phase tests
+# ============================================================================
+
+
+# Test _flatten_metadata with matrix values only.
+def test_flatten_metadata_matrix_only(executor: WorkflowExecutor) -> None:
+    matrix_values = {"network": "asia", "sample_size": 100}
+    metadata: dict = {}
+    result = executor._flatten_metadata(matrix_values, metadata)
+    assert result == {"network": "asia", "sample_size": 100}
+
+
+# Test _flatten_metadata with nested provider metadata.
+def test_flatten_metadata_nested(executor: WorkflowExecutor) -> None:
+    matrix_values = {"network": "asia"}
+    metadata = {
+        "causaliq-research": {
+            "generate_graph": {
+                "node_count": 5,
+                "edge_count": 8,
+            }
+        }
+    }
+    result = executor._flatten_metadata(matrix_values, metadata)
+
+    # Simple keys available
+    assert result["network"] == "asia"
+    assert result["node_count"] == 5
+    assert result["edge_count"] == 8
+
+    # Fully qualified keys also available
+    assert result["causaliq-research.generate_graph.node_count"] == 5
+
+
+# Test _flatten_metadata handles key conflicts.
+def test_flatten_metadata_key_conflict(executor: WorkflowExecutor) -> None:
+    matrix_values = {"network": "asia"}
+    metadata = {
+        "provider1": {"action1": {"network": "overridden"}},
+        "provider2": {"action2": {"network": "also_overridden"}},
+    }
+    result = executor._flatten_metadata(matrix_values, metadata)
+
+    # Matrix value takes precedence for simple key
+    assert result["network"] == "asia"
+
+    # Fully qualified keys preserve all values
+    assert result["provider1.action1.network"] == "overridden"
+    assert result["provider2.action2.network"] == "also_overridden"
+
+
+# Test _flatten_metadata with non-dict nested values.
+def test_flatten_metadata_non_dict_nested(executor: WorkflowExecutor) -> None:
+    matrix_values = {"network": "asia"}
+    metadata = {
+        "simple_key": "simple_value",
+        "provider": {"action": "string_action_data"},
+    }
+    result = executor._flatten_metadata(matrix_values, metadata)
+
+    assert result["simple_key"] == "simple_value"
+    assert result["provider.action"] == "string_action_data"
+
+
+# Test _scan_aggregation_inputs with in-memory cache.
+def test_scan_aggregation_inputs_basic(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    # Create cache with entries
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry1 = CacheEntry(
+            metadata={"provider": {"action": {"status": "ok"}}}
+        )
+        cache.put({"network": "asia", "sample_size": 100}, entry1)
+
+        entry2 = CacheEntry(
+            metadata={"provider": {"action": {"status": "ok"}}}
+        )
+        cache.put({"network": "asia", "sample_size": 500}, entry2)
+
+        entry3 = CacheEntry(
+            metadata={"provider": {"action": {"status": "ok"}}}
+        )
+        cache.put({"network": "alarm", "sample_size": 100}, entry3)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network", "sample_size"],
+    )
+
+    # Scan for asia/100 entries
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia", "sample_size": 100},
+    )
+
+    assert len(results) == 1
+    assert results[0]["matrix_values"] == {
+        "network": "asia",
+        "sample_size": 100,
+    }
+
+
+# Test _scan_aggregation_inputs with filter expression.
+def test_scan_aggregation_inputs_with_filter(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry1 = CacheEntry(
+            metadata={"provider": {"action": {"status": "completed"}}}
+        )
+        cache.put({"network": "asia"}, entry1)
+
+        entry2 = CacheEntry(
+            metadata={"provider": {"action": {"status": "failed"}}}
+        )
+        cache.put({"network": "alarm"}, entry2)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        filter_expr="status == 'completed'",
+        matrix_vars=["network"],
+    )
+
+    # Scan for asia - should match filter
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+    )
+    assert len(results) == 1
+    assert results[0]["matrix_values"]["network"] == "asia"
+
+    # Scan for alarm - should be filtered out
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "alarm"},
+    )
+    assert len(results) == 0
+
+
+# Test _scan_aggregation_inputs logs statistics.
+def test_scan_aggregation_inputs_logging(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry = CacheEntry(metadata={})
+        cache.put({"network": "asia"}, entry)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network"],
+    )
+
+    log_messages: list = []
+    executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+        logger=log_messages.append,
+    )
+
+    assert len(log_messages) == 1
+    assert "scanned=1" in log_messages[0]
+    assert "matched=1" in log_messages[0]
+
+
+# Test _scan_aggregation_inputs with missing cache.
+def test_scan_aggregation_inputs_missing_cache(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    # Use absolute path that definitely doesn't exist
+    missing_cache = str(tmp_path / "definitely_nonexistent.db")
+
+    config = AggregationConfig(
+        input_caches=[missing_cache],
+        matrix_vars=["network"],
+    )
+
+    log_messages: list = []
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+        logger=log_messages.append,
+    )
+
+    # Should return empty but log warning
+    assert results == []
+    assert len(log_messages) == 2  # Warning + summary
+    assert "Warning" in log_messages[0]
+
+
+# Test _scan_aggregation_inputs skips entries missing matrix vars.
+def test_scan_aggregation_inputs_skips_incomplete_entries(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    # Create first cache with full schema
+    cache_path1 = tmp_path / "cache1.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path1) as cache:
+        entry1 = CacheEntry(metadata={})
+        cache.put({"network": "asia", "sample_size": 100}, entry1)
+
+    # Create second cache with partial schema (different schema per cache)
+    cache_path2 = tmp_path / "cache2.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path2) as cache:
+        entry2 = CacheEntry(metadata={})
+        cache.put({"network": "alarm"}, entry2)  # No sample_size
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path1), str(cache_path2)],
+        matrix_vars=["network", "sample_size"],
+    )
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia", "sample_size": 100},
+    )
+
+    # Only complete entry from cache1 should match
+    assert len(results) == 1
+    assert results[0]["matrix_values"]["sample_size"] == 100
+
+
+# Test _scan_aggregation_inputs handles cache.get returning None.
+def test_scan_aggregation_inputs_get_returns_none(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+    mocker: "pytest_mock.MockerFixture",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry = CacheEntry(metadata={})
+        cache.put({"network": "asia"}, entry)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network"],
+    )
+
+    # Mock cache.get to return None
+    mocker.patch.object(WorkflowCache, "get", return_value=None)
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+    )
+
+    # Should return empty as get returns None
+    assert results == []
+
+
+# Test _scan_aggregation_inputs handles filter evaluation errors.
+def test_scan_aggregation_inputs_filter_error(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry = CacheEntry(metadata={})
+        cache.put({"network": "asia"}, entry)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        # Invalid filter that will cause evaluation error
+        filter_expr="undefined_var / 0",
+        matrix_vars=["network"],
+    )
+
+    log_messages: list = []
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+        logger=log_messages.append,
+    )
+
+    # Entry filtered due to error
+    assert results == []
+    assert "filtered=1" in log_messages[0]
+
+
+# Test _scan_aggregation_inputs handles cache read exception.
+def test_scan_aggregation_inputs_cache_exception(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    # Create a file that is not a valid SQLite database
+    bad_cache = tmp_path / "bad.db"  # type: ignore[operator]
+    bad_cache.write_text("not a database")
+
+    config = AggregationConfig(
+        input_caches=[str(bad_cache)],
+        matrix_vars=["network"],
+    )
+
+    log_messages: list = []
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+        logger=log_messages.append,
+    )
+
+    # Should return empty and log warning
+    assert results == []
+    assert len(log_messages) == 2  # Warning + summary
+    assert "Warning" in log_messages[0]
+    assert "Failed to read cache" in log_messages[0]
+
+
+# Test _scan_aggregation_inputs logs filter statistics.
+def test_scan_aggregation_inputs_filter_logging(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        entry1 = CacheEntry(
+            metadata={"provider": {"action": {"status": "completed"}}}
+        )
+        cache.put({"network": "asia"}, entry1)
+
+        entry2 = CacheEntry(
+            metadata={"provider": {"action": {"status": "failed"}}}
+        )
+        cache.put({"network": "alarm"}, entry2)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        filter_expr="status == 'completed'",
+        matrix_vars=["network"],
+    )
+
+    log_messages: list = []
+    executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+        logger=log_messages.append,
+    )
+
+    # Log should include filter stats
+    assert len(log_messages) == 1
+    assert "filtered=1" in log_messages[0]

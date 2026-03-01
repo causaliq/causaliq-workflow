@@ -308,6 +308,164 @@ class WorkflowExecutor:
             matrix_vars=list(matrix.keys()),
         )
 
+    def _scan_aggregation_inputs(
+        self,
+        config: AggregationConfig,
+        matrix_values: Dict[str, Any],
+        logger: Optional[Callable[[str], None]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Scan input caches and collect entries matching matrix values.
+
+        This is the first phase of aggregation execution. It:
+        1. Opens each input cache
+        2. Iterates all entries
+        3. Applies the filter expression (if any)
+        4. Groups entries by matrix variable values
+        5. Returns entries matching the current matrix combination
+
+        Args:
+            config: Aggregation configuration
+            matrix_values: Current matrix variable values to match
+            logger: Optional logging function for statistics
+
+        Returns:
+            List of entry dictionaries with keys:
+            - matrix_values: The entry's matrix values
+            - metadata: The entry's metadata (includes nested provider data)
+            - cache_path: Source cache path for provenance
+            - entry_hash: Entry hash for retrieval
+
+        Note:
+            Entries without all matrix variables in metadata are skipped.
+        """
+        from pathlib import Path
+
+        from causaliq_core.utils import evaluate_filter
+
+        from causaliq_workflow.cache import WorkflowCache
+
+        matching_entries: List[Dict[str, Any]] = []
+        total_scanned = 0
+        total_filtered = 0
+        total_matched = 0
+
+        for cache_path in config.input_caches:
+            # Skip non-existent caches with warning
+            if not Path(cache_path).exists():
+                if logger:
+                    logger(f"Warning: Cache does not exist: {cache_path}")
+                continue
+
+            try:
+                with WorkflowCache(cache_path) as cache:
+                    entries = cache.list_entries()
+                    total_scanned += len(entries)
+
+                    for entry_info in entries:
+                        entry_matrix = entry_info.get("matrix_values", {})
+
+                        # Skip entries missing required matrix variables
+                        if not all(
+                            var in entry_matrix for var in config.matrix_vars
+                        ):
+                            continue
+
+                        # Get full entry to access metadata
+                        full_entry = cache.get(entry_matrix)
+                        if full_entry is None:
+                            continue
+
+                        # Flatten metadata for filter evaluation
+                        flat_meta = self._flatten_metadata(
+                            entry_matrix, full_entry.metadata
+                        )
+
+                        # Apply filter expression if present
+                        if config.filter_expr:
+                            try:
+                                if not evaluate_filter(
+                                    config.filter_expr, flat_meta
+                                ):
+                                    total_filtered += 1
+                                    continue
+                            except Exception:
+                                # Filter evaluation error - skip entry
+                                total_filtered += 1
+                                continue
+
+                        # Check if entry matches current matrix values
+                        matches = all(
+                            entry_matrix.get(var) == matrix_values.get(var)
+                            for var in config.matrix_vars
+                        )
+
+                        if matches:
+                            total_matched += 1
+                            matching_entries.append(
+                                {
+                                    "matrix_values": entry_matrix,
+                                    "metadata": full_entry.metadata,
+                                    "cache_path": str(cache_path),
+                                    "entry_hash": entry_info.get("hash"),
+                                    "entry": full_entry,
+                                }
+                            )
+
+            except Exception as e:
+                if logger:
+                    logger(f"Warning: Failed to read cache {cache_path}: {e}")
+
+        # Log statistics if logger provided
+        if logger:
+            filter_info = ""
+            if config.filter_expr:
+                filter_info = f", filtered={total_filtered}"
+            logger(
+                f"Aggregation scan: scanned={total_scanned}"
+                f"{filter_info}, matched={total_matched}"
+            )
+
+        return matching_entries
+
+    def _flatten_metadata(
+        self,
+        matrix_values: Dict[str, Any],
+        metadata: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Flatten metadata for filter expression evaluation.
+
+        Combines matrix values with nested metadata structure into a flat
+        dictionary suitable for filter expression evaluation.
+
+        Args:
+            matrix_values: Entry's matrix variable values
+            metadata: Entry's nested metadata dictionary
+
+        Returns:
+            Flat dictionary with all metadata fields
+        """
+        flat: Dict[str, Any] = dict(matrix_values)
+
+        # Flatten nested metadata (provider -> action -> fields)
+        for provider_name, provider_data in metadata.items():
+            if isinstance(provider_data, dict):
+                for action_name, action_data in provider_data.items():
+                    if isinstance(action_data, dict):
+                        for key, value in action_data.items():
+                            # Use simple key if no conflict
+                            if key not in flat:
+                                flat[key] = value
+                            # Use fully qualified key as fallback
+                            flat[f"{provider_name}.{action_name}.{key}"] = (
+                                value
+                            )
+                    else:
+                        flat[f"{provider_name}.{action_name}"] = action_data
+            else:
+                flat[provider_name] = provider_data
+
+        return flat
+
     def _validate_required_variables(
         self, workflow: Dict[str, Any], cli_params: Dict[str, Any]
     ) -> None:
