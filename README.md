@@ -26,16 +26,18 @@
 - **Release v0.2.0 - Knowledge Workflows**: Integrate with causaliq-knowledge
   generate_graph action and write results to workflow caches.
 
+- **Release v0.3.0 - Aggregation Workflows**: Matrix-driven aggregation
+  processing with filter expressions for multi-source workflows.
+
 *See Git commit history for detailed implementation progress*
 
 🛣️ Upcoming Releases
 
-
-- **Release v0.3.0 - Analysis Workflows**: Graph averaging and structural
-  analysis workflows.
-- **Release v0.4.0 - Enhanced Workflow**: Dry and comparison runs, runtime
+- **Release v0.4.0 - Step Output Chaining**: Step output references and cache
+  restoration for resumable workflows.
+- **Release v0.5.0 - Enhanced Workflow**: Dry and comparison runs, runtime
   estimation and processing summary
-- **Release v0.5.0 - Discovery Workflows**: Structure learning algorithms
+- **Release v0.6.0 - Discovery Integration**: Structure learning algorithms
   integrated
 
 ## causaliq-core Integration

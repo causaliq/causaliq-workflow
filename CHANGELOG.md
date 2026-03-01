@@ -31,6 +31,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
+## [0.3.0] Aggregation Workflows - 2026-03-01
+
+### Added
+
+- **Aggregation mode detection** - Workflow steps automatically detect
+  aggregation mode when matrix is defined and step has `aggregate` parameter
+  or `input` parameter pointing to `.db` cache files
+- **Implicit aggregation** - Steps with `input: results.db` and a workflow
+  matrix automatically aggregate entries grouped by matrix dimensions
+- **Explicit aggregation** - `aggregate` parameter for explicit specification
+  of input cache paths (single string or list of paths)
+- **Filter expressions** - `filter` parameter accepts expressions evaluated
+  against flattened entry metadata (e.g., `"algorithm == 'pc' and score > 0.5"`)
+- **AggregationConfig dataclass** - Configuration model storing input caches,
+  filter expression, and matrix variables
+- `_is_aggregation_step()` - Detects whether step should run in aggregation
+  mode based on matrix and step parameters
+- `_get_aggregation_config()` - Extracts aggregation configuration from step
+- `_scan_aggregation_inputs()` - Scans input caches, applies filters, and
+  collects entries matching current matrix values
+- `_flatten_metadata()` - Flattens nested entry metadata for filter evaluation
+- `_aggregation_entries` special parameter passed to actions containing matched
+  entries with full metadata and entry objects
+
+### Changed
+
+- Workflow executor now passes matched entries to aggregation actions via the
+  `_aggregation_entries` parameter instead of raw cache paths
+
+### Dependencies
+
+- Requires causaliq-core >= 0.5.0 for `evaluate_filter()` function
+
 ## [0.2.0] Knowledge Workflows - 2026-02-18
 
 ### Added
