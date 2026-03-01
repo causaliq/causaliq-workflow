@@ -47,6 +47,7 @@ nav:
     - Architectural Overview: architecture/overview.md
     - Design Documents:
       - Matrix Strategy Design: architecture/matrix_expansion_design.md
+      - Summarisation Paradigm: architecture/summarisation_paradigm_design.md
       - Action Architecture: architecture/action_architecture_design.md
       - Algorithm Registry: architecture/action_auto_discovery_design.md
       - Workflow Executor: architecture/workflow_executor_design.md

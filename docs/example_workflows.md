@@ -8,6 +8,7 @@
     - ✅ Template variable substitution (`{{variable}}`)
     - ✅ Action registry and discovery
     - ✅ Schema validation (strings, numbers, booleans in `with:` blocks)
+    - ✅ Aggregation processing with filter expressions
     
     Planned features (not yet implemented):
     
@@ -318,6 +319,129 @@ steps:
 
 CI workflows provide a **jobs:** keyword which allows multiple sequences of steps to run in parallel. We are not planning to implement this at the moment, instead relying on actions to provde parallelism using DAK tasks. This keeps CausalIQ Workflow functionality simple and reflects the fact that structure learning steps involving many individual structure learning experiments can keep even very powerful machines busy.
 
+### Aggregation Workflows
+
+Aggregation workflows combine results from multiple cache entries into a single
+output. This is essential for research workflows that need to merge graphs from
+parameter sweeps or compute aggregate statistics across experiments.
+
+#### Aggregation Mode Detection
+
+A workflow step automatically enters aggregation mode when:
+
+1. The workflow has a **matrix** definition, AND
+2. The step has EITHER:
+   - An explicit `aggregate` parameter pointing to cache file(s), OR
+   - An `input` parameter pointing to `.db` cache file(s)
+
+#### Implicit Aggregation
+
+When a step specifies `input` pointing to a `.db` file and the workflow has a
+matrix, entries are automatically grouped by matrix dimensions:
+
+```yaml
+# merge_asia_implicit.yml - Implicit aggregation from input
+id: "merge_asia"
+description: "Merge LLM-generated graphs using implicit aggregation"
+
+matrix:
+  model: ["asia"]
+  llm: ["groq/llama-3.1-8b", "openai/gpt-4o-mini"]
+
+steps:
+  - name: "Merge LLM Graphs"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      input: "results/llm_graphs.db"   # .db triggers aggregation
+      output: "results/merged.db"
+```
+
+In this example:
+
+- The matrix defines `model` and `llm` as grouping dimensions
+- For each `model` value, the action receives all cache entries from
+  `llm_graphs.db` that match that model
+- The `merge_graphs` action combines those entries into a merged result
+
+#### Explicit Aggregation
+
+Use the `aggregate` parameter for explicit control over which caches provide
+input entries:
+
+```yaml
+# merge_asia_explicit.yml - Explicit aggregation with aggregate parameter
+id: "merge_asia_explicit"
+description: "Merge graphs from multiple sources"
+
+matrix:
+  model: ["asia", "cancer"]
+
+steps:
+  - name: "Merge All Sources"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      aggregate:                         # Explicit: multiple caches
+        - "results/llm_graphs.db"
+        - "results/discovery_graphs.db"
+      output: "results/merged.db"
+```
+
+#### Filtering Aggregation Entries
+
+Use the `filter` parameter to restrict which entries are aggregated. Filter
+expressions are evaluated against flattened entry metadata:
+
+```yaml
+# merge_with_filter.yml - Aggregation with filter
+id: "merge_filtered"
+description: "Merge only successful high-quality graphs"
+
+matrix:
+  model: ["asia"]
+
+steps:
+  - name: "Merge Filtered"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      aggregate: "results/llm_graphs.db"
+      filter: "edge_count > 5 and llm_model != 'test'"
+      output: "results/merged.db"
+```
+
+Available filter variables include:
+
+- Matrix variables (`model`, `llm`, etc.)
+- Metadata fields from cache entries (`edge_count`, `node_count`, `llm_model`)
+- Nested fields using dot notation (`provider.action.field`)
+
+#### How Aggregation Works Internally
+
+When aggregation mode is detected:
+
+1. **Scan phase**: The workflow engine opens each input cache and iterates all
+   entries
+2. **Filter phase**: Entries are filtered by:
+   - Presence of all matrix variables in entry metadata
+   - Filter expression (if specified)
+3. **Group phase**: Entries are grouped by current matrix values
+4. **Execute phase**: Matching entries are passed to the action via the special
+   `_aggregation_entries` parameter
+
+Each entry in `_aggregation_entries` contains:
+
+```python
+{
+    "matrix_values": {"model": "asia", "llm": "groq/llama-3.1-8b"},
+    "metadata": {...},      # Full entry metadata
+    "cache_path": "results/llm_graphs.db",
+    "entry_hash": "a3f7b2c1",
+    "entry": <CacheEntry>,  # Full entry object with data
+}
+```
+
 ## Template Variables
 
 ### Flexible Path Templating Pattern
@@ -392,6 +516,13 @@ Available context: id, description, dataset
 - **Flexible Path Templating**: User-controlled path generation with {{}} template variables
 - **Template Variable Validation**: Automatic validation of {{variable}} patterns against available context
 - **Error Propagation**: Comprehensive error handling with WorkflowExecutionError
+
+### ✅ Aggregation Processing
+- **Implicit Aggregation**: Matrix + `input` pointing to `.db` cache triggers aggregation
+- **Explicit Aggregation**: Use `aggregate` parameter for explicit cache specification
+- **Filter Expressions**: Filter entries using expressions against flattened metadata
+- **Entry Scanning**: Automatic scanning and grouping by matrix dimensions
+- **Action Integration**: Matching entries passed via `_aggregation_entries` parameter
 
 ### ✅ Schema Validation
 - **GitHub Actions Syntax**: Familiar workflow patterns

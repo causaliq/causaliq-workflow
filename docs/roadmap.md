@@ -1,6 +1,6 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: February 18, 2026
+**Last updated**: March 01, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
@@ -14,27 +14,30 @@ No release currently under development.
 
 - **v0.2.0 Knowledge Workflows** [February 2026]: Include LLM graph generation in workflows and store results in Workflow caches.
 
+- **v0.3.0 Aggregation Workflows** [March 2026]: Matrix-driven aggregation processing for multi-source workflows.
+
+
 ## 🛣️ Upcoming Implementation
 
-### Release 0.3.0 - Analysis Workflows
 
-Graph averaging, structural analysis, and cache query capabilities.
+### Release 0.4.0 - Step Output Chaining
+
+Enable workflow steps to consume outputs from previous steps.
 
 **Scope**:
 
-- Cache read/scan functionality:
-  - `cache_input` source for workflow steps
-  - Entry selection by matrix predicates (indexed lookup)
-  - Entry selection by metadata predicates (scan)
-  - Metadata update capability for enriching cached entries
-- Graph averaging integrated (from causaliq-analysis)
-- Structural evaluation integrated (from causaliq-analysis)
-- Other analysis integrated
+- **Step output references** - Template syntax `{{steps.<name>.outputs.<key>}}`
+  - Extend `_resolve_template_variables()` to handle step output references
+  - Track step outputs in WorkflowContext (add `step_outputs: Dict[str, Any]`)
+  - Deserialise GraphML strings back to graph objects when consumed
 
-**Dependencies**: Requires causaliq-analysis initial release
+- **Cache restoration** - Resume workflows from cached results
+  - Check cache before executing step
+  - Skip execution if valid cached result exists
+  - Support forced re-execution flag
 
 
-### Release 0.4.0: Enhanced workflow
+### Release 0.5.0: Enhanced Workflow
 
 Dry and comparison runs, runtime estimation and processing summary
 
@@ -50,7 +53,7 @@ Dry and comparison runs, runtime estimation and processing summary
 - progress indicators
 
 
-### Release 0.5: Discovery Integration
+### Release 0.6.0: Discovery Integration
 
 Structure learning algorithms integrated
 

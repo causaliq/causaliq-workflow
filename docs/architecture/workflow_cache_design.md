@@ -497,15 +497,106 @@ if cache.exists(context.matrix_values):
     return cache.get(context.matrix_values, "graph")
 ```
 
+## Aggregation Mode
+
+Aggregation mode enables workflow steps to consume entries from multiple cache
+entries, essential for research workflows that merge graphs or compute
+aggregate statistics across parameter sweeps.
+
+### Aggregation Detection
+
+A step enters aggregation mode when:
+
+1. The workflow has a **matrix** definition, AND
+2. The step has EITHER:
+   - An `aggregate` parameter pointing to cache file(s), OR
+   - An `input` parameter pointing to `.db` cache file(s)
+
+```yaml
+# Implicit aggregation - input points to .db file
+matrix:
+  model: [asia, cancer]
+
+steps:
+  - uses: causaliq-analysis
+    with:
+      action: merge_graphs
+      input: results/graphs.db    # Triggers aggregation mode
+      output: results/merged.db
+```
+
+```yaml
+# Explicit aggregation - aggregate parameter
+steps:
+  - uses: causaliq-analysis
+    with:
+      action: merge_graphs
+      aggregate:                  # Explicit cache list
+        - results/llm_graphs.db
+        - results/discovery.db
+      output: results/merged.db
+```
+
+### Entry Scanning Flow
+
+The `_scan_aggregation_inputs()` method:
+
+1. Opens each input cache
+2. Iterates all entries
+3. Skips entries missing required matrix variables
+4. Applies filter expression (if present)
+5. Groups entries by current matrix values
+6. Returns list of matching entry dictionaries
+
+```python
+# Scan statistics logged during execution
+# "Aggregation scan: scanned=100, filtered=20, matched=8"
+```
+
+### Filter Expressions
+
+The `filter` parameter accepts expressions evaluated against flattened entry
+metadata:
+
+```yaml
+with:
+  action: merge_graphs
+  aggregate: results/graphs.db
+  filter: "algorithm == 'pc' and sample_size >= 1000"
+```
+
+Metadata flattening combines:
+
+- Matrix variables (`model`, `algorithm`, etc.)
+- Nested metadata using simple keys (if no conflict)
+- Fully qualified keys (`provider.action.field`)
+
+### Action Integration
+
+Matching entries are passed to actions via `_aggregation_entries`:
+
+```python
+def run(self, inputs, mode, context, logger):
+    entries = inputs.get("_aggregation_entries", [])
+    
+    for entry in entries:
+        matrix_vals = entry["matrix_values"]
+        metadata = entry["metadata"]
+        cache_entry = entry["entry"]  # Full CacheEntry with data
+        
+        # Access entry data
+        graph = cache_entry.get_object("graph")
+```
+
 ## Cross-Package Dependencies
 
 Workflow Caches span three packages:
 
 | Package | Version | Responsibility |
 |---------|---------|----------------|
-| **causaliq-core** | v0.4.0 | TokenCache, JsonEncoder, SDG encode/decode/GraphML |
+| **causaliq-core** | v0.5.0 | TokenCache, JsonEncoder, SDG, evaluate_filter |
 | **causaliq-knowledge** | v0.5.0 | GraphEntryEncoder, update generate_graph action |
-| **causaliq-workflow** | v0.2.0 | WorkflowCache class, CLI commands, workflow integration |
+| **causaliq-workflow** | v0.3.0 | WorkflowCache, aggregation mode, CLI commands |
 
 **Implementation order**: core → knowledge → workflow (each depends on prior)
 

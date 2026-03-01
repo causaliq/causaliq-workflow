@@ -165,6 +165,63 @@ Template variables can reference:
 | Matrix | User-defined matrix vars | `{{dataset}}`, `{{algorithm}}` |
 | Paths | `data_root`, `output_root` | `{{output_root}}/results` |
 
+## Aggregation Processing
+
+Aggregation mode enables workflow steps to consume entries from multiple cache
+entries. This is essential for research workflows that merge graphs or compute
+aggregate statistics across parameter sweeps.
+
+### Aggregation Configuration
+
+::: causaliq_workflow.workflow.AggregationConfig
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 4
+
+### Aggregation Example
+
+```python
+# Example workflow with aggregation
+workflow_yaml = \"\"\"
+id: "merge_experiment"
+description: "Merge LLM-generated graphs"
+matrix:
+  model: ["asia", "cancer"]
+
+steps:
+  - name: "Merge Graphs"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      input: "results/llm_graphs.db"  # .db triggers aggregation
+      output: "results/merged.db"
+\"\"\"
+
+# Execute with aggregation mode
+executor = WorkflowExecutor()
+workflow = executor.parse_workflow_dict(yaml.safe_load(workflow_yaml))
+
+# For each matrix value (asia, cancer), the action receives
+# all cache entries from llm_graphs.db that match that model
+results = executor.execute_workflow(workflow, mode="run")
+```
+
+### Filter Expressions
+
+Use filters to restrict which entries are aggregated:
+
+```yaml
+steps:
+  - name: "Merge Filtered"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      aggregate: "results/graphs.db"
+      filter: "algorithm == 'pc' and sample_size >= 1000"
+      output: "results/merged.db"
+```
+
 ## Error Handling
 
 The WorkflowExecutor provides detailed error reporting for:
