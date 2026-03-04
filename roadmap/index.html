@@ -485,6 +485,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="🚧 Under development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#release-040-action-patterns-and-conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release 0.4.0 - Action Patterns and Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -511,10 +528,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#release-030-analysis-workflows" class="md-nav__link">
+  <a href="#release-050-step-output-chaining" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Release 0.3.0 - Analysis Workflows
+        Release 0.5.0 - Step Output Chaining
       
     </span>
   </a>
@@ -522,10 +539,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#release-040-enhanced-workflow" class="md-nav__link">
+  <a href="#release-060-enhanced-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Release 0.4.0: Enhanced workflow
+        Release 0.6.0: Enhanced Workflow
       
     </span>
   </a>
@@ -533,10 +550,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#release-05-discovery-integration" class="md-nav__link">
+  <a href="#release-070-discovery-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Release 0.5: Discovery Integration
+        Release 0.7.0: Discovery Integration
       
     </span>
   </a>
@@ -754,6 +771,34 @@
     
   
     Matrix Strategy Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/summarisation_paradigm_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Summarisation Paradigm
   
 
     
@@ -1298,6 +1343,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="🚧 Under development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#release-040-action-patterns-and-conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release 0.4.0 - Action Patterns and Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1324,10 +1386,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#release-030-analysis-workflows" class="md-nav__link">
+  <a href="#release-050-step-output-chaining" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Release 0.3.0 - Analysis Workflows
+        Release 0.5.0 - Step Output Chaining
       
     </span>
   </a>
@@ -1335,10 +1397,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#release-040-enhanced-workflow" class="md-nav__link">
+  <a href="#release-060-enhanced-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Release 0.4.0: Enhanced workflow
+        Release 0.6.0: Enhanced Workflow
       
     </span>
   </a>
@@ -1346,10 +1408,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#release-05-discovery-integration" class="md-nav__link">
+  <a href="#release-070-discovery-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Release 0.5: Discovery Integration
+        Release 0.7.0: Discovery Integration
       
     </span>
   </a>
@@ -1390,10 +1452,35 @@
 
 
 <h1 id="causaliq-workflow-development-roadmap">CausalIQ Workflow - Development Roadmap</h1>
-<p><strong>Last updated</strong>: February 18, 2026</p>
+<p><strong>Last updated</strong>: March 04, 2026</p>
 <p>This project roadmap fits into the <a href="https://causaliq.org/projects/ecosystem_roadmap/">overall ecosystem roadmap</a></p>
 <h2 id="under-development">🚧  Under development</h2>
-<p>No release currently under development.</p>
+<h3 id="release-040-action-patterns-and-conservative-execution">Release 0.4.0 - Action Patterns and Conservative Execution</h3>
+<p>Formalise action patterns and implement conservative execution.</p>
+<p><strong>Scope</strong>:</p>
+<ul>
+<li><strong>Action pattern validation</strong>:</li>
+<li>Creation: output required, matrix required, input prohibited (for caches)</li>
+<li>Update: input required, output prohibited, matrix prohibited</li>
+<li>
+<p>Aggregation: input required, output required, matrix required</p>
+</li>
+<li>
+<p><strong>Update action support</strong> - Actions that modify input cache entries</p>
+</li>
+<li>Add metadata sections to existing entries</li>
+<li>
+<p>Add objects to existing entries</p>
+</li>
+<li>
+<p><strong>Conservative execution</strong> - Skip work if results exist</p>
+</li>
+<li>Creation: skip if entry with matching matrix values exists in output</li>
+<li>Update: skip if action metadata section exists in entry  </li>
+<li>Aggregation: skip if entry with matching matrix values exists in output</li>
+<li>Add <code>--mode=force</code> option to bypass checks</li>
+<li>All logic implemented in workflow executor (actions unaware)</li>
+</ul>
 <h2 id="previous-releases">✅ Previous Releases</h2>
 <ul>
 <li>
@@ -1402,27 +1489,31 @@
 <li>
 <p><strong>v0.2.0 Knowledge Workflows</strong> [February 2026]: Include LLM graph generation in workflows and store results in Workflow caches.</p>
 </li>
+<li>
+<p><strong>v0.3.0 Aggregation Workflows</strong> [March 2026]: Matrix-driven aggregation processing for multi-source workflows.</p>
+</li>
 </ul>
 <h2 id="upcoming-implementation">🛣️ Upcoming Implementation</h2>
-<h3 id="release-030-analysis-workflows">Release 0.3.0 - Analysis Workflows</h3>
-<p>Graph averaging, structural analysis, and cache query capabilities.</p>
+<h3 id="release-050-step-output-chaining">Release 0.5.0 - Step Output Chaining</h3>
+<p>Enable workflow steps to consume outputs from previous steps.</p>
 <p><strong>Scope</strong>:</p>
 <ul>
-<li>Cache read/scan functionality:</li>
-<li><code>cache_input</code> source for workflow steps</li>
-<li>Entry selection by matrix predicates (indexed lookup)</li>
-<li>Entry selection by metadata predicates (scan)</li>
-<li>Metadata update capability for enriching cached entries</li>
-<li>Graph averaging integrated (from causaliq-analysis)</li>
-<li>Structural evaluation integrated (from causaliq-analysis)</li>
-<li>Other analysis integrated</li>
+<li><strong>Step output references</strong> - Template syntax <code>{{steps.&lt;name&gt;.outputs.&lt;key&gt;}}</code></li>
+<li>Extend <code>_resolve_template_variables()</code> to handle step output references</li>
+<li>Track step outputs in WorkflowContext (add <code>step_outputs: Dict[str, Any]</code>)</li>
+<li>
+<p>Deserialise GraphML strings back to graph objects when consumed</p>
+</li>
+<li>
+<p><strong>Cache restoration</strong> - Resume workflows from cached results</p>
+</li>
+<li>Check cache before executing step</li>
+<li>Support forced re-execution flag</li>
 </ul>
-<p><strong>Dependencies</strong>: Requires causaliq-analysis initial release</p>
-<h3 id="release-040-enhanced-workflow">Release 0.4.0: Enhanced workflow</h3>
+<h3 id="release-060-enhanced-workflow">Release 0.6.0: Enhanced Workflow</h3>
 <p>Dry and comparison runs, runtime estimation and processing summary</p>
 <p><strong>Scope</strong>:</p>
 <ul>
-<li>conservative execution skipping if results present</li>
 <li>dry-run capability</li>
 <li>standardise message format</li>
 <li>support skip, would do etc messages</li>
@@ -1431,7 +1522,7 @@
 <li>estimate runtime</li>
 <li>progress indicators</li>
 </ul>
-<h3 id="release-05-discovery-integration">Release 0.5: Discovery Integration</h3>
+<h3 id="release-070-discovery-integration">Release 0.7.0: Discovery Integration</h3>
 <p>Structure learning algorithms integrated</p>
 <p><strong>Scope</strong>:</p>
 <ul>

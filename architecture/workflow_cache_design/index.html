@@ -647,6 +647,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../summarisation_paradigm_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Summarisation Paradigm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_architecture_design/" class="md-nav__link">
         
   
@@ -1107,6 +1135,67 @@
     <span class="md-ellipsis">
       
         Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aggregation-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Mode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Aggregation Mode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-scanning-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Scanning Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Integration
       
     </span>
   </a>
@@ -1832,6 +1921,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#aggregation-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Mode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Aggregation Mode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-scanning-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Scanning Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cross-package-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2380,6 +2530,79 @@ paths to cache hashes and full matrix key values:</p>
     logger.info(&quot;Skipping: result already cached&quot;)
     return cache.get(context.matrix_values, &quot;graph&quot;)
 </code></pre>
+<h2 id="aggregation-mode">Aggregation Mode</h2>
+<p>Aggregation mode enables workflow steps to consume entries from multiple cache
+entries, essential for research workflows that merge graphs or compute
+aggregate statistics across parameter sweeps.</p>
+<h3 id="aggregation-detection">Aggregation Detection</h3>
+<p>A step enters aggregation mode when:</p>
+<ol>
+<li>The workflow has a <strong>matrix</strong> definition, AND</li>
+<li>The step has EITHER:</li>
+<li>An <code>aggregate</code> parameter pointing to cache file(s), OR</li>
+<li>An <code>input</code> parameter pointing to <code>.db</code> cache file(s)</li>
+</ol>
+<pre><code class="language-yaml"># Implicit aggregation - input points to .db file
+matrix:
+  model: [asia, cancer]
+
+steps:
+  - uses: causaliq-analysis
+    with:
+      action: merge_graphs
+      input: results/graphs.db    # Triggers aggregation mode
+      output: results/merged.db
+</code></pre>
+<pre><code class="language-yaml"># Explicit aggregation - aggregate parameter
+steps:
+  - uses: causaliq-analysis
+    with:
+      action: merge_graphs
+      aggregate:                  # Explicit cache list
+        - results/llm_graphs.db
+        - results/discovery.db
+      output: results/merged.db
+</code></pre>
+<h3 id="entry-scanning-flow">Entry Scanning Flow</h3>
+<p>The <code>_scan_aggregation_inputs()</code> method:</p>
+<ol>
+<li>Opens each input cache</li>
+<li>Iterates all entries</li>
+<li>Skips entries missing required matrix variables</li>
+<li>Applies filter expression (if present)</li>
+<li>Groups entries by current matrix values</li>
+<li>Returns list of matching entry dictionaries</li>
+</ol>
+<pre><code class="language-python"># Scan statistics logged during execution
+# &quot;Aggregation scan: scanned=100, filtered=20, matched=8&quot;
+</code></pre>
+<h3 id="filter-expressions">Filter Expressions</h3>
+<p>The <code>filter</code> parameter accepts expressions evaluated against flattened entry
+metadata:</p>
+<pre><code class="language-yaml">with:
+  action: merge_graphs
+  aggregate: results/graphs.db
+  filter: &quot;algorithm == 'pc' and sample_size &gt;= 1000&quot;
+</code></pre>
+<p>Metadata flattening combines:</p>
+<ul>
+<li>Matrix variables (<code>model</code>, <code>algorithm</code>, etc.)</li>
+<li>Nested metadata using simple keys (if no conflict)</li>
+<li>Fully qualified keys (<code>provider.action.field</code>)</li>
+</ul>
+<h3 id="action-integration">Action Integration</h3>
+<p>Matching entries are passed to actions via <code>_aggregation_entries</code>:</p>
+<pre><code class="language-python">def run(self, inputs, mode, context, logger):
+    entries = inputs.get(&quot;_aggregation_entries&quot;, [])
+
+    for entry in entries:
+        matrix_vals = entry[&quot;matrix_values&quot;]
+        metadata = entry[&quot;metadata&quot;]
+        cache_entry = entry[&quot;entry&quot;]  # Full CacheEntry with data
+
+        # Access entry data
+        graph = cache_entry.get_object(&quot;graph&quot;)
+</code></pre>
 <h2 id="cross-package-dependencies">Cross-Package Dependencies</h2>
 <p>Workflow Caches span three packages:</p>
 <table>
@@ -2393,8 +2616,8 @@ paths to cache hashes and full matrix key values:</p>
 <tbody>
 <tr>
 <td><strong>causaliq-core</strong></td>
-<td>v0.4.0</td>
-<td>TokenCache, JsonEncoder, SDG encode/decode/GraphML</td>
+<td>v0.5.0</td>
+<td>TokenCache, JsonEncoder, SDG, evaluate_filter</td>
 </tr>
 <tr>
 <td><strong>causaliq-knowledge</strong></td>
@@ -2403,8 +2626,8 @@ paths to cache hashes and full matrix key values:</p>
 </tr>
 <tr>
 <td><strong>causaliq-workflow</strong></td>
-<td>v0.2.0</td>
-<td>WorkflowCache class, CLI commands, workflow integration</td>
+<td>v0.3.0</td>
+<td>WorkflowCache, aggregation mode, CLI commands</td>
 </tr>
 </tbody>
 </table>

@@ -641,6 +641,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/summarisation_paradigm_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Summarisation Paradigm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/action_architecture_design/" class="md-nav__link">
         
   
@@ -2036,6 +2064,10 @@ The 'action' input parameter selects which action to execute.</p>
 <p>Providers can also declare supported_types for compress/decompress
 operations. Workflow uses these to build a registry of which provider
 handles compression for each data type.</p>
+<p>Action patterns define how actions interact with workflow caches:
+- CREATE: Creates new entries (output + matrix required, input prohibited)
+- UPDATE: Modifies existing entries (input required, output/matrix prohibited)
+- AGGREGATE: Combines entries (input + output + matrix required)</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -2078,6 +2110,14 @@ handles compression for each data type.</p>
           –
           <div class="doc-md-description">
             <p>Set of action names this provider supports.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_core.CausalIQActionProvider.action_patterns">action_patterns</span></code></b>
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="causaliq_core.action.ActionPattern">ActionPattern</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Mapping of action names to their execution patterns.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">

@@ -593,6 +593,78 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#aggregation-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Aggregation Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-mode-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Mode Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicit-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implicit Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-aggregation-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Aggregation Entries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-aggregation-works-internally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Aggregation Works Internally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -665,6 +737,17 @@
     <span class="md-ellipsis">
       
         ✅ Workflow Execution Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Aggregation Processing
       
     </span>
   </a>
@@ -1308,6 +1391,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../architecture/summarisation_paradigm_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Summarisation Paradigm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../architecture/action_architecture_design/" class="md-nav__link">
         
   
@@ -1912,6 +2023,78 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#aggregation-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Aggregation Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-mode-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Mode Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicit-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implicit Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-aggregation-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Aggregation Entries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-aggregation-works-internally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Aggregation Works Internally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1984,6 +2167,17 @@
     <span class="md-ellipsis">
       
         ✅ Workflow Execution Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Aggregation Processing
       
     </span>
   </a>
@@ -2465,6 +2659,7 @@
 - ✅ Template variable substitution (`{{variable}}`)
 - ✅ Action registry and discovery
 - ✅ Schema validation (strings, numbers, booleans in `with:` blocks)
+- ✅ Aggregation processing with filter expressions
 
 Planned features (not yet implemented):
 
@@ -2730,6 +2925,110 @@ steps:
 </code></pre>
 <h3 id="parallel-jobs">Parallel Jobs</h3>
 <p>CI workflows provide a <strong>jobs:</strong> keyword which allows multiple sequences of steps to run in parallel. We are not planning to implement this at the moment, instead relying on actions to provde parallelism using DAK tasks. This keeps CausalIQ Workflow functionality simple and reflects the fact that structure learning steps involving many individual structure learning experiments can keep even very powerful machines busy.</p>
+<h3 id="aggregation-workflows">Aggregation Workflows</h3>
+<p>Aggregation workflows combine results from multiple cache entries into a single
+output. This is essential for research workflows that need to merge graphs from
+parameter sweeps or compute aggregate statistics across experiments.</p>
+<h4 id="aggregation-mode-detection">Aggregation Mode Detection</h4>
+<p>A workflow step automatically enters aggregation mode when:</p>
+<ol>
+<li>The workflow has a <strong>matrix</strong> definition, AND</li>
+<li>The step has EITHER:</li>
+<li>An explicit <code>aggregate</code> parameter pointing to cache file(s), OR</li>
+<li>An <code>input</code> parameter pointing to <code>.db</code> cache file(s)</li>
+</ol>
+<h4 id="implicit-aggregation">Implicit Aggregation</h4>
+<p>When a step specifies <code>input</code> pointing to a <code>.db</code> file and the workflow has a
+matrix, entries are automatically grouped by matrix dimensions:</p>
+<pre><code class="language-yaml"># merge_asia_implicit.yml - Implicit aggregation from input
+id: &quot;merge_asia&quot;
+description: &quot;Merge LLM-generated graphs using implicit aggregation&quot;
+
+matrix:
+  model: [&quot;asia&quot;]
+  llm: [&quot;groq/llama-3.1-8b&quot;, &quot;openai/gpt-4o-mini&quot;]
+
+steps:
+  - name: &quot;Merge LLM Graphs&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;merge_graphs&quot;
+      input: &quot;results/llm_graphs.db&quot;   # .db triggers aggregation
+      output: &quot;results/merged.db&quot;
+</code></pre>
+<p>In this example:</p>
+<ul>
+<li>The matrix defines <code>model</code> and <code>llm</code> as grouping dimensions</li>
+<li>For each <code>model</code> value, the action receives all cache entries from
+  <code>llm_graphs.db</code> that match that model</li>
+<li>The <code>merge_graphs</code> action combines those entries into a merged result</li>
+</ul>
+<h4 id="explicit-aggregation">Explicit Aggregation</h4>
+<p>Use the <code>aggregate</code> parameter for explicit control over which caches provide
+input entries:</p>
+<pre><code class="language-yaml"># merge_asia_explicit.yml - Explicit aggregation with aggregate parameter
+id: &quot;merge_asia_explicit&quot;
+description: &quot;Merge graphs from multiple sources&quot;
+
+matrix:
+  model: [&quot;asia&quot;, &quot;cancer&quot;]
+
+steps:
+  - name: &quot;Merge All Sources&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;merge_graphs&quot;
+      aggregate:                         # Explicit: multiple caches
+        - &quot;results/llm_graphs.db&quot;
+        - &quot;results/discovery_graphs.db&quot;
+      output: &quot;results/merged.db&quot;
+</code></pre>
+<h4 id="filtering-aggregation-entries">Filtering Aggregation Entries</h4>
+<p>Use the <code>filter</code> parameter to restrict which entries are aggregated. Filter
+expressions are evaluated against flattened entry metadata:</p>
+<pre><code class="language-yaml"># merge_with_filter.yml - Aggregation with filter
+id: &quot;merge_filtered&quot;
+description: &quot;Merge only successful high-quality graphs&quot;
+
+matrix:
+  model: [&quot;asia&quot;]
+
+steps:
+  - name: &quot;Merge Filtered&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;merge_graphs&quot;
+      aggregate: &quot;results/llm_graphs.db&quot;
+      filter: &quot;edge_count &gt; 5 and llm_model != 'test'&quot;
+      output: &quot;results/merged.db&quot;
+</code></pre>
+<p>Available filter variables include:</p>
+<ul>
+<li>Matrix variables (<code>model</code>, <code>llm</code>, etc.)</li>
+<li>Metadata fields from cache entries (<code>edge_count</code>, <code>node_count</code>, <code>llm_model</code>)</li>
+<li>Nested fields using dot notation (<code>provider.action.field</code>)</li>
+</ul>
+<h4 id="how-aggregation-works-internally">How Aggregation Works Internally</h4>
+<p>When aggregation mode is detected:</p>
+<ol>
+<li><strong>Scan phase</strong>: The workflow engine opens each input cache and iterates all
+   entries</li>
+<li><strong>Filter phase</strong>: Entries are filtered by:</li>
+<li>Presence of all matrix variables in entry metadata</li>
+<li>Filter expression (if specified)</li>
+<li><strong>Group phase</strong>: Entries are grouped by current matrix values</li>
+<li><strong>Execute phase</strong>: Matching entries are passed to the action via the special
+   <code>_aggregation_entries</code> parameter</li>
+</ol>
+<p>Each entry in <code>_aggregation_entries</code> contains:</p>
+<pre><code class="language-python">{
+    &quot;matrix_values&quot;: {&quot;model&quot;: &quot;asia&quot;, &quot;llm&quot;: &quot;groq/llama-3.1-8b&quot;},
+    &quot;metadata&quot;: {...},      # Full entry metadata
+    &quot;cache_path&quot;: &quot;results/llm_graphs.db&quot;,
+    &quot;entry_hash&quot;: &quot;a3f7b2c1&quot;,
+    &quot;entry&quot;: &lt;CacheEntry&gt;,  # Full entry object with data
+}
+</code></pre>
 <h2 id="template-variables">Template Variables</h2>
 <h3 id="flexible-path-templating-pattern">Flexible Path Templating Pattern</h3>
 <p>Our implementation supports flexible path templating using matrix variables:</p>
@@ -2792,6 +3091,14 @@ Available context: id, description, dataset
 <li><strong>Flexible Path Templating</strong>: User-controlled path generation with {{}} template variables</li>
 <li><strong>Template Variable Validation</strong>: Automatic validation of {{variable}} patterns against available context</li>
 <li><strong>Error Propagation</strong>: Comprehensive error handling with WorkflowExecutionError</li>
+</ul>
+<h3 id="aggregation-processing">✅ Aggregation Processing</h3>
+<ul>
+<li><strong>Implicit Aggregation</strong>: Matrix + <code>input</code> pointing to <code>.db</code> cache triggers aggregation</li>
+<li><strong>Explicit Aggregation</strong>: Use <code>aggregate</code> parameter for explicit cache specification</li>
+<li><strong>Filter Expressions</strong>: Filter entries using expressions against flattened metadata</li>
+<li><strong>Entry Scanning</strong>: Automatic scanning and grouping by matrix dimensions</li>
+<li><strong>Action Integration</strong>: Matching entries passed via <code>_aggregation_entries</code> parameter</li>
 </ul>
 <h3 id="schema-validation">✅ Schema Validation</h3>
 <ul>

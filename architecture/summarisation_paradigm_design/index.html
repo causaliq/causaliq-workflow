@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../action_auto_discovery_design/">
+        <link rel="prev" href="../matrix_expansion_design/">
       
       
-        <link rel="next" href="../logging_architecture_design/">
+        <link rel="next" href="../action_architecture_design/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Workflow Executor - causaliq-workflow</title>
+        <title>Summarisation Paradigm - causaliq-workflow</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#workflowexecutor-implementation-design" class="md-skip">
+        <a href="#summarisation-paradigm-design" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Workflow Executor
+              Summarisation Paradigm
             
           </span>
         </div>
@@ -644,10 +644,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../summarisation_paradigm_design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Summarisation Paradigm
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -663,6 +690,376 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Motivation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Motivation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#research-workflow-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Workflow Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-mode-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Mode Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregation-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Scan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-execute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Execute
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflow Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with-filter-expression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        With Filter Expression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-input-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Input Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-expression-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Expression Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filter Expression Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#available-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-flattening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Flattening
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entry-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#missing-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-read-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Read Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-causaliq-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with causaliq-core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Enhancements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#weight-based-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weight-Based Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hierarchical-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hierarchical Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See Also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -728,37 +1125,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workflow Executor
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../workflow_executor_design/" class="md-nav__link">
         
   
   
@@ -774,365 +1144,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#class-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Class Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-design-decisions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Design Decisions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Key Design Decisions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-integration-with-existing-schema-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Integration with Existing Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-matrix-expansion-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Matrix Expansion Strategy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-path-construction-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Path Construction Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-error-handling-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Error Handling Strategy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-phases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Phases
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation Phases">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#phase-1-parsing-foundation-complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 1: Parsing Foundation (Complete ✅)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-2-execution-engine-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 2: Execution Engine (Future)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-3-advanced-features-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 3: Advanced Features (Future)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#integration-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration Points
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Integration Points">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#with-action-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        With Action Framework
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-schema-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        With Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-dask-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        With DASK (Future)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#testing-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing Strategy
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Testing Strategy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#unit-tests-isolated-logic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unit Tests (Isolated Logic)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#functional-tests-real-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Functional Tests (Real Operations)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#edge-case-coverage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Edge Case Coverage
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-characteristics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance Characteristics
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Performance Characteristics">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#matrix-expansion-scaling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Matrix Expansion Scaling
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memory-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Usage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#future-optimisations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Optimisations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#alignment-with-causaliq-standards" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Alignment with CausalIQ Standards
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Alignment with CausalIQ Standards">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#development-guidelines-compliance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Development Guidelines Compliance
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#architecture-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architecture Principles
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1588,45 +1599,50 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-architecture" class="md-nav__link">
+  <a href="#motivation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation Architecture
+        Motivation
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Implementation Architecture">
+    <nav class="md-nav" aria-label="Motivation">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#class-structure" class="md-nav__link">
+  <a href="#research-workflow-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Class Structure
+        Research Workflow Pattern
       
     </span>
   </a>
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#key-design-decisions" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Design Decisions
+        Architecture
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Key Design Decisions">
+    <nav class="md-nav" aria-label="Architecture">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-integration-with-existing-schema-validation" class="md-nav__link">
+  <a href="#aggregation-mode-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Integration with Existing Schema Validation
+        Aggregation Mode Detection
       
     </span>
   </a>
@@ -1634,10 +1650,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-matrix-expansion-strategy" class="md-nav__link">
+  <a href="#aggregation-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Matrix Expansion Strategy
+        Aggregation Configuration
       
     </span>
   </a>
@@ -1645,10 +1661,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-path-construction-pattern" class="md-nav__link">
+  <a href="#execution-phases" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Path Construction Pattern
+        Execution Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Scan
       
     </span>
   </a>
@@ -1656,10 +1684,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-error-handling-strategy" class="md-nav__link">
+  <a href="#phase-2-execute" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Error Handling Strategy
+        Phase 2: Execute
       
     </span>
   </a>
@@ -1677,22 +1705,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-phases" class="md-nav__link">
+  <a href="#workflow-syntax" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation Phases
+        Workflow Syntax
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Implementation Phases">
+    <nav class="md-nav" aria-label="Workflow Syntax">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#phase-1-parsing-foundation-complete" class="md-nav__link">
+  <a href="#basic-aggregation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 1: Parsing Foundation (Complete ✅)
+        Basic Aggregation
       
     </span>
   </a>
@@ -1700,10 +1728,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-2-execution-engine-future" class="md-nav__link">
+  <a href="#with-filter-expression" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 2: Execution Engine (Future)
+        With Filter Expression
       
     </span>
   </a>
@@ -1711,10 +1739,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-3-advanced-features-future" class="md-nav__link">
+  <a href="#multiple-input-caches" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 3: Advanced Features (Future)
+        Multiple Input Caches
       
     </span>
   </a>
@@ -1727,22 +1755,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#integration-points" class="md-nav__link">
+  <a href="#filter-expression-syntax" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Integration Points
+        Filter Expression Syntax
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Integration Points">
+    <nav class="md-nav" aria-label="Filter Expression Syntax">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#with-action-framework" class="md-nav__link">
+  <a href="#supported-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        With Action Framework
+        Supported Operators
       
     </span>
   </a>
@@ -1750,21 +1778,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#with-schema-validation" class="md-nav__link">
+  <a href="#available-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        With Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-dask-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        With DASK (Future)
+        Available Variables
       
     </span>
   </a>
@@ -1777,22 +1794,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#testing-strategy" class="md-nav__link">
+  <a href="#metadata-flattening" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Testing Strategy
+        Metadata Flattening
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Testing Strategy">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entry-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#unit-tests-isolated-logic" class="md-nav__link">
+  <a href="#missing-caches" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unit Tests (Isolated Logic)
+        Missing Caches
       
     </span>
   </a>
@@ -1800,10 +1850,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#functional-tests-real-operations" class="md-nav__link">
+  <a href="#filter-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Functional Tests (Real Operations)
+        Filter Errors
       
     </span>
   </a>
@@ -1811,10 +1861,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#edge-case-coverage" class="md-nav__link">
+  <a href="#cache-read-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Edge Case Coverage
+        Cache Read Errors
       
     </span>
   </a>
@@ -1827,22 +1877,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#performance-characteristics" class="md-nav__link">
+  <a href="#integration-with-causaliq-core" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Performance Characteristics
+        Integration with causaliq-core
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Performance Characteristics">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Enhancements">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#matrix-expansion-scaling" class="md-nav__link">
+  <a href="#weight-based-aggregation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Matrix Expansion Scaling
+        Weight-Based Aggregation
       
     </span>
   </a>
@@ -1850,21 +1911,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#memory-usage" class="md-nav__link">
+  <a href="#hierarchical-aggregation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Memory Usage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#future-optimisations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Optimisations
+        Hierarchical Aggregation
       
     </span>
   </a>
@@ -1877,41 +1927,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alignment-with-causaliq-standards" class="md-nav__link">
+  <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Alignment with CausalIQ Standards
+        See Also
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Alignment with CausalIQ Standards">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#development-guidelines-compliance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Development Guidelines Compliance
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#architecture-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architecture Principles
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1932,168 +1954,303 @@
 
 
 
-<h1 id="workflowexecutor-implementation-design">WorkflowExecutor Implementation Design</h1>
+<h1 id="summarisation-paradigm-design">Summarisation Paradigm Design</h1>
 <h2 id="overview">Overview</h2>
-<p>The <code>WorkflowExecutor</code> class provides the foundation for parsing and executing GitHub Actions-style YAML workflows with matrix expansion support. This implementation focuses on the parsing and preparation phase, establishing the infrastructure for workflow execution.</p>
-<h2 id="implementation-architecture">Implementation Architecture</h2>
-<h3 id="class-structure">Class Structure</h3>
-<pre><code class="language-python">class WorkflowExecutor:
-    &quot;&quot;&quot;Parse and execute GitHub Actions-style workflows with matrix expansion.&quot;&quot;&quot;
+<p>The Summarisation Paradigm enables workflows to aggregate results from
+multiple matrix combinations into summary outputs. This is essential for
+causal discovery research where experiments are run across many parameter
+combinations (networks, sample sizes, algorithms) and results need to be
+combined for analysis, model averaging, or comparison.</p>
+<h2 id="motivation">Motivation</h2>
+<h3 id="research-workflow-pattern">Research Workflow Pattern</h3>
+<p>A typical causal discovery workflow generates many individual results:</p>
+<pre><code class="language-yaml">matrix:
+  network: [asia, alarm, sachs]
+  sample_size: [100, 500, 1000]
+  seed: [1, 2, 3, 4, 5]
 
-    def parse_workflow(self, workflow_path: Union[str, Path]) -&gt; Dict[str, Any]
-    def expand_matrix(self, matrix: Dict[str, List[Any]]) -&gt; List[Dict[str, Any]]
-    def construct_paths(self, job: Dict[str, Any], data_root: str, 
-                       output_root: str, workflow_id: str) -&gt; Dict[str, str]
+steps:
+  - name: Generate Graph
+    uses: causaliq/research
+    with:
+      action: generate_graph
+      output: results/graphs.db
 </code></pre>
-<h3 id="key-design-decisions">Key Design Decisions</h3>
-<h4 id="1-integration-with-existing-schema-validation">1. Integration with Existing Schema Validation</h4>
-<p>The <code>WorkflowExecutor</code> leverages the existing <code>causaliq_workflow.schema</code> module for workflow validation:</p>
-<pre><code class="language-python">def parse_workflow(self, workflow_path):
-    workflow = load_workflow_file(workflow_path)  # Existing function
-    validate_workflow(workflow)                   # Existing function
-    return workflow
+<p>This produces 45 individual graphs (3 × 3 × 5). Researchers then need to:</p>
+<ol>
+<li><strong>Aggregate by network</strong>: Combine all graphs for each network</li>
+<li><strong>Filter by quality</strong>: Only include successful runs</li>
+<li><strong>Compute summaries</strong>: Average structures, consensus edges, etc.</li>
+</ol>
+<p>The Summarisation Paradigm provides first-class support for this pattern.</p>
+<h2 id="architecture">Architecture</h2>
+<h3 id="aggregation-mode-detection">Aggregation Mode Detection</h3>
+<p>Aggregation mode is automatically activated when a step has:</p>
+<ol>
+<li>A workflow <code>matrix</code> definition</li>
+<li>An <code>aggregate</code> parameter specifying input cache(s)</li>
+</ol>
+<pre><code class="language-python">def _is_aggregation_step(
+    self,
+    step: Dict[str, Any],
+    matrix: Dict[str, List[Any]],
+) -&gt; bool:
+    &quot;&quot;&quot;Check if a step should execute in aggregation mode.&quot;&quot;&quot;
+    if not matrix:
+        return False
+    step_inputs = step.get(&quot;with&quot;, {})
+    return &quot;aggregate&quot; in step_inputs
 </code></pre>
-<p><strong>Rationale</strong>: Reuse proven validation logic, maintain single source of truth for workflow structure validation.</p>
-<h4 id="2-matrix-expansion-strategy">2. Matrix Expansion Strategy</h4>
-<p>Matrix expansion uses cartesian product generation:</p>
-<pre><code class="language-python">def expand_matrix(self, matrix):
-    variables = list(matrix.keys())
-    value_lists = list(matrix.values())
-    combinations = list(itertools.product(*value_lists))
+<h3 id="aggregation-configuration">Aggregation Configuration</h3>
+<p>The <code>AggregationConfig</code> dataclass captures all aggregation parameters:</p>
+<pre><code class="language-python">@dataclass
+class AggregationConfig:
+    input_caches: List[str]     # Cache paths to scan
+    filter_expr: Optional[str]  # Filter expression
+    matrix_vars: List[str]      # Grouping dimensions
+</code></pre>
+<h3 id="execution-phases">Execution Phases</h3>
+<p>Aggregation execution has two phases:</p>
+<h4 id="phase-1-scan">Phase 1: Scan</h4>
+<p>The scan phase reads input caches, applies filters, and groups entries:</p>
+<pre><code class="language-python">def _scan_aggregation_inputs(
+    self,
+    config: AggregationConfig,
+    matrix_values: Dict[str, Any],
+    logger: Optional[Callable[[str], None]] = None,
+) -&gt; List[Dict[str, Any]]:
+    &quot;&quot;&quot;Scan input caches and collect entries matching matrix values.&quot;&quot;&quot;
+</code></pre>
+<p><strong>Scan Process:</strong></p>
+<ol>
+<li>Open each input cache</li>
+<li>Iterate all entries</li>
+<li>Skip entries missing required matrix variables</li>
+<li>Flatten metadata for filter evaluation</li>
+<li>Apply filter expression (if present)</li>
+<li>Match entries to current matrix combination</li>
+<li>Return matching entries with provenance</li>
+</ol>
+<h4 id="phase-2-execute">Phase 2: Execute</h4>
+<p>The execute phase passes grouped entries to the action:</p>
+<pre><code class="language-python"># In _execute_job:
+agg_config = self._get_aggregation_config(step, matrix)
+if agg_config is not None:
+    matching_entries = self._scan_aggregation_inputs(
+        agg_config,
+        job,  # Current matrix values
+    )
+    resolved_inputs[&quot;_aggregation_entries&quot;] = matching_entries
+</code></pre>
+<p>Actions receive entries via <code>_aggregation_entries</code> parameter.</p>
+<h2 id="workflow-syntax">Workflow Syntax</h2>
+<h3 id="basic-aggregation">Basic Aggregation</h3>
+<pre><code class="language-yaml">matrix:
+  network: [asia, alarm]
 
-    jobs = []
-    for combination in combinations:
-        job = dict(zip(variables, combination))
-        jobs.append(job)
-    return jobs
+steps:
+  # First step: generate individual graphs
+  - name: Generate
+    uses: causaliq/research
+    with:
+      action: generate_graph
+      output: graphs.db
+
+  # Second step: aggregate by network
+  - name: Summarise
+    uses: causaliq/analysis
+    with:
+      action: model_average
+      aggregate: graphs.db
+      output: summaries.db
 </code></pre>
-<p><strong>Rationale</strong>: 
-- Simple, predictable algorithm matching GitHub Actions behaviour
-- Easy to understand and debug
-- Supports arbitrary matrix dimensions
-- Deterministic ordering for reproducible results</p>
-<h4 id="3-path-construction-pattern">3. Path Construction Pattern</h4>
-<p>Paths follow the established pattern from the examples:</p>
-<pre><code class="language-python"># Input: {data_root}/{dataset}/input.csv
-# Output: {output_root}/{workflow_id}/{dataset}_{algorithm}/
+<h3 id="with-filter-expression">With Filter Expression</h3>
+<p>Filter entries before aggregation using metadata fields:</p>
+<pre><code class="language-yaml">- name: Summarise Successful
+  uses: causaliq/analysis
+  with:
+    action: model_average
+    aggregate: graphs.db
+    filter: &quot;status == 'completed' and edge_count &gt; 0&quot;
+    output: summaries.db
 </code></pre>
-<p><strong>Rationale</strong>:
-- Consistent with documentation examples
-- Organises outputs by workflow and experiment parameters
-- Supports hierarchical result organisation
-- Compatible with existing action framework expectations</p>
-<h4 id="4-error-handling-strategy">4. Error Handling Strategy</h4>
-<p>All methods use consistent error propagation:</p>
+<h3 id="multiple-input-caches">Multiple Input Caches</h3>
+<p>Combine results from multiple caches:</p>
+<pre><code class="language-yaml">- name: Merge Results
+  uses: causaliq/analysis
+  with:
+    action: merge_graphs
+    aggregate:
+      - pc_results.db
+      - ges_results.db
+    output: merged.db
+</code></pre>
+<h2 id="filter-expression-syntax">Filter Expression Syntax</h2>
+<p>Filter expressions use a safe subset of Python syntax via <code>simpleeval</code>:</p>
+<h3 id="supported-operators">Supported Operators</h3>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>==</code></td>
+<td><code>status == 'completed'</code></td>
+<td>Equality</td>
+</tr>
+<tr>
+<td><code>!=</code></td>
+<td><code>algo != 'pc'</code></td>
+<td>Inequality</td>
+</tr>
+<tr>
+<td><code>&gt;</code>, <code>&lt;</code></td>
+<td><code>edge_count &gt; 5</code></td>
+<td>Comparison</td>
+</tr>
+<tr>
+<td><code>&gt;=</code>, <code>&lt;=</code></td>
+<td><code>sample_size &gt;= 100</code></td>
+<td>Comparison</td>
+</tr>
+<tr>
+<td><code>and</code></td>
+<td><code>a &gt; 5 and b &lt; 10</code></td>
+<td>Logical AND</td>
+</tr>
+<tr>
+<td><code>or</code></td>
+<td><code>a &gt; 5 or b &gt; 10</code></td>
+<td>Logical OR</td>
+</tr>
+<tr>
+<td><code>not</code></td>
+<td><code>not failed</code></td>
+<td>Logical NOT</td>
+</tr>
+<tr>
+<td><code>in</code></td>
+<td><code>algo in ['pc', 'ges']</code></td>
+<td>Membership</td>
+</tr>
+</tbody>
+</table>
+<h3 id="available-variables">Available Variables</h3>
+<p>Filter expressions can access:</p>
+<ol>
+<li><strong>Matrix values</strong>: <code>network</code>, <code>sample_size</code>, etc.</li>
+<li><strong>Flattened metadata</strong>: <code>status</code>, <code>edge_count</code>, etc.</li>
+<li><strong>Qualified metadata</strong>: <code>provider.action.field</code></li>
+</ol>
+<pre><code class="language-yaml"># Filter by matrix variable
+filter: &quot;sample_size &gt;= 500&quot;
+
+# Filter by metadata field
+filter: &quot;status == 'completed'&quot;
+
+# Filter by qualified path
+filter: &quot;causaliq-research.generate_graph.node_count &gt; 5&quot;
+</code></pre>
+<h2 id="metadata-flattening">Metadata Flattening</h2>
+<p>Nested metadata is flattened for filter evaluation:</p>
+<pre><code class="language-python"># Original metadata structure
+{
+    &quot;causaliq-research&quot;: {
+        &quot;generate_graph&quot;: {
+            &quot;node_count&quot;: 5,
+            &quot;edge_count&quot;: 8
+        }
+    }
+}
+
+# Flattened for filter access
+{
+    &quot;node_count&quot;: 5,
+    &quot;edge_count&quot;: 8,
+    &quot;causaliq-research.generate_graph.node_count&quot;: 5,
+    &quot;causaliq-research.generate_graph.edge_count&quot;: 8
+}
+</code></pre>
+<p>Simple keys are available directly; qualified keys handle conflicts.</p>
+<h2 id="entry-structure">Entry Structure</h2>
+<p>Actions receive entries as dictionaries:</p>
+<pre><code class="language-python">{
+    &quot;matrix_values&quot;: {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: 100},
+    &quot;metadata&quot;: {...},      # Original nested metadata
+    &quot;cache_path&quot;: &quot;graphs.db&quot;,
+    &quot;entry_hash&quot;: &quot;abc123...&quot;,
+    &quot;entry&quot;: CacheEntry(...)  # Full entry object
+}
+</code></pre>
+<h2 id="logging">Logging</h2>
+<p>Aggregation operations log statistics:</p>
+<pre><code>Aggregation scan: scanned=45, filtered=3, matched=15
+</code></pre>
+<ul>
+<li><code>scanned</code>: Total entries examined</li>
+<li><code>filtered</code>: Entries rejected by filter</li>
+<li><code>matched</code>: Entries matching current matrix values</li>
+</ul>
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="missing-caches">Missing Caches</h3>
+<p>Non-existent caches are skipped with warning:</p>
+<pre><code>Warning: Cache does not exist: missing.db
+</code></pre>
+<h3 id="filter-errors">Filter Errors</h3>
+<p>Filter evaluation errors cause entry to be filtered:</p>
 <pre><code class="language-python">try:
-    # Core logic
-except Exception as e:
-    raise WorkflowExecutionError(f&quot;Operation failed: {e}&quot;) from e
+    if not evaluate_filter(filter_expr, flat_meta):
+        total_filtered += 1
+        continue
+except Exception:
+    total_filtered += 1
+    continue
 </code></pre>
-<p><strong>Rationale</strong>:
-- Maintains error chain for debugging
-- Provides consistent error interface
-- Follows established patterns in the codebase</p>
-<h2 id="implementation-phases">Implementation Phases</h2>
-<h3 id="phase-1-parsing-foundation-complete">Phase 1: Parsing Foundation (Complete ✅)</h3>
-<p><strong>Scope</strong>: Basic workflow parsing and matrix expansion
-- Parse and validate YAML workflow files
-- Expand matrix variables into job configurations
-- Construct file paths from matrix variables
-- Comprehensive error handling</p>
-<p><strong>Test Coverage</strong>: 100% with edge case coverage
-- Unit tests with mocked dependencies
-- Functional tests with real YAML files
-- Exception handling verification</p>
-<h3 id="phase-2-execution-engine-future">Phase 2: Execution Engine (Future)</h3>
-<p><strong>Scope</strong>: Step execution and orchestration
-- Execute workflow steps with action coordination
-- Environment variable management
-- Conditional execution (<code>if:</code> conditions)
-- Step output handling and dependencies</p>
-<h3 id="phase-3-advanced-features-future">Phase 3: Advanced Features (Future)</h3>
-<p><strong>Scope</strong>: Enterprise workflow features<br />
-- DASK task graph integration
-- Progress monitoring and status reporting
-- Resource management and limits
-- Workflow queue management</p>
-<h2 id="integration-points">Integration Points</h2>
-<h3 id="with-action-framework">With Action Framework</h3>
-<pre><code class="language-python"># Future integration pattern
-for step in workflow[&quot;steps&quot;]:
-    action = ActionRegistry.get_action(step[&quot;uses&quot;])
-    inputs = construct_action_inputs(step[&quot;with&quot;], job_context)
-    result = action.run(inputs)
+<h3 id="cache-read-errors">Cache Read Errors</h3>
+<p>Cache read failures are logged and skipped:</p>
+<pre><code>Warning: Failed to read cache graphs.db: database is locked
 </code></pre>
-<h3 id="with-schema-validation">With Schema Validation</h3>
-<pre><code class="language-python"># Current integration
-workflow = load_workflow_file(path)     # schema.py
-validate_workflow(workflow)             # schema.py
-jobs = executor.expand_matrix(workflow[&quot;matrix&quot;])  # workflow.py
+<h2 id="integration-with-causaliq-core">Integration with causaliq-core</h2>
+<p>The filter expression evaluation uses <code>causaliq_core.utils</code>:</p>
+<pre><code class="language-python">from causaliq_core.utils import evaluate_filter
+
+if config.filter_expr:
+    if not evaluate_filter(config.filter_expr, flat_meta):
+        continue
 </code></pre>
-<h3 id="with-dask-future">With DASK (Future)</h3>
-<pre><code class="language-python"># Planned integration
-jobs = executor.expand_matrix(matrix)
-task_graph = DaskBuilder.build_workflow_graph(jobs, workflow)
-results = executor.execute_dask_graph(task_graph)
+<p>This provides consistent filter syntax across the CausalIQ ecosystem.</p>
+<h2 id="future-enhancements">Future Enhancements</h2>
+<h3 id="weight-based-aggregation">Weight-Based Aggregation</h3>
+<p>Support weighted combinations using <code>compute_weight</code>:</p>
+<pre><code class="language-yaml">- name: Weighted Average
+  uses: causaliq/analysis
+  with:
+    action: model_average
+    aggregate: graphs.db
+    weight: &quot;1.0 / sample_size&quot;  # Weight by inverse sample size
 </code></pre>
-<h2 id="testing-strategy">Testing Strategy</h2>
-<h3 id="unit-tests-isolated-logic">Unit Tests (Isolated Logic)</h3>
+<h3 id="hierarchical-aggregation">Hierarchical Aggregation</h3>
+<p>Multi-level aggregation for complex analyses:</p>
+<pre><code class="language-yaml">- name: Per-Network Summary
+  with:
+    aggregate: graphs.db
+    group_by: [network]
+
+- name: Global Summary
+  with:
+    aggregate: network_summaries.db
+    group_by: []  # Aggregate all
+</code></pre>
+<h2 id="see-also">See Also</h2>
 <ul>
-<li>Matrix expansion algorithm verification</li>
-<li>Path construction with various inputs</li>
-<li>Exception handling edge cases</li>
-<li>Mocked dependencies for isolation</li>
+<li><a href="../matrix_expansion_design/">Matrix Strategy Design</a></li>
+<li><a href="../workflow_cache_design/">Workflow Cache Design</a></li>
+<li><a href="../workflow_executor_design/">Workflow Executor Design</a></li>
 </ul>
-<h3 id="functional-tests-real-operations">Functional Tests (Real Operations)</h3>
-<ul>
-<li>YAML file parsing with real workflow files</li>
-<li>Filesystem operations for temporary test files</li>
-<li>Integration with schema validation</li>
-<li>End-to-end workflow parsing scenarios</li>
-</ul>
-<h3 id="edge-case-coverage">Edge Case Coverage</h3>
-<ul>
-<li>Exception handling in matrix expansion (<code>itertools.product</code> failures)</li>
-<li>Empty matrices and default value handling</li>
-<li>Invalid workflow file scenarios</li>
-<li>Missing matrix variable handling</li>
-</ul>
-<h2 id="performance-characteristics">Performance Characteristics</h2>
-<h3 id="matrix-expansion-scaling">Matrix Expansion Scaling</h3>
-<ul>
-<li><strong>Time Complexity</strong>: O(n₁ × n₂ × ... × nₖ) where nᵢ is the size of each matrix dimension</li>
-<li><strong>Space Complexity</strong>: O(jobs) linear in the number of generated job combinations</li>
-<li><strong>Practical Limits</strong>: Reasonable for typical causal discovery experiments (&lt; 1000 jobs)</li>
-</ul>
-<h3 id="memory-usage">Memory Usage</h3>
-<ul>
-<li>Workflow parsing: Linear in YAML file size</li>
-<li>Matrix expansion: Linear in number of generated jobs</li>
-<li>Path construction: Constant per job</li>
-</ul>
-<h3 id="future-optimisations">Future Optimisations</h3>
-<ul>
-<li>Lazy matrix expansion for large matrices</li>
-<li>Streaming job processing for memory efficiency</li>
-<li>Job batching for DASK execution</li>
-</ul>
-<h2 id="alignment-with-causaliq-standards">Alignment with CausalIQ Standards</h2>
-<h3 id="development-guidelines-compliance">Development Guidelines Compliance</h3>
-<ul>
-<li>✅ <strong>Small incremental changes</strong>: 99-line focused implementation</li>
-<li>✅ <strong>100% test coverage</strong>: Comprehensive unit and functional tests  </li>
-<li>✅ <strong>CI compliance</strong>: All formatting, linting, and type checking standards met</li>
-<li>✅ <strong>British English</strong>: Documentation and code comments</li>
-<li>✅ <strong>Type safety</strong>: Complete type annotations with mypy validation</li>
-</ul>
-<h3 id="architecture-principles">Architecture Principles</h3>
-<ul>
-<li>✅ <strong>GitHub Actions foundation</strong>: Consistent with CI/CD workflow patterns</li>
-<li>✅ <strong>Action-based components</strong>: Integration with existing action framework</li>
-<li>✅ <strong>Schema-first design</strong>: Leverage existing validation infrastructure</li>
-<li>✅ <strong>Incremental functionality</strong>: Foundation for future execution features</li>
-</ul>
-<p>This design provides a solid foundation for workflow execution while maintaining the incremental development approach and high quality standards established in the CausalIQ Workflow project.</p>
 
 
 
@@ -2131,7 +2288,7 @@ results = executor.execute_dask_graph(task_graph)
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../action_auto_discovery_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Algorithm Registry">
+          <a href="../matrix_expansion_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Matrix Strategy Design">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2141,20 +2298,20 @@ results = executor.execute_dask_graph(task_graph)
                 Previous
               </span>
               <div class="md-ellipsis">
-                Algorithm Registry
+                Matrix Strategy Design
               </div>
             </div>
           </a>
         
         
           
-          <a href="../logging_architecture_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Logging Architecture">
+          <a href="../action_architecture_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Action Architecture">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Logging Architecture
+                Action Architecture
               </div>
             </div>
             <div class="md-footer__button md-icon">
