@@ -291,6 +291,215 @@ class WorkflowExecutor:
 
         return False
 
+    def _is_update_step(
+        self,
+        step: Dict[str, Any],
+        matrix: Dict[str, List[Any]],
+    ) -> bool:
+        """Check if a step should run in UPDATE pattern mode.
+
+        UPDATE pattern is detected when:
+        1. Action declares ActionPattern.UPDATE for the action name
+        2. Step has input parameter pointing to .db cache file
+
+        UPDATE steps process all entries in the input cache (no matrix).
+
+        Args:
+            step: Step configuration dictionary
+            matrix: Workflow matrix definition
+
+        Returns:
+            True if step should run in UPDATE mode
+        """
+        from causaliq_core import ActionPattern
+
+        # UPDATE pattern prohibits matrix
+        if matrix:
+            return False
+
+        provider_name = step.get("uses")
+        if not provider_name:
+            return False
+
+        step_inputs = step.get("with", {})
+        action_name = step_inputs.get("action")
+        if not action_name:
+            return False
+
+        # Check if action declares UPDATE pattern
+        pattern = self.action_registry.get_action_pattern(
+            provider_name, action_name
+        )
+        if pattern != ActionPattern.UPDATE:
+            return False
+
+        # Must have input pointing to .db cache
+        input_param = step_inputs.get("input")
+        if not input_param:
+            return False
+
+        return str(input_param).lower().endswith(".db")
+
+    def _execute_update_step(
+        self,
+        step: Dict[str, Any],
+        resolved_inputs: Dict[str, Any],
+        context: WorkflowContext,
+        step_logger: Optional[Callable[[str, str, str], None]] = None,
+    ) -> Dict[str, Any]:
+        """Execute a step in UPDATE pattern mode.
+
+        UPDATE mode processes all entries in the input cache:
+        1. Opens input cache
+        2. Iterates all entries (subject to filter)
+        3. Applies conservative execution (skip if action metadata exists)
+        4. Calls action with entry data via _update_entry parameter
+        5. Updates entry metadata and objects in place
+
+        Args:
+            step: Step configuration dictionary
+            resolved_inputs: Resolved action inputs
+            context: Workflow context
+            step_logger: Optional logging function
+
+        Returns:
+            Step result dictionary with status, updated counts, etc.
+        """
+        from pathlib import Path
+
+        from causaliq_core.utils import evaluate_filter
+
+        from causaliq_workflow.cache import WorkflowCache
+
+        action_name = step["uses"]
+        action_method = resolved_inputs.get("action", "default")
+        input_path = resolved_inputs.get("input")
+        filter_expr = resolved_inputs.get("filter")
+
+        # Get provider name for metadata structuring
+        action_class = self.action_registry.get_action_class(action_name)
+        provider_name = getattr(action_class, "name", action_name)
+
+        # Validate input_path is provided (should be guaranteed by validation)
+        if input_path is None:
+            return {
+                "status": "error",
+                "error": "UPDATE action requires 'input' parameter",
+                "entries_processed": 0,
+                "entries_skipped": 0,
+                "entries_updated": 0,
+            }
+
+        # Check input cache exists
+        if not Path(input_path).exists():
+            return {
+                "status": "error",
+                "error": f"Input cache does not exist: {input_path}",
+                "entries_processed": 0,
+                "entries_skipped": 0,
+                "entries_updated": 0,
+            }
+
+        entries_processed = 0
+        entries_skipped = 0
+        entries_updated = 0
+        errors: List[str] = []
+
+        with WorkflowCache(input_path) as cache:
+            entries = cache.list_entries()
+
+            for entry_info in entries:
+                entry_matrix = entry_info.get("matrix_values", {})
+                entries_processed += 1
+
+                # Get full entry
+                full_entry = cache.get(entry_matrix)
+                if full_entry is None:
+                    continue
+
+                # Flatten metadata for filter evaluation
+                flat_meta = self._flatten_metadata(
+                    entry_matrix, full_entry.metadata
+                )
+
+                # Apply filter expression if present
+                if filter_expr:
+                    try:
+                        if not evaluate_filter(filter_expr, flat_meta):
+                            entries_skipped += 1
+                            continue
+                    except Exception:
+                        entries_skipped += 1
+                        continue
+
+                # Conservative execution: skip if action already applied
+                if cache.has_action_metadata(
+                    entry_matrix, provider_name, action_method
+                ):
+                    entries_skipped += 1
+                    continue
+
+                # Prepare inputs for action, passing entry data
+                action_inputs = {
+                    k: v
+                    for k, v in resolved_inputs.items()
+                    if k not in ("input", "filter")
+                }
+                action_inputs["_update_entry"] = {
+                    "matrix_values": entry_matrix,
+                    "metadata": full_entry.metadata,
+                    "entry": full_entry,
+                }
+
+                # Execute action
+                try:
+                    result = self.action_registry.execute_action(
+                        action_name, action_inputs, context
+                    )
+
+                    if result.get("status") == "success":
+                        # Extract metadata (exclude status and objects)
+                        raw_metadata = {
+                            k: v
+                            for k, v in result.items()
+                            if k not in ("status", "objects")
+                        }
+
+                        # Structure metadata by provider/action
+                        structured_metadata = {
+                            provider_name: {action_method: raw_metadata}
+                        }
+
+                        # Update entry in cache
+                        objects = result.get("objects", [])
+                        if cache.update_entry(
+                            entry_matrix, structured_metadata, objects
+                        ):
+                            entries_updated += 1
+
+                except Exception as e:
+                    errors.append(f"Entry {entry_matrix}: {e}")
+
+        # Determine overall status
+        if entries_updated > 0:
+            status = "success"
+        elif entries_skipped == entries_processed:
+            status = "skipped"
+        else:
+            status = "error" if errors else "skipped"
+
+        result = {
+            "status": status,
+            "entries_processed": entries_processed,
+            "entries_skipped": entries_skipped,
+            "entries_updated": entries_updated,
+        }
+
+        if errors:
+            result["errors"] = errors
+
+        return result
+
     def _get_aggregation_config(
         self,
         step: Dict[str, Any],
@@ -810,6 +1019,39 @@ class WorkflowExecutor:
                     resolved_inputs["_aggregation_entries"] = matching_entries
                     # Remove 'aggregate' from resolved params (config only)
                     resolved_inputs.pop("aggregate", None)
+
+                # Handle UPDATE pattern: process all entries in input cache
+                # UPDATE mode is activated when action declares UPDATE pattern
+                # and step has input pointing to .db cache file.
+                if self._is_update_step(step, matrix):
+                    # Log step execution if logger provided
+                    if step_logger:
+                        action_class = self.action_registry.get_action_class(
+                            action_name
+                        )
+                        display_name = getattr(
+                            action_class, "name", action_name
+                        )
+                        step_logger(display_name, step_name, "EXECUTING")
+
+                    # Execute UPDATE step (processes all cache entries)
+                    step_result = self._execute_update_step(
+                        step, resolved_inputs, context, step_logger
+                    )
+
+                    # Log completion if logger provided
+                    if step_logger:
+                        action_class = self.action_registry.get_action_class(
+                            action_name
+                        )
+                        display_name = getattr(
+                            action_class, "name", action_name
+                        )
+                        status = step_result.get("status", "unknown").upper()
+                        step_logger(display_name, step_name, status)
+
+                    step_results[step_name] = step_result
+                    continue  # Skip normal execution path
 
                 # Handle step-level cache from output parameter
                 output_path = resolved_inputs.pop("output", None)

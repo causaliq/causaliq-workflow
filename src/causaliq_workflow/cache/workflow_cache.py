@@ -384,6 +384,109 @@ class WorkflowCache:
         key_json = self._key_json(key_data)
         return self.token_cache.delete(hash=hash_key, key_json=key_json)
 
+    def update_entry(
+        self,
+        key_data: dict[str, Any],
+        metadata: dict[str, Any],
+        objects: list[dict[str, Any]] | None = None,
+    ) -> bool:
+        """Update existing cache entry with additional metadata and objects.
+
+        Merges new metadata into the existing entry. Metadata is deep-merged
+        at the top level (provider keys are merged, not replaced). New
+        objects are added or replace existing objects with the same name.
+
+        This method is used by UPDATE pattern actions to add analysis
+        results to existing entries without overwriting previous data.
+
+        Args:
+            key_data: Dictionary of matrix variable values (cache key).
+            metadata: Metadata to merge into existing entry. Typically
+                structured as {provider: {action: {results...}}}.
+            objects: Optional list of objects to add. Each object is a dict
+                with 'type', 'name', 'content' keys.
+
+        Returns:
+            True if entry was updated, False if entry doesn't exist.
+
+        Example:
+            >>> with WorkflowCache(":memory:") as cache:
+            ...     # Create initial entry
+            ...     entry = CacheEntry()
+            ...     entry.add_object("graph", "graphml", "<graphml>...")
+            ...     cache.put({"algo": "pc"}, entry)
+            ...
+            ...     # Update with evaluation results
+            ...     cache.update_entry(
+            ...         {"algo": "pc"},
+            ...         metadata={"causaliq-analysis": {"eval": {"f1": 0.9}}},
+            ...         objects=[{"type": "json", "name": "scores"}]
+            ...     )
+        """
+        # Get existing entry
+        entry = self.get(key_data)
+        if entry is None:
+            return False
+
+        # Deep merge metadata at top level (provider keys)
+        for provider_key, provider_data in metadata.items():
+            if provider_key not in entry.metadata:
+                entry.metadata[provider_key] = {}
+            if isinstance(provider_data, dict) and isinstance(
+                entry.metadata[provider_key], dict
+            ):
+                entry.metadata[provider_key].update(provider_data)
+            else:
+                entry.metadata[provider_key] = provider_data
+
+        # Add new objects
+        if objects:
+            for obj in objects:
+                name = obj.get("name", obj.get("type", "unknown"))
+                entry.add_object(name, obj["type"], obj.get("content"))
+
+        # Store updated entry
+        self.put(key_data, entry)
+        return True
+
+    def has_action_metadata(
+        self,
+        key_data: dict[str, Any],
+        provider_name: str,
+        action_name: str,
+    ) -> bool:
+        """Check if entry has metadata from a specific action.
+
+        Used for conservative execution - skip entries that have already
+        been processed by an UPDATE action.
+
+        Args:
+            key_data: Dictionary of matrix variable values (cache key).
+            provider_name: Provider name (e.g., 'causaliq-analysis').
+            action_name: Action name (e.g., 'evaluate_graph').
+
+        Returns:
+            True if entry exists and has metadata for provider/action.
+
+        Example:
+            >>> with WorkflowCache(":memory:") as cache:
+            ...     cache.has_action_metadata(
+            ...         {"algo": "pc"},
+            ...         "causaliq-analysis",
+            ...         "evaluate_graph"
+            ...     )
+            False
+        """
+        entry = self.get(key_data)
+        if entry is None:
+            return False
+
+        provider_meta = entry.metadata.get(provider_name)
+        if not isinstance(provider_meta, dict):
+            return False
+
+        return action_name in provider_meta
+
     # ========================================================================
     # Statistics and listing
     # ========================================================================

@@ -667,3 +667,198 @@ def test_get_config_returns_empty_when_not_dict(
         )
         result = cache._get_config()
         assert result == {}
+
+
+# ============================================================================
+# Update entry tests
+# ============================================================================
+
+
+# Test update_entry merges metadata into existing entry.
+def test_update_entry_merges_metadata() -> None:
+    with WorkflowCache(":memory:") as cache:
+        # Create initial entry
+        entry = CacheEntry()
+        entry.metadata["provider1"] = {"action1": {"score": 0.5}}
+        entry.add_object("graph", "graphml", "<graphml>...</graphml>")
+        cache.put({"algo": "pc"}, entry)
+
+        # Update with new provider metadata
+        updated = cache.update_entry(
+            {"algo": "pc"},
+            metadata={"provider2": {"action2": {"f1": 0.9}}},
+        )
+        assert updated is True
+
+        # Verify merged metadata
+        result = cache.get({"algo": "pc"})
+        assert result is not None
+        assert result.metadata["provider1"] == {"action1": {"score": 0.5}}
+        assert result.metadata["provider2"] == {"action2": {"f1": 0.9}}
+
+
+# Test update_entry deep merges existing provider metadata.
+def test_update_entry_deep_merges_provider() -> None:
+    with WorkflowCache(":memory:") as cache:
+        # Create initial entry with provider metadata
+        entry = CacheEntry()
+        entry.metadata["analysis"] = {"action1": {"score": 0.5}}
+        cache.put({"algo": "pc"}, entry)
+
+        # Update same provider with new action
+        cache.update_entry(
+            {"algo": "pc"},
+            metadata={"analysis": {"action2": {"f1": 0.9}}},
+        )
+
+        # Verify both actions preserved
+        result = cache.get({"algo": "pc"})
+        assert result is not None
+        assert result.metadata["analysis"]["action1"] == {"score": 0.5}
+        assert result.metadata["analysis"]["action2"] == {"f1": 0.9}
+
+
+# Test update_entry returns False for non-existent entry.
+def test_update_entry_returns_false_for_missing() -> None:
+    with WorkflowCache(":memory:") as cache:
+        updated = cache.update_entry(
+            {"algo": "pc"},
+            metadata={"test": {"action": {"value": 1}}},
+        )
+        assert updated is False
+
+
+# Test update_entry adds new objects to entry.
+def test_update_entry_adds_objects() -> None:
+    with WorkflowCache(":memory:") as cache:
+        # Create initial entry with one object
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"algo": "pc"}, entry)
+
+        # Update with new object
+        cache.update_entry(
+            {"algo": "pc"},
+            metadata={},
+            objects=[{"type": "json", "name": "scores", "content": "{}"}],
+        )
+
+        # Verify both objects present
+        result = cache.get({"algo": "pc"})
+        assert result is not None
+        assert "graph" in result.objects
+        assert "scores" in result.objects
+        assert result.objects["scores"].type == "json"
+
+
+# Test update_entry replaces existing object with same name.
+def test_update_entry_replaces_object() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<old/>")
+        cache.put({"algo": "pc"}, entry)
+
+        cache.update_entry(
+            {"algo": "pc"},
+            metadata={},
+            objects=[
+                {"type": "graphml", "name": "graph", "content": "<new/>"}
+            ],
+        )
+
+        result = cache.get({"algo": "pc"})
+        assert result is not None
+        assert result.objects["graph"].content == "<new/>"
+
+
+# Test update_entry handles non-dict provider data replacement.
+def test_update_entry_replaces_non_dict_provider() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.metadata["status"] = "complete"  # Non-dict value
+        cache.put({"algo": "pc"}, entry)
+
+        cache.update_entry(
+            {"algo": "pc"},
+            metadata={"status": {"updated": True}},  # Replace with dict
+        )
+
+        result = cache.get({"algo": "pc"})
+        assert result is not None
+        assert result.metadata["status"] == {"updated": True}
+
+
+# ============================================================================
+# Has action metadata tests
+# ============================================================================
+
+
+# Test has_action_metadata returns True when action metadata exists.
+def test_has_action_metadata_returns_true() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.metadata["causaliq-analysis"] = {"evaluate_graph": {"f1": 0.9}}
+        cache.put({"algo": "pc"}, entry)
+
+        result = cache.has_action_metadata(
+            {"algo": "pc"},
+            "causaliq-analysis",
+            "evaluate_graph",
+        )
+        assert result is True
+
+
+# Test has_action_metadata returns False when entry doesn't exist.
+def test_has_action_metadata_false_for_missing_entry() -> None:
+    with WorkflowCache(":memory:") as cache:
+        result = cache.has_action_metadata(
+            {"algo": "pc"},
+            "causaliq-analysis",
+            "evaluate_graph",
+        )
+        assert result is False
+
+
+# Test has_action_metadata returns False when provider not in metadata.
+def test_has_action_metadata_false_for_missing_provider() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.metadata["other-provider"] = {"action": {"value": 1}}
+        cache.put({"algo": "pc"}, entry)
+
+        result = cache.has_action_metadata(
+            {"algo": "pc"},
+            "causaliq-analysis",
+            "evaluate_graph",
+        )
+        assert result is False
+
+
+# Test has_action_metadata returns False when action not in provider.
+def test_has_action_metadata_false_for_missing_action() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.metadata["causaliq-analysis"] = {"other_action": {"value": 1}}
+        cache.put({"algo": "pc"}, entry)
+
+        result = cache.has_action_metadata(
+            {"algo": "pc"},
+            "causaliq-analysis",
+            "evaluate_graph",
+        )
+        assert result is False
+
+
+# Test has_action_metadata returns False when provider data is not dict.
+def test_has_action_metadata_false_when_provider_not_dict() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.metadata["causaliq-analysis"] = "not a dict"
+        cache.put({"algo": "pc"}, entry)
+
+        result = cache.has_action_metadata(
+            {"algo": "pc"},
+            "causaliq-analysis",
+            "evaluate_graph",
+        )
+        assert result is False
