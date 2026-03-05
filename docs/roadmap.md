@@ -1,12 +1,32 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: March 01, 2026
+**Last updated**: March 04, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
 ## 🚧  Under development
 
-No release currently under development.
+### Release 0.4.0 - Action Patterns and Conservative Execution
+
+Formalise action patterns and implement conservative execution.
+
+**Scope**:
+
+- **Action pattern validation**:
+  - Creation: output required, matrix required, input prohibited (for caches)
+  - Update: input required, output prohibited, matrix prohibited
+  - Aggregation: input required, output required, matrix required
+
+- **Update action support** - Actions that modify input cache entries
+  - Add metadata sections to existing entries
+  - Add objects to existing entries
+
+- **Conservative execution** - Skip work if results exist
+  - Creation: skip if entry with matching matrix values exists in output
+  - Update: skip if action metadata section exists in entry  
+  - Aggregation: skip if entry with matching matrix values exists in output
+  - Add `--mode=force` option to bypass checks
+  - All logic implemented in workflow executor (actions unaware)
 
 ## ✅ Previous Releases
 
@@ -20,7 +40,7 @@ No release currently under development.
 ## 🛣️ Upcoming Implementation
 
 
-### Release 0.4.0 - Step Output Chaining
+### Release 0.5.0 - Step Output Chaining
 
 Enable workflow steps to consume outputs from previous steps.
 
@@ -33,17 +53,15 @@ Enable workflow steps to consume outputs from previous steps.
 
 - **Cache restoration** - Resume workflows from cached results
   - Check cache before executing step
-  - Skip execution if valid cached result exists
   - Support forced re-execution flag
 
 
-### Release 0.5.0: Enhanced Workflow
+### Release 0.6.0: Enhanced Workflow
 
 Dry and comparison runs, runtime estimation and processing summary
 
 **Scope**:
 
-- conservative execution skipping if results present
 - dry-run capability
 - standardise message format
 - support skip, would do etc messages
@@ -53,7 +71,7 @@ Dry and comparison runs, runtime estimation and processing summary
 - progress indicators
 
 
-### Release 0.6.0: Discovery Integration
+### Release 0.7.0: Discovery Integration
 
 Structure learning algorithms integrated
 
