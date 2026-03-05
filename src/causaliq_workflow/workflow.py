@@ -1070,6 +1070,26 @@ class WorkflowExecutor:
                     step_cache.open()
                     context.cache = step_cache
 
+                    # Conservative execution: skip if entry already exists
+                    # Applies to CREATE and AGGREGATE patterns
+                    if step_cache.exists(context.matrix_values):
+                        # Log skip if logger provided
+                        if step_logger:
+                            action_class = (
+                                self.action_registry.get_action_class(
+                                    action_name
+                                )
+                            )
+                            display_name = getattr(
+                                action_class, "name", action_name
+                            )
+                            step_logger(display_name, step_name, "SKIPPED")
+
+                        step_results[step_name] = {"status": "skipped"}
+                        step_cache.close()
+                        context.cache = None
+                        continue
+
                 try:
                     # Log step execution in real-time if logger provided
                     if step_logger:

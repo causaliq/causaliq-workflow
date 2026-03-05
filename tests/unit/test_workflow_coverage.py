@@ -1630,3 +1630,286 @@ def test_execute_job_update_step_with_logger(
     assert len(log_calls) == 2
     assert log_calls[0] == ("update-action", "eval-step", "EXECUTING")
     assert log_calls[1] == ("update-action", "eval-step", "SUCCESS")
+
+
+# Test conservative execution for CREATE pattern skips when entry exists.
+def test_create_pattern_conservative_skip_when_entry_exists(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create output cache with existing entry
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        entry.metadata["existing"] = True
+        cache.put({"algorithm": "pc"}, entry)
+
+    class CreateAction:
+        name = "create-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            # This should NOT be called due to conservative skip
+            raise AssertionError("Action should not be executed")
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["create-provider"] = CreateAction
+
+    workflow = {
+        "steps": [
+            {
+                "name": "create-step",
+                "uses": "create-provider",
+                "with": {
+                    "action": "generate",
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"algorithm": "pc"}
+    context = WorkflowContext(
+        mode="run", matrix={"algorithm": ["pc"]}, matrix_values=matrix_values
+    )
+
+    result = executor._execute_job(workflow, matrix_values, context, {}, None)
+
+    # Step should be skipped
+    assert result["steps"]["create-step"]["status"] == "skipped"
+
+
+# Test conservative execution for CREATE pattern with logger.
+def test_create_pattern_conservative_skip_with_logger(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create output cache with existing entry
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        cache.put({"network": "asia"}, entry)
+
+    class CreateAction:
+        name = "create-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            raise AssertionError("Action should not be executed")
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["create-provider"] = CreateAction
+
+    workflow = {
+        "steps": [
+            {
+                "name": "gen-step",
+                "uses": "create-provider",
+                "with": {
+                    "action": "generate",
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"network": "asia"}
+    context = WorkflowContext(
+        mode="run", matrix={"network": ["asia"]}, matrix_values=matrix_values
+    )
+
+    log_calls: list = []
+
+    def capture_logger(display_name, step_name, status):
+        log_calls.append((display_name, step_name, status))
+
+    result = executor._execute_job(
+        workflow, matrix_values, context, {}, capture_logger
+    )
+
+    # Step should be skipped with logger called
+    assert result["steps"]["gen-step"]["status"] == "skipped"
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("create-action", "gen-step", "SKIPPED")
+
+
+# Test conservative execution for AGGREGATE pattern skips when entry exists.
+def test_aggregate_pattern_conservative_skip_when_entry_exists(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache with entries to aggregate
+    input_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(input_path)) as cache:
+        entry1 = CacheEntry()
+        entry1.metadata["score"] = 0.8
+        cache.put({"algorithm": "pc", "network": "asia"}, entry1)
+
+        entry2 = CacheEntry()
+        entry2.metadata["score"] = 0.9
+        cache.put({"algorithm": "pc", "network": "cancer"}, entry2)
+
+    # Create output cache with existing aggregated entry
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        entry.metadata["aggregated"] = True
+        cache.put({"algorithm": "pc"}, entry)
+
+    class AggregateAction:
+        name = "aggregate-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            raise AssertionError("Action should not be executed")
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["agg-provider"] = AggregateAction
+
+    workflow = {
+        "matrix": {"algorithm": ["pc"]},
+        "steps": [
+            {
+                "name": "agg-step",
+                "uses": "agg-provider",
+                "with": {
+                    "action": "summarise",
+                    "input": str(input_path),
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"algorithm": "pc"}
+    context = WorkflowContext(
+        mode="run", matrix={"algorithm": ["pc"]}, matrix_values=matrix_values
+    )
+
+    result = executor._execute_job(workflow, matrix_values, context, {}, None)
+
+    # Step should be skipped
+    assert result["steps"]["agg-step"]["status"] == "skipped"
+
+
+# Test conservative execution for AGGREGATE pattern with logger.
+def test_aggregate_pattern_conservative_skip_with_logger(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache
+    input_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(input_path)) as cache:
+        entry = CacheEntry()
+        cache.put({"algorithm": "fges", "network": "asia"}, entry)
+
+    # Create output cache with existing entry
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        cache.put({"algorithm": "fges"}, entry)
+
+    class AggregateAction:
+        name = "aggregate-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            raise AssertionError("Action should not be executed")
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["agg-provider"] = AggregateAction
+
+    workflow = {
+        "matrix": {"algorithm": ["fges"]},
+        "steps": [
+            {
+                "name": "agg-step",
+                "uses": "agg-provider",
+                "with": {
+                    "action": "merge",
+                    "input": str(input_path),
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"algorithm": "fges"}
+    context = WorkflowContext(
+        mode="run", matrix={"algorithm": ["fges"]}, matrix_values=matrix_values
+    )
+
+    log_calls: list = []
+
+    def capture_logger(display_name, step_name, status):
+        log_calls.append((display_name, step_name, status))
+
+    result = executor._execute_job(
+        workflow, matrix_values, context, {}, capture_logger
+    )
+
+    # Step should be skipped with logger called
+    assert result["steps"]["agg-step"]["status"] == "skipped"
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("aggregate-action", "agg-step", "SKIPPED")
+
+
+# Test CREATE pattern executes when no entry exists.
+def test_create_pattern_executes_when_no_entry_exists(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Output cache doesn't exist yet
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+
+    class CreateAction:
+        name = "create-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"created": True}, [{"type": "graph"}])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["create-provider"] = CreateAction
+
+    workflow = {
+        "steps": [
+            {
+                "name": "create-step",
+                "uses": "create-provider",
+                "with": {
+                    "action": "generate",
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"algorithm": "pc"}
+    context = WorkflowContext(
+        mode="run", matrix={"algorithm": ["pc"]}, matrix_values=matrix_values
+    )
+
+    result = executor._execute_job(workflow, matrix_values, context, {}, None)
+
+    # Step should execute successfully
+    assert result["steps"]["create-step"]["status"] == "success"
