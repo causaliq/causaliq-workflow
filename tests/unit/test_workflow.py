@@ -326,3 +326,515 @@ def test_extract_malformed_templates():
     text2 = "/results/{{valid}}/{invalid}/{{also_valid}}.xml"
     variables2 = executor._extract_template_variables(text2)
     assert variables2 == {"valid", "also_valid"}
+
+
+# Test _has_cache_input helper detects .db files.
+def test_has_cache_input_detects_db_files():
+    """Test _has_cache_input detects .db file inputs."""
+    executor = WorkflowExecutor()
+
+    # String input with .db extension
+    assert executor._has_cache_input({"input": "cache.db"}) is True
+    assert executor._has_cache_input({"input": "/path/to/result.db"}) is True
+    assert executor._has_cache_input({"input": "FILE.DB"}) is True
+
+    # String input without .db extension
+    assert executor._has_cache_input({"input": "data.csv"}) is False
+    assert executor._has_cache_input({"input": "/path/to/file.xml"}) is False
+
+    # No input parameter
+    assert executor._has_cache_input({}) is False
+    assert executor._has_cache_input({"other": "value"}) is False
+
+
+# Test _has_cache_input with list inputs.
+def test_has_cache_input_list_inputs():
+    """Test _has_cache_input with list of input files."""
+    executor = WorkflowExecutor()
+
+    # List with at least one .db file
+    assert (
+        executor._has_cache_input({"input": ["file.csv", "cache.db"]}) is True
+    )
+    assert (
+        executor._has_cache_input({"input": ["result.db", "other.db"]}) is True
+    )
+
+    # List without .db files
+    assert (
+        executor._has_cache_input({"input": ["file.csv", "data.xml"]}) is False
+    )
+
+    # Empty list
+    assert executor._has_cache_input({"input": []}) is False
+
+
+# Test CREATE pattern requires output parameter.
+def test_validate_create_pattern_requires_output(monkeypatch):
+    """Test CREATE pattern validation requires output parameter."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "create_step",
+                "uses": "test_provider",
+                "with": {"action": "create_action"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.CREATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "CREATE pattern requires 'output'" in str(exc_info.value)
+
+
+# Test CREATE pattern requires matrix definition.
+def test_validate_create_pattern_requires_matrix(monkeypatch):
+    """Test CREATE pattern validation requires matrix definition."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "steps": [
+            {
+                "name": "create_step",
+                "uses": "test_provider",
+                "with": {"action": "create_action", "output": "result.db"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.CREATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "CREATE pattern requires workflow 'matrix'" in str(exc_info.value)
+
+
+# Test CREATE pattern prohibits cache input.
+def test_validate_create_pattern_prohibits_cache_input(monkeypatch):
+    """Test CREATE pattern validation prohibits .db input files."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "create_step",
+                "uses": "test_provider",
+                "with": {
+                    "action": "create_action",
+                    "output": "result.db",
+                    "input": "other_cache.db",
+                },
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.CREATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "CREATE pattern prohibits cache input" in str(exc_info.value)
+
+
+# Test UPDATE pattern requires input parameter.
+def test_validate_update_pattern_requires_input(monkeypatch):
+    """Test UPDATE pattern validation requires input parameter."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "steps": [
+            {
+                "name": "update_step",
+                "uses": "test_provider",
+                "with": {"action": "update_action"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.UPDATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "UPDATE pattern requires 'input'" in str(exc_info.value)
+
+
+# Test UPDATE pattern prohibits output parameter.
+def test_validate_update_pattern_prohibits_output(monkeypatch):
+    """Test UPDATE pattern validation prohibits output parameter."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "steps": [
+            {
+                "name": "update_step",
+                "uses": "test_provider",
+                "with": {
+                    "action": "update_action",
+                    "input": "cache.db",
+                    "output": "new_cache.db",
+                },
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.UPDATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "UPDATE pattern prohibits 'output'" in str(exc_info.value)
+
+
+# Test UPDATE pattern prohibits matrix definition.
+def test_validate_update_pattern_prohibits_matrix(monkeypatch):
+    """Test UPDATE pattern validation prohibits matrix definition."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "update_step",
+                "uses": "test_provider",
+                "with": {"action": "update_action", "input": "cache.db"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.UPDATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "UPDATE pattern prohibits workflow 'matrix'" in str(exc_info.value)
+
+
+# Test AGGREGATE pattern requires input parameter.
+def test_validate_aggregate_pattern_requires_input(monkeypatch):
+    """Test AGGREGATE pattern validation requires input parameter."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "agg_step",
+                "uses": "test_provider",
+                "with": {"action": "aggregate_action", "output": "result.db"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.AGGREGATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "AGGREGATE pattern requires 'input'" in str(exc_info.value)
+
+
+# Test AGGREGATE pattern requires output parameter.
+def test_validate_aggregate_pattern_requires_output(monkeypatch):
+    """Test AGGREGATE pattern validation requires output parameter."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "agg_step",
+                "uses": "test_provider",
+                "with": {"action": "aggregate_action", "input": "cache.db"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.AGGREGATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "AGGREGATE pattern requires 'output'" in str(exc_info.value)
+
+
+# Test AGGREGATE pattern requires matrix definition.
+def test_validate_aggregate_pattern_requires_matrix(monkeypatch):
+    """Test AGGREGATE pattern validation requires matrix definition."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "steps": [
+            {
+                "name": "agg_step",
+                "uses": "test_provider",
+                "with": {
+                    "action": "aggregate_action",
+                    "input": "cache.db",
+                    "output": "result.db",
+                },
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.AGGREGATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("test.yml")
+    assert "AGGREGATE pattern requires workflow 'matrix'" in str(
+        exc_info.value
+    )
+
+
+# Test valid CREATE pattern configuration passes.
+def test_validate_create_pattern_valid(monkeypatch):
+    """Test valid CREATE pattern configuration passes validation."""
+    from causaliq_core import ActionPattern
+
+    workflow_data = {
+        "id": "test",
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "name": "create_step",
+                "uses": "test_provider",
+                "with": {
+                    "action": "create_action",
+                    "output": "result.db",
+                    "data": "/path/to/data.csv",
+                },
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.CREATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    result = executor.parse_workflow("test.yml")
+    assert result == workflow_data
+
+
+# Test no pattern declared skips validation.
+def test_validate_no_pattern_skips_validation(monkeypatch):
+    """Test actions without declared patterns skip validation."""
+    workflow_data = {
+        "id": "test",
+        "steps": [
+            {
+                "name": "unknown_step",
+                "uses": "test_provider",
+                "with": {"action": "unknown_action"},
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return None  # No pattern declared
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    result = executor.parse_workflow("test.yml")
+    assert result == workflow_data

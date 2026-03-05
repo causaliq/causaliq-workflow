@@ -206,3 +206,36 @@ def test_execute_action_returns_result_structure():
     # Result should contain status and objects
     assert "status" in result
     assert "objects" in result
+
+
+# Test get_action_pattern returns None for non-existent provider.
+def test_get_action_pattern_nonexistent_provider():
+    registry = ActionRegistry()
+    result = registry.get_action_pattern("nonexistent_provider", "some_action")
+    assert result is None
+
+
+# Test get_action_pattern returns None when action not in patterns.
+def test_get_action_pattern_action_not_in_patterns():
+    registry = ActionRegistry()
+    # test_action exists but has no action_patterns defined
+    result = registry.get_action_pattern("test_action", "unknown_action")
+    assert result is None
+
+
+# Test get_action_pattern returns pattern when defined.
+def test_get_action_pattern_returns_pattern(monkeypatch):
+    from causaliq_core import ActionPattern
+
+    registry = ActionRegistry()
+
+    # Get the actual action class and temporarily add a pattern
+    action_class = registry.get_action_class("test_action")
+    original_patterns = action_class.action_patterns.copy()
+
+    try:
+        action_class.action_patterns = {"test": ActionPattern.CREATE}
+        result = registry.get_action_pattern("test_action", "test")
+        assert result == ActionPattern.CREATE
+    finally:
+        action_class.action_patterns = original_patterns

@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from causaliq_core import (
     ActionExecutionError,
+    ActionPattern,
     CausalIQActionProvider,
 )
 
@@ -373,6 +374,26 @@ class ActionRegistry:
         raise ActionRegistryError(
             f"Action '{name}' not found. Available actions: {available}"
         )
+
+    def get_action_pattern(
+        self,
+        provider_name: str,
+        action_name: str,
+    ) -> Optional[ActionPattern]:
+        """Get the execution pattern for an action.
+
+        Args:
+            provider_name: Provider name (e.g., 'causaliq-analysis')
+            action_name: Action name (e.g., 'merge_graphs')
+
+        Returns:
+            ActionPattern if declared, None if not specified
+        """
+        try:
+            action_class = self.get_action_class(provider_name)
+            return action_class.action_patterns.get(action_name)
+        except ActionRegistryError:
+            return None
 
     def execute_action(
         self,

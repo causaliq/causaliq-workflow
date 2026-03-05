@@ -555,6 +555,14 @@ class WorkflowExecutor:
                 f"Action validation failed: {'; '.join(action_errors)}"
             )
 
+        # Validate action patterns
+        pattern_errors = self._validate_action_patterns(workflow)
+        if pattern_errors:
+            raise WorkflowExecutionError(
+                "Action pattern validation failed: "
+                f"{'; '.join(pattern_errors)}"
+            )
+
         # Run full workflow validation in dry-run mode if requested
         if mode != "dry-run":
             try:
@@ -563,6 +571,123 @@ class WorkflowExecutor:
                 raise WorkflowExecutionError(
                     f"Workflow dry-run validation failed: {e}"
                 ) from e
+
+    def _validate_action_patterns(self, workflow: Dict[str, Any]) -> List[str]:
+        """Validate action patterns against workflow configuration.
+
+        Checks that each step's input/output/matrix configuration matches
+        the declared pattern for its action:
+        - CREATE: output required, matrix required, cache input prohibited
+        - UPDATE: input required, output prohibited, matrix prohibited
+        - AGGREGATE: input required, output required, matrix required
+
+        Args:
+            workflow: Parsed workflow dictionary
+
+        Returns:
+            List of validation error messages (empty if valid)
+        """
+        from causaliq_core import ActionPattern
+
+        errors: List[str] = []
+        matrix = workflow.get("matrix", {})
+        has_matrix = bool(matrix)
+
+        for step in workflow.get("steps", []):
+            step_name = step.get("name", "unnamed")
+            provider_name = step.get("uses")
+            if not provider_name:
+                continue
+
+            step_inputs = step.get("with", {})
+            action_name = step_inputs.get("action")
+            if not action_name:
+                continue
+
+            # Get the pattern for this action
+            pattern = self.action_registry.get_action_pattern(
+                provider_name, action_name
+            )
+            if pattern is None:
+                # No pattern declared - skip validation
+                continue
+
+            has_input = "input" in step_inputs
+            has_output = "output" in step_inputs
+            has_cache_input = self._has_cache_input(step_inputs)
+
+            if pattern == ActionPattern.CREATE:
+                if not has_output:
+                    errors.append(
+                        f"Step '{step_name}': CREATE pattern requires "
+                        f"'output' parameter"
+                    )
+                if not has_matrix:
+                    errors.append(
+                        f"Step '{step_name}': CREATE pattern requires "
+                        f"workflow 'matrix' definition"
+                    )
+                if has_cache_input:
+                    errors.append(
+                        f"Step '{step_name}': CREATE pattern prohibits "
+                        f"cache input (.db files)"
+                    )
+
+            elif pattern == ActionPattern.UPDATE:
+                if not has_input:
+                    errors.append(
+                        f"Step '{step_name}': UPDATE pattern requires "
+                        f"'input' parameter"
+                    )
+                if has_output:
+                    errors.append(
+                        f"Step '{step_name}': UPDATE pattern prohibits "
+                        f"'output' parameter"
+                    )
+                if has_matrix:
+                    errors.append(
+                        f"Step '{step_name}': UPDATE pattern prohibits "
+                        f"workflow 'matrix' definition"
+                    )
+
+            elif pattern == ActionPattern.AGGREGATE:
+                if not has_input:
+                    errors.append(
+                        f"Step '{step_name}': AGGREGATE pattern requires "
+                        f"'input' parameter"
+                    )
+                if not has_output:
+                    errors.append(
+                        f"Step '{step_name}': AGGREGATE pattern requires "
+                        f"'output' parameter"
+                    )
+                if not has_matrix:
+                    errors.append(
+                        f"Step '{step_name}': AGGREGATE pattern requires "
+                        f"workflow 'matrix' definition"
+                    )
+
+        return errors
+
+    def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
+        """Check if step inputs include cache file (.db) inputs.
+
+        Args:
+            step_inputs: Step 'with' parameters
+
+        Returns:
+            True if any input parameter points to .db files
+        """
+        input_param = step_inputs.get("input")
+        if not input_param:
+            return False
+
+        inputs = (
+            [input_param]
+            if isinstance(input_param, str)
+            else (list(input_param) if input_param else [])
+        )
+        return any(str(p).lower().endswith(".db") for p in inputs)
 
     def execute_workflow(
         self,
