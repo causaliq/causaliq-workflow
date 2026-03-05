@@ -433,7 +433,8 @@ class WorkflowExecutor:
                         continue
 
                 # Conservative execution: skip if action already applied
-                if cache.has_action_metadata(
+                # Bypassed in force mode
+                if context.mode != "force" and cache.has_action_metadata(
                     entry_matrix, provider_name, action_method
                 ):
                     entries_skipped += 1
@@ -1061,7 +1062,7 @@ class WorkflowExecutor:
                 should_cache = (
                     output_path is not None
                     and str(output_path).lower() != "none"
-                    and context.mode == "run"
+                    and context.mode in ("run", "force")
                 )
                 if should_cache:
                     from causaliq_workflow.cache import WorkflowCache
@@ -1072,7 +1073,10 @@ class WorkflowExecutor:
 
                     # Conservative execution: skip if entry already exists
                     # Applies to CREATE and AGGREGATE patterns
-                    if step_cache.exists(context.matrix_values):
+                    # Bypassed in force mode
+                    if context.mode != "force" and step_cache.exists(
+                        context.matrix_values
+                    ):
                         # Log skip if logger provided
                         if step_logger:
                             action_class = (

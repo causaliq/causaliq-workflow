@@ -1913,3 +1913,160 @@ def test_create_pattern_executes_when_no_entry_exists(
 
     # Step should execute successfully
     assert result["steps"]["create-step"]["status"] == "success"
+
+
+# Test force mode bypasses CREATE pattern conservative execution.
+def test_force_mode_bypasses_create_conservative_skip(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create output cache with existing entry
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        entry.metadata["existing"] = True
+        cache.put({"algorithm": "pc"}, entry)
+
+    class CreateAction:
+        name = "create-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            # This SHOULD be called despite existing entry (force mode)
+            return ("success", {"forced": True}, [{"type": "graph"}])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["create-provider"] = CreateAction
+
+    workflow = {
+        "steps": [
+            {
+                "name": "create-step",
+                "uses": "create-provider",
+                "with": {
+                    "action": "generate",
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"algorithm": "pc"}
+    # Use force mode
+    context = WorkflowContext(
+        mode="force", matrix={"algorithm": ["pc"]}, matrix_values=matrix_values
+    )
+
+    result = executor._execute_job(workflow, matrix_values, context, {}, None)
+
+    # Step should execute (not skipped) despite existing entry
+    assert result["steps"]["create-step"]["status"] == "success"
+
+
+# Test force mode bypasses AGGREGATE pattern conservative execution.
+def test_force_mode_bypasses_aggregate_conservative_skip(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache
+    input_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(input_path)) as cache:
+        entry = CacheEntry()
+        cache.put({"algorithm": "pc", "network": "asia"}, entry)
+
+    # Create output cache with existing entry
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        entry.metadata["aggregated"] = True
+        cache.put({"algorithm": "pc"}, entry)
+
+    class AggregateAction:
+        name = "aggregate-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            # This SHOULD be called despite existing entry (force mode)
+            return ("success", {"forced": True}, [{"type": "summary"}])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["agg-provider"] = AggregateAction
+
+    workflow = {
+        "matrix": {"algorithm": ["pc"]},
+        "steps": [
+            {
+                "name": "agg-step",
+                "uses": "agg-provider",
+                "with": {
+                    "action": "summarise",
+                    "input": str(input_path),
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    matrix_values = {"algorithm": "pc"}
+    # Use force mode
+    context = WorkflowContext(
+        mode="force",
+        matrix={"algorithm": ["pc"]},
+        matrix_values=matrix_values,
+    )
+
+    result = executor._execute_job(workflow, matrix_values, context, {}, None)
+
+    # Step should execute (not skipped) despite existing entry
+    assert result["steps"]["agg-step"]["status"] == "success"
+
+
+# Test force mode bypasses UPDATE pattern conservative execution.
+def test_force_mode_bypasses_update_conservative_skip(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create cache with entry already having action metadata
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry = CacheEntry()
+        entry.metadata["update-action"] = {"evaluate": {"f1_score": 0.9}}
+        cache.put({"network": "asia"}, entry)
+
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {"evaluate": ActionPattern.UPDATE}
+
+        def run(self, action, parameters, **kwargs):
+            # This SHOULD be called despite existing metadata (force mode)
+            return ("success", {"forced_score": 1.0}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-provider"] = UpdateAction
+
+    step = {"uses": "update-provider"}
+    resolved_inputs = {"action": "evaluate", "input": str(cache_path)}
+    # Use force mode
+    context = WorkflowContext(mode="force", matrix={}, matrix_values={})
+
+    result = executor._execute_update_step(step, resolved_inputs, context)
+
+    # Entry should be updated (not skipped) despite existing metadata
+    assert result["status"] == "success"
+    assert result["entries_updated"] == 1
+    assert result["entries_skipped"] == 0

@@ -55,9 +55,9 @@ def cli(ctx: click.Context) -> None:
 @click.option(
     "--mode",
     default="dry-run",
-    type=click.Choice(["dry-run", "run"]),
+    type=click.Choice(["dry-run", "run", "force"]),
     help="Execution mode: 'dry-run' validates and previews (default), "
-    "'run' executes workflow",
+    "'run' executes with conservative skip, 'force' executes without skip",
 )
 @click.option(
     "--log-level",
