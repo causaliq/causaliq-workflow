@@ -82,7 +82,7 @@ def test_aggregation_workflow_end_to_end(
         ],
     }
 
-    results = executor.execute_workflow(workflow, mode="dry-run")
+    results = executor.execute_workflow(workflow, mode="run")
 
     # Verify: Should have captured 3 asia entries
     assert len(results) == 1
@@ -146,7 +146,7 @@ def test_aggregation_with_filter(
         ],
     }
 
-    executor.execute_workflow(workflow, mode="dry-run")
+    executor.execute_workflow(workflow, mode="run")
 
     # Only 2 completed entries should pass filter
     assert len(captured_entries) == 2
@@ -203,7 +203,7 @@ def test_aggregation_multiple_caches(
         ],
     }
 
-    executor.execute_workflow(workflow, mode="dry-run")
+    executor.execute_workflow(workflow, mode="run")
 
     # Should have entries from both caches
     assert len(captured_entries) == 2
@@ -258,7 +258,7 @@ def test_aggregation_matrix_grouping(
         ],
     }
 
-    executor.execute_workflow(workflow, mode="dry-run")
+    executor.execute_workflow(workflow, mode="run")
 
     # Each network should have 2 entries (2 seeds each)
     assert results_by_network == {"asia": 2, "alarm": 2, "sachs": 2}

@@ -150,8 +150,8 @@ def test_dry_run_no_cache_created(executor: WorkflowExecutor) -> None:
         results = executor.execute_workflow(workflow, mode="dry-run")
         assert len(results) == 1
         step_result = results[0]["steps"]["Cache Capture Step"]
-        # Cache should not be available in dry-run mode
-        assert step_result["has_cache"] is False
+        # In dry-run mode, should report what would happen
+        assert step_result["status"] == "would_execute"
         # Cache file should not exist
         assert not cache_path.exists()
 

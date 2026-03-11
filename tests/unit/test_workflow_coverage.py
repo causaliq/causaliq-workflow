@@ -144,19 +144,6 @@ def test_validate_workflow_actions_dry_run_skip(
     executor._validate_workflow_actions(workflow, "dry-run")
 
 
-# Test validation failure when dry-run execution fails.
-def test_validate_workflow_actions_full_validation_failure(
-    executor: WorkflowExecutor,
-) -> None:
-    workflow = {
-        "steps": [{"uses": "mock_failing_action", "name": "Failing Step"}]
-    }
-    with pytest.raises(
-        WorkflowExecutionError, match="Workflow dry-run validation failed"
-    ):
-        executor._validate_workflow_actions(workflow, "run")
-
-
 # Test executing workflow in dry-run mode.
 def test_execute_workflow_dry_run_mode(executor: WorkflowExecutor) -> None:
     workflow = {
@@ -176,8 +163,7 @@ def test_execute_workflow_dry_run_mode(executor: WorkflowExecutor) -> None:
     assert "steps" in results[0]
     assert "Test Step" in results[0]["steps"]
     step_result = results[0]["steps"]["Test Step"]
-    assert step_result["status"] == "validated"
-    assert step_result["mode"] == "dry-run"
+    assert step_result["status"] == "would_execute"
 
 
 # Test executing workflow in run mode.
@@ -951,7 +937,7 @@ def test_execute_job_aggregation_passes_entries(
     }
 
     context = WorkflowContext(
-        mode="dry-run",
+        mode="run",
         matrix=workflow["matrix"],
         matrix_values={"network": "asia"},
     )
@@ -1009,7 +995,7 @@ def test_execute_job_no_aggregation_without_matrix(
     }
 
     context = WorkflowContext(
-        mode="dry-run",
+        mode="run",
         matrix={},
         matrix_values={},
     )
@@ -1621,15 +1607,14 @@ def test_execute_job_update_step_with_logger(
     context = WorkflowContext(mode="run", matrix={}, matrix_values={})
     log_calls: list = []
 
-    def capture_logger(display_name, step_name, status):
-        log_calls.append((display_name, step_name, status))
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
 
     executor._execute_job(workflow, {}, context, {}, capture_logger)
 
-    # Logger should be called for EXECUTING and SUCCESS
-    assert len(log_calls) == 2
-    assert log_calls[0] == ("update-action", "eval-step", "EXECUTING")
-    assert log_calls[1] == ("update-action", "eval-step", "SUCCESS")
+    # Logger should be called once after completion with EXECUTED status
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("evaluate", "eval-step", "EXECUTED", {})
 
 
 # Test conservative execution for CREATE pattern skips when entry exists.
@@ -1728,8 +1713,8 @@ def test_create_pattern_conservative_skip_with_logger(
 
     log_calls: list = []
 
-    def capture_logger(display_name, step_name, status):
-        log_calls.append((display_name, step_name, status))
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
 
     result = executor._execute_job(
         workflow, matrix_values, context, {}, capture_logger
@@ -1738,7 +1723,12 @@ def test_create_pattern_conservative_skip_with_logger(
     # Step should be skipped with logger called
     assert result["steps"]["gen-step"]["status"] == "skipped"
     assert len(log_calls) == 1
-    assert log_calls[0] == ("create-action", "gen-step", "SKIPPED")
+    assert log_calls[0] == (
+        "generate",
+        "gen-step",
+        "SKIPPED",
+        {"network": "asia"},
+    )
 
 
 # Test conservative execution for AGGREGATE pattern skips when entry exists.
@@ -1857,8 +1847,8 @@ def test_aggregate_pattern_conservative_skip_with_logger(
 
     log_calls: list = []
 
-    def capture_logger(display_name, step_name, status):
-        log_calls.append((display_name, step_name, status))
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
 
     result = executor._execute_job(
         workflow, matrix_values, context, {}, capture_logger
@@ -1867,7 +1857,12 @@ def test_aggregate_pattern_conservative_skip_with_logger(
     # Step should be skipped with logger called
     assert result["steps"]["agg-step"]["status"] == "skipped"
     assert len(log_calls) == 1
-    assert log_calls[0] == ("aggregate-action", "agg-step", "SKIPPED")
+    assert log_calls[0] == (
+        "merge",
+        "agg-step",
+        "SKIPPED",
+        {"algorithm": "fges"},
+    )
 
 
 # Test CREATE pattern executes when no entry exists.
@@ -2070,3 +2065,398 @@ def test_force_mode_bypasses_update_conservative_skip(
     assert result["status"] == "success"
     assert result["entries_updated"] == 1
     assert result["entries_skipped"] == 0
+
+
+# ===========================================================================
+# STEP LOGGER COVERAGE TESTS
+# ===========================================================================
+
+
+# Test UPDATE step dry-run with step_logger.
+def test_update_step_dry_run_with_step_logger(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache with an entry
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"network": "asia"}, entry)
+
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {"evaluate": ActionPattern.UPDATE}
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-provider"] = UpdateAction
+
+    workflow = {
+        "matrix": {},
+        "steps": [
+            {
+                "name": "update-step",
+                "uses": "update-provider",
+                "with": {
+                    "action": "evaluate",
+                    "input": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    context = WorkflowContext(mode="dry-run", matrix={}, matrix_values={})
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger should be called with WOULD EXECUTE for dry-run UPDATE step
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("evaluate", "update-step", "WOULD EXECUTE", {})
+
+
+# Test UPDATE step completion logging with FORCED status.
+def test_update_step_logging_forced_status(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache with existing entry
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"network": "asia"}, entry)
+
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {"evaluate": ActionPattern.UPDATE}
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"f1": 0.9}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-provider"] = UpdateAction
+
+    workflow = {
+        "matrix": {},
+        "steps": [
+            {
+                "name": "update-step",
+                "uses": "update-provider",
+                "with": {
+                    "action": "evaluate",
+                    "input": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    context = WorkflowContext(mode="force", matrix={}, matrix_values={})
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger should be called with FORCED status
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("evaluate", "update-step", "FORCED", {})
+
+
+# Test UPDATE step logging with SKIPPED status (conservative skip).
+def test_update_step_logging_skipped_status(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache with entry ALREADY HAVING action metadata
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        # Add metadata for action already processed
+        entry.metadata["update-action"] = {"evaluate": {"f1": 0.8}}
+        cache.put({"network": "asia"}, entry)
+
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {"evaluate": ActionPattern.UPDATE}
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"f1": 0.9}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-provider"] = UpdateAction
+
+    workflow = {
+        "matrix": {},
+        "steps": [
+            {
+                "name": "update-step",
+                "uses": "update-provider",
+                "with": {
+                    "action": "evaluate",
+                    "input": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    # Conservative mode should skip already-processed entry
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger should be called with SKIPPED status
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("evaluate", "update-step", "SKIPPED", {})
+
+
+# Test UPDATE step logging with FAILED status.
+# Test UPDATE step logging with FAILED status (action raises exception).
+def test_update_step_logging_failed_status(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create input cache with entry
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"network": "asia"}, entry)
+
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {"evaluate": ActionPattern.UPDATE}
+
+        def run(self, action, parameters, **kwargs):
+            # Raise exception to trigger error status
+            raise RuntimeError("Action execution failed")
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-provider"] = UpdateAction
+
+    workflow = {
+        "matrix": {},
+        "steps": [
+            {
+                "name": "update-step",
+                "uses": "update-provider",
+                "with": {
+                    "action": "evaluate",
+                    "input": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger should be called with FAILED status
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("evaluate", "update-step", "FAILED", {})
+
+
+# Test dry-run mode with existing cache entry results in WOULD SKIP.
+def test_dry_run_would_skip_with_existing_entry(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create output cache with EXISTING entry for matrix values
+    output_path = tmp_path / "output.db"  # type: ignore[operator]
+    with WorkflowCache(str(output_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"network": "asia"}, entry)
+
+    class MockAction:
+        name = "mock-action"
+        action_patterns = {}  # type: ignore[var-annotated]
+
+        def run(self, action, parameters, **kwargs):
+            # Should NOT be called in dry-run
+            raise AssertionError("Action should not run in dry-run mode")
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "create-step",
+                "uses": "mock-provider",
+                "with": {
+                    "action": "create",
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    executor._execute_job(
+        workflow, {"network": "asia"}, context, {}, capture_logger
+    )
+
+    # Logger should be called with WOULD SKIP (entry already exists)
+    assert len(log_calls) == 1
+    assert log_calls[0] == (
+        "create",
+        "create-step",
+        "WOULD SKIP",
+        {"network": "asia"},
+    )
+
+
+# Test step execution logging with FORCED status in force mode.
+def test_step_execution_logging_forced_status(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    class MockAction:
+        name = "mock-action"
+        action_patterns = {}  # type: ignore[var-annotated]
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"result": "ok"}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    workflow = {
+        "matrix": {},
+        "steps": [
+            {
+                "name": "test-step",
+                "uses": "mock-provider",
+                "with": {"action": "process"},
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    # Use force mode
+    context = WorkflowContext(mode="force", matrix={}, matrix_values={})
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger should be called with FORCED status
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("process", "test-step", "FORCED", {})
+
+
+# Test step execution logging with FAILED status.
+def test_step_execution_logging_failed_status(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    class MockAction:
+        name = "mock-action"
+        action_patterns = {}  # type: ignore[var-annotated]
+
+        def run(self, action, parameters, **kwargs):
+            # Return error status
+            return ("error", {"error": "something failed"}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    workflow = {
+        "matrix": {},
+        "steps": [
+            {
+                "name": "test-step",
+                "uses": "mock-provider",
+                "with": {"action": "process"},
+            }
+        ],
+    }
+
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger should be called with FAILED status
+    assert len(log_calls) == 1
+    assert log_calls[0] == ("process", "test-step", "FAILED", {})

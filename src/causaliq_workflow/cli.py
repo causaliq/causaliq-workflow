@@ -7,6 +7,8 @@ from typing import Any, Dict, List
 
 import click
 
+from . import __version__
+
 
 def _log_cli_message(level: str, message: str) -> None:
     """Log CLI message with standardised format."""
@@ -27,14 +29,14 @@ def _log_cli_error(message: str) -> None:
 
 
 @click.group(name="causaliq-workflow", invoke_without_command=True)
-@click.version_option(version="0.2.0")
+@click.version_option(version=__version__)
 @click.pass_context
 def cli(ctx: click.Context) -> None:
     """CausalIQ Workflow - Execute and manage causal discovery workflows.
 
     Use 'cqwork run' to execute workflows.
-    Use 'cqwork export_cache' to export cache entries.
-    Use 'cqwork import_cache' to import cache entries.
+    Use 'cqwork export-cache' to export cache entries.
+    Use 'cqwork import-cache' to import cache entries.
     """
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
@@ -108,13 +110,25 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
             sys.exit(1)
 
         def log_step_execution(
-            action_name: str, step_name: str, status: str
+            action_method: str,
+            step_name: str,
+            status: str,
+            matrix_values: Dict[str, Any],
         ) -> None:
             """Log step execution in real-time."""
             if log_level == "all":
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Format matrix values as [key=value, ...]
+                if matrix_values:
+                    matrix_str = ", ".join(
+                        f"{k}={v}" for k, v in matrix_values.items()
+                    )
+                    matrix_part = f" [{matrix_str}]"
+                else:
+                    matrix_part = ""
                 click.echo(
-                    f"{timestamp} [{action_name}] STEP {status} {step_name}"
+                    f"{timestamp} [{action_method}] {status:12} "
+                    f"{step_name}{matrix_part}"
                 )
 
         try:
@@ -151,24 +165,57 @@ def _report_results(
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     if not results:
-        click.echo(
-            f"{timestamp} [causaliq-workflow] COMPLETED workflow with 0 jobs"
-        )
+        click.echo(f"{timestamp} [causaliq-workflow] COMPLETED 0 steps")
         return
 
-    total_steps = sum(len(result.get("steps", {})) for result in results)
+    # Count step statuses across all jobs
+    executed = 0
+    skipped = 0
+    forced = 0
+    would_execute = 0
+    would_skip = 0
+    failed = 0
 
-    if log_level == "all":
-        for i, result in enumerate(results):
-            steps = result.get("steps", {})
-            click.echo(
-                f"{timestamp} [causaliq-workflow] JOB {i + 1} completed "
-                f"{len(steps)} step(s)"
-            )
+    for result in results:
+        for step_result in result.get("steps", {}).values():
+            status = step_result.get("status", "unknown")
+            if status == "success":
+                if mode == "force":
+                    forced += 1
+                else:
+                    executed += 1
+            elif status == "skipped":
+                skipped += 1
+            elif status == "would_execute":
+                would_execute += 1
+            elif status == "would_skip":
+                would_skip += 1
+            elif status in ("error", "failed"):
+                failed += 1
+
+    total = executed + skipped + forced + would_execute + would_skip + failed
+
+    # Build summary parts
+    parts = []
+    if mode == "dry-run":
+        if would_execute > 0:
+            parts.append(f"{would_execute} would execute")
+        if would_skip > 0:
+            parts.append(f"{would_skip} would skip")
+    else:
+        if executed > 0:
+            parts.append(f"{executed} executed")
+        if skipped > 0:
+            parts.append(f"{skipped} skipped")
+        if forced > 0:
+            parts.append(f"{forced} forced")
+    if failed > 0:
+        parts.append(f"{failed} failed")
+
+    summary = ", ".join(parts) if parts else "0 steps"
 
     click.echo(
-        f"{timestamp} [causaliq-workflow] COMPLETED workflow with "
-        f"{len(results)} job(s) ({total_steps} steps)"
+        f"{timestamp} [causaliq-workflow] COMPLETED {total} steps: {summary}"
     )
 
 
@@ -177,10 +224,10 @@ def _report_results(
 # ============================================================================
 
 
-@cli.command(name="export_cache")
+@cli.command(name="export-cache")
 @click.option(
-    "--cache",
-    "-c",
+    "--input",
+    "-i",
     "cache_file",
     required=True,
     type=click.Path(exists=True, path_type=Path),
@@ -205,9 +252,9 @@ def export_cache(
 
     Examples:
 
-        cqflow export_cache -c cache.db -o ./results
+        cqflow export-cache -i cache.db -o ./results
 
-        cqflow export_cache -c cache.db -o results.zip
+        cqflow export-cache -i cache.db -o results.zip
     """
     try:
         from causaliq_workflow.cache import WorkflowCache
@@ -253,7 +300,7 @@ def export_cache(
         sys.exit(1)
 
 
-@cli.command(name="import_cache")
+@cli.command(name="import-cache")
 @click.option(
     "--input",
     "-i",
@@ -263,8 +310,8 @@ def export_cache(
     help="Path to exported directory or .zip file to import from.",
 )
 @click.option(
-    "--cache",
-    "-c",
+    "--output",
+    "-o",
     "cache_file",
     required=True,
     type=click.Path(path_type=Path),
@@ -276,15 +323,15 @@ def import_cache(
 ) -> None:
     """Import cache entries from directory or zip file.
 
-    Reads entries previously exported by 'export_cache' and stores them
+    Reads entries previously exported by 'export-cache' and stores them
     into the specified cache database. Creates the cache file if it
     does not exist.
 
     Examples:
 
-        cqwork import_cache -i ./results -c cache.db
+        cqwork import-cache -i ./results -o cache.db
 
-        cqwork import_cache -i results.zip -c cache.db
+        cqwork import-cache -i results.zip -o cache.db
     """
     try:
         from causaliq_workflow.cache import WorkflowCache

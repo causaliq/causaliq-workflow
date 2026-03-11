@@ -345,7 +345,9 @@ class WorkflowExecutor:
         step: Dict[str, Any],
         resolved_inputs: Dict[str, Any],
         context: WorkflowContext,
-        step_logger: Optional[Callable[[str, str, str], None]] = None,
+        step_logger: Optional[
+            Callable[[str, str, str, Dict[str, Any]], None]
+        ] = None,
     ) -> Dict[str, Any]:
         """Execute a step in UPDATE pattern mode.
 
@@ -747,7 +749,7 @@ class WorkflowExecutor:
     def _validate_workflow_actions(
         self, workflow: Dict[str, Any], mode: str
     ) -> None:
-        """Validate all actions in workflow by running in dry-run mode.
+        """Validate all actions in workflow.
 
         Args:
             workflow: Parsed workflow dictionary
@@ -772,15 +774,6 @@ class WorkflowExecutor:
                 "Action pattern validation failed: "
                 f"{'; '.join(pattern_errors)}"
             )
-
-        # Run full workflow validation in dry-run mode if requested
-        if mode != "dry-run":
-            try:
-                self.execute_workflow(workflow, mode="dry-run")
-            except Exception as e:
-                raise WorkflowExecutionError(
-                    f"Workflow dry-run validation failed: {e}"
-                ) from e
 
     def _validate_action_patterns(self, workflow: Dict[str, Any]) -> List[str]:
         """Validate action patterns against workflow configuration.
@@ -904,7 +897,9 @@ class WorkflowExecutor:
         workflow: Dict[str, Any],
         mode: str = "dry-run",
         cli_params: Optional[Dict[str, Any]] = None,
-        step_logger: Optional[Callable[[str, str, str], None]] = None,
+        step_logger: Optional[
+            Callable[[str, str, str, Dict[str, Any]], None]
+        ] = None,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
 
@@ -916,6 +911,7 @@ class WorkflowExecutor:
             mode: Execution mode ('dry-run', 'run', 'compare')
             cli_params: Additional parameters from CLI
             step_logger: Optional function to log step execution
+                (action_method, step_name, status, matrix_values)
 
         Returns:
             List of job results from matrix expansion
@@ -960,7 +956,9 @@ class WorkflowExecutor:
         job: Dict[str, Any],
         context: WorkflowContext,
         cli_params: Dict[str, Any],
-        step_logger: Optional[Callable[[str, str, str], None]] = None,
+        step_logger: Optional[
+            Callable[[str, str, str, Dict[str, Any]], None]
+        ] = None,
     ) -> Dict[str, Any]:
         """Execute single job with resolved matrix variables.
 
@@ -969,6 +967,7 @@ class WorkflowExecutor:
             job: Job with resolved matrix variables
             context: Workflow context
             cli_params: CLI parameters
+            step_logger: Optional function to log step execution
 
         Returns:
             Job execution results
@@ -1025,15 +1024,20 @@ class WorkflowExecutor:
                 # UPDATE mode is activated when action declares UPDATE pattern
                 # and step has input pointing to .db cache file.
                 if self._is_update_step(step, matrix):
-                    # Log step execution if logger provided
-                    if step_logger:
-                        action_class = self.action_registry.get_action_class(
-                            action_name
-                        )
-                        display_name = getattr(
-                            action_class, "name", action_name
-                        )
-                        step_logger(display_name, step_name, "EXECUTING")
+                    # Dry-run for UPDATE steps
+                    if context.mode == "dry-run":
+                        if step_logger:
+                            action_method = resolved_inputs.get(
+                                "action", "default"
+                            )
+                            step_logger(
+                                action_method,
+                                step_name,
+                                "WOULD EXECUTE",
+                                context.matrix_values,
+                            )
+                        step_results[step_name] = {"status": "would_execute"}
+                        continue
 
                     # Execute UPDATE step (processes all cache entries)
                     step_result = self._execute_update_step(
@@ -1042,14 +1046,26 @@ class WorkflowExecutor:
 
                     # Log completion if logger provided
                     if step_logger:
-                        action_class = self.action_registry.get_action_class(
-                            action_name
+                        action_method = resolved_inputs.get(
+                            "action", "default"
                         )
-                        display_name = getattr(
-                            action_class, "name", action_name
+                        result_status = step_result.get("status", "unknown")
+                        if result_status == "success":
+                            status = (
+                                "FORCED"
+                                if context.mode == "force"
+                                else "EXECUTED"
+                            )
+                        elif result_status == "skipped":
+                            status = "SKIPPED"
+                        else:
+                            status = "FAILED"
+                        step_logger(
+                            action_method,
+                            step_name,
+                            status,
+                            context.matrix_values,
                         )
-                        status = step_result.get("status", "unknown").upper()
-                        step_logger(display_name, step_name, status)
 
                     step_results[step_name] = step_result
                     continue  # Skip normal execution path
@@ -1058,12 +1074,50 @@ class WorkflowExecutor:
                 output_path = resolved_inputs.pop("output", None)
                 step_cache = None
 
-                # "none" is a special value meaning "no output"
-                should_cache = (
+                # Check if output path is valid for caching
+                has_output = (
                     output_path is not None
                     and str(output_path).lower() != "none"
-                    and context.mode in ("run", "force")
                 )
+
+                # Dry-run mode: check what would happen without executing
+                if context.mode == "dry-run":
+                    from pathlib import Path
+
+                    from causaliq_workflow.cache import WorkflowCache
+
+                    # Check if entry would be skipped (already exists)
+                    would_skip = False
+                    if has_output and Path(output_path).exists():
+                        with WorkflowCache(output_path) as check_cache:
+                            would_skip = check_cache.exists(
+                                context.matrix_values
+                            )
+
+                    # Log what would happen in a real run
+                    if step_logger:
+                        action_method = resolved_inputs.get(
+                            "action", "default"
+                        )
+                        status = (
+                            "WOULD SKIP" if would_skip else "WOULD EXECUTE"
+                        )
+                        step_logger(
+                            action_method,
+                            step_name,
+                            status,
+                            context.matrix_values,
+                        )
+
+                    step_results[step_name] = {
+                        "status": (
+                            "would_skip" if would_skip else "would_execute"
+                        )
+                    }
+                    continue
+
+                # Run/force mode: actually execute
+                should_cache = has_output and context.mode in ("run", "force")
                 if should_cache:
                     from causaliq_workflow.cache import WorkflowCache
 
@@ -1079,15 +1133,15 @@ class WorkflowExecutor:
                     ):
                         # Log skip if logger provided
                         if step_logger:
-                            action_class = (
-                                self.action_registry.get_action_class(
-                                    action_name
-                                )
+                            action_method = resolved_inputs.get(
+                                "action", "default"
                             )
-                            display_name = getattr(
-                                action_class, "name", action_name
+                            step_logger(
+                                action_method,
+                                step_name,
+                                "SKIPPED",
+                                context.matrix_values,
                             )
-                            step_logger(display_name, step_name, "SKIPPED")
 
                         step_results[step_name] = {"status": "skipped"}
                         step_cache.close()
@@ -1095,16 +1149,6 @@ class WorkflowExecutor:
                         continue
 
                 try:
-                    # Log step execution in real-time if logger provided
-                    if step_logger:
-                        action_class = self.action_registry.get_action_class(
-                            action_name
-                        )
-                        display_name = getattr(
-                            action_class, "name", action_name
-                        )
-                        step_logger(display_name, step_name, "EXECUTING")
-
                     # Execute action
                     step_result = self.action_registry.execute_action(
                         action_name, resolved_inputs, context
@@ -1153,14 +1197,24 @@ class WorkflowExecutor:
 
                     # Log step completion in real-time if logger provided
                     if step_logger:
-                        action_class = self.action_registry.get_action_class(
-                            action_name
+                        action_method = resolved_inputs.get(
+                            "action", "default"
                         )
-                        display_name = getattr(
-                            action_class, "name", action_name
+                        result_status = step_result.get("status", "unknown")
+                        if result_status == "success":
+                            status = (
+                                "FORCED"
+                                if context.mode == "force"
+                                else "EXECUTED"
+                            )
+                        else:
+                            status = "FAILED"
+                        step_logger(
+                            action_method,
+                            step_name,
+                            status,
+                            context.matrix_values,
                         )
-                        status = step_result.get("status", "unknown").upper()
-                        step_logger(display_name, step_name, status)
 
                 finally:
                     # Close step cache and reset context

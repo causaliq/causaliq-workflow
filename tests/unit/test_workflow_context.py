@@ -249,7 +249,7 @@ def test_workflow_executor_matrix_passed_to_single_job(
             }
         ],
     }
-    results = executor.execute_workflow(workflow, mode="dry-run")
+    results = executor.execute_workflow(workflow, mode="run")
     assert len(results) == 1
     step_result = results[0]["steps"]["Single Job Step"]
     assert "context_matrix" in step_result
@@ -274,7 +274,7 @@ def test_matrix_available_for_action_optimization(
             }
         ],
     }
-    results = executor.execute_workflow(workflow, mode="dry-run")
+    results = executor.execute_workflow(workflow, mode="run")
     assert len(results) == 20
     expected_matrix = workflow["matrix"]
     for result in results:
@@ -330,11 +330,11 @@ def test_mode_parameter_dry_run_execution(
             }
         ],
     }
-    results = executor.execute_workflow(workflow, mode="dry-run")
+    results = executor.execute_workflow(workflow, mode="run")
     assert len(results) == 1
     step_result = results[0]["steps"]["Mode Test Step"]
-    assert step_result["mode"] == "dry-run"
-    assert step_result["context_mode"] == "dry-run"
+    assert step_result["mode"] == "run"
+    assert step_result["context_mode"] == "run"
 
 
 # Test mode parameter correctly passed to actions in run mode.
@@ -375,12 +375,12 @@ def test_mode_parameter_consistency_across_matrix_jobs(
             }
         ],
     }
-    results = executor.execute_workflow(workflow, mode="dry-run")
+    results = executor.execute_workflow(workflow, mode="run")
     assert len(results) == 4
     for result in results:
         step_result = result["steps"]["Consistency Test"]
-        assert step_result["mode"] == "dry-run"
-        assert step_result["context_mode"] == "dry-run"
+        assert step_result["mode"] == "run"
+        assert step_result["context_mode"] == "run"
 
 
 # Test mode parameter correctly passed with compare mode.

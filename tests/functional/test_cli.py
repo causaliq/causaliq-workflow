@@ -25,8 +25,8 @@ def test_cli_no_args_shows_help() -> None:
     assert result.exit_code == 0
     assert "Usage:" in result.output
     assert "run" in result.output
-    assert "export_cache" in result.output
-    assert "import_cache" in result.output
+    assert "export-cache" in result.output
+    assert "import-cache" in result.output
 
 
 # Test run subcommand missing workflow argument.
@@ -92,9 +92,7 @@ def test_cli_run_successful_execution_empty_results(
         "[causaliq-workflow] VALIDATED workflow successfully" in result.output
     )
     assert "[causaliq-workflow] EXECUTING" in result.output
-    assert (
-        "[causaliq-workflow] COMPLETED workflow with 0 jobs" in result.output
-    )
+    assert "[causaliq-workflow] COMPLETED 0 steps" in result.output
 
 
 # Test run successful execution with log level none.
@@ -220,7 +218,9 @@ def test_cli_run_successful_execution(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    result = cli_runner.invoke(
+        cli, ["run", workflow_file, "--log-level=all", "--mode=run"]
+    )
     assert result.exit_code == 0
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] VALIDATING" in result.output
@@ -228,12 +228,7 @@ def test_cli_run_successful_execution(
         "[causaliq-workflow] VALIDATED workflow successfully" in result.output
     )
     assert "[causaliq-workflow] EXECUTING" in result.output
-    assert (
-        "[causaliq-workflow] COMPLETED workflow with 2 job(s) (3 steps)"
-        in result.output
-    )
-    assert "[causaliq-workflow] JOB 1 completed 2 step(s)" in result.output
-    assert "[causaliq-workflow] JOB 2 completed 1 step(s)" in result.output
+    assert "[causaliq-workflow] COMPLETED 3 steps: 3 executed" in result.output
 
 
 # Test run workflow execution failure.
@@ -354,14 +349,14 @@ def test_cli_run_file_not_found_direct_error(
     assert "[causaliq-workflow] ERROR Workflow file not found" in result.output
 
 
-# Test export_cache command missing required arguments.
+# Test export-cache command missing required arguments.
 def test_cli_export_cache_missing_args(cli_runner: CliRunner) -> None:
-    result = cli_runner.invoke(cli, ["export_cache"])
+    result = cli_runner.invoke(cli, ["export-cache"])
     assert result.exit_code != 0
     assert "Missing option" in result.output or "Usage:" in result.output
 
 
-# Test export_cache command with nonexistent cache file.
+# Test export-cache command with nonexistent cache file.
 def test_cli_export_cache_nonexistent_cache(
     cli_runner: CliRunner, tmp_path
 ) -> None:
@@ -369,7 +364,7 @@ def test_cli_export_cache_nonexistent_cache(
     output_dir = tmp_path / "output"
     result = cli_runner.invoke(
         cli,
-        ["export_cache", "-c", str(cache_path), "-o", str(output_dir)],
+        ["export-cache", "-i", str(cache_path), "-o", str(output_dir)],
     )
     # Click validates exists=True and returns exit code 2
     assert result.exit_code == 2
@@ -382,7 +377,7 @@ def test_cli_export_cache_nonexistent_cache(
 # =============================================================================
 
 
-# Test export_cache command success path.
+# Test export-cache command success path.
 def test_cli_export_cache_success(cli_runner: CliRunner, tmp_path) -> None:
     from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
@@ -397,8 +392,8 @@ def test_cli_export_cache_success(cli_runner: CliRunner, tmp_path) -> None:
     result = cli_runner.invoke(
         cli,
         [
-            "export_cache",
-            "-c",
+            "export-cache",
+            "-i",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -408,7 +403,7 @@ def test_cli_export_cache_success(cli_runner: CliRunner, tmp_path) -> None:
     assert "EXPORTED 1 entries" in result.output
 
 
-# Test export_cache command empty cache.
+# Test export-cache command empty cache.
 def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     from causaliq_workflow.cache import WorkflowCache
 
@@ -422,8 +417,8 @@ def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
     result = cli_runner.invoke(
         cli,
         [
-            "export_cache",
-            "-c",
+            "export-cache",
+            "-i",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -436,7 +431,7 @@ def test_cli_export_cache_empty_cache(cli_runner: CliRunner, tmp_path) -> None:
 # Test CLI structure keys parsing removed - see test_export.py
 
 
-# Test export_cache general Exception handling.
+# Test export-cache general Exception handling.
 def test_cli_export_cache_general_exception(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -459,8 +454,8 @@ def test_cli_export_cache_general_exception(
     result = cli_runner.invoke(
         cli,
         [
-            "export_cache",
-            "-c",
+            "export-cache",
+            "-i",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -471,7 +466,7 @@ def test_cli_export_cache_general_exception(
     assert "Export failed" in result.output
 
 
-# Test export_cache KeyError from export method.
+# Test export-cache KeyError from export method.
 def test_cli_export_cache_keyerror_from_export(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -493,8 +488,8 @@ def test_cli_export_cache_keyerror_from_export(
     result = cli_runner.invoke(
         cli,
         [
-            "export_cache",
-            "-c",
+            "export-cache",
+            "-i",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -505,7 +500,7 @@ def test_cli_export_cache_keyerror_from_export(
     assert "Export failed" in result.output
 
 
-# Test export_cache KeyboardInterrupt handling.
+# Test export-cache KeyboardInterrupt handling.
 def test_cli_export_cache_keyboard_interrupt(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -527,8 +522,8 @@ def test_cli_export_cache_keyboard_interrupt(
     result = cli_runner.invoke(
         cli,
         [
-            "export_cache",
-            "-c",
+            "export-cache",
+            "-i",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -539,7 +534,7 @@ def test_cli_export_cache_keyboard_interrupt(
     assert "Export interrupted by user" in result.output
 
 
-# Test export_cache ImportError handling.
+# Test export-cache ImportError handling.
 def test_cli_export_cache_import_error(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -559,8 +554,8 @@ def test_cli_export_cache_import_error(
     result = cli_runner.invoke(
         cli,
         [
-            "export_cache",
-            "-c",
+            "export-cache",
+            "-i",
             str(cache_path),
             "-o",
             str(output_dir),
@@ -614,23 +609,26 @@ steps:
         cli, ["run", str(workflow_file), "--log-level=all"]
     )
     assert result.exit_code == 0
-    assert "[test-action] STEP EXECUTING Test Step" in result.output
-    assert "[test-action] STEP " in result.output
+    # New log format: [action_method] STATUS step_name
+    # test_action has no 'action' param so defaults to 'default'
+    # dry-run mode (default) returns WOULD EXECUTE status
+    assert "[default] WOULD EXECUTE" in result.output
+    assert "Test Step" in result.output
 
 
 # ============================================================================
-# import_cache CLI tests
+# import-cache CLI tests
 # ============================================================================
 
 
-# Test import_cache command missing required arguments.
+# Test import-cache command missing required arguments.
 def test_cli_import_cache_missing_args(cli_runner: CliRunner) -> None:
-    result = cli_runner.invoke(cli, ["import_cache"])
+    result = cli_runner.invoke(cli, ["import-cache"])
     assert result.exit_code != 0
     assert "Missing option" in result.output or "Usage:" in result.output
 
 
-# Test import_cache command with nonexistent input path.
+# Test import-cache command with nonexistent input path.
 def test_cli_import_cache_nonexistent_input(
     cli_runner: CliRunner, tmp_path
 ) -> None:
@@ -638,7 +636,7 @@ def test_cli_import_cache_nonexistent_input(
     cache_path = tmp_path / "cache.db"
     result = cli_runner.invoke(
         cli,
-        ["import_cache", "-i", str(input_path), "-c", str(cache_path)],
+        ["import-cache", "-i", str(input_path), "-o", str(cache_path)],
     )
     # Click validates exists=True and returns exit code 2
     assert result.exit_code == 2
@@ -651,7 +649,7 @@ def test_cli_import_cache_nonexistent_input(
 # =============================================================================
 
 
-# Test import_cache command success path.
+# Test import-cache command success path.
 def test_cli_import_cache_success(cli_runner: CliRunner, tmp_path) -> None:
     from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
@@ -668,10 +666,10 @@ def test_cli_import_cache_success(cli_runner: CliRunner, tmp_path) -> None:
     result = cli_runner.invoke(
         cli,
         [
-            "import_cache",
+            "import-cache",
             "-i",
             str(export_dir),
-            "-c",
+            "-o",
             str(dest_cache),
         ],
     )
@@ -679,7 +677,7 @@ def test_cli_import_cache_success(cli_runner: CliRunner, tmp_path) -> None:
     assert "IMPORTED 1 entries" in result.output
 
 
-# Test import_cache KeyError handling.
+# Test import-cache KeyError handling.
 def test_cli_import_cache_keyerror(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -703,10 +701,10 @@ def test_cli_import_cache_keyerror(
     result = cli_runner.invoke(
         cli,
         [
-            "import_cache",
+            "import-cache",
             "-i",
             str(export_dir),
-            "-c",
+            "-o",
             str(dest_cache),
         ],
     )
@@ -715,7 +713,7 @@ def test_cli_import_cache_keyerror(
     assert "Import failed" in result.output
 
 
-# Test import_cache general Exception handling.
+# Test import-cache general Exception handling.
 def test_cli_import_cache_general_exception(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -739,10 +737,10 @@ def test_cli_import_cache_general_exception(
     result = cli_runner.invoke(
         cli,
         [
-            "import_cache",
+            "import-cache",
             "-i",
             str(export_dir),
-            "-c",
+            "-o",
             str(dest_cache),
         ],
     )
@@ -751,7 +749,7 @@ def test_cli_import_cache_general_exception(
     assert "Import failed" in result.output
 
 
-# Test import_cache KeyboardInterrupt handling.
+# Test import-cache KeyboardInterrupt handling.
 def test_cli_import_cache_keyboard_interrupt(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -777,10 +775,10 @@ def test_cli_import_cache_keyboard_interrupt(
     result = cli_runner.invoke(
         cli,
         [
-            "import_cache",
+            "import-cache",
             "-i",
             str(export_dir),
-            "-c",
+            "-o",
             str(dest_cache),
         ],
     )
@@ -789,7 +787,7 @@ def test_cli_import_cache_keyboard_interrupt(
     assert "Import interrupted by user" in result.output
 
 
-# Test import_cache ImportError handling.
+# Test import-cache ImportError handling.
 def test_cli_import_cache_import_error(
     cli_runner: CliRunner, tmp_path, monkeypatch
 ) -> None:
@@ -807,13 +805,56 @@ def test_cli_import_cache_import_error(
     result = cli_runner.invoke(
         cli,
         [
-            "import_cache",
+            "import-cache",
             "-i",
             str(export_dir),
-            "-c",
+            "-o",
             str(dest_cache),
         ],
     )
 
     assert result.exit_code == 1
     assert "Missing required dependencies" in result.output
+
+
+# Test step_logger is called with matrix values in log_level=all.
+def test_cli_run_step_logger_with_matrix_values(
+    cli_runner: CliRunner, monkeypatch
+) -> None:
+    from causaliq_workflow.workflow import WorkflowExecutor
+
+    def mock_parse_workflow(self, filepath):
+        return {"jobs": []}
+
+    def mock_execute_workflow(
+        self, workflow, mode="dry-run", step_logger=None, cache=None
+    ):
+        if mode == "validate":
+            return []
+        # Call step_logger with matrix values to test matrix formatting
+        if step_logger is not None:
+            step_logger(
+                "learn_structure",
+                "Test Step",
+                "EXECUTED",
+                {"network": "asia", "algorithm": "pc"},
+            )
+        return [{"steps": {"Test Step": {"status": "success"}}}]
+
+    monkeypatch.setattr(
+        WorkflowExecutor, "parse_workflow", mock_parse_workflow
+    )
+    monkeypatch.setattr(
+        WorkflowExecutor, "execute_workflow", mock_execute_workflow
+    )
+
+    workflow_file = "tests/data/functional/test_cli_workflow.yml"
+    result = cli_runner.invoke(
+        cli, ["run", workflow_file, "--log-level=all", "--mode=run"]
+    )
+    assert result.exit_code == 0
+    # Check matrix values are formatted in output
+    assert "[learn_structure]" in result.output
+    assert "EXECUTED" in result.output
+    assert "Test Step" in result.output
+    assert "[network=asia, algorithm=pc]" in result.output
