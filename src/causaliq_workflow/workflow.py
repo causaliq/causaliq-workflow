@@ -162,11 +162,16 @@ class WorkflowExecutor:
     def _validate_template_variables(self, workflow: Dict[str, Any]) -> None:
         """Validate that all template variables in workflow exist in context.
 
+        For UPDATE pattern steps, template variables not in the workflow
+        context are allowed as they will be resolved from entry metadata
+        at runtime.
+
         Args:
             workflow: Parsed workflow dictionary
 
         Raises:
             WorkflowExecutionError: If unknown template variables found
+                (excluding UPDATE step variables which are deferred)
         """
         # Build available context
         available_variables = {"id", "description"}
@@ -183,12 +188,34 @@ class WorkflowExecutor:
         if "matrix" in workflow:
             available_variables.update(workflow["matrix"].keys())
 
-        # Collect all template variables used in workflow
-        used_variables: Set[str] = set()
-        self._collect_template_variables(workflow, used_variables)
+        # Collect template variables per step, distinguishing UPDATE steps
+        update_step_variables: Set[str] = set()
+        other_step_variables: Set[str] = set()
 
-        # Check for unknown variables
-        unknown_variables = used_variables - available_variables
+        for step in workflow.get("steps", []):
+            step_vars: Set[str] = set()
+            self._collect_template_variables(step, step_vars)
+
+            # Check if this is an UPDATE pattern step
+            is_update = self._is_update_pattern_step(step, workflow)
+
+            if is_update:
+                update_step_variables.update(step_vars)
+            else:
+                other_step_variables.update(step_vars)
+
+        # Collect workflow-level variables (outside steps)
+        workflow_level_vars: Set[str] = set()
+        for key in ["id", "description"]:
+            if key in workflow and isinstance(workflow[key], str):
+                workflow_level_vars.update(
+                    self._extract_template_variables(workflow[key])
+                )
+
+        # Check non-UPDATE variables for unknown references
+        non_update_vars = other_step_variables | workflow_level_vars
+        unknown_variables = non_update_vars - available_variables
+
         if unknown_variables:
             unknown_list = sorted(unknown_variables)
             available_list = sorted(available_variables)
@@ -196,6 +223,44 @@ class WorkflowExecutor:
                 f"Unknown template variables: {unknown_list}. "
                 f"Available variables: {available_list}"
             )
+
+    def _is_update_pattern_step(
+        self,
+        step: Dict[str, Any],
+        workflow: Dict[str, Any],
+    ) -> bool:
+        """Check if a step uses UPDATE pattern (for validation purposes).
+
+        Args:
+            step: Step configuration dictionary
+            workflow: Full workflow dictionary
+
+        Returns:
+            True if step declares UPDATE pattern
+        """
+        from causaliq_core import ActionPattern
+
+        # UPDATE pattern prohibits matrix
+        if workflow.get("matrix"):
+            return False
+
+        provider_name = step.get("uses")
+        if not provider_name:
+            return False
+
+        step_inputs = step.get("with", {})
+        action_name = step_inputs.get("action")
+        if not action_name:
+            return False
+
+        # Check if action declares UPDATE pattern
+        try:
+            pattern = self.action_registry.get_action_pattern(
+                provider_name, action_name
+            )
+            return pattern == ActionPattern.UPDATE
+        except Exception:
+            return False
 
     def _collect_template_variables(
         self, obj: Any, used_variables: Set[str]
@@ -448,6 +513,14 @@ class WorkflowExecutor:
                     for k, v in resolved_inputs.items()
                     if k not in ("input", "filter")
                 }
+
+                # Resolve any remaining template variables from entry metadata
+                # This enables UPDATE steps to use {{network}}, {{sample_size}}
+                # etc. which are resolved from each entry's metadata
+                action_inputs = self._resolve_template_variables(
+                    action_inputs, flat_meta
+                )
+
                 action_inputs["_update_entry"] = {
                     "matrix_values": entry_matrix,
                     "metadata": full_entry.metadata,
