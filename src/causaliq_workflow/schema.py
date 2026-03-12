@@ -61,6 +61,47 @@ def load_schema(
         raise WorkflowValidationError(f"Invalid JSON in schema: {e}")
 
 
+def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
+    """Pre-validate workflow for common issues with clear error messages.
+
+    This runs before JSON Schema validation to provide clearer errors
+    for common mistakes.
+
+    Args:
+        workflow: Workflow configuration dictionary
+
+    Raises:
+        WorkflowValidationError: If workflow has common structural issues
+    """
+    # Check for unknown top-level keys
+    known_keys = {"matrix", "steps"}
+    for key in workflow:
+        if key not in known_keys:
+            raise WorkflowValidationError(f"Unknown key '{key}'")
+
+    steps = workflow.get("steps", [])
+    if not isinstance(steps, list):
+        return  # Let jsonschema handle this
+
+    for step in steps:
+        if not isinstance(step, dict):
+            continue  # Let jsonschema handle this
+
+        has_name = "name" in step
+        has_uses = "uses" in step
+        has_run = "run" in step
+
+        if not has_name:
+            raise WorkflowValidationError("Step missing 'name' parameter")
+
+        step_name = step["name"]
+
+        if not has_uses and not has_run:
+            raise WorkflowValidationError(
+                f"Step '{step_name}': Missing 'uses' or 'run' parameter"
+            )
+
+
 def validate_workflow(
     workflow: Dict[str, Any], schema_path: Optional[Union[str, Path]] = None
 ) -> bool:
@@ -82,6 +123,9 @@ def validate_workflow(
         raise WorkflowValidationError(
             "jsonschema library required: pip install jsonschema"
         )
+
+    # Pre-validate for common issues with clear error messages
+    _pre_validate_workflow(workflow)
 
     schema = load_schema(schema_path)
 

@@ -182,13 +182,16 @@ def test_workflow_stores_action_result_to_cache(tmp_path) -> None:
     cache_path = str(tmp_path / "cache.db")
 
     workflow = {
-        "id": "test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "uses": "object_returning_action",
                 "name": "Test Step",
-                "with": {"algo": "fci", "output": cache_path},
+                "with": {
+                    "action": "test",
+                    "algo": "fci",
+                    "output": cache_path,
+                },
             }
         ],
     }

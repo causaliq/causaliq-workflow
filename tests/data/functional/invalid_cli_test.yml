@@ -1,3 +1,1 @@
-description: "Invalid workflow for testing validation"
-id: "test-invalid"
 steps: []  # Empty steps should fail validation

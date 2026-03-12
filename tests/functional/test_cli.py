@@ -298,9 +298,7 @@ def test_cli_run_validation_failure(
     assert result.exit_code == 1
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] VALIDATING" in result.output
-    assert (
-        "[causaliq-workflow] ERROR Workflow validation failed" in result.output
-    )
+    assert "[causaliq-workflow] ERROR" in result.output
 
 
 # Test run workflow parsing error that is not YAML-related.
@@ -591,13 +589,11 @@ def test_cli_run_step_logger_coverage(cli_runner: CliRunner, tmp_path) -> None:
     data_path_posix = str(data_file).replace("\\", "/")
     output_dir_posix = str(output_dir).replace("\\", "/")
 
-    workflow_content = f"""description: "Test workflow for step logger"
-id: "test-step-logger"
-
-steps:
+    workflow_content = f"""steps:
   - name: "Test Step"
     uses: "test_action"
     with:
+      action: "run"
       data_path: "{data_path_posix}"
       output_dir: "{output_dir_posix}"
 """
@@ -610,9 +606,8 @@ steps:
     )
     assert result.exit_code == 0
     # New log format: [action_method] STATUS step_name
-    # test_action has no 'action' param so defaults to 'default'
     # dry-run mode (default) returns WOULD EXECUTE status
-    assert "[default] WOULD EXECUTE" in result.output
+    assert "[run] WOULD EXECUTE" in result.output
     assert "Test Step" in result.output
 
 

@@ -1,5 +1,3 @@
-id: "test-001"
-description: "Test workflow with matrix variables and flexible action parameters"
 
 matrix:
   dataset: ["asia", "cancer"]
@@ -9,6 +7,7 @@ steps:
   - name: "Structure Learning"
     uses: "test_action"
     with:
+      action: "run"
       dataset: "/experiments/data/{{dataset}}.csv"
       result: "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}.xml"
       max_iter: 1000

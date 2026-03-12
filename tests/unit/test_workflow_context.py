@@ -170,13 +170,13 @@ def test_workflow_executor_passes_matrix_to_context(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "matrix-test-workflow",
         "matrix": {"dataset": ["asia", "cancer"], "algorithm": ["pc", "ges"]},
         "steps": [
             {
                 "name": "Matrix Test Step",
                 "uses": "matrix_test_action",
                 "with": {
+                    "action": "test",
                     "data_path": "/test/{{dataset}}.csv",
                     "algorithm": "{{algorithm}}",
                 },
@@ -201,13 +201,16 @@ def test_workflow_executor_passes_matrix_values_to_context(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "matrix-values-test",
         "matrix": {"dataset": ["asia", "cancer"], "algorithm": ["pc", "ges"]},
         "steps": [
             {
                 "name": "Matrix Values Test",
                 "uses": "matrix_test_action",
-                "with": {"data": "{{dataset}}", "algo": "{{algorithm}}"},
+                "with": {
+                    "action": "test",
+                    "data": "{{dataset}}",
+                    "algo": "{{algorithm}}",
+                },
             }
         ],
     }
@@ -240,12 +243,11 @@ def test_workflow_executor_matrix_passed_to_single_job(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "single-job-workflow",
         "steps": [
             {
                 "name": "Single Job Step",
                 "uses": "matrix_test_action",
-                "with": {"data_path": "/test/data.csv"},
+                "with": {"action": "test", "data_path": "/test/data.csv"},
             }
         ],
     }
@@ -261,7 +263,6 @@ def test_matrix_available_for_action_optimization(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "optimization-test-workflow",
         "matrix": {
             "dataset": ["asia", "cancer", "earthquake", "sachs", "child"],
             "algorithm": ["pc", "ges", "lingam", "notears"],
@@ -270,7 +271,10 @@ def test_matrix_available_for_action_optimization(
             {
                 "name": "Optimization Test",
                 "uses": "matrix_test_action",
-                "with": {"data_path": "/data/{{dataset}}.csv"},
+                "with": {
+                    "action": "test",
+                    "data_path": "/data/{{dataset}}.csv",
+                },
             }
         ],
     }
@@ -290,7 +294,6 @@ def test_matrix_available_for_action_optimization(
 # Test that matrix preserves various data types correctly.
 def test_matrix_preserves_data_types(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "data-types-test",
         "matrix": {
             "dataset": ["asia", "cancer"],
             "alpha": [0.01, 0.05, 0.1],
@@ -301,7 +304,11 @@ def test_matrix_preserves_data_types(executor: WorkflowExecutor) -> None:
             {
                 "name": "Data Types Test",
                 "uses": "matrix_test_action",
-                "with": {"alpha": "{{alpha}}", "max_iter": "{{max_iter}}"},
+                "with": {
+                    "action": "test",
+                    "alpha": "{{alpha}}",
+                    "max_iter": "{{max_iter}}",
+                },
             }
         ],
     }
@@ -320,13 +327,15 @@ def test_mode_parameter_dry_run_execution(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "mode-test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "name": "Mode Test Step",
                 "uses": "matrix_test_action",
-                "with": {"data_path": "/test/{{dataset}}.csv"},
+                "with": {
+                    "action": "test",
+                    "data_path": "/test/{{dataset}}.csv",
+                },
             }
         ],
     }
@@ -340,13 +349,15 @@ def test_mode_parameter_dry_run_execution(
 # Test mode parameter correctly passed to actions in run mode.
 def test_mode_parameter_run_execution(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "mode-test-workflow",
         "matrix": {"dataset": ["cancer"]},
         "steps": [
             {
                 "name": "Mode Test Step",
                 "uses": "matrix_test_action",
-                "with": {"data_path": "/test/{{dataset}}.csv"},
+                "with": {
+                    "action": "test",
+                    "data_path": "/test/{{dataset}}.csv",
+                },
             }
         ],
     }
@@ -362,7 +373,6 @@ def test_mode_parameter_consistency_across_matrix_jobs(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "mode-consistency-test",
         "matrix": {
             "dataset": ["asia", "cancer"],
             "algorithm": ["pc", "ges"],
@@ -371,7 +381,10 @@ def test_mode_parameter_consistency_across_matrix_jobs(
             {
                 "name": "Consistency Test",
                 "uses": "matrix_test_action",
-                "with": {"data_path": "/test/{{dataset}}.csv"},
+                "with": {
+                    "action": "test",
+                    "data_path": "/test/{{dataset}}.csv",
+                },
             }
         ],
     }
@@ -386,13 +399,15 @@ def test_mode_parameter_consistency_across_matrix_jobs(
 # Test mode parameter correctly passed with compare mode.
 def test_mode_parameter_compare_execution(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "compare-mode-test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "name": "Compare Test",
                 "uses": "matrix_test_action",
-                "with": {"data_path": "/test/{{dataset}}.csv"},
+                "with": {
+                    "action": "test",
+                    "data_path": "/test/{{dataset}}.csv",
+                },
             }
         ],
     }
@@ -447,14 +462,12 @@ def test_workflow_context_accepts_cache() -> None:
 # Test execute_workflow without cache (default behaviour).
 def test_execute_workflow_without_cache(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "no-cache-test",
-        "description": "Test workflow without output",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "name": "No Cache Step",
                 "uses": "matrix_test_action",
-                "with": {"data": "{{dataset}}"},
+                "with": {"action": "test", "data": "{{dataset}}"},
             }
         ],
     }
@@ -472,14 +485,13 @@ def test_step_with_output_creates_cache(executor: WorkflowExecutor) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         cache_path = Path(tmpdir) / "test.db"
         workflow = {
-            "id": "cache-test",
-            "description": "Test step with output",
             "matrix": {"dataset": ["asia"]},
             "steps": [
                 {
                     "name": "Cache Step",
                     "uses": "matrix_test_action",
                     "with": {
+                        "action": "test",
                         "data": "{{dataset}}",
                         "output": str(cache_path),
                     },
@@ -503,8 +515,6 @@ def test_cache_available_for_all_matrix_jobs(
     with tempfile.TemporaryDirectory() as tmpdir:
         cache_path = Path(tmpdir) / "matrix_test.db"
         workflow = {
-            "id": "multi-job-cache-test",
-            "description": "Test matrix with step output",
             "matrix": {
                 "dataset": ["asia", "cancer"],
                 "algorithm": ["pc", "ges"],
@@ -514,6 +524,7 @@ def test_cache_available_for_all_matrix_jobs(
                     "name": "Multi Job Step",
                     "uses": "matrix_test_action",
                     "with": {
+                        "action": "test",
                         "data": "{{dataset}}",
                         "algo": "{{algorithm}}",
                         "output": str(cache_path),

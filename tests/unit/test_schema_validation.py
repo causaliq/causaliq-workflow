@@ -29,9 +29,10 @@ def test_error_with_schema_path():
 def test_valid_workflow():
     """Test validating a properly structured workflow."""
     valid_workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow for validation",
-        "steps": [{"run": "echo hello"}, {"uses": "action@v1"}],
+        "steps": [
+            {"name": "Test", "run": "echo hello"},
+            {"name": "Test", "uses": "action@v1"},
+        ],
     }
     result = validate_workflow(valid_workflow)
     assert result is True
@@ -41,45 +42,16 @@ def test_valid_workflow():
 def test_minimal_valid_workflow():
     """Test validation passes with only required fields."""
     minimal_workflow = {
-        "id": "minimal-test",
-        "description": "Minimal test workflow",
-        "steps": [{"run": "echo hello"}],
+        "steps": [{"name": "Test", "run": "echo hello"}],
     }
     result = validate_workflow(minimal_workflow)
     assert result is True
 
 
-# Test workflow validation missing id field
-def test_missing_id_field():
-    """Test validation fails when required id field missing."""
-    invalid_workflow = {
-        "description": "Test workflow without id",
-        "steps": [{"run": "echo hello"}],
-    }
-    with pytest.raises(WorkflowValidationError) as exc_info:
-        validate_workflow(invalid_workflow)
-    assert "validation failed" in str(exc_info.value).lower()
-
-
-# Test workflow validation missing description field
-def test_missing_description_field():
-    """Test validation fails when required description field missing."""
-    invalid_workflow = {
-        "id": "test-workflow",
-        "steps": [{"run": "echo hello"}],
-    }
-    with pytest.raises(WorkflowValidationError) as exc_info:
-        validate_workflow(invalid_workflow)
-    assert "validation failed" in str(exc_info.value).lower()
-
-
 # Test workflow validation missing steps field
 def test_missing_steps_field():
     """Test validation fails when required steps field missing."""
-    invalid_workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow without steps",
-    }
+    invalid_workflow = {}
     with pytest.raises(WorkflowValidationError) as exc_info:
         validate_workflow(invalid_workflow)
     assert "validation failed" in str(exc_info.value).lower()
@@ -89,8 +61,6 @@ def test_missing_steps_field():
 def test_empty_steps_array():
     """Test validation fails when steps array is empty."""
     invalid_workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow with empty steps",
         "steps": [],
     }
     with pytest.raises(WorkflowValidationError) as exc_info:
@@ -102,27 +72,70 @@ def test_empty_steps_array():
 def test_step_missing_run_and_uses():
     """Test validation fails when step has neither run nor uses."""
     invalid_workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow with invalid step",
         "steps": [{"name": "Invalid step"}],
     }
     with pytest.raises(WorkflowValidationError) as exc_info:
         validate_workflow(invalid_workflow)
+    assert "Missing 'uses' or 'run' parameter" in str(exc_info.value)
+
+
+# Test workflow validation with missing step name.
+def test_step_missing_name():
+    """Test validation fails when step has no name."""
+    invalid_workflow = {
+        "steps": [{"uses": "test_action"}],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    assert "Step missing 'name' parameter" in str(exc_info.value)
+
+
+# Test pre-validation skips when steps is not a list.
+def test_pre_validate_skips_non_list_steps():
+    """Test pre-validation defers to jsonschema when steps is not a list."""
+    invalid_workflow = {
+        "steps": "not-a-list",
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    # jsonschema handles this - error mentions type mismatch
     assert "validation failed" in str(exc_info.value).lower()
+
+
+# Test pre-validation skips non-dict step items.
+def test_pre_validate_skips_non_dict_step():
+    """Test pre-validation defers to jsonschema when step is not a dict."""
+    invalid_workflow = {
+        "steps": ["not-a-dict"],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    # jsonschema handles this - error mentions type mismatch
+    assert "validation failed" in str(exc_info.value).lower()
+
+
+# Test pre-validation catches unknown top-level keys.
+def test_pre_validate_catches_unknown_keys():
+    """Test pre-validation catches unknown top-level keys."""
+    invalid_workflow = {
+        "matrixx": {"dataset": ["asia"]},
+        "steps": [{"name": "Test", "uses": "test_action"}],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    assert "Unknown key 'matrixx'" in str(exc_info.value)
 
 
 # Test workflow validation with matrix variables
 def test_valid_workflow_with_matrix():
     """Test validation passes with matrix variables."""
     valid_workflow = {
-        "id": "matrix-workflow",
-        "description": "Workflow with matrix variables",
         "matrix": {
             "dataset": ["asia", "cancer"],
             "algorithm": ["pc", "ges"],
             "alpha": [0.01, 0.05],
         },
-        "steps": [{"uses": "test_action"}],
+        "steps": [{"name": "Test", "uses": "test_action"}],
     }
     result = validate_workflow(valid_workflow)
     assert result is True
@@ -132,10 +145,9 @@ def test_valid_workflow_with_matrix():
 def test_valid_workflow_with_parameters():
     """Test validation passes with action parameters."""
     valid_workflow = {
-        "id": "parameterized-workflow",
-        "description": "Workflow with action parameters",
         "steps": [
             {
+                "name": "Test",
                 "uses": "test_action",
                 "with": {
                     "dataset": "asia",
@@ -153,8 +165,6 @@ def test_valid_workflow_with_parameters():
 def test_valid_workflow_with_all_features():
     """Test validation passes with all new schema features."""
     valid_workflow = {
-        "id": "complete-test-001",
-        "description": "Complete workflow with all features",
         "matrix": {
             "dataset": ["asia", "cancer"],
             "algorithm": ["pc", "ges"],
@@ -183,12 +193,10 @@ def test_valid_workflow_with_all_features():
 def test_invalid_matrix_format():
     """Test validation fails with invalid matrix structure."""
     invalid_workflow = {
-        "id": "invalid-matrix",
-        "description": "Workflow with invalid matrix structure",
         "matrix": {
             "dataset": [],  # Empty array not allowed
         },
-        "steps": [{"run": "echo hello"}],
+        "steps": [{"name": "Test", "run": "echo hello"}],
     }
     with pytest.raises(WorkflowValidationError) as exc_info:
         validate_workflow(invalid_workflow)
@@ -199,12 +207,10 @@ def test_invalid_matrix_format():
 def test_invalid_matrix_variable_name():
     """Test validation fails with invalid matrix variable name."""
     invalid_workflow = {
-        "id": "invalid-matrix-var",
-        "description": "Workflow with invalid matrix variable name",
         "matrix": {
             "123invalid": ["value"],  # Invalid variable name
         },
-        "steps": [{"run": "echo hello"}],
+        "steps": [{"name": "Test", "run": "echo hello"}],
     }
     with pytest.raises(WorkflowValidationError) as exc_info:
         validate_workflow(invalid_workflow)
@@ -215,10 +221,9 @@ def test_invalid_matrix_variable_name():
 def test_invalid_with_parameter_name():
     """Test validation fails with invalid with parameter name."""
     invalid_workflow = {
-        "id": "invalid-with-param",
-        "description": "Workflow with invalid with parameter name",
         "steps": [
             {
+                "name": "Test",
                 "uses": "action",
                 "with": {
                     "123invalid": "value",  # Invalid parameter name
@@ -233,9 +238,7 @@ def test_invalid_with_parameter_name():
     # Test workflow validation when jsonschema import fails
     """Test validation fails gracefully when jsonschema not available."""
     valid_workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow for import error handling",
-        "steps": [{"run": "echo hello"}],
+        "steps": [{"name": "Test", "run": "echo hello"}],
     }
 
     import builtins

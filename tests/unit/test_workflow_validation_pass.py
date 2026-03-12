@@ -183,7 +183,7 @@ def test_execute_workflow_raises_on_validation_error(monkeypatch) -> None:
 
     workflow = mock_parse("/fake.yml")
 
-    with pytest.raises(WorkflowExecutionError, match="Entry validation"):
+    with pytest.raises(WorkflowExecutionError, match="Missing required_param"):
         executor.execute_workflow(workflow)
 
 
@@ -203,9 +203,9 @@ def test_validate_all_entries_skips_missing_uses() -> None:
     assert errors == []
 
 
-# Test validation skips steps without action name.
-def test_validate_all_entries_skips_missing_action() -> None:
-    """Steps without action name in 'with' are skipped."""
+# Test validation catches steps without action name.
+def test_validate_all_entries_catches_missing_action() -> None:
+    """Steps without action name in 'with' now raise validation error."""
     executor = WorkflowExecutor()
     executor.action_registry._actions["mock-provider"] = MockActionProvider
 
@@ -221,7 +221,8 @@ def test_validate_all_entries_skips_missing_action() -> None:
     }
 
     errors = executor._validate_all_entries(workflow)
-    assert errors == []
+    assert len(errors) == 1
+    assert "Missing 'action' parameter" in errors[0]
 
 
 # Test validation with empty matrix (single job).
@@ -301,3 +302,24 @@ def test_validate_action_parameters_wraps_exception() -> None:
         registry.validate_action_parameters(
             "broken-provider", {"action": "broken_action"}
         )
+
+
+# Test _deduplicate_errors keeps unmatched errors as-is.
+def test_deduplicate_errors_keeps_unmatched_errors() -> None:
+    """Tests lines 1189-1190 in workflow.py - unmatched errors kept."""
+    executor = WorkflowExecutor()
+
+    # Errors that don't match the "Step 'name': message" pattern
+    errors = [
+        "Some random error without step prefix",
+        "Another unmatched error",
+        "Some random error without step prefix",  # Duplicate
+    ]
+
+    result = executor._deduplicate_errors(errors)
+
+    # Should keep unmatched errors (deduplicated)
+    assert "Some random error without step prefix" in result
+    assert "Another unmatched error" in result
+    # Duplicates should be removed
+    assert result.count("Some random error without step prefix") == 1

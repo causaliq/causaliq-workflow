@@ -111,7 +111,7 @@ def test_run_with_valid_inputs(monkeypatch):
         "message": "Test message",
     }
 
-    status, metadata, objects = action.run("", parameters, mode="run")
+    status, metadata, objects = action.run("run", parameters, mode="run")
 
     # Verify Path calls
     assert "/data/test.csv" in path_calls
@@ -152,7 +152,7 @@ def test_run_with_missing_data_file(monkeypatch):
     with pytest.raises(
         ActionExecutionError, match="Input data file not found"
     ):
-        action.run("", parameters, mode="run")
+        action.run("run", parameters, mode="run")
 
 
 # Test action execution handles filesystem errors gracefully
@@ -189,4 +189,4 @@ def test_run_with_filesystem_error(monkeypatch):
     with pytest.raises(
         ActionExecutionError, match="Test action execution failed"
     ):
-        action.run("", parameters, mode="run")
+        action.run("run", parameters, mode="run")

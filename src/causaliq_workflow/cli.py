@@ -81,7 +81,10 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
         causaliq-workflow run experiment.yml --mode=dry-run --log-level=all
     """
     try:
-        from causaliq_workflow.workflow import WorkflowExecutor
+        from causaliq_workflow.workflow import (
+            WorkflowExecutionError,
+            WorkflowExecutor,
+        )
 
         executor = WorkflowExecutor()
 
@@ -92,8 +95,12 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
         except FileNotFoundError:
             _log_cli_error(f"Workflow file not found: {workflow_file}")
             sys.exit(1)
+        except WorkflowExecutionError as e:
+            # Our own errors - print directly
+            _log_cli_error(str(e))
+            sys.exit(1)
         except Exception as e:
-            if "yaml" in str(e).lower() or "parsing" in str(e).lower():
+            if "yaml" in str(e).lower():
                 _log_cli_error(f"Invalid YAML in workflow file: {e}")
             else:
                 _log_cli_error(f"Failed to parse workflow: {e}")
@@ -106,7 +113,7 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
             executor.execute_workflow(workflow, mode="validate")
             _log_cli_message(log_level, "VALIDATED workflow successfully")
         except Exception as e:
-            _log_cli_error(f"Workflow validation failed: {e}")
+            _log_cli_error(str(e))
             sys.exit(1)
 
         def log_step_execution(
@@ -199,8 +206,11 @@ def _report_results(
     entries_would_process = 0
     entries_would_skip = 0
 
+    # Collect error messages
+    error_messages: List[str] = []
+
     for result in results:
-        for step_result in result.get("steps", {}).values():
+        for step_name, step_result in result.get("steps", {}).items():
             status = step_result.get("status", "unknown")
             if status == "success":
                 if mode == "force":
@@ -218,6 +228,10 @@ def _report_results(
                 would_skip += 1
             elif status in ("error", "failed"):
                 failed += 1
+                # Collect error messages from step
+                step_errors = step_result.get("errors", [])
+                for err in step_errors:
+                    error_messages.append(f"  {step_name}: {err}")
 
     total = executed + skipped + forced + would_execute + would_skip + failed
 
@@ -254,6 +268,12 @@ def _report_results(
         f"{timestamp} [causaliq-workflow] COMPLETED {total} steps: "
         f"{summary}{entry_summary}"
     )
+
+    # Display error messages if any
+    if error_messages:
+        click.echo(f"{timestamp} [causaliq-workflow] ERRORS:")
+        for err_msg in error_messages:
+            click.echo(err_msg)
 
 
 # ============================================================================

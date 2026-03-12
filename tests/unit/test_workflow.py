@@ -16,7 +16,10 @@ def test_workflow_execution_error():
 def test_parse_workflow_success(monkeypatch):
     """Test successful workflow parsing with valid YAML."""
     # Setup mocks
-    workflow_data = {"name": "Test", "steps": [{"run": "echo hello"}]}
+    workflow_data = {
+        "name": "Test",
+        "steps": [{"name": "Test", "run": "echo hello"}],
+    }
 
     def fake_load_workflow_file(path):
         assert path == "/path/to/workflow.yml"
@@ -207,8 +210,6 @@ def test_extract_template_variables():
 def test_parse_workflow_valid_templates(monkeypatch):
     """Test workflow parsing with valid template variables."""
     workflow_data = {
-        "id": "test-workflow",
-        "description": "Test workflow",
         "matrix": {"dataset": ["asia"], "algorithm": ["pc"]},
         "steps": [
             {
@@ -244,8 +245,6 @@ def test_parse_workflow_valid_templates(monkeypatch):
 def test_parse_workflow_invalid_templates(monkeypatch):
     """Test workflow parsing fails with invalid template variables."""
     workflow_data = {
-        "id": "test-workflow",
-        "description": "Test workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -281,8 +280,6 @@ def test_parse_workflow_invalid_templates(monkeypatch):
 def test_parse_workflow_no_matrix_valid_templates(monkeypatch):
     """Test workflow parsing with only workflow-level variables."""
     workflow_data = {
-        "id": "simple-workflow",
-        "description": "Simple test",
         "steps": [
             {
                 "uses": "test_action",
@@ -375,7 +372,6 @@ def test_validate_create_pattern_requires_output(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -417,7 +413,6 @@ def test_validate_create_pattern_requires_matrix(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "steps": [
             {
                 "name": "create_step",
@@ -458,7 +453,6 @@ def test_validate_create_pattern_prohibits_cache_input(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -504,7 +498,6 @@ def test_validate_update_pattern_requires_input(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "steps": [
             {
                 "name": "update_step",
@@ -545,7 +538,6 @@ def test_validate_update_pattern_prohibits_output(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "steps": [
             {
                 "name": "update_step",
@@ -590,7 +582,6 @@ def test_validate_update_pattern_prohibits_matrix(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -632,7 +623,6 @@ def test_validate_aggregate_pattern_requires_input(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -674,7 +664,6 @@ def test_validate_aggregate_pattern_requires_output(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -716,7 +705,6 @@ def test_validate_aggregate_pattern_requires_matrix(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "steps": [
             {
                 "name": "agg_step",
@@ -763,7 +751,6 @@ def test_validate_create_pattern_valid(monkeypatch):
     from causaliq_core import ActionPattern
 
     workflow_data = {
-        "id": "test",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -806,7 +793,6 @@ def test_validate_create_pattern_valid(monkeypatch):
 def test_validate_no_pattern_skips_validation(monkeypatch):
     """Test actions without declared patterns skip validation."""
     workflow_data = {
-        "id": "test",
         "steps": [
             {
                 "name": "unknown_step",
@@ -989,3 +975,23 @@ def test_validate_workflow_actions_raises_on_invalid_filter(executor):
     with pytest.raises(WorkflowExecutionError) as exc_info:
         executor._validate_workflow_actions(workflow, "run")
     assert "Filter validation failed" in str(exc_info.value)
+
+
+# Test parse_workflow wraps generic exceptions.
+def test_parse_workflow_wraps_generic_exception(monkeypatch):
+    """Tests lines 100-101 in workflow.py - generic exception wrapping."""
+
+    def fake_load_workflow_file(path):
+        raise TypeError("Unexpected type error during parsing")
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file",
+        fake_load_workflow_file,
+    )
+
+    executor = WorkflowExecutor()
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.parse_workflow("/path/to/workflow.yml")
+
+    assert "Unexpected error parsing workflow" in str(exc_info.value)
+    assert "Unexpected type error during parsing" in str(exc_info.value)

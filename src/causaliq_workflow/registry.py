@@ -518,11 +518,9 @@ class ActionRegistry:
             if "uses" in step:
                 action_name = step["uses"]
                 if not self.has_action(action_name):
-                    available = self.get_available_action_names()
                     errors.append(
-                        f"Step '{step.get('name', 'unnamed')}' uses "
-                        f"unknown action '{action_name}'. Available: "
-                        f"{available}"
+                        f"Step '{step.get('name', 'unnamed')}': "
+                        f"Unknown provider '{action_name}'"
                     )
 
         # Include discovery errors

@@ -36,7 +36,7 @@ def test_run_creates_valid_output_file():
             "message": "Test execution",
         }
 
-        result = action.run("", parameters, mode="run")
+        result = action.run("run", parameters, mode="run")
 
         # Unpack tuple result
         status, metadata, objects = result
@@ -81,7 +81,7 @@ def test_run_creates_output_directory_structure():
             "message": "Nested test",
         }
 
-        result = action.run("", parameters, mode="run")
+        result = action.run("run", parameters, mode="run")
 
         # Unpack tuple result
         status, metadata, objects = result
@@ -119,7 +119,7 @@ def test_run_with_custom_message():
             "message": custom_message,
         }
 
-        result = action.run("", parameters, mode="run")
+        result = action.run("run", parameters, mode="run")
 
         # Unpack tuple result
         status, metadata, objects = result
@@ -159,7 +159,7 @@ def test_run_with_nonexistent_data_file():
         }
 
         with pytest.raises(ActionExecutionError) as exc_info:
-            action.run("", parameters, mode="run")
+            action.run("run", parameters, mode="run")
 
         # Verify error message is informative
         assert "not found" in str(exc_info.value).lower()
@@ -187,7 +187,7 @@ def test_dry_run_mode():
         "message": "Dry run test",
     }
 
-    result = action.run("", parameters, mode="dry-run")
+    result = action.run("run", parameters, mode="dry-run")
 
     # Unpack tuple result
     status, metadata, objects = result
@@ -208,10 +208,10 @@ def test_missing_required_inputs():
 
     # Test missing data_path
     with pytest.raises(ActionExecutionError) as exc_info:
-        action.run("", {"output_dir": "/tmp"}, mode="dry-run")
+        action.run("run", {"output_dir": "/tmp"}, mode="dry-run")
     assert "Missing required parameter: data_path" in str(exc_info.value)
 
     # Test missing output_dir
     with pytest.raises(ActionExecutionError) as exc_info:
-        action.run("", {"data_path": "/tmp/test.csv"}, mode="dry-run")
+        action.run("run", {"data_path": "/tmp/test.csv"}, mode="dry-run")
     assert "Missing required parameter: output_dir" in str(exc_info.value)

@@ -351,3 +351,28 @@ def test_get_action_class_entry_point_success():
     assert result == ActionProvider
     # Should also be cached now
     assert "test-ep-get" in registry._actions
+
+
+# Test get_available_action_names includes both loaded and entry point actions.
+def test_get_available_action_names():
+    """Tests lines 320-322 in registry.py."""
+    from causaliq_workflow.registry import ActionRegistry
+
+    registry = ActionRegistry()
+
+    # Add a mock entry point that hasn't been loaded yet
+    class MockEntryPoint:
+        name = "unloaded-ep"
+
+        def load(self):
+            return ActionProvider
+
+    registry._entry_points["unloaded-ep"] = MockEntryPoint()
+
+    # Get available action names
+    names = registry.get_available_action_names()
+
+    # Should include both loaded actions and entry points
+    assert "unloaded-ep" in names
+    # Should be sorted
+    assert names == sorted(names)

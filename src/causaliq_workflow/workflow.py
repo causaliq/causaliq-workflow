@@ -92,6 +92,9 @@ class WorkflowExecutor:
 
             return workflow
 
+        except WorkflowExecutionError:
+            # Re-raise our own errors without wrapping
+            raise
         except (WorkflowValidationError, FileNotFoundError) as e:
             raise WorkflowExecutionError(f"Workflow parsing failed: {e}")
         except Exception as e:
@@ -204,17 +207,8 @@ class WorkflowExecutor:
             else:
                 other_step_variables.update(step_vars)
 
-        # Collect workflow-level variables (outside steps)
-        workflow_level_vars: Set[str] = set()
-        for key in ["id", "description"]:
-            if key in workflow and isinstance(workflow[key], str):
-                workflow_level_vars.update(
-                    self._extract_template_variables(workflow[key])
-                )
-
         # Check non-UPDATE variables for unknown references
-        non_update_vars = other_step_variables | workflow_level_vars
-        unknown_variables = non_update_vars - available_variables
+        unknown_variables = other_step_variables - available_variables
 
         if unknown_variables:
             unknown_list = sorted(unknown_variables)
@@ -987,17 +981,12 @@ class WorkflowExecutor:
             workflow
         )
         if action_errors:
-            raise WorkflowExecutionError(
-                f"Action validation failed: {'; '.join(action_errors)}"
-            )
+            raise WorkflowExecutionError("; ".join(action_errors))
 
         # Validate action patterns
         pattern_errors = self._validate_action_patterns(workflow)
         if pattern_errors:
-            raise WorkflowExecutionError(
-                "Action pattern validation failed: "
-                f"{'; '.join(pattern_errors)}"
-            )
+            raise WorkflowExecutionError("; ".join(pattern_errors))
 
         # Validate filter expressions for UPDATE steps
         filter_errors = self._validate_step_filters(workflow)
@@ -1157,6 +1146,42 @@ class WorkflowExecutor:
         )
         return any(str(p).lower().endswith(".db") for p in inputs)
 
+    def _deduplicate_errors(self, errors: List[str]) -> List[str]:
+        """Deduplicate validation errors by grouping similar messages.
+
+        Groups errors that have the same core message (after the step
+        prefix) and returns a unique list without repetition.
+
+        Args:
+            errors: List of validation error strings
+
+        Returns:
+            Deduplicated list of unique errors
+        """
+        # Pattern to extract step name and core message
+        # Format: "Step 'name': message"
+        pattern = re.compile(r"^Step '([^']+)':\s*(.+)$")
+
+        # Track unique (step_name, message) pairs
+        seen: Set[tuple[str, str]] = set()
+        result: List[str] = []
+
+        for error in errors:
+            match = pattern.match(error)
+            if match:
+                step_name = match.group(1)
+                message = match.group(2)
+                key = (step_name, message)
+                if key not in seen:
+                    seen.add(key)
+                    result.append(f"Step '{step_name}': {message}")
+            else:
+                # Keep unmatched errors as-is
+                if error not in result:
+                    result.append(error)
+
+        return result
+
     def _validate_all_entries(
         self,
         workflow: Dict[str, Any],
@@ -1194,6 +1219,7 @@ class WorkflowExecutor:
         jobs = self.expand_matrix(matrix)
 
         for step in workflow.get("steps", []):
+            step_name = step.get("name", "unnamed")
             provider_name = step.get("uses")
             if not provider_name:
                 continue
@@ -1201,6 +1227,9 @@ class WorkflowExecutor:
             step_inputs = step.get("with", {})
             action_name = step_inputs.get("action")
             if not action_name:
+                errors.append(
+                    f"Step '{step_name}': Missing 'action' parameter"
+                )
                 continue
 
             # Determine step pattern
@@ -1312,13 +1341,12 @@ class WorkflowExecutor:
                     except FilterExpressionError as e:
                         # Semantic filter error - undefined variable
                         errors.append(
-                            f"Step '{step_name}' entry {entry_matrix}: "
-                            f"Filter error - {e}"
+                            f"Step '{step_name}': Filter error - {e}"
                         )
                         continue
                     except Exception as e:
                         errors.append(
-                            f"Step '{step_name}' entry {entry_matrix}: "
+                            f"Step '{step_name}': "
                             f"Filter evaluation failed - {e}"
                         )
                         continue
@@ -1334,9 +1362,7 @@ class WorkflowExecutor:
                         provider_name, action_inputs
                     )
                 except ActionValidationError as e:
-                    errors.append(
-                        f"Step '{step_name}' entry {entry_matrix}: {e}"
-                    )
+                    errors.append(f"Step '{step_name}': {e}")
 
         return errors
 
@@ -1391,7 +1417,7 @@ class WorkflowExecutor:
                     provider_name, resolved_inputs
                 )
             except ActionValidationError as e:
-                errors.append(f"Step '{step_name}' {job}: {e}")
+                errors.append(f"Step '{step_name}': {e}")
 
         return errors
 
@@ -1459,7 +1485,7 @@ class WorkflowExecutor:
                     provider_name, resolved_inputs
                 )
             except ActionValidationError as e:
-                errors.append(f"Step '{step_name}' {job}: {e}")
+                errors.append(f"Step '{step_name}': {e}")
 
         return errors
 
@@ -1506,9 +1532,12 @@ class WorkflowExecutor:
                 workflow, cli_params
             )
             if validation_errors:
-                raise WorkflowExecutionError(
-                    f"Entry validation failed: {'; '.join(validation_errors)}"
-                )
+                deduped = self._deduplicate_errors(validation_errors)
+                raise WorkflowExecutionError("; ".join(deduped))
+
+            # Validate-only mode: skip execution pass
+            if mode == "validate":
+                return []
 
             # Pass 2: Execute workflow
             matrix = workflow.get("matrix", {})
@@ -1532,6 +1561,9 @@ class WorkflowExecutor:
 
             return results
 
+        except WorkflowExecutionError:
+            # Re-raise our own errors without wrapping
+            raise
         except Exception as e:
             raise WorkflowExecutionError(
                 f"Workflow execution failed: {e}"

@@ -122,6 +122,33 @@ def test_report_results_failed(capsys: "pytest.CaptureFixture") -> None:
     assert "1 failed" in captured.out
 
 
+# Test _report_results with failed steps shows error messages.
+def test_report_results_failed_with_errors(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [
+        {
+            "steps": {
+                "Evaluate Step": {
+                    "status": "failed",
+                    "errors": [
+                        "Entry {'network': 'asia'}: Reference graph not found"
+                    ],
+                }
+            }
+        }
+    ]
+    _report_results(results, {}, "run", "all")
+
+    captured = capsys.readouterr()
+    assert "1 failed" in captured.out
+    assert "ERRORS:" in captured.out
+    assert "Evaluate Step:" in captured.out
+    assert "Reference graph not found" in captured.out
+
+
 # Test log_step_execution callback with matrix values.
 def test_log_step_execution_with_matrix_values(
     capsys: "pytest.CaptureFixture",
@@ -241,3 +268,54 @@ def test_report_results_entries_to_skip_only(
     assert "3 entries to skip" in captured.out
     # Should not show "entries to process" when count is 0
     assert "entries to process" not in captured.out
+
+
+# Test CLI runs with non-YAML exception (covers else branch).
+def test_cli_run_non_yaml_exception(runner: CliRunner, monkeypatch) -> None:
+    """Test that non-YAML exceptions trigger 'Failed to parse' error."""
+    # Patch at the module level where it's imported
+    import causaliq_workflow.workflow as workflow_module
+
+    def mock_parse(self, filepath, mode="dry-run"):
+        raise TypeError("Unexpected type during parsing")
+
+    monkeypatch.setattr(
+        workflow_module.WorkflowExecutor,
+        "parse_workflow",
+        mock_parse,
+    )
+
+    # Use mix_stderr=False to help coverage tracking
+    result = runner.invoke(
+        cli,
+        ["run", "tests/data/functional/test_cli_workflow.yml"],
+        catch_exceptions=False,
+    )
+
+    assert result.exit_code == 1, f"Output: {result.output}"
+    assert "Failed to parse workflow" in result.output
+    assert "Unexpected type during parsing" in result.output
+
+
+# Test CLI runs with YAML exception (covers yaml branch).
+def test_cli_run_yaml_exception(runner: CliRunner, monkeypatch) -> None:
+    """Test that YAML exceptions trigger 'Invalid YAML' error."""
+    import causaliq_workflow.workflow as workflow_module
+
+    def mock_parse(self, filepath, mode="dry-run"):
+        raise Exception("YAML parsing error: invalid syntax")
+
+    monkeypatch.setattr(
+        workflow_module.WorkflowExecutor,
+        "parse_workflow",
+        mock_parse,
+    )
+
+    result = runner.invoke(
+        cli,
+        ["run", "tests/data/functional/test_cli_workflow.yml"],
+        catch_exceptions=False,
+    )
+
+    assert result.exit_code == 1, f"Output: {result.output}"
+    assert "Invalid YAML in workflow file" in result.output

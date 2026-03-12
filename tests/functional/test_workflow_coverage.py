@@ -54,8 +54,8 @@ def executor():
 def test_parse_workflow_integration(executor):
     workflow_path = "tests/data/functional/workflow/valid_workflow.yml"
     result = executor.parse_workflow(workflow_path, mode="dry-run")
-    assert result["id"] == "test-001"
     assert "asia" in result["matrix"]["dataset"]
+    assert len(result["steps"]) == 1
 
 
 # Test parsing workflow with validation failure
@@ -63,7 +63,5 @@ def test_parse_workflow_integration(executor):
 
 def test_parse_workflow_validation_failure(executor):
     workflow_path = "tests/data/functional/workflow/invalid_workflow.yml"
-    with pytest.raises(
-        WorkflowExecutionError, match="Unexpected error parsing workflow"
-    ):
+    with pytest.raises(WorkflowExecutionError, match="Unknown provider"):
         executor.parse_workflow(workflow_path, mode="run")

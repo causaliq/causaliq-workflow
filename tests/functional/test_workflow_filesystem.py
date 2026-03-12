@@ -28,11 +28,6 @@ def test_parse_workflow_with_real_file():
     workflow = executor.parse_workflow(str(workflow_path))
 
     # Verify parsed content
-    assert workflow["id"] == "test-001"
-    assert (
-        workflow["description"]
-        == "Test workflow with matrix variables and flexible action parameters"
-    )
     # Verify flexible action parameters
     assert len(workflow["steps"]) == 1
     step = workflow["steps"][0]
@@ -58,7 +53,7 @@ def test_parse_workflow_with_invalid_file():
     with pytest.raises(WorkflowExecutionError) as exc_info:
         executor.parse_workflow(str(workflow_path))
 
-    assert "Unexpected error parsing workflow" in str(exc_info.value)
+    assert "Unknown provider" in str(exc_info.value)
 
 
 # Test parsing workflow with complex matrix configuration
@@ -75,11 +70,6 @@ def test_parse_workflow_with_matrix_file():
     workflow = executor.parse_workflow(str(workflow_path))
 
     # Verify matrix configuration
-    assert workflow["id"] == "matrix-test-001"
-    assert (
-        workflow["description"]
-        == "Matrix workflow testing algorithm and dataset combinations"
-    )
     assert "matrix" in workflow
 
     matrix = workflow["matrix"]
@@ -115,11 +105,8 @@ def test_parse_workflow_with_pathlib_path():
     workflow = executor.parse_workflow(workflow_path)  # Pass Path directly
 
     # Verify parsing works with Path objects
-    assert workflow["id"] == "test-001"
-    assert (
-        workflow["description"]
-        == "Test workflow with matrix variables and flexible action parameters"
-    )
+    assert "steps" in workflow
+    assert len(workflow["steps"]) == 1
 
 
 # Test parsing nonexistent workflow file

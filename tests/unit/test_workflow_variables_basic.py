@@ -16,8 +16,6 @@ def executor():
 def test_workflow_variables_in_template_validation(executor):
     """Test that workflow variables are included in template validation."""
     workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow",
         "custom_var": "custom_value",
         "steps": [
             {
@@ -40,8 +38,6 @@ def test_workflow_variables_in_template_validation(executor):
 def test_workflow_variables_unknown_template_validation(executor):
     """Test unknown workflow variables cause template validation errors."""
     workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow",
         "custom_var": "custom_value",
         "steps": [
             {
@@ -65,8 +61,6 @@ def test_workflow_variables_unknown_template_validation(executor):
 def test_validate_required_variables_none_values(executor):
     """Test _validate_required_variables method with None values."""
     workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow",
         "required_var": None,  # Required variable
         "optional_var": "default_value",  # Optional variable
         "steps": [],
@@ -84,8 +78,6 @@ def test_validate_required_variables_none_values(executor):
 def test_validate_required_variables_with_cli_params(executor):
     """Test _validate_required_variables passes when CLI params provided."""
     workflow = {
-        "id": "test-workflow",
-        "description": "Test workflow",
         "required_var": None,  # Required variable
         "steps": [],
     }
@@ -125,8 +117,6 @@ def test_update_pattern_allows_deferred_template_variables(
 
     # Workflow with UPDATE step using metadata variable {{network}}
     workflow = {
-        "id": "test-workflow",
-        "description": "Test UPDATE pattern",
         # No matrix - UPDATE pattern prohibits matrix
         "steps": [
             {
@@ -172,8 +162,6 @@ def test_non_update_pattern_rejects_unknown_template_variables(
 
     # CREATE pattern workflow with unknown variable
     workflow = {
-        "id": "test-workflow",
-        "description": "Test CREATE pattern",
         "matrix": {"network": ["asia"]},
         "steps": [
             {

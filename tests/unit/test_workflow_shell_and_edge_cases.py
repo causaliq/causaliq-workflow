@@ -35,7 +35,6 @@ def test_shell_command_execution_not_implemented():
     )
 
     workflow = {
-        "id": "shell-test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [{"name": "Shell Step", "run": "echo 'Hello World'"}],
     }
@@ -52,7 +51,6 @@ def test_step_missing_uses_and_run():
     executor = WorkflowExecutor()
 
     workflow = {
-        "id": "invalid-step-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
@@ -78,17 +76,21 @@ def test_action_with_outputs_added_to_variables():
     )
 
     workflow = {
-        "id": "outputs-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
-            {"name": "First Step", "uses": "mock_action_with_outputs"},
+            {
+                "name": "First Step",
+                "uses": "mock_action_with_outputs",
+                "with": {"action": "test"},
+            },
             {
                 "name": "Second Step",
                 "uses": "mock_action_with_outputs",
                 "with": {
+                    "action": "test",
                     "previous_result": (
                         "{{steps.First Step.outputs.result_file}}"
-                    )
+                    ),
                 },
             },
         ],

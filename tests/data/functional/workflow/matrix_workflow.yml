@@ -1,5 +1,3 @@
-id: "matrix-test-001"
-description: "Matrix workflow testing algorithm and dataset combinations"
 
 matrix:
   dataset: ["asia", "cancer", "alarm"]
@@ -10,6 +8,7 @@ steps:
   - name: "Causal Discovery"
     uses: "test_action"
     with:
+      action: "run"
       dataset: "/experiments/data/{{dataset}}.csv"
       result: "/experiments/results/{{id}}/{{algorithm}}/graph_{{dataset}}_{{alpha}}.xml"
       max_iter: 500

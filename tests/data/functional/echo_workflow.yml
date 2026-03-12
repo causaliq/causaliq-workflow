@@ -1,8 +1,6 @@
 # Example workflow using the built-in echo action
 # Run with: cqflow run echo_workflow.yml --mode=run
 
-description: "Test workflow using built-in echo action"
-id: "echo-test"
 
 steps:
   - name: "Echo Test"

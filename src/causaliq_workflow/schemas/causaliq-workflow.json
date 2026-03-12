@@ -5,20 +5,9 @@
   "description": "GitHub Actions-style workflow for causal discovery experiments with flexible action parameter templating",
   "type": "object",
   "required": [
-    "id",
-    "description",
     "steps"
   ],
   "properties": {
-    "id": {
-      "type": "string",
-      "pattern": "^[a-zA-Z0-9_-]+$",
-      "description": "Unique workflow identifier (alphanumeric, underscore, hyphen only)"
-    },
-    "description": {
-      "type": "string",
-      "description": "Human-readable description of what this workflow does"
-    },
     "matrix": {
       "type": "object",
       "description": "Matrix variables for parameterized execution",
@@ -47,11 +36,13 @@
         "oneOf": [
           {
             "required": [
+              "name",
               "run"
             ]
           },
           {
             "required": [
+              "name",
               "uses"
             ]
           }

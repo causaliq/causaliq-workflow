@@ -95,6 +95,7 @@ def test_execute_action_with_context():
     )
 
     inputs = {
+        "action": "test",
         "data_path": "/test/input.csv",
         "output_dir": "/test/output",
         "message": "Test message",
@@ -196,6 +197,7 @@ def test_execute_action_returns_result_structure():
     )
 
     inputs = {
+        "action": "test",
         "data_path": "/test/input.csv",
         "output_dir": "/test/output",
         "message": "Test",

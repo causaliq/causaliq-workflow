@@ -71,7 +71,7 @@ def test_validate_workflow_actions_failure(
 ) -> None:
     workflow = {"steps": [{"uses": "unknown-action", "name": "Test Step"}]}
     with pytest.raises(
-        WorkflowExecutionError, match="Action validation failed"
+        WorkflowExecutionError, match="Unknown provider 'unknown-action'"
     ):
         executor._validate_workflow_actions(workflow, "run")
 
@@ -85,7 +85,7 @@ def test_validate_workflow_actions_dry_run_skip(
             {
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
-                "with": {"param": "value"},
+                "with": {"action": "test", "param": "value"},
             }
         ]
     }
@@ -95,13 +95,12 @@ def test_validate_workflow_actions_dry_run_skip(
 # Test executing workflow in dry-run mode.
 def test_execute_workflow_dry_run_mode(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
-                "with": {"input": "{{dataset}}.csv"},
+                "with": {"action": "test", "input": "{{dataset}}.csv"},
             }
         ],
     }
@@ -117,13 +116,12 @@ def test_execute_workflow_dry_run_mode(executor: WorkflowExecutor) -> None:
 # Test executing workflow in run mode.
 def test_execute_workflow_run_mode(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
-                "with": {"input": "{{dataset}}.csv"},
+                "with": {"action": "test", "input": "{{dataset}}.csv"},
             }
         ],
     }
@@ -141,13 +139,13 @@ def test_execute_workflow_run_mode(executor: WorkflowExecutor) -> None:
 # Test executing workflow with CLI parameters.
 def test_execute_workflow_with_cli_params(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
             {
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
                 "with": {
+                    "action": "test",
                     "input": "{{dataset}}.csv",
                     "extra_param": "{{extra_param}}",
                 },
@@ -167,7 +165,6 @@ def test_execute_workflow_with_cli_params(executor: WorkflowExecutor) -> None:
 # Test executing workflow with multiple matrix combinations.
 def test_execute_workflow_multiple_matrix(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "test-workflow",
         "matrix": {
             "dataset": ["asia", "cancer"],
             "algorithm": ["pc", "ges"],
@@ -177,6 +174,7 @@ def test_execute_workflow_multiple_matrix(executor: WorkflowExecutor) -> None:
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
                 "with": {
+                    "action": "test",
                     "dataset": "{{dataset}}",
                     "algorithm": "{{algorithm}}",
                 },
@@ -208,9 +206,14 @@ def test_execute_workflow_action_execution_error(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "id": "test-workflow",
         "matrix": {"dataset": ["asia"]},
-        "steps": [{"uses": "mock_failing_action", "name": "Failing Step"}],
+        "steps": [
+            {
+                "uses": "mock_failing_action",
+                "name": "Failing Step",
+                "with": {"action": "test"},
+            }
+        ],
     }
     with pytest.raises(
         WorkflowExecutionError, match="Workflow execution failed"
@@ -221,10 +224,13 @@ def test_execute_workflow_action_execution_error(
 # Test workflow execution error for missing action.
 def test_execute_workflow_missing_action(executor: WorkflowExecutor) -> None:
     workflow = {
-        "id": "test-workflow",
         "matrix": {"dataset": ["asia"]},
         "steps": [
-            {"uses": "nonexistent-action", "name": "Missing Action Step"}
+            {
+                "uses": "nonexistent-action",
+                "name": "Missing Action Step",
+                "with": {"action": "test"},
+            }
         ],
     }
     with pytest.raises(
@@ -239,7 +245,6 @@ def test_execute_workflow_implicit_matrix_params(
 ) -> None:
     """Matrix variables should be passed to actions even without {{var}}."""
     workflow = {
-        "id": "test-workflow",
         "matrix": {
             "network": ["asia", "alarm"],
             "sample_size": [100, 500],
@@ -249,7 +254,7 @@ def test_execute_workflow_implicit_matrix_params(
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
                 # Note: no {{network}} or {{sample_size}} templates
-                "with": {"explicit_param": "value"},
+                "with": {"action": "test", "explicit_param": "value"},
             }
         ],
     }
@@ -279,14 +284,13 @@ def test_execute_workflow_implicit_does_not_override_explicit(
 ) -> None:
     """Explicit action params should not be overridden by matrix variables."""
     workflow = {
-        "id": "test-workflow",
         "matrix": {"network": ["asia"]},
         "steps": [
             {
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
                 # Explicit network param should take precedence
-                "with": {"network": "custom_value"},
+                "with": {"action": "test", "network": "custom_value"},
             }
         ],
     }

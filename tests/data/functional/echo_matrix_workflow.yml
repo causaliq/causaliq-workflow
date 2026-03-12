@@ -1,8 +1,6 @@
 # Example matrix workflow using the built-in echo action
 # Run with: cqflow run echo_matrix_workflow.yml --mode=run
 
-description: "Matrix workflow using built-in echo action"
-id: "echo-matrix-test"
 
 matrix:
   message: ["Hello", "World"]

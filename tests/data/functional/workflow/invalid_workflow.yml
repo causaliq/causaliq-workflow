@@ -1,5 +1,3 @@
-id: "invalid-001"
-description: "Invalid workflow"
 matrix:
   dataset: ["asia"]
 steps:
