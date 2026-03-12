@@ -14,7 +14,7 @@ from .workflow import (
     WorkflowExecutor,
 )
 
-__version__ = "0.4.0.dev5"
+__version__ = "0.4.0.dev6"
 __author__ = "CausalIQ"
 __email__ = "info@causaliq.com"
 

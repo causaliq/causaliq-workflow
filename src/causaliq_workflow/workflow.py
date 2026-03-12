@@ -1157,6 +1157,312 @@ class WorkflowExecutor:
         )
         return any(str(p).lower().endswith(".db") for p in inputs)
 
+    def _validate_all_entries(
+        self,
+        workflow: Dict[str, Any],
+        cli_params: Optional[Dict[str, Any]] = None,
+    ) -> List[str]:
+        """Validate all entries (matrix combos/cache entries) before execution.
+
+        This is the validation pass of two-pass execution. It iterates
+        all entries that would be processed during execution and calls
+        validate_parameters() on each. This catches:
+
+        - Semantic filter errors (e.g., `network == asia` where 'asia'
+          is undefined)
+        - Invalid action parameters
+        - Missing required parameters
+
+        Pattern-specific validation:
+
+        - CREATE: Expand matrix, validate each combination
+        - UPDATE: Open cache, iterate entries, apply filter, validate
+        - AGGREGATE: Expand matrix, scan entries, validate each combo
+
+        Args:
+            workflow: Parsed workflow dictionary
+            cli_params: Additional parameters from CLI
+
+        Returns:
+            List of validation error messages (empty if all valid)
+        """
+        if cli_params is None:
+            cli_params = {}
+
+        errors: List[str] = []
+        matrix = workflow.get("matrix", {})
+        jobs = self.expand_matrix(matrix)
+
+        for step in workflow.get("steps", []):
+            provider_name = step.get("uses")
+            if not provider_name:
+                continue
+
+            step_inputs = step.get("with", {})
+            action_name = step_inputs.get("action")
+            if not action_name:
+                continue
+
+            # Determine step pattern
+            is_update = self._is_update_step(step, matrix)
+            is_aggregation = self._is_aggregation_step(step, matrix)
+
+            if is_update:
+                # UPDATE pattern: iterate cache entries
+                update_errors = self._validate_update_entries(
+                    step, workflow, cli_params
+                )
+                errors.extend(update_errors)
+
+            elif is_aggregation:
+                # AGGREGATE pattern: validate per matrix combo
+                agg_errors = self._validate_aggregation_entries(
+                    step, jobs, workflow, cli_params
+                )
+                errors.extend(agg_errors)
+
+            else:
+                # CREATE pattern: validate per matrix combo
+                create_errors = self._validate_create_entries(
+                    step, jobs, workflow, cli_params
+                )
+                errors.extend(create_errors)
+
+        return errors
+
+    def _validate_update_entries(
+        self,
+        step: Dict[str, Any],
+        workflow: Dict[str, Any],
+        cli_params: Dict[str, Any],
+    ) -> List[str]:
+        """Validate UPDATE pattern entries by iterating input cache.
+
+        Opens the input cache, iterates all entries, applies the filter
+        expression, and validates parameters for each matching entry.
+
+        Args:
+            step: Step configuration dictionary
+            workflow: Full workflow dictionary for variable resolution
+            cli_params: CLI parameters
+
+        Returns:
+            List of validation error messages
+        """
+        from pathlib import Path
+
+        from causaliq_core import ActionValidationError
+        from causaliq_core.utils import (
+            FilterExpressionError,
+            evaluate_filter,
+        )
+
+        from causaliq_workflow.cache import WorkflowCache
+
+        errors: List[str] = []
+        step_name = step.get("name", "unnamed")
+        provider_name = str(step.get("uses", ""))
+        step_inputs = step.get("with", {})
+
+        # Resolve template variables in step inputs (workflow-level only)
+        variables = {
+            **workflow,
+            **cli_params,
+        }
+        resolved_inputs = self._resolve_template_variables(
+            step_inputs, variables
+        )
+
+        input_path = resolved_inputs.get("input")
+        filter_expr = resolved_inputs.get("filter")
+
+        # Check input path exists
+        if input_path is None:
+            errors.append(
+                f"Step '{step_name}': UPDATE pattern requires 'input'"
+            )
+            return errors
+
+        if not Path(input_path).exists():
+            # Skip cache validation if cache doesn't exist
+            # (will be caught at execution time)
+            return errors
+
+        with WorkflowCache(input_path) as cache:
+            entries = cache.list_entries()
+
+            for entry_info in entries:
+                entry_matrix = entry_info.get("matrix_values", {})
+
+                # Get full entry for metadata
+                full_entry = cache.get(entry_matrix)
+                if full_entry is None:
+                    continue
+
+                # Flatten metadata for filter evaluation
+                flat_meta = self._flatten_metadata(
+                    entry_matrix, full_entry.metadata
+                )
+
+                # Apply filter expression if present
+                if filter_expr:
+                    try:
+                        if not evaluate_filter(filter_expr, flat_meta):
+                            continue  # Would be filtered out
+                    except FilterExpressionError as e:
+                        # Semantic filter error - undefined variable
+                        errors.append(
+                            f"Step '{step_name}' entry {entry_matrix}: "
+                            f"Filter error - {e}"
+                        )
+                        continue
+                    except Exception as e:
+                        errors.append(
+                            f"Step '{step_name}' entry {entry_matrix}: "
+                            f"Filter evaluation failed - {e}"
+                        )
+                        continue
+
+                # Resolve remaining template variables from entry metadata
+                action_inputs = self._resolve_template_variables(
+                    resolved_inputs, flat_meta
+                )
+
+                # Validate action parameters
+                try:
+                    self.action_registry.validate_action_parameters(
+                        provider_name, action_inputs
+                    )
+                except ActionValidationError as e:
+                    errors.append(
+                        f"Step '{step_name}' entry {entry_matrix}: {e}"
+                    )
+
+        return errors
+
+    def _validate_create_entries(
+        self,
+        step: Dict[str, Any],
+        jobs: List[Dict[str, Any]],
+        workflow: Dict[str, Any],
+        cli_params: Dict[str, Any],
+    ) -> List[str]:
+        """Validate CREATE pattern entries by expanding matrix.
+
+        Validates parameters for each matrix combination.
+
+        Args:
+            step: Step configuration dictionary
+            jobs: Expanded matrix combinations
+            workflow: Full workflow dictionary
+            cli_params: CLI parameters
+
+        Returns:
+            List of validation error messages
+        """
+        from causaliq_core import ActionValidationError
+
+        errors: List[str] = []
+        step_name = step.get("name", "unnamed")
+        provider_name = str(step.get("uses", ""))
+        step_inputs = step.get("with", {})
+
+        for job in jobs:
+            # Combine all variable sources
+            variables = {
+                **workflow,
+                **job,
+                **cli_params,
+            }
+
+            # Resolve template variables
+            resolved_inputs = self._resolve_template_variables(
+                step_inputs, variables
+            )
+
+            # Add implicit matrix variables
+            for matrix_var, matrix_val in job.items():
+                if matrix_var not in resolved_inputs:
+                    resolved_inputs[matrix_var] = matrix_val
+
+            # Validate action parameters
+            try:
+                self.action_registry.validate_action_parameters(
+                    provider_name, resolved_inputs
+                )
+            except ActionValidationError as e:
+                errors.append(f"Step '{step_name}' {job}: {e}")
+
+        return errors
+
+    def _validate_aggregation_entries(
+        self,
+        step: Dict[str, Any],
+        jobs: List[Dict[str, Any]],
+        workflow: Dict[str, Any],
+        cli_params: Dict[str, Any],
+    ) -> List[str]:
+        """Validate AGGREGATE pattern entries.
+
+        Validates parameters for each matrix combination, scanning input
+        caches for matching entries.
+
+        Args:
+            step: Step configuration dictionary
+            jobs: Expanded matrix combinations
+            workflow: Full workflow dictionary
+            cli_params: CLI parameters
+
+        Returns:
+            List of validation error messages
+        """
+        from causaliq_core import ActionValidationError
+
+        errors: List[str] = []
+        step_name = step.get("name", "unnamed")
+        provider_name = str(step.get("uses", ""))
+        step_inputs = step.get("with", {})
+        matrix = workflow.get("matrix", {})
+
+        # Get aggregation config for scanning
+        agg_config = self._get_aggregation_config(step, matrix)
+
+        for job in jobs:
+            # Combine all variable sources
+            variables = {
+                **workflow,
+                **job,
+                **cli_params,
+            }
+
+            # Resolve template variables
+            resolved_inputs = self._resolve_template_variables(
+                step_inputs, variables
+            )
+
+            # Add implicit matrix variables
+            for matrix_var, matrix_val in job.items():
+                if matrix_var not in resolved_inputs:
+                    resolved_inputs[matrix_var] = matrix_val
+
+            # Scan aggregation inputs for this matrix combo
+            if agg_config is not None:
+                matching_entries = self._scan_aggregation_inputs(
+                    agg_config, job
+                )
+                resolved_inputs["_aggregation_entries"] = matching_entries
+                resolved_inputs.pop("aggregate", None)
+
+            # Validate action parameters
+            try:
+                self.action_registry.validate_action_parameters(
+                    provider_name, resolved_inputs
+                )
+            except ActionValidationError as e:
+                errors.append(f"Step '{step_name}' {job}: {e}")
+
+        return errors
+
     def execute_workflow(
         self,
         workflow: Dict[str, Any],
@@ -1167,6 +1473,13 @@ class WorkflowExecutor:
         ] = None,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
+
+        Uses two-pass execution:
+
+        1. Validation pass: Iterates all entries (matrix combos/cache
+           entries) and validates action parameters. This catches semantic
+           errors like undefined filter variables before any execution.
+        2. Execution pass: If validation passes, executes the workflow.
 
         Caching is controlled at the step level via the 'output' parameter
         in each step's 'with' block. Each step can write to its own cache.
@@ -1182,13 +1495,22 @@ class WorkflowExecutor:
             List of job results from matrix expansion
 
         Raises:
-            WorkflowExecutionError: If workflow execution fails
+            WorkflowExecutionError: If validation or execution fails
         """
         if cli_params is None:
             cli_params = {}
 
         try:
-            # Expand matrix into individual jobs
+            # Pass 1: Validate all entries before execution
+            validation_errors = self._validate_all_entries(
+                workflow, cli_params
+            )
+            if validation_errors:
+                raise WorkflowExecutionError(
+                    f"Entry validation failed: {'; '.join(validation_errors)}"
+                )
+
+            # Pass 2: Execute workflow
             matrix = workflow.get("matrix", {})
             jobs = self.expand_matrix(matrix)
 

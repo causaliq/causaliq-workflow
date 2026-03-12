@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 from causaliq_core import (
     ActionExecutionError,
     ActionPattern,
+    ActionValidationError,
     CausalIQActionProvider,
 )
 
@@ -451,6 +452,53 @@ class ActionRegistry:
         except Exception as e:
             raise ActionExecutionError(
                 f"Action '{name}' execution failed: {e}"
+            ) from e
+
+    def validate_action_parameters(
+        self,
+        name: str,
+        inputs: Dict[str, Any],
+    ) -> None:
+        """Validate action parameters without executing.
+
+        Calls the provider's validate_parameters() method to check that
+        the action name and parameters are valid. This is used during the
+        validation pass before executing a workflow.
+
+        If the action does not implement validate_parameters(), validation
+        is skipped (for backward compatibility with test mocks and legacy
+        actions).
+
+        Args:
+            name: Provider name (e.g., 'causaliq/knowledge')
+            inputs: Action parameters including 'action' key
+
+        Raises:
+            ActionValidationError: If validation fails
+            ActionRegistryError: If provider not found
+        """
+        try:
+            action_class = self.get_action_class(name)
+            action_instance = action_class()
+
+            # Skip validation if action doesn't implement validate_parameters
+            if not hasattr(action_instance, "validate_parameters"):
+                return
+
+            # Extract action name from inputs, remaining are parameters
+            action_name = inputs.get("action", "")
+            parameters = {k: v for k, v in inputs.items() if k != "action"}
+
+            # Validate parameters (raises ActionValidationError on failure)
+            action_instance.validate_parameters(action_name, parameters)
+
+        except ActionValidationError:
+            raise
+        except ActionRegistryError:
+            raise
+        except Exception as e:
+            raise ActionValidationError(
+                f"Parameter validation for '{name}' failed: {e}"
             ) from e
 
     def validate_workflow_actions(self, workflow: Dict[str, Any]) -> List[str]:
