@@ -494,9 +494,25 @@ class WorkflowExecutor:
                     try:
                         if not evaluate_filter(filter_expr, flat_meta):
                             entries_skipped += 1
+                            if step_logger:
+                                step_logger(
+                                    action_method,
+                                    step.get("name", "unknown"),
+                                    "IGNORED",
+                                    entry_matrix,
+                                )
                             continue
                     except Exception:
+                        # Filter failed on this entry - skip it
+                        # (validation should catch syntax errors upfront)
                         entries_skipped += 1
+                        if step_logger:
+                            step_logger(
+                                action_method,
+                                step.get("name", "unknown"),
+                                "IGNORED",
+                                entry_matrix,
+                            )
                         continue
 
                 # Conservative execution: skip if action already applied
@@ -505,6 +521,13 @@ class WorkflowExecutor:
                     entry_matrix, provider_name, action_method
                 ):
                     entries_skipped += 1
+                    if step_logger:
+                        step_logger(
+                            action_method,
+                            step.get("name", "unknown"),
+                            "SKIPPED",
+                            entry_matrix,
+                        )
                     continue
 
                 # Prepare inputs for action, passing entry data
@@ -552,9 +575,28 @@ class WorkflowExecutor:
                             entry_matrix, structured_metadata, objects
                         ):
                             entries_updated += 1
+                            if step_logger:
+                                status = (
+                                    "FORCED"
+                                    if context.mode == "force"
+                                    else "EXECUTED"
+                                )
+                                step_logger(
+                                    action_method,
+                                    step.get("name", "unknown"),
+                                    status,
+                                    entry_matrix,
+                                )
 
                 except Exception as e:
                     errors.append(f"Entry {entry_matrix}: {e}")
+                    if step_logger:
+                        step_logger(
+                            action_method,
+                            step.get("name", "unknown"),
+                            "FAILED",
+                            entry_matrix,
+                        )
 
         # Determine overall status
         if entries_updated > 0:
@@ -575,6 +617,115 @@ class WorkflowExecutor:
             result["errors"] = errors
 
         return result
+
+    def _scan_update_step_entries(
+        self,
+        step: Dict[str, Any],
+        resolved_inputs: Dict[str, Any],
+        step_logger: Optional[
+            Callable[[str, str, str, Dict[str, Any]], None]
+        ] = None,
+    ) -> Dict[str, int]:
+        """Scan UPDATE step cache to count entries that would be processed.
+
+        Used in dry-run mode to report how many entries would be updated
+        vs skipped (due to conservative execution - action already applied).
+        Optionally logs per-entry status via step_logger.
+
+        Args:
+            step: Step configuration dictionary
+            resolved_inputs: Resolved action inputs
+            step_logger: Optional logging function for per-entry status
+
+        Returns:
+            Dictionary with would_process and would_skip counts
+        """
+        from pathlib import Path
+
+        from causaliq_core.utils import evaluate_filter
+
+        from causaliq_workflow.cache import WorkflowCache
+
+        action_name = step["uses"]
+        action_method = resolved_inputs.get("action", "default")
+        input_path = resolved_inputs.get("input")
+        filter_expr = resolved_inputs.get("filter")
+
+        # Get provider name for metadata checking
+        action_class = self.action_registry.get_action_class(action_name)
+        provider_name = getattr(action_class, "name", action_name)
+
+        would_process = 0
+        would_skip = 0
+
+        if input_path is None or not Path(input_path).exists():
+            return {"would_process": 0, "would_skip": 0}
+
+        with WorkflowCache(input_path) as cache:
+            entries = cache.list_entries()
+
+            for entry_info in entries:
+                entry_matrix = entry_info.get("matrix_values", {})
+
+                # Get full entry
+                full_entry = cache.get(entry_matrix)
+                if full_entry is None:
+                    continue
+
+                # Flatten metadata for filter evaluation
+                flat_meta = self._flatten_metadata(
+                    entry_matrix, full_entry.metadata
+                )
+
+                # Apply filter expression if present
+                if filter_expr:
+                    try:
+                        if not evaluate_filter(filter_expr, flat_meta):
+                            would_skip += 1
+                            if step_logger:
+                                step_logger(
+                                    action_method,
+                                    step.get("name", "unknown"),
+                                    "WOULD IGNORE",
+                                    entry_matrix,
+                                )
+                            continue
+                    except Exception:
+                        # Filter failed on this entry - skip it
+                        # (validation should catch syntax errors upfront)
+                        would_skip += 1
+                        if step_logger:
+                            step_logger(
+                                action_method,
+                                step.get("name", "unknown"),
+                                "WOULD IGNORE",
+                                entry_matrix,
+                            )
+                        continue
+
+                # Conservative execution check: skip if action already applied
+                if cache.has_action_metadata(
+                    entry_matrix, provider_name, action_method
+                ):
+                    would_skip += 1
+                    if step_logger:
+                        step_logger(
+                            action_method,
+                            step.get("name", "unknown"),
+                            "WOULD SKIP",
+                            entry_matrix,
+                        )
+                else:
+                    would_process += 1
+                    if step_logger:
+                        step_logger(
+                            action_method,
+                            step.get("name", "unknown"),
+                            "WOULD EXECUTE",
+                            entry_matrix,
+                        )
+
+        return {"would_process": would_process, "would_skip": would_skip}
 
     def _get_aggregation_config(
         self,
@@ -848,6 +999,13 @@ class WorkflowExecutor:
                 f"{'; '.join(pattern_errors)}"
             )
 
+        # Validate filter expressions for UPDATE steps
+        filter_errors = self._validate_step_filters(workflow)
+        if filter_errors:
+            raise WorkflowExecutionError(
+                f"Filter validation failed: {'; '.join(filter_errors)}"
+            )
+
     def _validate_action_patterns(self, workflow: Dict[str, Any]) -> List[str]:
         """Validate action patterns against workflow configuration.
 
@@ -942,6 +1100,40 @@ class WorkflowExecutor:
                         f"Step '{step_name}': AGGREGATE pattern requires "
                         f"workflow 'matrix' definition"
                     )
+
+        return errors
+
+    def _validate_step_filters(self, workflow: Dict[str, Any]) -> List[str]:
+        """Validate filter expressions in workflow steps.
+
+        Checks that filter expressions are syntactically valid before
+        execution. This catches errors like missing quotes around strings
+        (e.g., `network == asia` instead of `network == 'asia'`).
+
+        Args:
+            workflow: Parsed workflow dictionary.
+
+        Returns:
+            List of validation error messages (empty if all valid).
+        """
+        from causaliq_core.utils import FilterSyntaxError, validate_filter
+
+        errors: List[str] = []
+
+        for step in workflow.get("steps", []):
+            step_name = step.get("name", "unnamed")
+            step_inputs = step.get("with", {})
+            filter_expr = step_inputs.get("filter")
+
+            if not filter_expr:
+                continue
+
+            try:
+                validate_filter(filter_expr)
+            except FilterSyntaxError as e:
+                errors.append(f"Step '{step_name}': {e}")
+            except TypeError as e:
+                errors.append(f"Step '{step_name}': {e}")
 
         return errors
 
@@ -1097,48 +1289,22 @@ class WorkflowExecutor:
                 # UPDATE mode is activated when action declares UPDATE pattern
                 # and step has input pointing to .db cache file.
                 if self._is_update_step(step, matrix):
-                    # Dry-run for UPDATE steps
+                    # Dry-run for UPDATE steps - scan cache and log per-entry
                     if context.mode == "dry-run":
-                        if step_logger:
-                            action_method = resolved_inputs.get(
-                                "action", "default"
-                            )
-                            step_logger(
-                                action_method,
-                                step_name,
-                                "WOULD EXECUTE",
-                                context.matrix_values,
-                            )
-                        step_results[step_name] = {"status": "would_execute"}
+                        entry_counts = self._scan_update_step_entries(
+                            step, resolved_inputs, step_logger
+                        )
+                        step_results[step_name] = {
+                            "status": "would_execute",
+                            **entry_counts,
+                        }
                         continue
 
                     # Execute UPDATE step (processes all cache entries)
+                    # Per-entry logging happens inside _execute_update_step
                     step_result = self._execute_update_step(
                         step, resolved_inputs, context, step_logger
                     )
-
-                    # Log completion if logger provided
-                    if step_logger:
-                        action_method = resolved_inputs.get(
-                            "action", "default"
-                        )
-                        result_status = step_result.get("status", "unknown")
-                        if result_status == "success":
-                            status = (
-                                "FORCED"
-                                if context.mode == "force"
-                                else "EXECUTED"
-                            )
-                        elif result_status == "skipped":
-                            status = "SKIPPED"
-                        else:
-                            status = "FAILED"
-                        step_logger(
-                            action_method,
-                            step_name,
-                            status,
-                            context.matrix_values,
-                        )
 
                     step_results[step_name] = step_result
                     continue  # Skip normal execution path

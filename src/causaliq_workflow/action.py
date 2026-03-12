@@ -71,7 +71,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
         "edge_count": "Number of edges in generated graph",
     }
 
-    def _validate_parameters(
+    def validate_parameters(
         self, action: str, parameters: Dict[str, Any]
     ) -> None:
         """Validate action and parameters.
@@ -83,11 +83,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
         Raises:
             ActionValidationError: If validation fails.
         """
-        if action not in SUPPORTED_ACTIONS:
-            raise ActionValidationError(
-                f"Unknown action: '{action}'. "
-                f"Supported actions: {SUPPORTED_ACTIONS}"
-            )
+        super().validate_parameters(action, parameters)
 
         # Validate and coerce nodes parameter (may be string from template)
         nodes = parameters.get("nodes", 3)
@@ -102,31 +98,51 @@ class WorkflowActionProvider(CausalIQActionProvider):
                 f"'nodes' must be an integer between 2 and 10, got: {nodes}"
             )
 
-    def run(
+    def _dry_run_result(
+        self, action: str, parameters: Dict[str, Any]
+    ) -> ActionResult:
+        """Return dry-run result with estimated output metadata.
+
+        Args:
+            action: Action name.
+            parameters: Validated parameters.
+
+        Returns:
+            ActionResult with preview metadata.
+        """
+        message = parameters.get("message", "Hello from causaliq-workflow!")
+        nodes = int(parameters.get("nodes", 3))
+        edge_count = nodes - 1
+
+        metadata = {
+            "dry_run": True,
+            "action": action,
+            "message": message,
+            "node_count": nodes,
+            "edge_count": edge_count,
+        }
+        return ("skipped", metadata, [])
+
+    def _execute(
         self,
         action: str,
         parameters: Dict[str, Any],
-        mode: str = "dry-run",
-        context: Optional[Any] = None,
-        logger: Optional[Any] = None,
+        mode: str,
+        context: Optional[Any],
+        logger: Optional[Any],
     ) -> ActionResult:
         """Execute the specified action.
 
         Args:
             action: Action to perform ('echo').
-            parameters: Action parameters.
-            mode: Execution mode ('dry-run' or 'run').
+            parameters: Validated action parameters.
+            mode: Execution mode ('run', 'force', 'compare').
             context: Workflow context.
             logger: Optional workflow logger.
 
         Returns:
             ActionResult tuple (status, metadata, objects).
-
-        Raises:
-            ActionValidationError: If validation fails.
         """
-        self._validate_parameters(action, parameters)
-
         if action == "echo":
             return self._run_echo(parameters, mode)
 
@@ -143,8 +159,8 @@ class WorkflowActionProvider(CausalIQActionProvider):
         """Execute the echo action.
 
         Args:
-            parameters: Action parameters.
-            mode: Execution mode.
+            parameters: Validated action parameters.
+            mode: Execution mode ('run', 'force', 'compare').
 
         Returns:
             ActionResult with JSON and GraphML objects.
@@ -163,11 +179,6 @@ class WorkflowActionProvider(CausalIQActionProvider):
             "edge_count": len(edges),
             "mode": mode,
         }
-
-        # Dry-run: return metadata only, no objects
-        if mode == "dry-run":
-            metadata["dry_run"] = True
-            return ("skipped", metadata, [])
 
         # Build JSON content
         json_content = self._build_json_content(message, node_names, edges)

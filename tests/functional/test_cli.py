@@ -858,3 +858,164 @@ def test_cli_run_step_logger_with_matrix_values(
     assert "EXECUTED" in result.output
     assert "Test Step" in result.output
     assert "[network=asia, algorithm=pc]" in result.output
+
+
+# Test UPDATE step dry-run shows entry counts in log output.
+def test_cli_run_update_step_shows_entry_counts(
+    cli_runner: CliRunner, monkeypatch
+) -> None:
+    from causaliq_workflow.workflow import WorkflowExecutor
+
+    def mock_parse_workflow(self, filepath):
+        return {"jobs": []}
+
+    def mock_execute_workflow(
+        self, workflow, mode="dry-run", step_logger=None, cache=None
+    ):
+        if mode == "validate":
+            return []
+        # Simulate UPDATE step with entry counts in matrix_values
+        if step_logger is not None:
+            step_logger(
+                "evaluate",
+                "Update Step",
+                "WOULD EXECUTE",
+                {
+                    "_entries_would_process": 10,
+                    "_entries_would_skip": 2,
+                },
+            )
+        return [
+            {
+                "steps": {
+                    "Update Step": {
+                        "status": "would_execute",
+                        "would_process": 10,
+                        "would_skip": 2,
+                    }
+                }
+            }
+        ]
+
+    monkeypatch.setattr(
+        WorkflowExecutor, "parse_workflow", mock_parse_workflow
+    )
+    monkeypatch.setattr(
+        WorkflowExecutor, "execute_workflow", mock_execute_workflow
+    )
+
+    workflow_file = "tests/data/functional/test_cli_workflow.yml"
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    assert result.exit_code == 0
+    # Check entry counts are shown in step log
+    assert "[evaluate]" in result.output
+    assert "WOULD EXECUTE" in result.output
+    assert "10 to process" in result.output
+    assert "2 to skip" in result.output
+    # Check summary shows entry totals
+    assert "10 entries to process" in result.output
+    assert "2 entries to skip" in result.output
+
+
+# Test UPDATE step dry-run with only entries to process (no skip).
+def test_cli_run_update_step_entries_to_process_only(
+    cli_runner: CliRunner, monkeypatch
+) -> None:
+    from causaliq_workflow.workflow import WorkflowExecutor
+
+    def mock_parse_workflow(self, filepath):
+        return {"jobs": []}
+
+    def mock_execute_workflow(
+        self, workflow, mode="dry-run", step_logger=None, cache=None
+    ):
+        if mode == "validate":
+            return []
+        if step_logger is not None:
+            step_logger(
+                "evaluate",
+                "Update Step",
+                "WOULD EXECUTE",
+                {
+                    "_entries_would_process": 5,
+                    "_entries_would_skip": 0,
+                },
+            )
+        return [
+            {
+                "steps": {
+                    "Update Step": {
+                        "status": "would_execute",
+                        "would_process": 5,
+                        "would_skip": 0,
+                    }
+                }
+            }
+        ]
+
+    monkeypatch.setattr(
+        WorkflowExecutor, "parse_workflow", mock_parse_workflow
+    )
+    monkeypatch.setattr(
+        WorkflowExecutor, "execute_workflow", mock_execute_workflow
+    )
+
+    workflow_file = "tests/data/functional/test_cli_workflow.yml"
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    assert result.exit_code == 0
+    assert "5 to process" in result.output
+    # Should not show "to skip" when count is 0
+    assert "to skip" not in result.output
+    assert "5 entries to process" in result.output
+
+
+# Test UPDATE step dry-run with only entries to skip (no process).
+def test_cli_run_update_step_entries_to_skip_only(
+    cli_runner: CliRunner, monkeypatch
+) -> None:
+    from causaliq_workflow.workflow import WorkflowExecutor
+
+    def mock_parse_workflow(self, filepath):
+        return {"jobs": []}
+
+    def mock_execute_workflow(
+        self, workflow, mode="dry-run", step_logger=None, cache=None
+    ):
+        if mode == "validate":
+            return []
+        if step_logger is not None:
+            step_logger(
+                "evaluate",
+                "Update Step",
+                "WOULD EXECUTE",
+                {
+                    "_entries_would_process": 0,
+                    "_entries_would_skip": 3,
+                },
+            )
+        return [
+            {
+                "steps": {
+                    "Update Step": {
+                        "status": "would_execute",
+                        "would_process": 0,
+                        "would_skip": 3,
+                    }
+                }
+            }
+        ]
+
+    monkeypatch.setattr(
+        WorkflowExecutor, "parse_workflow", mock_parse_workflow
+    )
+    monkeypatch.setattr(
+        WorkflowExecutor, "execute_workflow", mock_execute_workflow
+    )
+
+    workflow_file = "tests/data/functional/test_cli_workflow.yml"
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    assert result.exit_code == 0
+    assert "3 to skip" in result.output
+    # Should not show "to process" when count is 0
+    assert "to process" not in result.output
+    assert "3 entries to skip" in result.output

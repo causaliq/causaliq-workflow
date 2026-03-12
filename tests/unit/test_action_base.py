@@ -55,25 +55,25 @@ def test_action_backward_compatibility_no_logger():
         name = "backward-compatible"
         description = "Action that works without logger"
 
-        def run(
-            self, action, parameters, mode="dry-run", context=None, logger=None
-        ):
+        def _execute(self, action, parameters, mode, context, logger):
             # Should work fine when logger is None
-            return {"status": "success", "mode": mode}
+            return ("success", {"mode": mode}, [])
 
     action = BackwardCompatibleAction()
 
     # Test old-style call without logger
-    result = action.run("test", {"param": "value"}, mode="run")
-    assert result["status"] == "success"
-    assert result["mode"] == "run"
+    status, metadata, objects = action.run(
+        "test", {"param": "value"}, mode="run"
+    )
+    assert status == "success"
+    assert metadata["mode"] == "run"
 
     # Test with explicit None logger
-    result = action.run(
-        "test", {"param": "value"}, mode="dry-run", logger=None
+    status, metadata, objects = action.run(
+        "test", {"param": "value"}, mode="run", logger=None
     )
-    assert result["status"] == "success"
-    assert result["mode"] == "dry-run"
+    assert status == "success"
+    assert metadata["mode"] == "run"
 
 
 # Test logger parameter type validation
@@ -84,60 +84,63 @@ def test_action_logger_parameter_type_validation():
         name = "validating-action"
         description = "Action that validates logger parameter"
 
-        def run(
-            self, action, parameters, mode="dry-run", context=None, logger=None
-        ):
+        def _execute(self, action, parameters, mode, context, logger):
             logger_type = type(logger).__name__ if logger else "None"
-            return {"logger_type": logger_type}
+            return ("success", {"logger_type": logger_type}, [])
 
     action = ValidatingAction()
 
-    # Test with None
-    result = action.run("test", {})
-    assert result["logger_type"] == "None"
+    # Test with None (uses dry-run by default, so we need mode="run")
+    status, metadata, objects = action.run("test", {}, mode="run")
+    assert metadata["logger_type"] == "None"
 
     # Test with WorkflowLogger
     logger = WorkflowLogger(terminal=False)
-    result = action.run("test", {}, logger=logger)
-    assert result["logger_type"] == "WorkflowLogger"
+    status, metadata, objects = action.run(
+        "test", {}, mode="run", logger=logger
+    )
+    assert metadata["logger_type"] == "WorkflowLogger"
 
 
-# Test action interface with kwargs pattern
+# Test action interface with _execute pattern
 def test_action_interface_with_kwargs():
-    """Action implementations can use **kwargs for optional parameters."""
+    """Action implementations use _execute for optional parameters."""
 
     class KwargsStyleAction(CausalIQActionProvider):
-        """Action using **kwargs pattern for optional parameters."""
+        """Action using _execute interface pattern."""
 
         name = "kwargs-style"
-        description = "Action using kwargs interface pattern"
+        description = "Action using _execute interface pattern"
 
-        def run(self, action, parameters, **kwargs):
-            # Using **kwargs for optional parameters
-            mode = kwargs.get("mode", "dry-run")
-            context = kwargs.get("context")
-            logger = kwargs.get("logger")
-
-            return {
-                "has_mode": mode is not None,
-                "has_context": context is not None,
-                "has_logger": logger is not None,
-            }
+        def _execute(self, action, parameters, mode, context, logger):
+            return (
+                "success",
+                {
+                    "has_mode": mode is not None,
+                    "has_context": context is not None,
+                    "has_logger": logger is not None,
+                },
+                [],
+            )
 
     action_instance = KwargsStyleAction()
 
-    # Test basic call
-    result = action_instance.run("test", {"input": "test"})
-    assert result["has_mode"] is True  # default mode
-    assert result["has_context"] is False
-    assert result["has_logger"] is False
+    # Test basic call (mode="run" to avoid dry-run)
+    status, metadata, objects = action_instance.run(
+        "test", {"input": "test"}, mode="run"
+    )
+    assert metadata["has_mode"] is True
+    assert metadata["has_context"] is False
+    assert metadata["has_logger"] is False
 
     # Test with logger parameter
     logger = WorkflowLogger(terminal=False)
-    result = action_instance.run("test", {"input": "test"}, logger=logger)
-    assert result["has_mode"] is True
-    assert result["has_context"] is False
-    assert result["has_logger"] is True
+    status, metadata, objects = action_instance.run(
+        "test", {"input": "test"}, mode="run", logger=logger
+    )
+    assert metadata["has_mode"] is True
+    assert metadata["has_context"] is False
+    assert metadata["has_logger"] is True
 
 
 # Test integration with action registry and logger parameter
@@ -148,29 +151,31 @@ def test_action_registry_logger_integration():
         name = "logger-aware-action"
         description = "Action that reports logger usage"
 
-        def run(
-            self, action, parameters, mode="dry-run", context=None, logger=None
-        ):
-            return {
-                "logger_received": logger is not None,
-                "logger_terminal": (
-                    logger.is_terminal_logging if logger else None
-                ),
-                "logger_file": logger.is_file_logging if logger else None,
-            }
+        def _execute(self, action, parameters, mode, context, logger):
+            return (
+                "success",
+                {
+                    "logger_received": logger is not None,
+                    "logger_terminal": (
+                        logger.is_terminal_logging if logger else None
+                    ),
+                    "logger_file": logger.is_file_logging if logger else None,
+                },
+                [],
+            )
 
     # Simulate what action registry would do
     action_instance = LoggerAwareAction()
     logger = WorkflowLogger(terminal=True, log_file=None)
 
-    # Test direct action call with logger
-    result = action_instance.run(
+    # Test direct action call with logger (mode="run" to avoid dry-run)
+    status, metadata, objects = action_instance.run(
         "test", {"input": "test"}, mode="run", logger=logger
     )
 
-    assert result["logger_received"] is True
-    assert result["logger_terminal"] is True
-    assert result["logger_file"] is False
+    assert metadata["logger_received"] is True
+    assert metadata["logger_terminal"] is True
+    assert metadata["logger_file"] is False
 
 
 def test_action_execution_error_creation():
@@ -203,9 +208,9 @@ class ConcreteTestAction(CausalIQActionProvider):
     version = "1.0.0"
     description = "Test concrete action"
 
-    def run(self, action: str, parameters: dict, **kwargs) -> dict:
-        """Test implementation of run method."""
-        return {"status": "success", "parameters_received": parameters}
+    def _execute(self, action, parameters, mode, context, logger):
+        """Test implementation of _execute method."""
+        return ("success", {"parameters_received": parameters}, [])
 
 
 # Test concrete Action can be instantiated
@@ -221,10 +226,10 @@ def test_concrete_action_run():
     action = ConcreteTestAction()
     parameters = {"param1": "value1", "param2": "value2"}
 
-    result = action.run("test", parameters)
+    status, metadata, objects = action.run("test", parameters, mode="run")
 
-    assert result["status"] == "success"
-    assert result["parameters_received"] == parameters
+    assert status == "success"
+    assert metadata["parameters_received"] == parameters
 
 
 # Test that Action abstract class cannot be instantiated directly
@@ -241,10 +246,8 @@ def test_compress_not_implemented():
     class TestAction(CausalIQActionProvider):
         name = "test-action"
 
-        def run(
-            self, action, parameters, mode="dry-run", context=None, logger=None
-        ):
-            return {"status": "success"}
+        def _execute(self, action, parameters, mode, context, logger):
+            return ("success", {}, [])
 
     action = TestAction()
 
@@ -264,10 +267,8 @@ def test_decompress_not_implemented():
     class TestAction(CausalIQActionProvider):
         name = "test-action"
 
-        def run(
-            self, action, parameters, mode="dry-run", context=None, logger=None
-        ):
-            return {"status": "success"}
+        def _execute(self, action, parameters, mode, context, logger):
+            return ("success", {}, [])
 
     action = TestAction()
 

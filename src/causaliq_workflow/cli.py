@@ -118,6 +118,13 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
             """Log step execution in real-time."""
             if log_level == "all":
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                # Extract UPDATE step entry counts if present
+                would_process = matrix_values.pop(
+                    "_entries_would_process", None
+                )
+                would_skip = matrix_values.pop("_entries_would_skip", None)
+
                 # Format matrix values as [key=value, ...]
                 if matrix_values:
                     matrix_str = ", ".join(
@@ -126,9 +133,21 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
                     matrix_part = f" [{matrix_str}]"
                 else:
                     matrix_part = ""
+
+                # Add entry counts for UPDATE steps
+                entry_info = ""
+                if would_process is not None or would_skip is not None:
+                    parts = []
+                    if would_process:
+                        parts.append(f"{would_process} to process")
+                    if would_skip:
+                        parts.append(f"{would_skip} to skip")
+                    if parts:
+                        entry_info = f" ({', '.join(parts)})"
+
                 click.echo(
                     f"{timestamp} [{action_method}] {status:12} "
-                    f"{step_name}{matrix_part}"
+                    f"{step_name}{matrix_part}{entry_info}"
                 )
 
         try:
@@ -176,6 +195,10 @@ def _report_results(
     would_skip = 0
     failed = 0
 
+    # Track UPDATE step entry counts
+    entries_would_process = 0
+    entries_would_skip = 0
+
     for result in results:
         for step_result in result.get("steps", {}).values():
             status = step_result.get("status", "unknown")
@@ -188,6 +211,9 @@ def _report_results(
                 skipped += 1
             elif status == "would_execute":
                 would_execute += 1
+                # Accumulate UPDATE step entry counts
+                entries_would_process += step_result.get("would_process", 0)
+                entries_would_skip += step_result.get("would_skip", 0)
             elif status == "would_skip":
                 would_skip += 1
             elif status in ("error", "failed"):
@@ -214,8 +240,19 @@ def _report_results(
 
     summary = ", ".join(parts) if parts else "0 steps"
 
+    # Build entry-level summary for UPDATE steps
+    entry_summary = ""
+    if entries_would_process > 0 or entries_would_skip > 0:
+        entry_parts = []
+        if entries_would_process > 0:
+            entry_parts.append(f"{entries_would_process} entries to process")
+        if entries_would_skip > 0:
+            entry_parts.append(f"{entries_would_skip} entries to skip")
+        entry_summary = f" ({', '.join(entry_parts)})"
+
     click.echo(
-        f"{timestamp} [causaliq-workflow] COMPLETED {total} steps: {summary}"
+        f"{timestamp} [causaliq-workflow] COMPLETED {total} steps: "
+        f"{summary}{entry_summary}"
     )
 
 

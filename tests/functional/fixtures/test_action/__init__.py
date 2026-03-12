@@ -81,20 +81,49 @@ class ActionProvider(CausalIQActionProvider):
         """Initialise test action."""
         super().__init__()
 
-    def run(
+    def _dry_run_result(
+        self, action: str, parameters: Dict[str, Any]
+    ) -> ActionResult:
+        """Return dry-run preview without executing.
+
+        Args:
+            action: Name of the action.
+            parameters: Validated parameters.
+
+        Returns:
+            ActionResult tuple with preview metadata.
+        """
+        # Validate parameters without creating files
+        required_keys = ["data_path", "output_dir"]
+        for key in required_keys:
+            if key not in parameters:
+                raise ActionExecutionError(
+                    f"Missing required parameter: {key}"
+                )
+
+        message = parameters.get("message", "Hello from test_action!")
+        metadata = {
+            "dry_run": True,
+            "action": action,
+            "output_file": f"{parameters['output_dir']}/test_output.txt",
+            "message_count": len(message),
+        }
+        return ("skipped", metadata, [])
+
+    def _execute(
         self,
         action: str,
         parameters: Dict[str, Any],
-        mode: str = "dry-run",
-        context: Optional["WorkflowContext"] = None,
-        logger: Optional[Any] = None,
+        mode: str,
+        context: Optional["WorkflowContext"],
+        logger: Optional[Any],
     ) -> ActionResult:
         """Execute test action.
 
         Args:
             action: Name of the action to execute
-            parameters: Action parameters
-            mode: Execution mode ('dry-run', 'run', 'compare')
+            parameters: Validated action parameters
+            mode: Execution mode ('run', 'force', 'compare')
             context: Workflow execution context
             logger: Optional workflow logger
 
@@ -104,23 +133,6 @@ class ActionProvider(CausalIQActionProvider):
         Raises:
             ActionExecutionError: If execution fails
         """
-        # Handle dry-run mode
-        if mode == "dry-run":
-            # Validate parameters without creating files
-            required_keys = ["data_path", "output_dir"]
-            for key in required_keys:
-                if key not in parameters:
-                    raise ActionExecutionError(
-                        f"Missing required parameter: {key}"
-                    )
-
-            message = parameters.get("message", "Hello from test_action!")
-            metadata = {
-                "output_file": f"{parameters['output_dir']}/test_output.txt",
-                "message_count": len(message),
-            }
-            return ("skipped", metadata, [])
-
         try:
             data_path = Path(parameters["data_path"])
             output_dir = Path(parameters["output_dir"])

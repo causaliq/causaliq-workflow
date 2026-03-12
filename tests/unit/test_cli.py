@@ -165,3 +165,79 @@ def test_log_step_execution_with_matrix_values(
     assert "EXECUTED" in captured.out
     assert "My Step" in captured.out
     assert "[network=asia, algorithm=pc]" in captured.out
+
+
+# Test _report_results with UPDATE step entry counts in dry-run mode.
+def test_report_results_with_entry_counts(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    # Step result with entry counts (from UPDATE step dry-run)
+    results = [
+        {
+            "steps": {
+                "update-step": {
+                    "status": "would_execute",
+                    "would_process": 10,
+                    "would_skip": 2,
+                }
+            }
+        }
+    ]
+    _report_results(results, {}, "dry-run", "all")
+
+    captured = capsys.readouterr()
+    assert "1 would execute" in captured.out
+    assert "10 entries to process" in captured.out
+    assert "2 entries to skip" in captured.out
+
+
+# Test _report_results with only entries to process (no skip).
+def test_report_results_entries_to_process_only(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [
+        {
+            "steps": {
+                "update-step": {
+                    "status": "would_execute",
+                    "would_process": 5,
+                    "would_skip": 0,
+                }
+            }
+        }
+    ]
+    _report_results(results, {}, "dry-run", "all")
+
+    captured = capsys.readouterr()
+    assert "5 entries to process" in captured.out
+    # Should not show "entries to skip" when count is 0
+    assert "entries to skip" not in captured.out
+
+
+# Test _report_results with only entries to skip (no process).
+def test_report_results_entries_to_skip_only(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [
+        {
+            "steps": {
+                "update-step": {
+                    "status": "would_execute",
+                    "would_process": 0,
+                    "would_skip": 3,
+                }
+            }
+        }
+    ]
+    _report_results(results, {}, "dry-run", "all")
+
+    captured = capsys.readouterr()
+    assert "3 entries to skip" in captured.out
+    # Should not show "entries to process" when count is 0
+    assert "entries to process" not in captured.out

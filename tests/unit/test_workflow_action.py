@@ -99,7 +99,7 @@ def test_echo_rejects_unknown_action() -> None:
     with pytest.raises(ActionValidationError) as exc_info:
         provider.run("unknown", {}, mode="dry-run")
 
-    assert "unknown action" in str(exc_info.value).lower()
+    assert "does not support action" in str(exc_info.value).lower()
 
 
 # Test echo action validates nodes parameter.
