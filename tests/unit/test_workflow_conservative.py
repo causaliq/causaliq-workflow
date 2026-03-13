@@ -1365,3 +1365,160 @@ def test_scan_update_step_conservative_skip_logs_per_entry(
         "WOULD SKIP",
         {"network": "asia"},
     )
+
+
+# ===========================================================================
+# NON-CACHE OUTPUT HANDLING TESTS
+# ===========================================================================
+
+
+# Test non-.db output (e.g., .csv) is passed to action, not used as cache.
+def test_non_cache_output_passed_to_action(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    """Test that non-.db outputs like .csv are passed to the action."""
+    from causaliq_workflow.registry import WorkflowContext
+
+    captured_params: dict = {}
+
+    class CsvOutputAction:
+        name = "csv-action"
+        action_patterns = {}  # type: ignore[var-annotated]
+
+        def run(self, action, parameters, **kwargs):
+            # Capture what parameters the action receives
+            captured_params.update(parameters)
+            return ("success", {"result": "ok"}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["csv-provider"] = CsvOutputAction
+
+    csv_path = str(tmp_path / "output.csv")  # type: ignore[operator]
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "summarise-step",
+                "uses": "csv-provider",
+                "with": {
+                    "action": "summarise",
+                    "output": csv_path,
+                },
+            }
+        ],
+    }
+
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    executor._execute_job(workflow, {"network": "asia"}, context, {}, None)
+
+    # Action should receive output parameter (not consumed by cache)
+    assert "output" in captured_params
+    assert captured_params["output"] == csv_path
+
+
+# Test terminal output ("-") is passed to action.
+def test_terminal_output_passed_to_action() -> None:
+    """Test that output='-' for terminal is passed to the action."""
+    from causaliq_workflow.registry import WorkflowContext
+
+    captured_params: dict = {}
+
+    class TerminalOutputAction:
+        name = "terminal-action"
+        action_patterns = {}  # type: ignore[var-annotated]
+
+        def run(self, action, parameters, **kwargs):
+            captured_params.update(parameters)
+            return ("success", {"result": "ok"}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["terminal-provider"] = (
+        TerminalOutputAction
+    )
+
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "summarise-step",
+                "uses": "terminal-provider",
+                "with": {
+                    "action": "summarise",
+                    "output": "-",
+                },
+            }
+        ],
+    }
+
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    executor._execute_job(workflow, {"network": "asia"}, context, {}, None)
+
+    # Action should receive output="-" parameter
+    assert "output" in captured_params
+    assert captured_params["output"] == "-"
+
+
+# Test .db output is NOT passed to action (consumed by cache).
+def test_db_output_not_passed_to_action(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    """Test that .db outputs are consumed by cache, not passed to action."""
+    from causaliq_workflow.registry import WorkflowContext
+
+    captured_params: dict = {}
+
+    class CacheOutputAction:
+        name = "cache-action"
+        action_patterns = {}  # type: ignore[var-annotated]
+
+        def run(self, action, parameters, **kwargs):
+            captured_params.update(parameters)
+            return ("success", {"result": "ok"}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["cache-provider"] = CacheOutputAction
+
+    db_path = str(tmp_path / "output.db")  # type: ignore[operator]
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "create-step",
+                "uses": "cache-provider",
+                "with": {
+                    "action": "create",
+                    "output": db_path,
+                },
+            }
+        ],
+    }
+
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    executor._execute_job(workflow, {"network": "asia"}, context, {}, None)
+
+    # Action should NOT receive output parameter (.db is consumed by cache)
+    assert "output" not in captured_params

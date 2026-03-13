@@ -1466,10 +1466,10 @@ class WorkflowExecutor:
                 step_inputs, variables
             )
 
-            # Add implicit matrix variables
-            for matrix_var, matrix_val in job.items():
-                if matrix_var not in resolved_inputs:
-                    resolved_inputs[matrix_var] = matrix_val
+            # Note: For AGGREGATE pattern, matrix variables are NOT added
+            # as implicit parameters. They are used only for filtering/
+            # grouping entries via _scan_aggregation_inputs, not as action
+            # parameters. The action receives _aggregation_entries instead.
 
             # Scan aggregation inputs for this matrix combo
             if agg_config is not None:
@@ -1638,6 +1638,11 @@ class WorkflowExecutor:
                     resolved_inputs["_aggregation_entries"] = matching_entries
                     # Remove 'aggregate' from resolved params (config only)
                     resolved_inputs.pop("aggregate", None)
+                    # Remove implicit matrix variables - for AGGREGATE pattern,
+                    # matrix vars are used only for filtering/grouping entries,
+                    # not as action parameters
+                    for matrix_var in job.keys():
+                        resolved_inputs.pop(matrix_var, None)
 
                 # Handle UPDATE pattern: process all entries in input cache
                 # UPDATE mode is activated when action declares UPDATE pattern
@@ -1672,6 +1677,10 @@ class WorkflowExecutor:
                     output_path is not None
                     and str(output_path).lower() != "none"
                 )
+                # Only .db files are workflow caches
+                is_cache_output = has_output and str(
+                    output_path
+                ).lower().endswith(".db")
 
                 # Dry-run mode: check what would happen without executing
                 if context.mode == "dry-run":
@@ -1679,9 +1688,9 @@ class WorkflowExecutor:
 
                     from causaliq_workflow.cache import WorkflowCache
 
-                    # Check if entry would be skipped (already exists)
+                    # Check if entry would be skipped (only for .db outputs)
                     would_skip = False
-                    if has_output and Path(output_path).exists():
+                    if is_cache_output and Path(output_path).exists():
                         with WorkflowCache(output_path) as check_cache:
                             would_skip = check_cache.exists(
                                 context.matrix_values
@@ -1710,7 +1719,12 @@ class WorkflowExecutor:
                     continue
 
                 # Run/force mode: actually execute
-                should_cache = has_output and context.mode in ("run", "force")
+                # Only create cache for .db output files; other outputs (like
+                # .csv or "-" for terminal) are handled directly by the action
+                should_cache = is_cache_output and context.mode in (
+                    "run",
+                    "force",
+                )
                 if should_cache:
                     from causaliq_workflow.cache import WorkflowCache
 
@@ -1740,6 +1754,10 @@ class WorkflowExecutor:
                         step_cache.close()
                         context.cache = None
                         continue
+
+                # For non-cache outputs (.csv, "-", ...), pass output to action
+                if has_output and not is_cache_output:
+                    resolved_inputs["output"] = output_path
 
                 try:
                     # Execute action
