@@ -42,12 +42,16 @@ class WorkflowContext:
         matrix: Complete matrix definition for cross-job optimisation
         matrix_values: Current job's specific matrix variable values
         cache: Optional WorkflowCache for storing step results
+        job_index: Current job index (0-based) in matrix expansion
+        total_jobs: Total number of jobs in matrix expansion
     """
 
     mode: str
     matrix: Dict[str, List[Any]]
     matrix_values: Dict[str, Any] = field(default_factory=dict)
     cache: Optional["WorkflowCache"] = None
+    job_index: int = 0
+    total_jobs: int = 1
 
     @property
     def matrix_key(self) -> str:

@@ -182,6 +182,72 @@ def test_matrix_expansion_preserves_order():
     assert jobs1[0] == {"algorithm": "pc", "dataset": "asia"}
 
 
+# Test matrix expansion expands range strings.
+def test_expand_matrix_range_string():
+    """Test matrix expansion expands range strings like '0-2' to integers."""
+    executor = WorkflowExecutor()
+
+    # Range string in matrix value
+    matrix = {
+        "seed": ["0-2"],
+        "network": ["asia"],
+    }
+    jobs = executor.expand_matrix(matrix)
+
+    # Should expand "0-2" to 0, 1, 2 → 3 jobs
+    assert len(jobs) == 3
+    assert jobs[0] == {"seed": 0, "network": "asia"}
+    assert jobs[1] == {"seed": 1, "network": "asia"}
+    assert jobs[2] == {"seed": 2, "network": "asia"}
+
+
+# Test matrix expansion with larger range.
+def test_expand_matrix_large_range():
+    """Test matrix expansion with larger range like '0-24'."""
+    executor = WorkflowExecutor()
+
+    matrix = {"seed": ["0-24"]}
+    jobs = executor.expand_matrix(matrix)
+
+    assert len(jobs) == 25
+    assert jobs[0] == {"seed": 0}
+    assert jobs[24] == {"seed": 24}
+
+
+# Test matrix expansion with mixed values and ranges.
+def test_expand_matrix_mixed_values_and_ranges():
+    """Test matrix with both explicit values and range strings."""
+    executor = WorkflowExecutor()
+
+    matrix = {
+        "seed": [0, "5-7", 10],  # Mix of int, range, int
+        "network": ["asia", "cancer"],
+    }
+    jobs = executor.expand_matrix(matrix)
+
+    # seed: [0, 5, 6, 7, 10] = 5 values × 2 networks = 10 jobs
+    assert len(jobs) == 10
+
+    # Check range was expanded
+    seeds = {job["seed"] for job in jobs}
+    assert seeds == {0, 5, 6, 7, 10}
+
+
+# Test matrix expansion leaves non-range strings unchanged.
+def test_expand_matrix_non_range_strings():
+    """Test that non-range strings are not modified."""
+    executor = WorkflowExecutor()
+
+    matrix = {
+        "network": ["asia-v2", "cancer"],  # "asia-v2" is not a range
+    }
+    jobs = executor.expand_matrix(matrix)
+
+    assert len(jobs) == 2
+    assert jobs[0] == {"network": "asia-v2"}
+    assert jobs[1] == {"network": "cancer"}
+
+
 # Test template variable extraction
 def test_extract_template_variables():
     """Test extraction of template variables from strings."""

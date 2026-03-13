@@ -102,6 +102,51 @@ class WorkflowExecutor:
                 f"Unexpected error parsing workflow: {e}"
             ) from e
 
+    def _expand_range_value(self, value: Any) -> List[Any]:
+        """Expand a range string to a list of integers.
+
+        Detects strings like "0-24" and expands them to [0, 1, 2, ..., 24].
+        Non-range values are returned as-is in a single-element list.
+
+        Args:
+            value: A matrix value that may be a range string
+
+        Returns:
+            List of expanded values (or single-element list for non-ranges)
+        """
+        if not isinstance(value, str):
+            return [value]
+
+        value = value.strip()
+
+        # Check for range pattern: digits-digits
+        if "-" in value:
+            parts = value.split("-")
+            if len(parts) == 2:
+                try:
+                    start = int(parts[0].strip())
+                    end = int(parts[1].strip())
+                    if start <= end:
+                        return list(range(start, end + 1))
+                except ValueError:
+                    pass  # Not a valid range, return as-is
+
+        return [value]
+
+    def _expand_matrix_values(self, values: List[Any]) -> List[Any]:
+        """Expand range strings in a list of matrix values.
+
+        Args:
+            values: List of matrix values that may contain range strings
+
+        Returns:
+            Expanded list with ranges converted to individual values
+        """
+        expanded: List[Any] = []
+        for value in values:
+            expanded.extend(self._expand_range_value(value))
+        return expanded
+
     def expand_matrix(
         self, matrix: Dict[str, List[Any]]
     ) -> List[Dict[str, Any]]:
@@ -109,6 +154,9 @@ class WorkflowExecutor:
 
         Generates all combinations from matrix variables using cartesian
         product. Each combination becomes a separate job configuration.
+
+        Range strings like "0-24" are automatically expanded to individual
+        integer values [0, 1, 2, ..., 24].
 
         Args:
             matrix: Dictionary mapping variable names to lists of values
@@ -125,7 +173,10 @@ class WorkflowExecutor:
         try:
             # Get variable names and value lists
             variables = list(matrix.keys())
-            value_lists = list(matrix.values())
+            # Expand any range strings in values
+            value_lists = [
+                self._expand_matrix_values(vals) for vals in matrix.values()
+            ]
 
             # Generate cartesian product of all combinations
             combinations = list(itertools.product(*value_lists))
@@ -1542,6 +1593,7 @@ class WorkflowExecutor:
             # Pass 2: Execute workflow
             matrix = workflow.get("matrix", {})
             jobs = self.expand_matrix(matrix)
+            total_jobs = len(jobs)
 
             results = []
             for job_index, job in enumerate(jobs):
@@ -1551,6 +1603,8 @@ class WorkflowExecutor:
                     matrix=matrix,
                     matrix_values=job,
                     cache=None,
+                    job_index=job_index,
+                    total_jobs=total_jobs,
                 )
 
                 # Execute job steps
