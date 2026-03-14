@@ -754,3 +754,417 @@ def test_matrix_values_match_partial_vars() -> None:
     matrix_vars = ["network", "sample_size"]
 
     assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# ============================================================================
+# Derived matrix from cache tests
+# ============================================================================
+
+
+# Test _is_aggregation_step True for AGGREGATE pattern with cache input.
+def test_is_aggregation_step_aggregate_pattern_with_cache(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {
+        "uses": "test_provider",
+        "with": {
+            "action": "transform",
+            "input": "cache.db",
+            "output": "out.db",
+        },
+    }
+    # Mock get_action_pattern to return AGGREGATE
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+    # Empty matrix - should still return True due to AGGREGATE pattern
+    assert executor._is_aggregation_step(step, {}) is True
+
+
+# Test _is_aggregation_step returns False for AGGREGATE without cache input.
+def test_is_aggregation_step_aggregate_pattern_no_cache(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {
+        "uses": "test_provider",
+        "with": {
+            "action": "transform",
+            "input": "data.csv",
+            "output": "out.db",
+        },
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+    # Non-cache input - returns False
+    assert executor._is_aggregation_step(step, {}) is False
+
+
+# Test _get_aggregation_config derives matrix_vars from cache.
+def test_get_aggregation_config_derives_matrix_from_cache(
+    executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    # Create cache with entries having matrix_values
+    cache_path = tmp_path / "input.db"
+    with WorkflowCache(cache_path) as cache:
+        e1 = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia", "seed": 1}, e1)
+        e2 = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "alarm", "seed": 2}, e2)
+
+    step = {
+        "uses": "test_provider",
+        "with": {
+            "action": "transform",
+            "input": str(cache_path),
+            "output": "out.db",
+        },
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+
+    # No explicit matrix - should derive from cache
+    config = executor._get_aggregation_config(step, {})
+
+    assert config is not None
+    assert config.input_caches == [str(cache_path)]
+    assert set(config.matrix_vars) == {"network", "seed"}
+
+
+# Test _derive_matrix_from_caches extracts correct keys.
+def test_derive_matrix_from_caches(
+    executor: WorkflowExecutor, tmp_path
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.workflow import _derive_matrix_from_caches
+
+    cache_path = tmp_path / "test.db"
+    with WorkflowCache(cache_path) as cache:
+        e1 = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia", "sample_size": 100}, e1)
+        e2 = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "alarm", "sample_size": 500}, e2)
+
+    keys, matrix_dict = _derive_matrix_from_caches([str(cache_path)])
+    assert set(keys) == {"network", "sample_size"}
+    assert set(matrix_dict["network"]) == {"asia", "alarm"}
+    assert set(matrix_dict["sample_size"]) == {100, 500}
+
+
+# Test _derive_matrix_from_caches with multiple caches having same keys.
+def test_derive_matrix_from_caches_multiple_consistent(
+    executor: WorkflowExecutor, tmp_path
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.workflow import _derive_matrix_from_caches
+
+    cache1 = tmp_path / "cache1.db"
+    cache2 = tmp_path / "cache2.db"
+
+    with WorkflowCache(cache1) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia", "seed": 1}, e)
+
+    with WorkflowCache(cache2) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "alarm", "seed": 2}, e)
+
+    keys, matrix_dict = _derive_matrix_from_caches([str(cache1), str(cache2)])
+    assert set(keys) == {"network", "seed"}
+    # Values combined from both caches
+    assert set(matrix_dict["network"]) == {"asia", "alarm"}
+    assert set(matrix_dict["seed"]) == {1, 2}
+
+
+# Test _derive_matrix_from_caches raises error for inconsistent keys.
+def test_derive_matrix_from_caches_inconsistent_raises(
+    executor: WorkflowExecutor, tmp_path
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.workflow import (
+        WorkflowExecutionError,
+        _derive_matrix_from_caches,
+    )
+
+    cache1 = tmp_path / "cache1.db"
+    cache2 = tmp_path / "cache2.db"
+
+    with WorkflowCache(cache1) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia", "seed": 1}, e)
+
+    with WorkflowCache(cache2) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "alarm", "algorithm": "pc"}, e)  # Different keys
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        _derive_matrix_from_caches([str(cache1), str(cache2)])
+    assert "inconsistent matrix keys" in str(exc_info.value)
+
+
+# Test _derive_matrix_from_caches with empty cache returns empty.
+def test_derive_matrix_from_caches_empty(
+    executor: WorkflowExecutor, tmp_path
+) -> None:
+    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.workflow import _derive_matrix_from_caches
+
+    cache_path = tmp_path / "empty.db"
+    with WorkflowCache(cache_path):
+        pass  # Empty cache
+
+    keys, matrix_dict = _derive_matrix_from_caches([str(cache_path)])
+    assert keys == []
+    assert matrix_dict == {}
+
+
+# Test _derive_workflow_matrix returns explicit matrix when present.
+def test_derive_workflow_matrix_explicit(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workflow = {
+        "matrix": {"network": ["asia", "alarm"]},
+        "steps": [{"uses": "action", "with": {"data": "test.csv"}}],
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: None,
+    )
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert matrix == {"network": ["asia", "alarm"]}
+
+
+# Test _derive_matrix_from_caches skips non-existent paths.
+def test_derive_matrix_from_caches_nonexistent_path(tmp_path) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.workflow import _derive_matrix_from_caches
+
+    # One valid cache, one non-existent path
+    valid_cache = tmp_path / "valid.db"
+    with WorkflowCache(valid_cache) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia"}, e)
+
+    nonexistent = tmp_path / "missing.db"
+
+    keys, matrix_dict = _derive_matrix_from_caches(
+        [str(nonexistent), str(valid_cache)]
+    )
+    # Should get results from valid cache only
+    assert set(keys) == {"network"}
+    assert matrix_dict["network"] == ["asia"]
+
+
+# Test _derive_workflow_matrix derives from AGGREGATE step cache.
+def test_derive_workflow_matrix_from_aggregate_step(
+    executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    # Create cache with entries
+    cache_path = tmp_path / "input.db"
+    with WorkflowCache(cache_path) as cache:
+        e1 = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia", "seed": 1}, e1)
+        e2 = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "alarm", "seed": 2}, e2)
+
+    workflow = {
+        "steps": [
+            {
+                "uses": "test_provider",
+                "with": {
+                    "action": "transform",
+                    "input": str(cache_path),
+                    "output": "out.db",
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert set(matrix.keys()) == {"network", "seed"}
+
+
+# Test _derive_workflow_matrix skips non-AGGREGATE steps.
+def test_derive_workflow_matrix_skips_non_aggregate(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    workflow = {
+        "steps": [
+            {
+                "uses": "test_provider",
+                "with": {
+                    "action": "create",
+                    "input": "cache.db",
+                    "output": "out.db",
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.CREATE,
+    )
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert matrix == {}
+
+
+# Test _derive_workflow_matrix handles pattern lookup exception.
+def test_derive_workflow_matrix_pattern_exception(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workflow = {
+        "steps": [
+            {
+                "uses": "unknown_provider",
+                "with": {"action": "unknown", "input": "cache.db"},
+            }
+        ],
+    }
+
+    def raise_error(p, a):
+        raise ValueError("Unknown provider")
+
+    monkeypatch.setattr(
+        executor.action_registry, "get_action_pattern", raise_error
+    )
+
+    # Should handle exception and return empty matrix
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert matrix == {}
+
+
+# Test _derive_workflow_matrix skips steps without provider or action.
+def test_derive_workflow_matrix_skips_incomplete_steps(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "steps": [
+            {"uses": "provider"},  # Missing action
+            {"with": {"action": "act"}},  # Missing uses
+        ],
+    }
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert matrix == {}
+
+
+# Test _derive_workflow_matrix with aggregate parameter.
+def test_derive_workflow_matrix_from_aggregate_param(
+    executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "agg.db"
+    with WorkflowCache(cache_path) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia"}, e)
+
+    workflow = {
+        "steps": [
+            {
+                "uses": "test_provider",
+                "with": {
+                    "action": "merge",
+                    "aggregate": str(cache_path),
+                    "output": "out.db",
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert "network" in matrix
+
+
+# Test _derive_workflow_matrix with aggregate list parameter.
+def test_derive_workflow_matrix_from_aggregate_list(
+    executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache1 = tmp_path / "c1.db"
+    cache2 = tmp_path / "c2.db"
+    for cp in [cache1, cache2]:
+        with WorkflowCache(cp) as cache:
+            e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+            cache.put({"network": "asia"}, e)
+
+    workflow = {
+        "steps": [
+            {
+                "uses": "test_provider",
+                "with": {
+                    "action": "merge",
+                    "aggregate": [str(cache1), str(cache2)],
+                    "output": "out.db",
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert "network" in matrix
+
+
+# Test _is_aggregation_step handles pattern lookup exception.
+def test_is_aggregation_step_pattern_exception(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    step = {
+        "uses": "unknown_provider",
+        "with": {"action": "unknown", "input": "cache.db"},
+    }
+
+    def raise_error(p, a):
+        raise ValueError("Unknown provider")
+
+    monkeypatch.setattr(
+        executor.action_registry, "get_action_pattern", raise_error
+    )
+
+    # Should handle exception and return False
+    assert executor._is_aggregation_step(step, {}) is False

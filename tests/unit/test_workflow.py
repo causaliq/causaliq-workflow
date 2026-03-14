@@ -765,11 +765,12 @@ def test_validate_aggregate_pattern_requires_output(monkeypatch):
     assert "AGGREGATE pattern requires 'output'" in str(exc_info.value)
 
 
-# Test AGGREGATE pattern requires matrix definition.
-def test_validate_aggregate_pattern_requires_matrix(monkeypatch):
-    """Test AGGREGATE pattern validation requires matrix definition."""
+# Test AGGREGATE pattern requires matrix or cache input.
+def test_validate_aggregate_pattern_requires_matrix_or_cache(monkeypatch):
+    """Test AGGREGATE pattern requires matrix definition or cache input."""
     from causaliq_core import ActionPattern
 
+    # AGGREGATE without matrix and without cache input (non-.db file)
     workflow_data = {
         "steps": [
             {
@@ -777,7 +778,7 @@ def test_validate_aggregate_pattern_requires_matrix(monkeypatch):
                 "uses": "test_provider",
                 "with": {
                     "action": "aggregate_action",
-                    "input": "cache.db",
+                    "input": "data.csv",  # Not a cache file
                     "output": "result.db",
                 },
             }
@@ -809,6 +810,51 @@ def test_validate_aggregate_pattern_requires_matrix(monkeypatch):
     assert "AGGREGATE pattern requires workflow 'matrix'" in str(
         exc_info.value
     )
+
+
+# Test AGGREGATE with cache input derives matrix (no explicit needed).
+def test_validate_aggregate_pattern_with_cache_input_valid(monkeypatch):
+    """Test AGGREGATE with cache input passes without explicit matrix."""
+    from causaliq_core import ActionPattern
+
+    # AGGREGATE with cache input but no explicit matrix - matrix derived
+    workflow_data = {
+        "steps": [
+            {
+                "name": "agg_step",
+                "uses": "test_provider",
+                "with": {
+                    "action": "aggregate_action",
+                    "input": "cache.db",  # Cache input allows derived matrix
+                    "output": "result.db",
+                },
+            }
+        ],
+    }
+
+    def fake_load(path):
+        return workflow_data
+
+    def fake_validate(data):
+        return True
+
+    def fake_get_pattern(provider, action):
+        return ActionPattern.AGGREGATE
+
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.load_workflow_file", fake_load
+    )
+    monkeypatch.setattr(
+        "causaliq_workflow.workflow.validate_workflow", fake_validate
+    )
+
+    executor = WorkflowExecutor()
+    executor.action_registry.get_action_pattern = fake_get_pattern
+    executor.action_registry.validate_workflow_actions = lambda w: []
+
+    # Should pass validation (matrix derived from cache)
+    result = executor.parse_workflow("test.yml")
+    assert result == workflow_data
 
 
 # Test valid CREATE pattern configuration passes.

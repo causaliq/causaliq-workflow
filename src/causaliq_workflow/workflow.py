@@ -16,6 +16,7 @@ from typing import (
     List,
     Optional,
     Set,
+    Tuple,
     Union,
 )
 
@@ -99,6 +100,68 @@ def _matrix_values_match(
         if entry_val != target_val:
             return False
     return True
+
+
+def _derive_matrix_from_caches(
+    cache_paths: List[str],
+) -> Tuple[List[str], Dict[str, List[Any]]]:
+    """Derive matrix keys and values from input caches.
+
+    Scans all input caches, extracts matrix keys from entries, and validates
+    that all caches have the same key structure. Returns the unique key names
+    and a dictionary mapping each key to its unique values across all entries.
+
+    Args:
+        cache_paths: List of paths to workflow cache files (.db)
+
+    Returns:
+        Tuple of (matrix_keys, matrix_dict) where:
+        - matrix_keys: List of matrix variable names
+        - matrix_dict: Dict mapping each key to list of unique values
+
+    Raises:
+        WorkflowExecutionError: If caches have inconsistent matrix keys
+    """
+    from pathlib import Path
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    all_keys: Optional[Set[str]] = None
+    value_sets: Dict[str, Set[Any]] = {}
+
+    for cache_path in cache_paths:
+        if not Path(cache_path).exists():
+            continue
+
+        with WorkflowCache(cache_path) as cache:
+            entries = cache.list_entries()
+
+            for entry_info in entries:
+                entry_matrix = entry_info.get("matrix_values", {})
+                entry_keys = set(entry_matrix.keys())
+
+                if all_keys is None:
+                    all_keys = entry_keys
+                    value_sets = {k: set() for k in entry_keys}
+                elif entry_keys != all_keys:
+                    raise WorkflowExecutionError(
+                        f"Input caches have inconsistent matrix keys. "
+                        f"Expected {sorted(all_keys)}, "
+                        f"found {sorted(entry_keys)} in '{cache_path}'"
+                    )
+
+                # Collect unique values for each key
+                for key, val in entry_matrix.items():
+                    value_sets[key].add(val)
+
+    if all_keys is None:
+        return [], {}
+
+    # Convert sets to sorted lists for deterministic ordering
+    matrix_keys = sorted(all_keys)
+    matrix_dict = {k: sorted(value_sets[k], key=str) for k in matrix_keys}
+
+    return matrix_keys, matrix_dict
 
 
 class WorkflowExecutor:
@@ -240,6 +303,76 @@ class WorkflowExecutor:
             raise WorkflowExecutionError(
                 f"Matrix expansion failed: {e}"
             ) from e
+
+    def _derive_workflow_matrix(
+        self,
+        workflow: Dict[str, Any],
+    ) -> Dict[str, List[Any]]:
+        """Get effective matrix for workflow, deriving from cache if needed.
+
+        If the workflow has an explicit matrix, returns it. Otherwise, checks
+        for AGGREGATE pattern steps and derives matrix from their input caches.
+
+        Args:
+            workflow: Parsed workflow dictionary
+
+        Returns:
+            Effective matrix dictionary (may be empty for non-matrix workflows)
+        """
+        from causaliq_core import ActionPattern
+
+        # If explicit matrix exists, use it
+        explicit_matrix: Dict[str, List[Any]] = workflow.get("matrix", {})
+        if explicit_matrix:
+            return explicit_matrix
+
+        # Check for AGGREGATE steps that need derived matrix
+        for step in workflow.get("steps", []):
+            step_inputs = step.get("with", {})
+            provider_name = step.get("uses")
+            action_name = step_inputs.get("action")
+
+            if not provider_name or not action_name:
+                continue
+
+            # Check if action is AGGREGATE pattern
+            try:
+                pattern = self.action_registry.get_action_pattern(
+                    provider_name, action_name
+                )
+            except Exception:
+                continue
+
+            if pattern != ActionPattern.AGGREGATE:
+                continue
+
+            # Check if step has cache input
+            input_param = step_inputs.get("input")
+            aggregate_param = step_inputs.get("aggregate")
+
+            cache_paths: List[str] = []
+            if aggregate_param:
+                if isinstance(aggregate_param, str):
+                    cache_paths = [aggregate_param]
+                elif isinstance(aggregate_param, list):
+                    cache_paths = list(aggregate_param)
+            elif input_param:
+                inputs = (
+                    [input_param]
+                    if isinstance(input_param, str)
+                    else list(input_param) if input_param else []
+                )
+                cache_paths = [
+                    p for p in inputs if str(p).lower().endswith(".db")
+                ]
+
+            if cache_paths:
+                # Derive matrix from cache
+                _, derived_matrix = _derive_matrix_from_caches(cache_paths)
+                if derived_matrix:
+                    return derived_matrix
+
+        return {}
 
     def _extract_template_variables(self, text: Any) -> Set[str]:
         """Extract template variables from a string.
@@ -413,10 +546,9 @@ class WorkflowExecutor:
         """Check if a step should execute in aggregation mode.
 
         Aggregation mode is activated when:
-        1. The workflow has a matrix definition, AND
-        2. Either:
-           a. The step has an `aggregate` parameter, OR
-           b. The step has an `input` parameter pointing to .db file(s)
+        1. The workflow has a matrix definition AND step has cache input, OR
+        2. The action declares AGGREGATE pattern AND step has cache input
+           (matrix will be derived from input cache)
 
         Args:
             step: Step configuration dictionary
@@ -425,26 +557,46 @@ class WorkflowExecutor:
         Returns:
             True if step should run in aggregation mode
         """
-        if not matrix:
-            return False
+        from causaliq_core import ActionPattern
 
         step_inputs = step.get("with", {})
 
-        # Explicit aggregate parameter
+        # Check if step has cache input (.db files)
+        has_cache_input = False
         if "aggregate" in step_inputs:
+            has_cache_input = True
+        else:
+            input_param = step_inputs.get("input")
+            if input_param:
+                inputs = (
+                    [input_param]
+                    if isinstance(input_param, str)
+                    else (list(input_param) if input_param else [])
+                )
+                has_cache_input = any(
+                    str(p).lower().endswith(".db") for p in inputs
+                )
+
+        if not has_cache_input:
+            return False
+
+        # If matrix is provided, aggregation is active
+        if matrix:
             return True
 
-        # Check if input points to .db cache file(s)
-        input_param = step_inputs.get("input")
-        if input_param:
-            inputs = (
-                [input_param]
-                if isinstance(input_param, str)
-                else (list(input_param) if input_param else [])
-            )
-            # Aggregation if any input is a .db file
-            if any(str(p).lower().endswith(".db") for p in inputs):
-                return True
+        # No explicit matrix - check if action declares AGGREGATE pattern
+        # (matrix will be derived from input cache)
+        provider_name = step.get("uses")
+        action_name = step_inputs.get("action")
+        if provider_name and action_name:
+            try:
+                pattern = self.action_registry.get_action_pattern(
+                    provider_name, action_name
+                )
+                if pattern == ActionPattern.AGGREGATE:
+                    return True
+            except Exception:
+                pass
 
         return False
 
@@ -857,6 +1009,8 @@ class WorkflowExecutor:
         """Get aggregation configuration for a step.
 
         Returns None if the step is not an aggregation step.
+        If no explicit matrix is provided but the action is AGGREGATE pattern,
+        matrix keys are derived from the input cache entries.
 
         Args:
             step: Step configuration dictionary
@@ -895,10 +1049,18 @@ class WorkflowExecutor:
                 str(p) for p in inputs if str(p).lower().endswith(".db")
             ]
 
+        # Determine matrix variables
+        if matrix:
+            # Use explicit matrix keys
+            matrix_vars = list(matrix.keys())
+        else:
+            # Derive matrix keys from input caches
+            matrix_vars, _ = _derive_matrix_from_caches(input_caches)
+
         return AggregationConfig(
             input_caches=input_caches,
             filter_expr=step_inputs.get("filter"),
-            matrix_vars=list(matrix.keys()),
+            matrix_vars=matrix_vars,
         )
 
     def _scan_aggregation_inputs(
@@ -1212,10 +1374,11 @@ class WorkflowExecutor:
                         f"Step '{step_name}': AGGREGATE pattern requires "
                         f"'output' parameter"
                     )
-                if not has_matrix:
+                # Matrix can be explicit or derived from cache input
+                if not has_matrix and not has_cache_input:
                     errors.append(
                         f"Step '{step_name}': AGGREGATE pattern requires "
-                        f"workflow 'matrix' definition"
+                        f"workflow 'matrix' definition or cache input"
                     )
 
         return errors
@@ -1668,7 +1831,8 @@ class WorkflowExecutor:
                 return []
 
             # Pass 2: Execute workflow
-            matrix = workflow.get("matrix", {})
+            # Derive matrix from explicit definition or from input caches
+            matrix = self._derive_workflow_matrix(workflow)
             jobs = self.expand_matrix(matrix)
             total_jobs = len(jobs)
 
