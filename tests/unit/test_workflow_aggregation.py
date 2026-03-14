@@ -662,3 +662,95 @@ def test_execute_job_no_aggregation_without_matrix(
     assert "_aggregation_entries" not in captured_params
     # 'input' should remain as normal parameter
     assert "input" in captured_params
+
+
+# ============================================================================
+# Matrix value normalisation tests (case-insensitive numeric suffixes)
+# ============================================================================
+
+
+# Test _normalise_matrix_value with lowercase numeric suffix.
+def test_normalise_matrix_value_lowercase_k() -> None:
+    from causaliq_workflow.workflow import _normalise_matrix_value
+
+    assert _normalise_matrix_value("1k") == "1k"
+
+
+# Test _normalise_matrix_value with uppercase numeric suffix.
+def test_normalise_matrix_value_uppercase_k() -> None:
+    from causaliq_workflow.workflow import _normalise_matrix_value
+
+    assert _normalise_matrix_value("1K") == "1k"
+
+
+# Test _normalise_matrix_value with M suffix.
+def test_normalise_matrix_value_uppercase_m() -> None:
+    from causaliq_workflow.workflow import _normalise_matrix_value
+
+    assert _normalise_matrix_value("10M") == "10m"
+
+
+# Test _normalise_matrix_value with integer.
+def test_normalise_matrix_value_integer() -> None:
+    from causaliq_workflow.workflow import _normalise_matrix_value
+
+    assert _normalise_matrix_value(100) == 100
+
+
+# Test _normalise_matrix_value with non-numeric string.
+def test_normalise_matrix_value_non_numeric_string() -> None:
+    from causaliq_workflow.workflow import _normalise_matrix_value
+
+    assert _normalise_matrix_value("asia") == "asia"
+
+
+# Test _normalise_matrix_value with numeric string no suffix.
+def test_normalise_matrix_value_numeric_no_suffix() -> None:
+    from causaliq_workflow.workflow import _normalise_matrix_value
+
+    assert _normalise_matrix_value("500") == "500"
+
+
+# Test _matrix_values_match with case difference in suffix.
+def test_matrix_values_match_case_insensitive_suffix() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "sample_size": "1k"}
+    target = {"network": "asia", "sample_size": "1K"}
+    matrix_vars = ["network", "sample_size"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match with non-matching values.
+def test_matrix_values_match_mismatch() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "sample_size": "1k"}
+    target = {"network": "alarm", "sample_size": "1K"}
+    matrix_vars = ["network", "sample_size"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is False
+
+
+# Test _matrix_values_match with integer values.
+def test_matrix_values_match_integers() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "sample_size": 100}
+    target = {"network": "asia", "sample_size": 100}
+    matrix_vars = ["network", "sample_size"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match with partial matrix vars.
+def test_matrix_values_match_partial_vars() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "sample_size": "1k", "seed": 0}
+    target = {"network": "asia", "sample_size": "1K"}
+    # Only match on network and sample_size
+    matrix_vars = ["network", "sample_size"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True

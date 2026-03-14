@@ -42,6 +42,22 @@ class MockFailingAction(ActionProvider):
         raise ActionExecutionError("Mock action failure")
 
 
+class MockObjectProducingAction(ActionProvider):
+    """Mock action that produces objects."""
+
+    name = "mock-object-action"
+    version = "1.0.0"
+    description = "Mock action that returns objects"
+
+    def _execute(
+        self, action: str, parameters: dict, mode: str, context, logger
+    ) -> ActionResult:
+        metadata = {"mode": mode, "action": action}
+        # Return a mock object to simulate an action that produces results
+        objects = [{"type": "test", "data": "mock_object"}]
+        return ("success", metadata, objects)
+
+
 @pytest.fixture
 def executor() -> WorkflowExecutor:
     """Pytest fixture for executor setup."""
@@ -51,5 +67,8 @@ def executor() -> WorkflowExecutor:
     )
     executor.action_registry._actions["mock_failing_action"] = (
         MockFailingAction
+    )
+    executor.action_registry._actions["mock_object_action"] = (
+        MockObjectProducingAction
     )
     return executor

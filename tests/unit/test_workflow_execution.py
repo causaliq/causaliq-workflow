@@ -302,3 +302,25 @@ def test_execute_workflow_implicit_does_not_override_explicit(
 
     # Explicit param should NOT be overridden
     assert params["network"] == "custom_value"
+
+
+# Test error when action produces objects but no workflow cache is open.
+def test_execute_workflow_objects_without_cache_raises_error(
+    executor: WorkflowExecutor,
+) -> None:
+    """Action producing objects without a cache destination raises error."""
+    workflow = {
+        "steps": [
+            {
+                "uses": "mock_object_action",
+                "name": "Produce Objects",
+                "with": {"action": "test"},
+                # Note: no 'output' specified, so no cache is created
+            }
+        ],
+    }
+    with pytest.raises(
+        WorkflowExecutionError,
+        match="produced objects but no workflow cache is open",
+    ):
+        executor.execute_workflow(workflow, mode="run")

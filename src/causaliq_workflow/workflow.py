@@ -54,6 +54,53 @@ class AggregationConfig:
     """Matrix variables defining grouping dimensions."""
 
 
+def _normalise_matrix_value(value: Any) -> Any:
+    """Normalise matrix value for case-insensitive comparison.
+
+    Numeric suffixes (k, K, m, M, g, G, t, T) are normalised to lowercase
+    for comparison. This allows workflows to use '1K' or '1k' interchangeably.
+
+    Args:
+        value: Matrix value to normalise
+
+    Returns:
+        Normalised value (string lowercased if it has numeric suffix,
+        otherwise unchanged)
+    """
+    if not isinstance(value, str):
+        return value
+    # Match numeric values with optional suffix (e.g., "100", "1k", "10M")
+    # Normalise suffix to lowercase for comparison
+    if re.match(r"^\d+[kKmMgGtT]?$", value):
+        return value.lower()
+    return value
+
+
+def _matrix_values_match(
+    entry_values: Dict[str, Any],
+    target_values: Dict[str, Any],
+    matrix_vars: List[str],
+) -> bool:
+    """Check if entry matrix values match target values.
+
+    Comparison is case-insensitive for numeric suffixes (k, M, etc).
+
+    Args:
+        entry_values: Matrix values from cache entry
+        target_values: Target matrix values to match against
+        matrix_vars: List of matrix variable names to compare
+
+    Returns:
+        True if all matrix variables match
+    """
+    for var in matrix_vars:
+        entry_val = _normalise_matrix_value(entry_values.get(var))
+        target_val = _normalise_matrix_value(target_values.get(var))
+        if entry_val != target_val:
+            return False
+    return True
+
+
 class WorkflowExecutor:
     """Parse and execute GitHub Actions-style workflows with matrix expansion.
 
@@ -910,9 +957,9 @@ class WorkflowExecutor:
                                 continue
 
                         # Check if entry matches current matrix values
-                        matches = all(
-                            entry_matrix.get(var) == matrix_values.get(var)
-                            for var in config.matrix_vars
+                        # (case-insensitive for numeric suffixes like 1k/1K)
+                        matches = _matrix_values_match(
+                            entry_matrix, matrix_values, config.matrix_vars
                         )
 
                         if matches:
@@ -1858,6 +1905,23 @@ class WorkflowExecutor:
                             metadata=metadata,
                             objects=objects,
                             matrix_key_order=matrix_key_order,
+                        )
+
+                    # Check for objects that couldn't be stored
+                    # (action produced objects but no .db cache was open)
+                    if (
+                        context.cache is None
+                        and step_result.get("status") == "success"
+                        and step_result.get("objects")
+                    ):
+                        action_method = resolved_inputs.get(
+                            "action", "default"
+                        )
+                        raise WorkflowExecutionError(
+                            f"Step '{step_name}' (action '{action_method}') "
+                            f"produced objects but no workflow cache is open "
+                            f"to store them. Use 'output: path/to/cache.db' "
+                            f"to specify a workflow cache destination."
                         )
 
                     # Log step completion in real-time if logger provided
