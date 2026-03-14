@@ -508,8 +508,8 @@ class WorkflowExecutor:
     ) -> Dict[str, Any]:
         """Execute a step in UPDATE pattern mode.
 
-        UPDATE mode processes all entries in the input cache:
-        1. Opens input cache
+        UPDATE mode processes all entries in one or more input caches:
+        1. Opens each input cache
         2. Iterates all entries (subject to filter)
         3. Applies conservative execution (skip if action metadata exists)
         4. Calls action with entry data via _update_entry parameter
@@ -532,15 +532,15 @@ class WorkflowExecutor:
 
         action_name = step["uses"]
         action_method = resolved_inputs.get("action", "default")
-        input_path = resolved_inputs.get("input")
+        input_param = resolved_inputs.get("input")
         filter_expr = resolved_inputs.get("filter")
 
         # Get provider name for metadata structuring
         action_class = self.action_registry.get_action_class(action_name)
         provider_name = getattr(action_class, "name", action_name)
 
-        # Validate input_path is provided (should be guaranteed by validation)
-        if input_path is None:
+        # Validate input is provided (should be guaranteed by validation)
+        if input_param is None:
             return {
                 "status": "error",
                 "error": "UPDATE action requires 'input' parameter",
@@ -549,11 +549,29 @@ class WorkflowExecutor:
                 "entries_updated": 0,
             }
 
-        # Check input cache exists
-        if not Path(input_path).exists():
+        # Normalise to list of paths
+        if isinstance(input_param, str):
+            input_paths = [input_param]
+        elif isinstance(input_param, list):
+            input_paths = list(input_param)
+        else:
             return {
                 "status": "error",
-                "error": f"Input cache does not exist: {input_path}",
+                "error": (
+                    f"'input' must be string or list, "
+                    f"got {type(input_param).__name__}"
+                ),
+                "entries_processed": 0,
+                "entries_skipped": 0,
+                "entries_updated": 0,
+            }
+
+        # Check all input caches exist before processing
+        missing = [p for p in input_paths if not Path(p).exists()]
+        if missing:
+            return {
+                "status": "error",
+                "error": f"Input cache(s) do not exist: {', '.join(missing)}",
                 "entries_processed": 0,
                 "entries_skipped": 0,
                 "entries_updated": 0,
@@ -564,27 +582,40 @@ class WorkflowExecutor:
         entries_updated = 0
         errors: List[str] = []
 
-        with WorkflowCache(input_path) as cache:
-            entries = cache.list_entries()
+        for input_path in input_paths:
+            with WorkflowCache(input_path) as cache:
+                entries = cache.list_entries()
 
-            for entry_info in entries:
-                entry_matrix = entry_info.get("matrix_values", {})
-                entries_processed += 1
+                for entry_info in entries:
+                    entry_matrix = entry_info.get("matrix_values", {})
+                    entries_processed += 1
 
-                # Get full entry
-                full_entry = cache.get(entry_matrix)
-                if full_entry is None:
-                    continue
+                    # Get full entry
+                    full_entry = cache.get(entry_matrix)
+                    if full_entry is None:
+                        continue
 
-                # Flatten metadata for filter evaluation
-                flat_meta = self._flatten_metadata(
-                    entry_matrix, full_entry.metadata
-                )
+                    # Flatten metadata for filter evaluation
+                    flat_meta = self._flatten_metadata(
+                        entry_matrix, full_entry.metadata
+                    )
 
-                # Apply filter expression if present
-                if filter_expr:
-                    try:
-                        if not evaluate_filter(filter_expr, flat_meta):
+                    # Apply filter expression if present
+                    if filter_expr:
+                        try:
+                            if not evaluate_filter(filter_expr, flat_meta):
+                                entries_skipped += 1
+                                if step_logger:
+                                    step_logger(
+                                        action_method,
+                                        step.get("name", "unknown"),
+                                        "IGNORED",
+                                        entry_matrix,
+                                    )
+                                continue
+                        except Exception:
+                            # Filter failed on this entry - skip it
+                            # (validation should catch syntax errors upfront)
                             entries_skipped += 1
                             if step_logger:
                                 step_logger(
@@ -594,101 +625,89 @@ class WorkflowExecutor:
                                     entry_matrix,
                                 )
                             continue
-                    except Exception:
-                        # Filter failed on this entry - skip it
-                        # (validation should catch syntax errors upfront)
+
+                    # Conservative execution: skip if action already applied
+                    # Bypassed in force mode
+                    if context.mode != "force" and cache.has_action_metadata(
+                        entry_matrix, provider_name, action_method
+                    ):
                         entries_skipped += 1
                         if step_logger:
                             step_logger(
                                 action_method,
                                 step.get("name", "unknown"),
-                                "IGNORED",
+                                "SKIPPED",
                                 entry_matrix,
                             )
                         continue
 
-                # Conservative execution: skip if action already applied
-                # Bypassed in force mode
-                if context.mode != "force" and cache.has_action_metadata(
-                    entry_matrix, provider_name, action_method
-                ):
-                    entries_skipped += 1
-                    if step_logger:
-                        step_logger(
-                            action_method,
-                            step.get("name", "unknown"),
-                            "SKIPPED",
-                            entry_matrix,
-                        )
-                    continue
+                    # Prepare inputs for action, passing entry data
+                    action_inputs = {
+                        k: v
+                        for k, v in resolved_inputs.items()
+                        if k not in ("input", "filter")
+                    }
 
-                # Prepare inputs for action, passing entry data
-                action_inputs = {
-                    k: v
-                    for k, v in resolved_inputs.items()
-                    if k not in ("input", "filter")
-                }
-
-                # Resolve any remaining template variables from entry metadata
-                # This enables UPDATE steps to use {{network}}, {{sample_size}}
-                # etc. which are resolved from each entry's metadata
-                action_inputs = self._resolve_template_variables(
-                    action_inputs, flat_meta
-                )
-
-                action_inputs["_update_entry"] = {
-                    "matrix_values": entry_matrix,
-                    "metadata": full_entry.metadata,
-                    "entry": full_entry,
-                }
-
-                # Execute action
-                try:
-                    result = self.action_registry.execute_action(
-                        action_name, action_inputs, context
+                    # Resolve any remaining template variables from entry
+                    # metadata. This enables UPDATE steps to use {{network}},
+                    # {{sample_size}} etc. resolved from each entry's metadata
+                    action_inputs = self._resolve_template_variables(
+                        action_inputs, flat_meta
                     )
 
-                    if result.get("status") == "success":
-                        # Extract metadata (exclude status and objects)
-                        raw_metadata = {
-                            k: v
-                            for k, v in result.items()
-                            if k not in ("status", "objects")
-                        }
+                    action_inputs["_update_entry"] = {
+                        "matrix_values": entry_matrix,
+                        "metadata": full_entry.metadata,
+                        "entry": full_entry,
+                    }
 
-                        # Structure metadata by provider/action
-                        structured_metadata = {
-                            provider_name: {action_method: raw_metadata}
-                        }
-
-                        # Update entry in cache
-                        objects = result.get("objects", [])
-                        if cache.update_entry(
-                            entry_matrix, structured_metadata, objects
-                        ):
-                            entries_updated += 1
-                            if step_logger:
-                                status = (
-                                    "FORCED"
-                                    if context.mode == "force"
-                                    else "EXECUTED"
-                                )
-                                step_logger(
-                                    action_method,
-                                    step.get("name", "unknown"),
-                                    status,
-                                    entry_matrix,
-                                )
-
-                except Exception as e:
-                    errors.append(f"Entry {entry_matrix}: {e}")
-                    if step_logger:
-                        step_logger(
-                            action_method,
-                            step.get("name", "unknown"),
-                            "FAILED",
-                            entry_matrix,
+                    # Execute action
+                    try:
+                        result = self.action_registry.execute_action(
+                            action_name, action_inputs, context
                         )
+
+                        if result.get("status") == "success":
+                            # Extract metadata (exclude status and objects)
+                            raw_metadata = {
+                                k: v
+                                for k, v in result.items()
+                                if k not in ("status", "objects")
+                            }
+
+                            # Structure metadata by provider/action
+                            structured_metadata = {
+                                provider_name: {action_method: raw_metadata}
+                            }
+
+                            # Update entry in cache
+                            objects = result.get("objects", [])
+                            if cache.update_entry(
+                                entry_matrix, structured_metadata, objects
+                            ):
+                                entries_updated += 1
+                                if step_logger:
+                                    status = (
+                                        "FORCED"
+                                        if context.mode == "force"
+                                        else "EXECUTED"
+                                    )
+                                    step_logger(
+                                        action_method,
+                                        step.get("name", "unknown"),
+                                        status,
+                                        entry_matrix,
+                                    )
+
+                    except Exception as e:
+                        errors.append(f"Entry {entry_matrix}: {e}")
+                        if step_logger:
+                            step_logger(
+                                action_method,
+                                step.get("name", "unknown"),
+                                "FAILED",
+                                entry_matrix,
+                            )
 
         # Determine overall status
         if entries_updated > 0:
@@ -718,7 +737,7 @@ class WorkflowExecutor:
             Callable[[str, str, str, Dict[str, Any]], None]
         ] = None,
     ) -> Dict[str, int]:
-        """Scan UPDATE step cache to count entries that would be processed.
+        """Scan UPDATE step cache(s) to count entries that would be processed.
 
         Used in dry-run mode to report how many entries would be updated
         vs skipped (due to conservative execution - action already applied).
@@ -740,7 +759,7 @@ class WorkflowExecutor:
 
         action_name = step["uses"]
         action_method = resolved_inputs.get("action", "default")
-        input_path = resolved_inputs.get("input")
+        input_param = resolved_inputs.get("input")
         filter_expr = resolved_inputs.get("filter")
 
         # Get provider name for metadata checking
@@ -750,29 +769,52 @@ class WorkflowExecutor:
         would_process = 0
         would_skip = 0
 
-        if input_path is None or not Path(input_path).exists():
+        if input_param is None:
             return {"would_process": 0, "would_skip": 0}
 
-        with WorkflowCache(input_path) as cache:
-            entries = cache.list_entries()
+        # Normalise to list of paths
+        if isinstance(input_param, str):
+            input_paths = [input_param]
+        elif isinstance(input_param, list):
+            input_paths = list(input_param)
+        else:
+            return {"would_process": 0, "would_skip": 0}
 
-            for entry_info in entries:
-                entry_matrix = entry_info.get("matrix_values", {})
+        for input_path in input_paths:
+            if not Path(input_path).exists():
+                continue
 
-                # Get full entry
-                full_entry = cache.get(entry_matrix)
-                if full_entry is None:
-                    continue
+            with WorkflowCache(input_path) as cache:
+                entries = cache.list_entries()
 
-                # Flatten metadata for filter evaluation
-                flat_meta = self._flatten_metadata(
-                    entry_matrix, full_entry.metadata
-                )
+                for entry_info in entries:
+                    entry_matrix = entry_info.get("matrix_values", {})
 
-                # Apply filter expression if present
-                if filter_expr:
-                    try:
-                        if not evaluate_filter(filter_expr, flat_meta):
+                    # Get full entry
+                    full_entry = cache.get(entry_matrix)
+                    if full_entry is None:
+                        continue
+
+                    # Flatten metadata for filter evaluation
+                    flat_meta = self._flatten_metadata(
+                        entry_matrix, full_entry.metadata
+                    )
+
+                    # Apply filter expression if present
+                    if filter_expr:
+                        try:
+                            if not evaluate_filter(filter_expr, flat_meta):
+                                would_skip += 1
+                                if step_logger:
+                                    step_logger(
+                                        action_method,
+                                        step.get("name", "unknown"),
+                                        "WOULD IGNORE",
+                                        entry_matrix,
+                                    )
+                                continue
+                        except Exception:
+                            # Filter failed on this entry - skip it
                             would_skip += 1
                             if step_logger:
                                 step_logger(
@@ -782,40 +824,28 @@ class WorkflowExecutor:
                                     entry_matrix,
                                 )
                             continue
-                    except Exception:
-                        # Filter failed on this entry - skip it
-                        # (validation should catch syntax errors upfront)
+
+                    # Conservative execution check
+                    if cache.has_action_metadata(
+                        entry_matrix, provider_name, action_method
+                    ):
                         would_skip += 1
                         if step_logger:
                             step_logger(
                                 action_method,
                                 step.get("name", "unknown"),
-                                "WOULD IGNORE",
+                                "WOULD SKIP",
                                 entry_matrix,
                             )
-                        continue
-
-                # Conservative execution check: skip if action already applied
-                if cache.has_action_metadata(
-                    entry_matrix, provider_name, action_method
-                ):
-                    would_skip += 1
-                    if step_logger:
-                        step_logger(
-                            action_method,
-                            step.get("name", "unknown"),
-                            "WOULD SKIP",
-                            entry_matrix,
-                        )
-                else:
-                    would_process += 1
-                    if step_logger:
-                        step_logger(
-                            action_method,
-                            step.get("name", "unknown"),
-                            "WOULD EXECUTE",
-                            entry_matrix,
-                        )
+                    else:
+                        would_process += 1
+                        if step_logger:
+                            step_logger(
+                                action_method,
+                                step.get("name", "unknown"),
+                                "WOULD EXECUTE",
+                                entry_matrix,
+                            )
 
         return {"would_process": would_process, "would_skip": would_skip}
 

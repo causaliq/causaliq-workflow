@@ -151,7 +151,7 @@ def test_execute_update_step_missing_cache() -> None:
     result = executor._execute_update_step(step, resolved_inputs, context)
 
     assert result["status"] == "error"
-    assert "does not exist" in result["error"]
+    assert "do not exist" in result["error"]
     assert result["entries_processed"] == 0
 
 
@@ -617,3 +617,186 @@ def test_execute_job_update_step_with_logger(
         "EXECUTED",
         {"network": "asia"},
     )
+
+
+# Test _execute_update_step with multiple input caches.
+def test_execute_update_step_multiple_caches(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create two input caches with entries
+    cache1_path = tmp_path / "cache1.db"  # type: ignore[operator]
+    cache2_path = tmp_path / "cache2.db"  # type: ignore[operator]
+
+    with WorkflowCache(str(cache1_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"network": "asia"}, entry)
+
+    with WorkflowCache(str(cache2_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"network": "alarm"}, entry)
+
+    # Create mock action that returns metadata
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {}
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"f1_score": 0.95}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-provider"] = UpdateAction
+
+    step = {"uses": "update-provider"}
+    resolved_inputs = {
+        "action": "evaluate",
+        "input": [str(cache1_path), str(cache2_path)],
+    }
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    result = executor._execute_update_step(step, resolved_inputs, context)
+
+    assert result["status"] == "success"
+    assert result["entries_processed"] == 2
+    assert result["entries_updated"] == 2
+
+    # Verify both caches have updated entries
+    with WorkflowCache(str(cache1_path)) as cache:
+        entry = cache.get({"network": "asia"})
+        assert entry is not None
+        assert "update-action" in entry.metadata
+
+    with WorkflowCache(str(cache2_path)) as cache:
+        entry = cache.get({"network": "alarm"})
+        assert entry is not None
+        assert "update-action" in entry.metadata
+
+
+# Test _execute_update_step reports error for all missing caches.
+def test_execute_update_step_multiple_missing_caches(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    step = {"uses": "mock-provider"}
+    resolved_inputs = {
+        "action": "update",
+        "input": ["/nonexistent/cache1.db", "/nonexistent/cache2.db"],
+    }
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    result = executor._execute_update_step(step, resolved_inputs, context)
+
+    assert result["status"] == "error"
+    assert "cache1.db" in result["error"]
+    assert "cache2.db" in result["error"]
+
+
+# Test _execute_update_step rejects invalid input type.
+def test_execute_update_step_invalid_input_type() -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    step = {"uses": "mock-provider"}
+    resolved_inputs = {"action": "update", "input": 12345}  # Invalid type
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    result = executor._execute_update_step(step, resolved_inputs, context)
+
+    assert result["status"] == "error"
+    assert "must be string or list" in result["error"]
+
+
+# Test _scan_update_step_entries with multiple caches.
+def test_scan_update_step_entries_multiple_caches(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    # Create two caches with entries
+    cache1_path = tmp_path / "cache1.db"  # type: ignore[operator]
+    cache2_path = tmp_path / "cache2.db"  # type: ignore[operator]
+
+    with WorkflowCache(str(cache1_path)) as cache:
+        cache.put({"network": "asia"}, CacheEntry())
+
+    with WorkflowCache(str(cache2_path)) as cache:
+        cache.put({"network": "alarm"}, CacheEntry())
+        cache.put({"network": "sachs"}, CacheEntry())
+
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    step = {"uses": "mock-provider"}
+    resolved_inputs = {
+        "action": "update",
+        "input": [str(cache1_path), str(cache2_path)],
+    }
+
+    result = executor._scan_update_step_entries(step, resolved_inputs)
+
+    # Total 3 entries across both caches
+    assert result["would_process"] == 3
+    assert result["would_skip"] == 0
+
+
+# Test _scan_update_step_entries returns zeros for invalid input type.
+def test_scan_update_step_entries_invalid_input_type() -> None:
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockAction
+
+    step = {"uses": "mock-provider"}
+    resolved_inputs = {"action": "update", "input": 12345}  # Invalid type
+
+    result = executor._scan_update_step_entries(step, resolved_inputs)
+
+    assert result["would_process"] == 0
+    assert result["would_skip"] == 0
