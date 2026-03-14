@@ -1089,6 +1089,8 @@ class WorkflowExecutor:
             - metadata: The entry's metadata (includes nested provider data)
             - cache_path: Source cache path for provenance
             - entry_hash: Entry hash for retrieval
+            - entry: The full CacheEntry object
+            - objects: Dict mapping object names to their content
 
         Note:
             Entries without all matrix variables in metadata are skipped.
@@ -1156,6 +1158,11 @@ class WorkflowExecutor:
 
                         if matches:
                             total_matched += 1
+                            # Extract object contents for easy access
+                            objects_content = {
+                                name: obj.content
+                                for name, obj in full_entry.objects.items()
+                            }
                             matching_entries.append(
                                 {
                                     "matrix_values": entry_matrix,
@@ -1163,6 +1170,7 @@ class WorkflowExecutor:
                                     "cache_path": str(cache_path),
                                     "entry_hash": entry_info.get("hash"),
                                     "entry": full_entry,
+                                    "objects": objects_content,
                                 }
                             )
 
