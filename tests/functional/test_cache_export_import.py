@@ -54,8 +54,16 @@ def test_write_entry_to_dir_writes_objects(tmp_path: Path) -> None:
         "created_at": "2026-01-01T00:00:00Z",
     }
     objects = {
-        "graph": {"type": "graphml", "content": "<graphml>test</graphml>"},
-        "data": {"type": "json", "content": '{"key": "value"}'},
+        "graph": {
+            "type": "graph",
+            "format": "graphml",
+            "content": "<graphml>test</graphml>",
+        },
+        "data": {
+            "type": "data",
+            "format": "json",
+            "content": '{"key": "value"}',
+        },
     }
     metadata = {}
 
@@ -78,7 +86,7 @@ def test_write_entry_to_dir_writes_metadata(tmp_path: Path) -> None:
         "matrix_values": {"dataset": "asia"},
         "created_at": "2026-02-17T10:00:00Z",
     }
-    objects = {"result": {"type": "json", "content": "{}"}}
+    objects = {"result": {"type": "result", "format": "json", "content": "{}"}}
     metadata = {"status": "success", "elapsed": 1.5}
 
     write_entry_to_dir(tmp_path, entry_path, entry_info, objects, metadata)
@@ -107,7 +115,11 @@ def test_write_entry_to_zip_writes_files(tmp_path: Path) -> None:
         "created_at": "2026-01-01T00:00:00Z",
     }
     objects = {
-        "graph": {"type": "graphml", "content": "<graphml>content</graphml>"},
+        "graph": {
+            "type": "graph",
+            "format": "graphml",
+            "content": "<graphml>content</graphml>",
+        },
     }
     metadata = {"count": 10}
 
@@ -132,7 +144,7 @@ def test_write_entry_to_zip_writes_metadata(tmp_path: Path) -> None:
         "matrix_values": {"x": "1"},
         "created_at": "2026-02-17T12:00:00Z",
     }
-    objects = {"data": {"type": "json", "content": "{}"}}
+    objects = {"data": {"type": "data", "format": "json", "content": "{}"}}
     metadata = {"key": "value"}
 
     with zipfile.ZipFile(zip_path, "w") as zf:
@@ -156,7 +168,7 @@ def test_export_entries_to_directory(tmp_path: Path) -> None:
         # Add an entry
         entry = CacheEntry(metadata={"status": "success"})
         entry.objects["graph"] = CacheObject(
-            type="graphml", content="<graphml>test</graphml>"
+            format="graphml", action="test", content="<graphml>test</graphml>"
         )
         cache.put({"dataset": "asia", "method": "pc"}, entry)
 
@@ -176,7 +188,7 @@ def test_export_entries_to_zip(tmp_path: Path) -> None:
         # Add an entry
         entry = CacheEntry(metadata={"count": 5})
         entry.objects["result"] = CacheObject(
-            type="json", content='{"data": true}'
+            format="json", action="test", content='{"data": true}'
         )
         cache.put({"algorithm": "fci"}, entry)
 
@@ -225,7 +237,7 @@ def test_export_entries_multiple_entries(tmp_path: Path) -> None:
         for i in range(3):
             entry = CacheEntry(metadata={"index": i})
             entry.objects["data"] = CacheObject(
-                type="json", content=f'{{"value": {i}}}'
+                format="json", action="test", content=f'{{"value": {i}}}'
             )
             cache.put({"id": str(i)}, entry)
 
@@ -299,7 +311,7 @@ def test_import_entries_from_zip(tmp_path: Path) -> None:
         entry = cache.get({"source": "zip"})
         assert entry is not None
         assert "data" in entry.objects
-        assert entry.objects["data"].type == "json"
+        assert entry.objects["data"].format == "json"
 
 
 # Test import_entries raises FileNotFoundError for missing directory.
@@ -439,10 +451,12 @@ def test_round_trip_directory(tmp_path: Path) -> None:
     with WorkflowCache(":memory:") as source:
         entry = CacheEntry(metadata={"original": True, "count": 42})
         entry.objects["graph"] = CacheObject(
-            type="graphml", content="<graphml>original</graphml>"
+            format="graphml",
+            action="test",
+            content="<graphml>original</graphml>",
         )
         entry.objects["stats"] = CacheObject(
-            type="json", content='{"mean": 1.5}'
+            format="json", action="test", content='{"mean": 1.5}'
         )
         source.put({"dataset": "asia", "method": "pc"}, entry)
 
@@ -473,7 +487,7 @@ def test_round_trip_zip(tmp_path: Path) -> None:
     with WorkflowCache(":memory:") as source:
         entry = CacheEntry(metadata={"from_zip": True})
         entry.objects["result"] = CacheObject(
-            type="json", content='{"success": true}'
+            format="json", action="test", content='{"success": true}'
         )
         source.put({"test": "zip_roundtrip"}, entry)
 
@@ -500,7 +514,7 @@ def test_round_trip_multiple_entries(tmp_path: Path) -> None:
         for i in range(5):
             entry = CacheEntry(metadata={"index": i})
             entry.objects["data"] = CacheObject(
-                type="json", content=f'{{"id": {i}}}'
+                format="json", action="test", content=f'{{"id": {i}}}'
             )
             source.put({"entry_id": str(i)}, entry)
 

@@ -1,7 +1,7 @@
 """Cache entry model for workflow results.
 
 Defines the CacheEntry class representing a single cached workflow result,
-containing metadata and named objects (e.g., graph, confidences).
+containing metadata and typed objects (e.g., dag, pdg, trace).
 """
 
 from __future__ import annotations
@@ -12,52 +12,72 @@ from typing import Any, Dict
 
 @dataclass
 class CacheObject:
-    """A named object within a cache entry.
+    """A typed object within a cache entry.
 
-    Represents a single piece of data with a type identifier used for
-    serialisation and export (e.g., graphml, json).
+    Represents a single piece of data with a serialisation format and
+    the action that created it. Objects are keyed by semantic type
+    (e.g., 'dag', 'pdg') within a CacheEntry.
 
     Attributes:
-        type: Object type identifier (e.g., 'graphml', 'json').
+        format: Serialisation format (e.g., 'graphml', 'json', 'csv').
+        action: Name of the action that created this object.
         content: The object content (string for serialised formats).
 
     Example:
-        >>> obj = CacheObject(type="graphml", content="<graphml>...</graphml>")
-        >>> obj.type
+        >>> obj = CacheObject(
+        ...     format="graphml",
+        ...     action="migrate_trace",
+        ...     content="<graphml>...</graphml>"
+        ... )
+        >>> obj.format
         'graphml'
+        >>> obj.action
+        'migrate_trace'
     """
 
-    type: str
+    format: str
+    action: str
     content: Any
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialisation.
 
         Returns:
-            Dictionary with 'type' and 'content' keys.
+            Dictionary with 'format', 'action', and 'content' keys.
         """
-        return {"type": self.type, "content": self.content}
+        return {
+            "format": self.format,
+            "action": self.action,
+            "content": self.content,
+        }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> CacheObject:
         """Create from dictionary.
 
         Args:
-            data: Dictionary with 'type' and 'content' keys.
+            data: Dictionary with 'format', 'action', and 'content' keys.
 
         Returns:
             CacheObject instance.
         """
-        return cls(type=data["type"], content=data["content"])
+        return cls(
+            format=data["format"],
+            action=data.get("action", "unknown"),
+            content=data.get("content"),
+        )
 
 
 @dataclass
 class CacheEntry:
-    """A cached workflow result containing metadata and named objects.
+    """A cached workflow result containing metadata and typed objects.
 
     Represents a single cache entry identified by matrix variable values.
-    Contains workflow metadata and zero or more named objects, each with
-    a type and content.
+    Contains workflow metadata and zero or more typed objects. Each object
+    has a semantic type (e.g., 'dag', 'pdg') and serialisation format.
+
+    Objects are keyed by their semantic type. Each entry may contain at
+    most one object of each type.
 
     The entry structure maps directly to TokenCache storage:
     - metadata → TokenCache metadata field
@@ -65,19 +85,13 @@ class CacheEntry:
 
     Attributes:
         metadata: Workflow metadata dictionary.
-        objects: Named objects dictionary (name → CacheObject).
+        objects: Typed objects dictionary (type → CacheObject).
 
     Example:
         >>> entry = CacheEntry()
         >>> entry.metadata["node_count"] = 5
-        >>> entry.objects["graph"] = CacheObject(
-        ...     type="graphml",
-        ...     content="<graphml>...</graphml>"
-        ... )
-        >>> entry.objects["confidences"] = CacheObject(
-        ...     type="json",
-        ...     content='{"A->B": 0.95}'
-        ... )
+        >>> entry.add_object("pdg", "graphml", "<graphml>...</graphml>")
+        >>> entry.add_object("trace", "json", '{"iterations": [...]}')
     """
 
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -85,64 +99,70 @@ class CacheEntry:
 
     def add_object(
         self,
-        name: str,
         obj_type: str,
+        obj_format: str,
         content: Any,
+        action: str = "unknown",
     ) -> None:
-        """Add or replace a named object.
+        """Add or replace a typed object.
 
         Args:
-            name: Object name (e.g., 'graph', 'confidences').
-            obj_type: Object type (e.g., 'graphml', 'json').
+            obj_type: Semantic object type (e.g., 'dag', 'pdg', 'trace').
+            obj_format: Serialisation format (e.g., 'graphml', 'json').
             content: Object content.
+            action: Name of the action creating this object.
 
         Example:
             >>> entry = CacheEntry()
-            >>> entry.add_object("graph", "graphml", "<graphml>...")
+            >>> entry.add_object("pdg", "graphml", "<g/>", "merge")
         """
-        self.objects[name] = CacheObject(type=obj_type, content=content)
+        self.objects[obj_type] = CacheObject(
+            format=obj_format,
+            action=action,
+            content=content,
+        )
 
-    def get_object(self, name: str) -> CacheObject | None:
-        """Get a named object.
+    def get_object(self, obj_type: str) -> CacheObject | None:
+        """Get an object by type.
 
         Args:
-            name: Object name to retrieve.
+            obj_type: Object type to retrieve (e.g., 'dag', 'pdg').
 
         Returns:
             CacheObject if found, None otherwise.
         """
-        return self.objects.get(name)
+        return self.objects.get(obj_type)
 
-    def remove_object(self, name: str) -> bool:
-        """Remove a named object.
+    def remove_object(self, obj_type: str) -> bool:
+        """Remove an object by type.
 
         Args:
-            name: Object name to remove.
+            obj_type: Object type to remove.
 
         Returns:
             True if object was removed, False if not found.
         """
-        if name in self.objects:
-            del self.objects[name]
+        if obj_type in self.objects:
+            del self.objects[obj_type]
             return True
         return False
 
-    def has_object(self, name: str) -> bool:
-        """Check if a named object exists.
+    def has_object(self, obj_type: str) -> bool:
+        """Check if an object type exists.
 
         Args:
-            name: Object name to check.
+            obj_type: Object type to check.
 
         Returns:
             True if object exists.
         """
-        return name in self.objects
+        return obj_type in self.objects
 
-    def object_names(self) -> list[str]:
-        """Get list of object names.
+    def object_types(self) -> list[str]:
+        """Get list of object types in this entry.
 
         Returns:
-            List of object names in the entry.
+            List of object types.
         """
         return list(self.objects.keys())
 
@@ -154,7 +174,9 @@ class CacheEntry:
             - data: Objects dict serialised to dicts
             - metadata: Entry metadata dict
         """
-        data = {name: obj.to_dict() for name, obj in self.objects.items()}
+        data = {
+            obj_type: obj.to_dict() for obj_type, obj in self.objects.items()
+        }
         return data, self.metadata
 
     @classmethod
@@ -176,8 +198,9 @@ class CacheEntry:
         entry.metadata = metadata or {}
 
         if data:
-            for name, obj_dict in data.items():
-                entry.objects[name] = CacheObject.from_dict(obj_dict)
+            for obj_type, obj_dict in data.items():
+                obj = CacheObject.from_dict(obj_dict)
+                entry.objects[obj_type] = obj
 
         return entry
 
@@ -189,12 +212,13 @@ class CacheEntry:
     ) -> CacheEntry:
         """Create from action result format.
 
-        Converts the current action return format (metadata dict and
-        objects list) to a CacheEntry.
+        Converts the action return format (metadata dict and objects list)
+        to a CacheEntry. Objects are keyed by their 'type' field.
 
         Args:
             metadata: Action metadata dictionary.
-            objects: List of object dicts with 'type', 'name', 'content'.
+            objects: List of object dicts with 'type', 'format', 'action',
+                'content'.
 
         Returns:
             CacheEntry instance.
@@ -202,15 +226,17 @@ class CacheEntry:
         Example:
             >>> entry = CacheEntry.from_action_result(
             ...     {"node_count": 5},
-            ...     [{"type": "graphml", "name": "graph", "content": "..."}]
+            ...     [{"type": "pdg", "format": "graphml",
+            ...       "action": "merge_graphs", "content": "..."}]
             ... )
         """
         entry = cls(metadata=metadata.copy())
 
         for obj in objects:
-            name = obj.get("name", obj.get("type", "unknown"))
-            entry.objects[name] = CacheObject(
-                type=obj["type"],
+            obj_type = obj["type"]
+            entry.objects[obj_type] = CacheObject(
+                format=obj["format"],
+                action=obj.get("action", "unknown"),
                 content=obj.get("content"),
             )
 
@@ -223,7 +249,12 @@ class CacheEntry:
             Tuple of (metadata, objects_list) matching action return format.
         """
         objects_list = [
-            {"type": obj.type, "name": name, "content": obj.content}
-            for name, obj in self.objects.items()
+            {
+                "type": obj_type,
+                "format": obj.format,
+                "action": obj.action,
+                "content": obj.content,
+            }
+            for obj_type, obj in self.objects.items()
         ]
         return self.metadata.copy(), objects_list

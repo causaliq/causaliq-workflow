@@ -58,7 +58,7 @@ class WorkflowCache:
         >>> with WorkflowCache(":memory:") as cache:
         ...     entry = CacheEntry()
         ...     entry.metadata["node_count"] = 5
-        ...     entry.add_object("graph", "graphml", "<graphml>...</graphml>")
+        ...     entry.add_object("dag", "graphml", "<graphml>...", "learn")
         ...     key = {"algorithm": "pc", "network": "asia"}
         ...     cache.put(key, entry)
         ...     result = cache.get(key)
@@ -404,7 +404,8 @@ class WorkflowCache:
             metadata: Metadata to merge into existing entry. Typically
                 structured as {provider: {action: {results...}}}.
             objects: Optional list of objects to add. Each object is a dict
-                with 'type', 'name', 'content' keys.
+                with 'type' (semantic type), 'format' (serialisation format),
+                and 'content' keys.
 
         Returns:
             True if entry was updated, False if entry doesn't exist.
@@ -413,14 +414,15 @@ class WorkflowCache:
             >>> with WorkflowCache(":memory:") as cache:
             ...     # Create initial entry
             ...     entry = CacheEntry()
-            ...     entry.add_object("graph", "graphml", "<graphml>...")
+            ...     entry.add_object("dag", "graphml", "<graphml>...", "learn")
             ...     cache.put({"algo": "pc"}, entry)
             ...
             ...     # Update with evaluation results
             ...     cache.update_entry(
             ...         {"algo": "pc"},
             ...         metadata={"causaliq-analysis": {"eval": {"f1": 0.9}}},
-            ...         objects=[{"type": "json", "name": "scores"}]
+            ...         objects=[{"type": "scores", "format": "json",
+            ...                   "action": "evaluate"}]
             ...     )
         """
         # Get existing entry
@@ -442,8 +444,12 @@ class WorkflowCache:
         # Add new objects
         if objects:
             for obj in objects:
-                name = obj.get("name", obj.get("type", "unknown"))
-                entry.add_object(name, obj["type"], obj.get("content"))
+                obj_type = obj.get("type", "unknown")
+                obj_format = obj.get("format", "dat")
+                obj_action = obj.get("action", "unknown")
+                entry.add_object(
+                    obj_type, obj_format, obj.get("content"), obj_action
+                )
 
         # Store updated entry
         self.put(key_data, entry)

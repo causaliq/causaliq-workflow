@@ -193,7 +193,7 @@ def test_entry_with_multiple_objects() -> None:
         key = {"algorithm": "pc"}
         entry = CacheEntry()
         entry.metadata["step"] = "discovery"
-        entry.add_object("graph", "graphml", "<graphml>...</graphml>")
+        entry.add_object("dag", "graphml", "<graphml>...</graphml>")
         entry.add_object("confidences", "json", '{"A->B": 0.95}')
         entry.add_object("trace", "json", '{"iterations": 100}')
 
@@ -203,18 +203,18 @@ def test_entry_with_multiple_objects() -> None:
         assert result is not None
         assert result.metadata["step"] == "discovery"
         assert len(result.objects) == 3
-        assert result.get_object("graph") is not None
-        assert result.get_object("graph").type == "graphml"
+        assert result.get_object("dag") is not None
+        assert result.get_object("dag").format == "graphml"
         assert result.get_object("confidences").content == '{"A->B": 0.95}'
 
 
-# Test entry object_names method.
-def test_entry_object_names() -> None:
+# Test entry object_types method.
+def test_entry_object_types() -> None:
     entry = CacheEntry()
     entry.add_object("alpha", "json", "{}")
     entry.add_object("beta", "graphml", "<g/>")
-    names = entry.object_names()
-    assert sorted(names) == ["alpha", "beta"]
+    types = entry.object_types()
+    assert sorted(types) == ["alpha", "beta"]
 
 
 # Test entry remove_object.
@@ -239,17 +239,17 @@ def test_cache_entry_from_action_result() -> None:
     metadata = {"node_count": 5, "edge_count": 4}
     objects = [
         {
-            "type": "graphml",
-            "name": "graph",
+            "type": "dag",
+            "format": "graphml",
             "content": "<graphml>...</graphml>",
         },
-        {"type": "json", "name": "data", "content": '{"key": "value"}'},
+        {"type": "data", "format": "json", "content": '{"key": "value"}'},
     ]
     entry = CacheEntry.from_action_result(metadata, objects)
 
     assert entry.metadata["node_count"] == 5
-    assert entry.has_object("graph")
-    assert entry.get_object("graph").type == "graphml"
+    assert entry.has_object("dag")
+    assert entry.get_object("dag").format == "graphml"
     assert entry.has_object("data")
 
 
@@ -262,8 +262,8 @@ def test_cache_entry_to_action_result() -> None:
 
     assert metadata == {"test": True}
     assert len(objects_list) == 1
-    assert objects_list[0]["name"] == "output"
-    assert objects_list[0]["type"] == "json"
+    assert objects_list[0]["type"] == "output"
+    assert objects_list[0]["format"] == "json"
 
 
 # ============================================================================
@@ -560,8 +560,8 @@ def test_put_from_action() -> None:
         key = {"algorithm": "pc"}
         metadata = {"node_count": 5}
         objects = [
-            {"type": "graphml", "name": "graph", "content": "<graphml/>"},
-            {"type": "json", "name": "data", "content": '{"key": "val"}'},
+            {"type": "dag", "format": "graphml", "content": "<graphml/>"},
+            {"type": "data", "format": "json", "content": '{"key": "val"}'},
         ]
         hash_key = cache.put_from_action(key, metadata, objects)
         assert hash_key == cache.compute_hash(key)
@@ -569,7 +569,7 @@ def test_put_from_action() -> None:
         result = cache.get(key)
         assert result is not None
         assert result.metadata["node_count"] == 5
-        assert result.has_object("graph")
+        assert result.has_object("dag")
         assert result.has_object("data")
 
 
@@ -733,42 +733,42 @@ def test_update_entry_adds_objects() -> None:
     with WorkflowCache(":memory:") as cache:
         # Create initial entry with one object
         entry = CacheEntry()
-        entry.add_object("graph", "graphml", "<graphml/>")
+        entry.add_object("dag", "graphml", "<graphml/>")
         cache.put({"algo": "pc"}, entry)
 
         # Update with new object
         cache.update_entry(
             {"algo": "pc"},
             metadata={},
-            objects=[{"type": "json", "name": "scores", "content": "{}"}],
+            objects=[{"type": "scores", "format": "json", "content": "{}"}],
         )
 
         # Verify both objects present
         result = cache.get({"algo": "pc"})
         assert result is not None
-        assert "graph" in result.objects
+        assert "dag" in result.objects
         assert "scores" in result.objects
-        assert result.objects["scores"].type == "json"
+        assert result.objects["scores"].format == "json"
 
 
-# Test update_entry replaces existing object with same name.
+# Test update_entry replaces existing object with same type.
 def test_update_entry_replaces_object() -> None:
     with WorkflowCache(":memory:") as cache:
         entry = CacheEntry()
-        entry.add_object("graph", "graphml", "<old/>")
+        entry.add_object("dag", "graphml", "<old/>")
         cache.put({"algo": "pc"}, entry)
 
         cache.update_entry(
             {"algo": "pc"},
             metadata={},
             objects=[
-                {"type": "graphml", "name": "graph", "content": "<new/>"}
+                {"type": "dag", "format": "graphml", "content": "<new/>"}
             ],
         )
 
         result = cache.get({"algo": "pc"})
         assert result is not None
-        assert result.objects["graph"].content == "<new/>"
+        assert result.objects["dag"].content == "<new/>"
 
 
 # Test update_entry handles non-dict provider data replacement.

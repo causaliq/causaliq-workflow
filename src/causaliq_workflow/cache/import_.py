@@ -98,7 +98,7 @@ def _import_from_dir(
         meta_content = json.loads(meta_path.read_text(encoding="utf-8"))
         matrix_values = meta_content.get("matrix_values", {})
         metadata = meta_content.get("metadata", {})
-        objects_types = meta_content.get("objects", {})
+        objects_info = meta_content.get("objects", {})
 
         # Build entry from files in directory
         entry = CacheEntry(metadata=metadata)
@@ -111,11 +111,26 @@ def _import_from_dir(
 
             name = file_path.stem
             ext = file_path.suffix
-            # Get type from metadata, fall back to extension for compatibility
-            obj_type = objects_types.get(name, get_type_for_extension(ext))
             content = file_path.read_text(encoding="utf-8")
 
-            entry.objects[name] = CacheObject(type=obj_type, content=content)
+            # Get type/format from metadata - handle both old and new format
+            obj_meta = objects_info.get(name)
+            if isinstance(obj_meta, dict):
+                # New format: {"type": "dag", "format": "graphml"}
+                _ = obj_meta.get("type", name)  # Type is dict key
+                obj_format = obj_meta.get(
+                    "format", get_type_for_extension(ext)
+                )
+            else:
+                # Legacy format: type was actually the format
+                _ = name  # Unused in legacy path
+                obj_format = (
+                    obj_meta if obj_meta else get_type_for_extension(ext)
+                )
+
+            entry.objects[name] = CacheObject(
+                format=obj_format, action="import", content=content
+            )
 
         # Store in cache
         if entry.objects:
@@ -176,7 +191,7 @@ def _import_from_zip(
             meta_content = json.loads(zf.read(name).decode("utf-8"))
             matrix_values = meta_content.get("matrix_values", {})
             metadata = meta_content.get("metadata", {})
-            objects_types = meta_content.get("objects", {})
+            objects_info = meta_content.get("objects", {})
 
             # Build entry from files in directory
             entry = CacheEntry(metadata=metadata)
@@ -189,12 +204,25 @@ def _import_from_zip(
 
                 stem = PurePosixPath(file_name).stem
                 ext = PurePosixPath(file_name).suffix
-                # Get type from metadata, fall back to extension for compat
-                obj_type = objects_types.get(stem, get_type_for_extension(ext))
                 content = zf.read(file_name).decode("utf-8")
 
+                # Get type/format from metadata - handle old and new format
+                obj_meta = objects_info.get(stem)
+                if isinstance(obj_meta, dict):
+                    # New format: {"type": "dag", "format": "graphml"}
+                    _ = obj_meta.get("type", stem)  # Type is dict key
+                    obj_format = obj_meta.get(
+                        "format", get_type_for_extension(ext)
+                    )
+                else:
+                    # Legacy format: type was actually the format
+                    _ = stem  # Unused in legacy path
+                    obj_format = (
+                        obj_meta if obj_meta else get_type_for_extension(ext)
+                    )
+
                 entry.objects[stem] = CacheObject(
-                    type=obj_type, content=content
+                    format=obj_format, action="import", content=content
                 )
 
             # Store in cache

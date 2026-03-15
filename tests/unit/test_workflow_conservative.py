@@ -271,7 +271,17 @@ def test_create_pattern_executes_when_no_entry_exists(
         action_patterns = {}
 
         def run(self, action, parameters, **kwargs):
-            return ("success", {"created": True}, [{"type": "graph"}])
+            return (
+                "success",
+                {"created": True},
+                [
+                    {
+                        "type": "dag",
+                        "format": "graphml",
+                        "content": "<graphml/>",
+                    }
+                ],
+            )
 
         def get_action_schema(self, action):
             return {}
@@ -327,7 +337,17 @@ def test_force_mode_bypasses_create_conservative_skip(
 
         def run(self, action, parameters, **kwargs):
             # This SHOULD be called despite existing entry (force mode)
-            return ("success", {"forced": True}, [{"type": "graph"}])
+            return (
+                "success",
+                {"forced": True},
+                [
+                    {
+                        "type": "dag",
+                        "format": "graphml",
+                        "content": "<graphml/>",
+                    }
+                ],
+            )
 
         def get_action_schema(self, action):
             return {}
@@ -385,7 +405,11 @@ def test_force_mode_bypasses_aggregate_conservative_skip(
 
         def run(self, action, parameters, **kwargs):
             # This SHOULD be called despite existing entry (force mode)
-            return ("success", {"forced": True}, [{"type": "summary"}])
+            return (
+                "success",
+                {"forced": True},
+                [{"type": "summary", "format": "json", "content": "{}"}],
+            )
 
         def get_action_schema(self, action):
             return {}

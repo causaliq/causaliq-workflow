@@ -18,24 +18,40 @@ from typing import TYPE_CHECKING, Any, Callable
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.cache.workflow_cache import WorkflowCache
 
-# Map object type to file extension
-TYPE_EXTENSIONS: dict[str, str] = {
+# Map serialisation format to file extension
+FORMAT_EXTENSIONS: dict[str, str] = {
     "graphml": ".graphml",
-    "pdg": ".graphml",  # PDG is stored as GraphML
     "json": ".json",
 }
 
+# Legacy alias for backward compatibility with import_.py
+TYPE_EXTENSIONS: dict[str, str] = FORMAT_EXTENSIONS
 
-def get_extension_for_type(obj_type: str) -> str:
-    """Get file extension for an object type.
+
+def get_extension_for_format(obj_format: str) -> str:
+    """Get file extension for an object format.
 
     Args:
-        obj_type: Object type identifier (e.g., 'graphml', 'json').
+        obj_format: Serialisation format (e.g., 'graphml', 'json').
 
     Returns:
         File extension including dot (e.g., '.graphml', '.json').
     """
-    return TYPE_EXTENSIONS.get(obj_type, ".dat")
+    return FORMAT_EXTENSIONS.get(obj_format, ".dat")
+
+
+def get_extension_for_type(obj_type: str) -> str:
+    """Get file extension for an object type (legacy).
+
+    Deprecated: Use get_extension_for_format() instead.
+
+    Args:
+        obj_type: Object type identifier.
+
+    Returns:
+        File extension including dot.
+    """
+    return FORMAT_EXTENSIONS.get(obj_type, ".dat")
 
 
 def build_entry_path(
@@ -86,7 +102,7 @@ def write_entry_to_dir(
         output_dir: Root output directory.
         entry_path: Relative path for this entry.
         entry_info: Entry details (matrix_values, created_at).
-        objects: Dict mapping name to {type, content}.
+        objects: Dict mapping name to {format, action, content}.
         metadata: Entry metadata dict.
     """
     full_dir = output_dir / entry_path
@@ -94,15 +110,19 @@ def write_entry_to_dir(
 
     # Write each object
     for name, obj in objects.items():
-        obj_type = obj.get("type", "dat")
+        obj_format = obj.get("format", "dat")
         content = obj.get("content", "")
-        ext = get_extension_for_type(obj_type)
+        ext = get_extension_for_format(obj_format)
         file_path = full_dir / f"{name}{ext}"
         file_path.write_text(content, encoding="utf-8")
 
-    # Build objects type mapping for metadata
-    objects_types = {
-        name: obj.get("type", "dat") for name, obj in objects.items()
+    # Build objects info for metadata (stores action and format)
+    objects_info = {
+        name: {
+            "format": obj.get("format", "dat"),
+            "action": obj.get("action", "unknown"),
+        }
+        for name, obj in objects.items()
     }
 
     # Write metadata file
@@ -110,7 +130,7 @@ def write_entry_to_dir(
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
         "metadata": metadata,
-        "objects": objects_types,
+        "objects": objects_info,
     }
     meta_path = full_dir / "_meta.json"
     meta_path.write_text(
@@ -132,20 +152,24 @@ def write_entry_to_zip(
         zf: Open ZipFile for writing.
         entry_path: Relative path for this entry.
         entry_info: Entry details (matrix_values, created_at).
-        objects: Dict mapping name to {type, content}.
+        objects: Dict mapping name to {format, action, content}.
         metadata: Entry metadata dict.
     """
     # Write each object
     for name, obj in objects.items():
-        obj_type = obj.get("type", "dat")
+        obj_format = obj.get("format", "dat")
         content = obj.get("content", "")
-        ext = get_extension_for_type(obj_type)
+        ext = get_extension_for_format(obj_format)
         arc_name = str(entry_path / f"{name}{ext}")
         zf.writestr(arc_name, content)
 
-    # Build objects type mapping for metadata
-    objects_types = {
-        name: obj.get("type", "dat") for name, obj in objects.items()
+    # Build objects info for metadata (stores action and format)
+    objects_info = {
+        name: {
+            "format": obj.get("format", "dat"),
+            "action": obj.get("action", "unknown"),
+        }
+        for name, obj in objects.items()
     }
 
     # Write metadata file
@@ -153,7 +177,7 @@ def write_entry_to_zip(
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
         "metadata": metadata,
-        "objects": objects_types,
+        "objects": objects_info,
     }
     meta_arc = str(entry_path / "_meta.json")
     zf.writestr(meta_arc, json.dumps(meta_data, indent=2, sort_keys=False))

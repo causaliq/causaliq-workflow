@@ -178,7 +178,7 @@ def test_execute_update_step_processes_entries(
             return (
                 "success",
                 {"f1_score": 0.95, "precision": 0.9},
-                [{"type": "json", "name": "metrics", "content": "{}"}],
+                [{"type": "metrics", "format": "json", "content": "{}"}],
             )
 
         def get_action_schema(self, action):

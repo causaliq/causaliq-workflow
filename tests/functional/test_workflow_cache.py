@@ -169,7 +169,7 @@ class ObjectReturningAction(ActionProvider):
     description = "Test action that returns objects"
 
     def run(self, action: str, parameters: dict, **kwargs) -> ActionResult:
-        objects = [{"type": "json", "name": "result", "content": '{"v":1}'}]
+        objects = [{"type": "result", "format": "json", "content": '{"v":1}'}]
         return ("success", {"algo": parameters.get("algo", "pc")}, objects)
 
 

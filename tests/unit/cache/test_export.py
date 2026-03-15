@@ -22,10 +22,10 @@ def test_get_extension_for_type_graphml() -> None:
     assert get_extension_for_type("graphml") == ".graphml"
 
 
-# Test get_extension_for_type returns correct extension for pdg type.
+# Test get_extension_for_type returns .dat for unknown type including pdg.
 def test_get_extension_for_type_pdg() -> None:
-    """Test pdg type returns .graphml extension (PDG stored as GraphML)."""
-    assert get_extension_for_type("pdg") == ".graphml"
+    """Test pdg type returns .dat (pdg is semantic type, not format)."""
+    assert get_extension_for_type("pdg") == ".dat"
 
 
 # Test get_extension_for_type returns correct extension for json type.
@@ -44,9 +44,8 @@ def test_get_extension_for_type_unknown() -> None:
 def test_type_extensions_contains_expected() -> None:
     """Test TYPE_EXTENSIONS has all expected entries."""
     assert "graphml" in TYPE_EXTENSIONS
-    assert "pdg" in TYPE_EXTENSIONS
     assert "json" in TYPE_EXTENSIONS
-    assert len(TYPE_EXTENSIONS) == 3
+    assert len(TYPE_EXTENSIONS) == 2
 
 
 # =============================================================================
