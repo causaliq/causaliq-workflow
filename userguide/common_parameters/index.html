@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../../architecture/workflow_cache_design/">
+        <link rel="prev" href="../caching/">
       
       
-        <link rel="next" href="../actions/">
+        <link rel="next" href="../cli/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Overview - causaliq-workflow</title>
+        <title>Common Parameters - causaliq-workflow</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#common-parameters" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Common Parameters
             
           </span>
         </div>
@@ -229,11 +229,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../userguide/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -288,13 +290,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
           
   
   
@@ -376,28 +376,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -415,7 +418,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -433,7 +436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -461,7 +464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/core_concepts/" class="md-nav__link">
+      <a href="../core_concepts/" class="md-nav__link">
         
   
   
@@ -489,7 +492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/action_patterns/" class="md-nav__link">
+      <a href="../action_patterns/" class="md-nav__link">
         
   
   
@@ -517,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/caching/" class="md-nav__link">
+      <a href="../caching/" class="md-nav__link">
         
   
   
@@ -542,10 +545,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../userguide/common_parameters/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Parameters
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -561,6 +591,176 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#input-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        input Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="input Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Inputs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        output Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="output Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#output-behaviour-by-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Behaviour by Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filter Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="filter Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-vs-conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter vs Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reference Parameter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metric-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metric Parameter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-variables-in-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variables in Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -573,7 +773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/cli/" class="md-nav__link">
+      <a href="../cli/" class="md-nav__link">
         
   
   
@@ -601,7 +801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/examples/" class="md-nav__link">
+      <a href="../examples/" class="md-nav__link">
         
   
   
@@ -1035,31 +1235,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -1077,7 +1274,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1092,37 +1289,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
         
   
   
@@ -1138,175 +1308,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#causaliq-core-foundation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        causaliq-core Foundation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Components
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Core Components">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#action-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action Framework
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#action-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-engine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Engine
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Cache
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schema-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#logging-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Logging System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Interface
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-the-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using the Cache
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1319,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../actions/" class="md-nav__link">
+      <a href="../../api/actions/" class="md-nav__link">
         
   
   
@@ -1347,7 +1348,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../registry/" class="md-nav__link">
+      <a href="../../api/registry/" class="md-nav__link">
         
   
   
@@ -1375,7 +1376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflow/" class="md-nav__link">
+      <a href="../../api/workflow/" class="md-nav__link">
         
   
   
@@ -1403,7 +1404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache/" class="md-nav__link">
+      <a href="../../api/cache/" class="md-nav__link">
         
   
   
@@ -1431,7 +1432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../schema/" class="md-nav__link">
+      <a href="../../api/schema/" class="md-nav__link">
         
   
   
@@ -1459,7 +1460,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../status/" class="md-nav__link">
+      <a href="../../api/status/" class="md-nav__link">
         
   
   
@@ -1487,7 +1488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../logging/" class="md-nav__link">
+      <a href="../../api/logging/" class="md-nav__link">
         
   
   
@@ -1515,7 +1516,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+      <a href="../../api/cli/" class="md-nav__link">
         
   
   
@@ -1543,7 +1544,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+      <a href="../../api/examples/" class="md-nav__link">
         
   
   
@@ -1598,110 +1599,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#causaliq-core-foundation" class="md-nav__link">
+  <a href="#input-parameter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq-core Foundation
+        input Parameter
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Components
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Core Components">
+    <nav class="md-nav" aria-label="input Parameter">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#action-framework" class="md-nav__link">
+  <a href="#multiple-inputs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Action Framework
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#action-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-engine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Engine
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Cache
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schema-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#logging-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Logging System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Interface
+        Multiple Inputs
       
     </span>
   </a>
@@ -1714,10 +1627,99 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
+  <a href="#output-parameter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Start
+        output Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="output Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#output-behaviour-by-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Behaviour by Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filter Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="filter Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-vs-conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter vs Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reference Parameter
       
     </span>
   </a>
@@ -1725,10 +1727,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-the-cache" class="md-nav__link">
+  <a href="#metric-parameter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using the Cache
+        metric Parameter
       
     </span>
   </a>
@@ -1736,10 +1738,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#template-variables-in-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Steps
+        Template Variables in Parameters
       
     </span>
   </a>
@@ -1763,125 +1765,245 @@
 
 
 
-<h1 id="api-reference">API Reference</h1>
-<p>The CausalIQ Workflow framework provides a comprehensive API for building,
-validating, and executing data processing workflows. It is part of the
-<a href="https://causaliq.org/">CausalIQ ecosystem</a> for intelligent causal discovery.</p>
-<h2 id="causaliq-core-foundation">causaliq-core Foundation</h2>
-<p>causaliq-workflow builds on causaliq-core for its action framework. The
-following components are imported from causaliq-core:</p>
-<ul>
-<li><strong>CausalIQActionProvider</strong> - Abstract base class for all action providers</li>
-<li><strong>ActionInput</strong> - Type-safe input specification for action parameters</li>
-<li><strong>ActionResult</strong> - Tuple type for action return values</li>
-<li><strong>ActionValidationError</strong> - Exception for parameter validation failures</li>
-<li><strong>ActionExecutionError</strong> - Exception for runtime execution failures</li>
-<li><strong>TokenCache</strong> - SQLite-based caching infrastructure for workflow results</li>
-<li><strong>JsonCompressor</strong> - JSON tokenisation for compact cache storage</li>
-</ul>
-<p>The API is organised into several key modules:</p>
-<h2 id="core-components">Core Components</h2>
-<h3 id="action-framework"><a href="../actions/">Action Framework</a></h3>
-<p>Base classes and interfaces for creating reusable workflow actions that follow
-GitHub Actions patterns.</p>
-<ul>
-<li><strong>CausalIQActionProvider</strong> - Abstract base class for all workflow actions
-  (from causaliq-core)</li>
-<li><strong>ActionInput</strong> - Type-safe input specifications (from causaliq-core)</li>
-<li><strong>ActionResult</strong> - Standardised return type (from causaliq-core)</li>
-<li><strong>ActionExecutionError/ActionValidationError</strong> - Exception handling (from
-  causaliq-core)</li>
-</ul>
-<h3 id="action-registry"><a href="../registry/">Action Registry</a></h3>
-<p>Centralised discovery and execution system for workflow actions with plugin
-architecture support.</p>
-<ul>
-<li><strong>ActionRegistry</strong> - Dynamic action discovery via entry points</li>
-<li><strong>WorkflowContext</strong> - Complete workflow context for actions including cache</li>
-<li><strong>ActionRegistryError</strong> - Registry-specific exceptions</li>
-</ul>
-<h3 id="workflow-engine"><a href="../workflow/">Workflow Engine</a></h3>
-<p>Powerful workflow parsing, validation, and execution engine with matrix
-expansion and templating.</p>
-<ul>
-<li><strong>WorkflowExecutor</strong> - Main workflow processing engine</li>
-<li><strong>WorkflowExecutionError</strong> - Workflow execution exceptions</li>
-<li><strong>Template system</strong> - Variable substitution and validation</li>
-</ul>
-<h3 id="workflow-cache"><a href="../cache/">Workflow Cache</a></h3>
-<p>SQLite-based caching for workflow step results, built on causaliq-core's
-TokenCache.</p>
-<ul>
-<li><strong>WorkflowCache</strong> - High-level cache for workflow results</li>
-<li><strong>CacheEntry</strong> - Entry model with metadata and named objects</li>
-<li><strong>MatrixSchemaError</strong> - Cache consistency exceptions</li>
-<li><strong>Export/Import</strong> - Convert cache entries to/from open formats</li>
-</ul>
-<h3 id="schema-validation"><a href="../schema/">Schema Validation</a></h3>
-<p>Robust workflow validation against JSON schemas with detailed error reporting.</p>
-<ul>
-<li><strong>validate_workflow</strong> - Schema-based workflow validation</li>
-<li><strong>load_schema/load_workflow_file</strong> - File loading utilities</li>
-<li><strong>WorkflowValidationError</strong> - Validation-specific exceptions</li>
-</ul>
-<h3 id="status-system"><a href="../status/">Status System</a></h3>
-<p>Comprehensive task execution status enumeration for workflow logging and
-monitoring.</p>
-<ul>
-<li><strong>TaskStatus</strong> - Standardised status reporting for all task execution
-  outcomes</li>
-<li><strong>Status properties</strong> - Categorisation helpers (success, error, execution,
-  dry-run)</li>
-<li><strong>Status definitions</strong> - Complete coverage of execution, comparison, and
-  error statuses</li>
-</ul>
-<h3 id="logging-system"><a href="../logging/">Logging System</a></h3>
-<p>Centralised logging infrastructure with multiple output destinations for
-workflow execution monitoring.</p>
-<ul>
-<li><strong>WorkflowLogger</strong> - Multi-destination logging with file/terminal output
-  support</li>
-<li><strong>LogLevel</strong> - Verbosity control (NONE, SUMMARY, ALL)</li>
-<li><strong>Output configuration</strong> - Flexible logging destination management</li>
-</ul>
-<h3 id="cli-interface"><a href="../cli/">CLI Interface</a></h3>
-<p>Command-line interface for workflow execution and management.</p>
-<ul>
-<li><strong>cqflow run</strong> - Execute workflow files</li>
-<li><strong>cqflow export-cache</strong> - Export cache entries to directory or zip</li>
-<li><strong>cqflow import-cache</strong> - Import cache entries from directory or zip</li>
-</ul>
-<hr />
-<h2 id="quick-start">Quick Start</h2>
-<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
-
-# Create executor and run workflow
-executor = WorkflowExecutor()
-workflow = executor.parse_workflow(&quot;my_workflow.yml&quot;)
-results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
+<h1 id="common-parameters">Common Parameters</h1>
+<p>These parameters are shared across many CausalIQ workflow actions. Individual
+action documentation specifies which parameters apply and any action-specific
+behaviour.</p>
+<h2 id="input-parameter"><code>input</code> Parameter</h2>
+<p>Specifies the source of data for the action.</p>
+<table>
+<thead>
+<tr>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Workflow cache</strong></td>
+<td>Path to <code>.db</code> file containing entries to process</td>
+</tr>
+<tr>
+<td><strong>Data files</strong></td>
+<td>Path to input files (CSV, GraphML, etc.)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-yaml">with:
+  input: &quot;results/graphs.db&quot;       # Process entries from cache
 </code></pre>
-<h2 id="using-the-cache">Using the Cache</h2>
-<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry
-
-# Store workflow results
-with WorkflowCache(&quot;results.db&quot;) as cache:
-    entry = CacheEntry()
-    entry.metadata[&quot;algorithm&quot;] = &quot;pc&quot;
-    entry.add_object(&quot;graph&quot;, &quot;graphml&quot;, &quot;&lt;graphml&gt;...&lt;/graphml&gt;&quot;)
-
-    key = {&quot;network&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;}
-    cache.put(key, entry)
-
-    # Retrieve later
-    result = cache.get(key)
+<p>For <strong>update</strong> and <strong>aggregate</strong> patterns, <code>input</code> typically points to a
+workflow cache. For <strong>create</strong> patterns, it may point to data files.</p>
+<h3 id="multiple-inputs">Multiple Inputs</h3>
+<p>Some actions accept multiple input sources:</p>
+<pre><code class="language-yaml">with:
+  input:
+    - &quot;results/llm_graphs.db&quot;
+    - &quot;results/discovery_graphs.db&quot;
 </code></pre>
-<h2 id="next-steps">Next Steps</h2>
-<ul>
-<li><strong><a href="../examples/">Usage Examples</a></strong> - Comprehensive code examples and patterns</li>
-<li><strong><a href="../actions/">Action Framework</a></strong> - Learn how to create custom actions</li>
-<li><strong><a href="../cli/">CLI Interface</a></strong> - Command-line usage and CI/CD integration</li>
-</ul>
-<p>For detailed examples and usage patterns, see the <strong><a href="../examples/">Usage Examples</a></strong> page.</p>
+<h2 id="output-parameter"><code>output</code> Parameter</h2>
+<p>Specifies where results should be stored.</p>
+<table>
+<thead>
+<tr>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Workflow cache</strong></td>
+<td>Path to <code>.db</code> file for storing results</td>
+</tr>
+<tr>
+<td><strong>Directory</strong></td>
+<td>Path to directory for file output</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-yaml">with:
+  output: &quot;results/merged.db&quot;      # Store results in cache
+</code></pre>
+<p><strong>Note</strong>: Update pattern actions do not use <code>output</code> — they modify entries
+in the input cache directly.</p>
+<h3 id="output-behaviour-by-pattern">Output Behaviour by Pattern</h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Output</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create</td>
+<td>Required</td>
+<td>New entries added to output cache</td>
+</tr>
+<tr>
+<td>Update</td>
+<td>Prohibited</td>
+<td>Results added to input cache entries</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>Required</td>
+<td>Aggregated entries added to output cache</td>
+</tr>
+</tbody>
+</table>
+<h2 id="filter-parameter"><code>filter</code> Parameter</h2>
+<p>Restricts which entries are processed by the action.</p>
+<pre><code class="language-yaml">with:
+  input: &quot;results/graphs.db&quot;
+  filter: &quot;sample_size &gt;= 100 and network in ['asia', 'cancer']&quot;
+</code></pre>
+<h3 id="filter-syntax">Filter Syntax</h3>
+<p>Filter expressions use Python syntax with supported operators:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Operators</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Comparison</td>
+<td><code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td><code>and</code>, <code>or</code>, <code>not</code></td>
+</tr>
+<tr>
+<td>Membership</td>
+<td><code>in</code></td>
+</tr>
+<tr>
+<td>Grouping</td>
+<td><code>()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="supported-functions">Supported Functions</h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>len()</code></td>
+<td>Length of string or list</td>
+</tr>
+<tr>
+<td><code>str()</code></td>
+<td>Convert to string</td>
+</tr>
+<tr>
+<td><code>int()</code></td>
+<td>Convert to integer</td>
+</tr>
+<tr>
+<td><code>float()</code></td>
+<td>Convert to float</td>
+</tr>
+<tr>
+<td><code>bool()</code></td>
+<td>Convert to boolean</td>
+</tr>
+<tr>
+<td><code>abs()</code></td>
+<td>Absolute value</td>
+</tr>
+<tr>
+<td><code>min()</code></td>
+<td>Minimum of values</td>
+</tr>
+<tr>
+<td><code>max()</code></td>
+<td>Maximum of values</td>
+</tr>
+</tbody>
+</table>
+<h3 id="filter-variables">Filter Variables</h3>
+<p>Filter expressions can reference any metadata variable from cache entries:</p>
+<pre><code class="language-yaml"># Filter by algorithm and score
+filter: &quot;algorithm == 'pc' and f1_score &gt; 0.8&quot;
+
+# Filter by multiple networks
+filter: &quot;network in ['asia', 'cancer', 'alarm']&quot;
+
+# Complex conditions
+filter: &quot;(sample_size &gt;= 1000 or seed == 0) and status == 'success'&quot;
+</code></pre>
+<h3 id="filter-vs-conservative-execution">Filter vs Conservative Execution</h3>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Purpose</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filter</code></td>
+<td>Exclude entries from processing</td>
+<td>Entry status: IGNORED</td>
+</tr>
+<tr>
+<td>Conservative execution</td>
+<td>Skip already-processed entries</td>
+<td>Entry status: SKIPPED</td>
+</tr>
+</tbody>
+</table>
+<p>Filtered entries are <strong>never</strong> processed, even with <code>--mode=force</code>.</p>
+<h2 id="reference-parameter"><code>reference</code> Parameter</h2>
+<p>For evaluation actions, specifies the ground truth for comparison.</p>
+<pre><code class="language-yaml">with:
+  action: &quot;evaluate_graph&quot;
+  input: &quot;results/graphs.db&quot;
+  reference: &quot;networks/{{network}}/true.graphml&quot;
+</code></pre>
+<p>The reference path often uses template variables to match entries with their
+corresponding ground truth files.</p>
+<h2 id="metric-parameter"><code>metric</code> Parameter</h2>
+<p>Specifies which metrics to compute for evaluation actions.</p>
+<pre><code class="language-yaml">with:
+  action: &quot;evaluate_graph&quot;
+  input: &quot;results/graphs.db&quot;
+  reference: &quot;networks/asia/true.graphml&quot;
+  metric:
+    - f1
+    - precision
+    - recall
+    - shd
+</code></pre>
+<p>Available metrics depend on the specific action. See action documentation for
+supported metrics.</p>
+<h2 id="template-variables-in-parameters">Template Variables in Parameters</h2>
+<p>Most parameters support template variable substitution:</p>
+<pre><code class="language-yaml">id: &quot;exp-001&quot;
+
+matrix:
+  network: [asia, cancer]
+
+steps:
+  - name: &quot;Evaluate&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;evaluate_graph&quot;
+      input: &quot;results/{{id}}/graphs.db&quot;
+      reference: &quot;networks/{{network}}/true.graphml&quot;
+</code></pre>
+<p>See <a href="../core_concepts/#template-variables">Core Concepts</a> for variable
+resolution order.</p>
 
 
 
@@ -1919,7 +2041,7 @@ with WorkflowCache(&quot;results.db&quot;) as cache:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../architecture/workflow_cache_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Cache Design">
+          <a href="../caching/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Caching">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1929,20 +2051,20 @@ with WorkflowCache(&quot;results.db&quot;) as cache:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Workflow Cache Design
+                Workflow Caching
               </div>
             </div>
           </a>
         
         
           
-          <a href="../actions/" class="md-footer__link md-footer__link--next" aria-label="Next: Action Framework">
+          <a href="../cli/" class="md-footer__link md-footer__link--next" aria-label="Next: CLI Usage">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Action Framework
+                CLI Usage
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../../architecture/workflow_cache_design/">
+        <link rel="prev" href="../action_patterns/">
       
       
-        <link rel="next" href="../actions/">
+        <link rel="next" href="../common_parameters/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Overview - causaliq-workflow</title>
+        <title>Workflow Caching - causaliq-workflow</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#workflow-caching" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Workflow Caching
             
           </span>
         </div>
@@ -229,11 +229,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../userguide/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -288,13 +290,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
           
   
   
@@ -376,28 +376,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -415,7 +418,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -433,7 +436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -461,7 +464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/core_concepts/" class="md-nav__link">
+      <a href="../core_concepts/" class="md-nav__link">
         
   
   
@@ -489,7 +492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/action_patterns/" class="md-nav__link">
+      <a href="../action_patterns/" class="md-nav__link">
         
   
   
@@ -514,10 +517,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../userguide/caching/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Caching
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -533,6 +563,176 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-workflow-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is a Workflow Cache?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cache-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Entries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cache Entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entry-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conservative Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conservative Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bypassing-conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bypassing Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cache-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cache Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cache-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-and-importing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting and Importing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cache-schema-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Schema Consistency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -545,7 +745,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/common_parameters/" class="md-nav__link">
+      <a href="../common_parameters/" class="md-nav__link">
         
   
   
@@ -573,7 +773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/cli/" class="md-nav__link">
+      <a href="../cli/" class="md-nav__link">
         
   
   
@@ -601,7 +801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../userguide/examples/" class="md-nav__link">
+      <a href="../examples/" class="md-nav__link">
         
   
   
@@ -1035,31 +1235,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -1077,7 +1274,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1092,37 +1289,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
         
   
   
@@ -1138,175 +1308,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#causaliq-core-foundation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        causaliq-core Foundation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Components
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Core Components">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#action-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action Framework
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#action-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-engine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Engine
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Cache
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schema-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#logging-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Logging System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Interface
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-the-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using the Cache
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1319,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../actions/" class="md-nav__link">
+      <a href="../../api/actions/" class="md-nav__link">
         
   
   
@@ -1347,7 +1348,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../registry/" class="md-nav__link">
+      <a href="../../api/registry/" class="md-nav__link">
         
   
   
@@ -1375,7 +1376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflow/" class="md-nav__link">
+      <a href="../../api/workflow/" class="md-nav__link">
         
   
   
@@ -1403,7 +1404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache/" class="md-nav__link">
+      <a href="../../api/cache/" class="md-nav__link">
         
   
   
@@ -1431,7 +1432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../schema/" class="md-nav__link">
+      <a href="../../api/schema/" class="md-nav__link">
         
   
   
@@ -1459,7 +1460,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../status/" class="md-nav__link">
+      <a href="../../api/status/" class="md-nav__link">
         
   
   
@@ -1487,7 +1488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../logging/" class="md-nav__link">
+      <a href="../../api/logging/" class="md-nav__link">
         
   
   
@@ -1515,7 +1516,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+      <a href="../../api/cli/" class="md-nav__link">
         
   
   
@@ -1543,7 +1544,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+      <a href="../../api/examples/" class="md-nav__link">
         
   
   
@@ -1598,10 +1599,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#causaliq-core-foundation" class="md-nav__link">
+  <a href="#what-is-a-workflow-cache" class="md-nav__link">
     <span class="md-ellipsis">
       
-        causaliq-core Foundation
+        What is a Workflow Cache?
       
     </span>
   </a>
@@ -1609,22 +1610,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
+  <a href="#cache-entries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Components
+        Cache Entries
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Components">
+    <nav class="md-nav" aria-label="Cache Entries">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#action-framework" class="md-nav__link">
+  <a href="#entry-keys" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Action Framework
+        Entry Keys
       
     </span>
   </a>
@@ -1632,10 +1633,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#action-registry" class="md-nav__link">
+  <a href="#entry-metadata" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Action Registry
+        Entry Metadata
       
     </span>
   </a>
@@ -1643,65 +1644,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#workflow-engine" class="md-nav__link">
+  <a href="#entry-objects" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow Engine
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Cache
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schema-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Schema Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#logging-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Logging System
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Interface
+        Entry Objects
       
     </span>
   </a>
@@ -1714,10 +1660,66 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
+  <a href="#conservative-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Start
+        Conservative Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conservative Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bypassing-conservative-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bypassing Conservative Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cache-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cache Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cache-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-and-importing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting and Importing
       
     </span>
   </a>
@@ -1725,10 +1727,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-the-cache" class="md-nav__link">
+  <a href="#cache-schema-consistency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using the Cache
+        Cache Schema Consistency
       
     </span>
   </a>
@@ -1736,10 +1738,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#python-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Steps
+        Python API
       
     </span>
   </a>
@@ -1763,125 +1765,174 @@
 
 
 
-<h1 id="api-reference">API Reference</h1>
-<p>The CausalIQ Workflow framework provides a comprehensive API for building,
-validating, and executing data processing workflows. It is part of the
-<a href="https://causaliq.org/">CausalIQ ecosystem</a> for intelligent causal discovery.</p>
-<h2 id="causaliq-core-foundation">causaliq-core Foundation</h2>
-<p>causaliq-workflow builds on causaliq-core for its action framework. The
-following components are imported from causaliq-core:</p>
+<h1 id="workflow-caching">Workflow Caching</h1>
+<p>CausalIQ Workflow uses SQLite-based caches to store step results, enabling
+conservative execution and reproducibility.</p>
+<h2 id="what-is-a-workflow-cache">What is a Workflow Cache?</h2>
+<p>A <strong>workflow cache</strong> is a <code>.db</code> file containing:</p>
 <ul>
-<li><strong>CausalIQActionProvider</strong> - Abstract base class for all action providers</li>
-<li><strong>ActionInput</strong> - Type-safe input specification for action parameters</li>
-<li><strong>ActionResult</strong> - Tuple type for action return values</li>
-<li><strong>ActionValidationError</strong> - Exception for parameter validation failures</li>
-<li><strong>ActionExecutionError</strong> - Exception for runtime execution failures</li>
-<li><strong>TokenCache</strong> - SQLite-based caching infrastructure for workflow results</li>
-<li><strong>JsonCompressor</strong> - JSON tokenisation for compact cache storage</li>
+<li><strong>Entries</strong>: Individual results from workflow steps</li>
+<li><strong>Metadata</strong>: Key-value pairs describing each entry (algorithm, parameters,
+  metrics)</li>
+<li><strong>Objects</strong>: Named data objects (graphs, tables, traces) stored with each
+  entry</li>
 </ul>
-<p>The API is organised into several key modules:</p>
-<h2 id="core-components">Core Components</h2>
-<h3 id="action-framework"><a href="../actions/">Action Framework</a></h3>
-<p>Base classes and interfaces for creating reusable workflow actions that follow
-GitHub Actions patterns.</p>
-<ul>
-<li><strong>CausalIQActionProvider</strong> - Abstract base class for all workflow actions
-  (from causaliq-core)</li>
-<li><strong>ActionInput</strong> - Type-safe input specifications (from causaliq-core)</li>
-<li><strong>ActionResult</strong> - Standardised return type (from causaliq-core)</li>
-<li><strong>ActionExecutionError/ActionValidationError</strong> - Exception handling (from
-  causaliq-core)</li>
-</ul>
-<h3 id="action-registry"><a href="../registry/">Action Registry</a></h3>
-<p>Centralised discovery and execution system for workflow actions with plugin
-architecture support.</p>
-<ul>
-<li><strong>ActionRegistry</strong> - Dynamic action discovery via entry points</li>
-<li><strong>WorkflowContext</strong> - Complete workflow context for actions including cache</li>
-<li><strong>ActionRegistryError</strong> - Registry-specific exceptions</li>
-</ul>
-<h3 id="workflow-engine"><a href="../workflow/">Workflow Engine</a></h3>
-<p>Powerful workflow parsing, validation, and execution engine with matrix
-expansion and templating.</p>
-<ul>
-<li><strong>WorkflowExecutor</strong> - Main workflow processing engine</li>
-<li><strong>WorkflowExecutionError</strong> - Workflow execution exceptions</li>
-<li><strong>Template system</strong> - Variable substitution and validation</li>
-</ul>
-<h3 id="workflow-cache"><a href="../cache/">Workflow Cache</a></h3>
-<p>SQLite-based caching for workflow step results, built on causaliq-core's
-TokenCache.</p>
-<ul>
-<li><strong>WorkflowCache</strong> - High-level cache for workflow results</li>
-<li><strong>CacheEntry</strong> - Entry model with metadata and named objects</li>
-<li><strong>MatrixSchemaError</strong> - Cache consistency exceptions</li>
-<li><strong>Export/Import</strong> - Convert cache entries to/from open formats</li>
-</ul>
-<h3 id="schema-validation"><a href="../schema/">Schema Validation</a></h3>
-<p>Robust workflow validation against JSON schemas with detailed error reporting.</p>
-<ul>
-<li><strong>validate_workflow</strong> - Schema-based workflow validation</li>
-<li><strong>load_schema/load_workflow_file</strong> - File loading utilities</li>
-<li><strong>WorkflowValidationError</strong> - Validation-specific exceptions</li>
-</ul>
-<h3 id="status-system"><a href="../status/">Status System</a></h3>
-<p>Comprehensive task execution status enumeration for workflow logging and
-monitoring.</p>
-<ul>
-<li><strong>TaskStatus</strong> - Standardised status reporting for all task execution
-  outcomes</li>
-<li><strong>Status properties</strong> - Categorisation helpers (success, error, execution,
-  dry-run)</li>
-<li><strong>Status definitions</strong> - Complete coverage of execution, comparison, and
-  error statuses</li>
-</ul>
-<h3 id="logging-system"><a href="../logging/">Logging System</a></h3>
-<p>Centralised logging infrastructure with multiple output destinations for
-workflow execution monitoring.</p>
-<ul>
-<li><strong>WorkflowLogger</strong> - Multi-destination logging with file/terminal output
-  support</li>
-<li><strong>LogLevel</strong> - Verbosity control (NONE, SUMMARY, ALL)</li>
-<li><strong>Output configuration</strong> - Flexible logging destination management</li>
-</ul>
-<h3 id="cli-interface"><a href="../cli/">CLI Interface</a></h3>
-<p>Command-line interface for workflow execution and management.</p>
-<ul>
-<li><strong>cqflow run</strong> - Execute workflow files</li>
-<li><strong>cqflow export-cache</strong> - Export cache entries to directory or zip</li>
-<li><strong>cqflow import-cache</strong> - Import cache entries from directory or zip</li>
-</ul>
-<hr />
-<h2 id="quick-start">Quick Start</h2>
-<pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
-
-# Create executor and run workflow
-executor = WorkflowExecutor()
-workflow = executor.parse_workflow(&quot;my_workflow.yml&quot;)
-results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
+<p>Caches are the primary mechanism for passing results between workflow steps
+and enabling conservative execution.</p>
+<h2 id="cache-entries">Cache Entries</h2>
+<p>Each entry in a cache has:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Key</strong></td>
+<td>Matrix values that uniquely identify the entry</td>
+</tr>
+<tr>
+<td><strong>Metadata</strong></td>
+<td>Dictionary of properties (algorithm, scores, timestamps)</td>
+</tr>
+<tr>
+<td><strong>Objects</strong></td>
+<td>Named data items (e.g., <code>graph</code>, <code>trace</code>, <code>summary</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="entry-keys">Entry Keys</h3>
+<p>Entries are keyed by their matrix values. For a workflow with:</p>
+<pre><code class="language-yaml">matrix:
+  network: [asia, cancer]
+  sample_size: [100, 1000]
 </code></pre>
-<h2 id="using-the-cache">Using the Cache</h2>
-<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry
-
-# Store workflow results
-with WorkflowCache(&quot;results.db&quot;) as cache:
-    entry = CacheEntry()
-    entry.metadata[&quot;algorithm&quot;] = &quot;pc&quot;
-    entry.add_object(&quot;graph&quot;, &quot;graphml&quot;, &quot;&lt;graphml&gt;...&lt;/graphml&gt;&quot;)
-
-    key = {&quot;network&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;}
-    cache.put(key, entry)
-
-    # Retrieve later
-    result = cache.get(key)
+<p>Each entry is identified by a unique <code>{network, sample_size}</code> combination.</p>
+<h3 id="entry-metadata">Entry Metadata</h3>
+<p>Metadata is a flat dictionary stored with each entry. Actions add their
+results here:</p>
+<pre><code class="language-python">{
+    &quot;network&quot;: &quot;asia&quot;,
+    &quot;sample_size&quot;: 1000,
+    &quot;algorithm&quot;: &quot;pc&quot;,
+    &quot;node_count&quot;: 8,
+    &quot;edge_count&quot;: 8,
+    &quot;f1_score&quot;: 0.857,
+    &quot;evaluate_graph&quot;: {&quot;completed&quot;: &quot;2026-03-15T10:23:45&quot;}
+}
 </code></pre>
-<h2 id="next-steps">Next Steps</h2>
+<p>The presence of action-specific metadata (e.g., <code>evaluate_graph</code>) indicates
+that action has been applied to the entry.</p>
+<h3 id="entry-objects">Entry Objects</h3>
+<p>Objects are named data items stored with an entry:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Format</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>graph</code></td>
+<td>GraphML</td>
+<td>Learned or generated graph</td>
+</tr>
+<tr>
+<td><code>trace</code></td>
+<td>JSON</td>
+<td>Algorithm iteration history</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td>JSON</td>
+<td>Statistical summary table</td>
+</tr>
+</tbody>
+</table>
+<p>Objects are stored as content strings with a format identifier.</p>
+<h2 id="conservative-execution">Conservative Execution</h2>
+<p>By default, workflows execute <strong>conservatively</strong> — skipping work that has
+already been completed:</p>
 <ul>
-<li><strong><a href="../examples/">Usage Examples</a></strong> - Comprehensive code examples and patterns</li>
-<li><strong><a href="../actions/">Action Framework</a></strong> - Learn how to create custom actions</li>
-<li><strong><a href="../cli/">CLI Interface</a></strong> - Command-line usage and CI/CD integration</li>
+<li><strong>Create steps</strong>: Skip if entry with matching key exists</li>
+<li><strong>Update steps</strong>: Skip if action metadata already present on entry</li>
+<li><strong>Aggregate steps</strong>: Skip if output entry with matching key exists</li>
 </ul>
-<p>For detailed examples and usage patterns, see the <strong><a href="../examples/">Usage Examples</a></strong> page.</p>
+<p>This enables:</p>
+<ul>
+<li><strong>Resumable workflows</strong>: Restart interrupted workflows without re-running
+  completed steps</li>
+<li><strong>Incremental updates</strong>: Add new analysis to existing results</li>
+<li><strong>Efficient iteration</strong>: Modify workflow and re-run without starting from
+  scratch</li>
+</ul>
+<h3 id="bypassing-conservative-execution">Bypassing Conservative Execution</h3>
+<p>Use <code>--mode=force</code> to re-run all steps regardless of existing results:</p>
+<pre><code class="language-bash">cqflow run workflow.yml --mode=force
+</code></pre>
+<h2 id="cache-files">Cache Files</h2>
+<p>Cache files are self-contained SQLite databases:</p>
+<pre><code>results/
+├── graphs.db       # Learned graphs from discovery
+├── evaluated.db    # Graphs with evaluation metrics
+└── merged.db       # Aggregated results
+</code></pre>
+<h3 id="cache-location">Cache Location</h3>
+<p>Specify cache paths relative to the workflow's <code>root_dir</code>:</p>
+<pre><code class="language-yaml">root_dir: &quot;/experiments/project-001&quot;
+
+steps:
+  - name: &quot;Learn&quot;
+    uses: &quot;causaliq-discovery&quot;
+    with:
+      action: &quot;learn_structure&quot;
+      output: &quot;results/graphs.db&quot;  # → /experiments/project-001/results/graphs.db
+</code></pre>
+<h2 id="exporting-and-importing">Exporting and Importing</h2>
+<p>Caches can be exported to open formats for sharing and archival:</p>
+<pre><code class="language-bash"># Export to directory
+cqflow export-cache -i results/graphs.db -o ./exported
+
+# Export to zip
+cqflow export-cache -i results/graphs.db -o results.zip
+
+# Import from export
+cqflow import-cache -i ./exported -o results/restored.db
+</code></pre>
+<p>Exported format uses:</p>
+<ul>
+<li><strong>JSON</strong> for metadata</li>
+<li><strong>GraphML</strong> for graph objects</li>
+<li><strong>JSON</strong> for other objects</li>
+</ul>
+<p>This enables interoperability with external tools and long-term archival in
+open formats.</p>
+<h2 id="cache-schema-consistency">Cache Schema Consistency</h2>
+<p>When using a cache across multiple workflow runs, the matrix dimensions must
+remain consistent. Adding or removing matrix variables from a workflow that
+writes to an existing cache will raise a <code>MatrixSchemaError</code>.</p>
+<p>To change matrix dimensions, either:</p>
+<ul>
+<li>Use a new cache file</li>
+<li>Export, delete, and re-import the cache</li>
+<li>Delete the cache and regenerate</li>
+</ul>
+<h2 id="python-api">Python API</h2>
+<p>For programmatic cache access, see the
+<a href="../../api/cache/">Workflow Cache API</a>.</p>
+<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache
+
+with WorkflowCache(&quot;results/graphs.db&quot;) as cache:
+    # Check if entry exists
+    key = {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: 1000}
+    if cache.exists(key):
+        entry = cache.get(key)
+        print(entry.metadata[&quot;f1_score&quot;])
+</code></pre>
 
 
 
@@ -1919,7 +1970,7 @@ with WorkflowCache(&quot;results.db&quot;) as cache:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../architecture/workflow_cache_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflow Cache Design">
+          <a href="../action_patterns/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Patterns">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1929,20 +1980,20 @@ with WorkflowCache(&quot;results.db&quot;) as cache:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Workflow Cache Design
+                Action Patterns
               </div>
             </div>
           </a>
         
         
           
-          <a href="../actions/" class="md-footer__link md-footer__link--next" aria-label="Next: Action Framework">
+          <a href="../common_parameters/" class="md-footer__link md-footer__link--next" aria-label="Next: Common Parameters">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Action Framework
+                Common Parameters
               </div>
             </div>
             <div class="md-footer__button md-icon">
