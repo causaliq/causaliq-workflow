@@ -96,8 +96,8 @@ workflow execution monitoring.
 Command-line interface for workflow execution and management.
 
 - **cqflow run** - Execute workflow files
-- **cqflow export_cache** - Export cache entries to directory or zip
-- **cqflow import_cache** - Import cache entries from directory or zip
+- **cqflow export-cache** - Export cache entries to directory or zip
+- **cqflow import-cache** - Import cache entries from directory or zip
 
 ---
 

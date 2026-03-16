@@ -37,7 +37,7 @@ For a quickstart guide and installation instructions, see the [README on GitHub]
 ## Documentation Contents
 
 - [Development Roadmap](roadmap.md): Roadmap of upcoming features
-- [User Guide]: Comprehensive user guide (coming soon)
+- [User Guide](userguide/index.md): Comprehensive user guide
 - [Architecture](architecture/overview.md): Overall architecture and design notes
 - [API Reference](api/overview.md): Complete reference for Python code
 - [Development Guidelines](https://github.com/causaliq/causaliq/blob/main/CONTRIBUTING.md): CausalIQ guidelines for developers

@@ -76,9 +76,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Matrix key generation using SHA-256 hash of matrix variable values for cache
   lookups
 - `MatrixSchemaError` exception for detecting matrix variable name mismatches
-- `cqflow export_cache` CLI command to export cache entries to directory or zip
+- `cqflow export-cache` CLI command to export cache entries to directory or zip
   file
-- `cqflow import_cache` CLI command to import cache entries from directory or
+- `cqflow import-cache` CLI command to import cache entries from directory or
   zip file
 - Built-in `echo` action for testing workflow execution, cache storage, and
   export/import functionality

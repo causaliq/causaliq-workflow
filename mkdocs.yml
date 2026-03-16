@@ -40,12 +40,19 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Requirements: 
-    - Development Roadmap: roadmap.md
-    - Example Workflows: example_workflows.md
+  - User Guide:
+    - Introduction: userguide/index.md
+    - Core Concepts: userguide/core_concepts.md
+    - Action Patterns: userguide/action_patterns.md
+    - Workflow Caching: userguide/caching.md
+    - Common Parameters: userguide/common_parameters.md
+    - CLI Usage: userguide/cli.md
+    - Examples: userguide/examples.md
+  - Roadmap: roadmap.md
   - Architecture: 
     - Architectural Overview: architecture/overview.md
     - Design Documents:
+      - Cache Object Model: architecture/cache_object_model.md
       - Matrix Strategy Design: architecture/matrix_expansion_design.md
       - Summarisation Paradigm: architecture/summarisation_paradigm_design.md
       - Action Architecture: architecture/action_architecture_design.md

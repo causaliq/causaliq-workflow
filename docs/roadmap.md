@@ -6,7 +6,7 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 
 ## 🚧  Under development
 
-### Release 0.4.0 - Action Patterns and Conservative Execution
+### Release 0.4.0 - Conservative Execution
 
 Formalise action patterns and implement conservative execution.
 

@@ -8,8 +8,8 @@ management capabilities.
 causaliq-workflow provides three main commands:
 
 - **cqflow run** - Execute workflow files
-- **cqflow export_cache** - Export cache entries to directory or zip file
-- **cqflow import_cache** - Import cache entries from directory or zip file
+- **cqflow export-cache** - Export cache entries to directory or zip file
+- **cqflow import-cache** - Import cache entries from directory or zip file
 
 `cqflow` is an alias for `causaliq-workflow`.
 
@@ -44,8 +44,36 @@ cqflow run experiment.yml --mode=run --log-level=all
 
 Options:
 
-- `--mode` - Execution mode: `dry-run` (default) or `run`
+- `--mode` - Execution mode: `dry-run` (default), `run`, or `force`
 - `--log-level` - Logging level: `none`, `summary` (default), or `all`
+
+#### Log Output Status Messages
+
+When `--log-level=all`, the CLI outputs per-entry status messages for UPDATE
+pattern steps. Each entry in the cache receives its own log line with one of
+the following statuses:
+
+| Status | Dry-run Equivalent | Description |
+|--------|-------------------|-------------|
+| **EXECUTED** | WOULD EXECUTE | Entry processed successfully |
+| **FORCED** | - | Entry processed in force mode (bypasses conservative execution) |
+| **SKIPPED** | WOULD SKIP | Conservative skip - action already applied to this entry |
+| **IGNORED** | WOULD IGNORE | Entry filtered out by `filter` expression (never executes) |
+| **FAILED** | - | Action raised an exception for this entry |
+
+Example output with `--log-level=all`:
+
+```
+2026-03-11 14:23:01 [evaluate] EXECUTED     eval-step [network=asia]
+2026-03-11 14:23:02 [evaluate] EXECUTED     eval-step [network=cancer]
+2026-03-11 14:23:02 [evaluate] SKIPPED      eval-step [network=alarm]
+2026-03-11 14:23:02 [evaluate] IGNORED      eval-step [network=sachs]
+```
+
+**Note**: The `filter` parameter excludes entries from processing entirely
+(IGNORED), whilst conservative execution skips entries that have already been
+processed (SKIPPED). Force mode (`--mode=force`) bypasses conservative
+execution but does not override filters.
 
 ### Export Cache Command
 
@@ -53,15 +81,15 @@ Export cache entries to a directory or zip file:
 
 ```bash
 # Export to directory
-cqflow export_cache -c results.db -o ./exported
+cqflow export-cache -i results.db -o ./exported
 
 # Export to zip file
-cqflow export_cache -c results.db -o results.zip
+cqflow export-cache -i results.db -o results.zip
 ```
 
 Options:
 
-- `-c, --cache` - Path to WorkflowCache database file (.db)
+- `-i, --input` - Path to WorkflowCache database file (.db)
 - `-o, --output` - Output directory or .zip file path
 
 ### Import Cache Command
@@ -70,16 +98,16 @@ Import cache entries from a previously exported directory or zip:
 
 ```bash
 # Import from directory
-cqflow import_cache -i ./exported -c new_cache.db
+cqflow import-cache -i ./exported -o new_cache.db
 
 # Import from zip file
-cqflow import_cache -i results.zip -c new_cache.db
+cqflow import-cache -i results.zip -o new_cache.db
 ```
 
 Options:
 
 - `-i, --input` - Path to exported directory or .zip file
-- `-c, --cache` - Destination WorkflowCache database file (.db)
+- `-o, --output` - Destination WorkflowCache database file (.db)
 
 ## CI/CD Integration
 
@@ -155,10 +183,10 @@ done
 
 ```bash
 # Export cache to share with collaborators
-cqflow export_cache -c experiment.db -o results.zip
+cqflow export-cache -i experiment.db -o results.zip
 
 # Import shared results into local cache
-cqflow import_cache -i results.zip -c local_cache.db
+cqflow import-cache -i results.zip -o local_cache.db
 ```
 
 ## Exit Codes
