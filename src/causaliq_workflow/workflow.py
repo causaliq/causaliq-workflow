@@ -10,6 +10,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -19,6 +20,9 @@ from typing import (
     Tuple,
     Union,
 )
+
+if TYPE_CHECKING:
+    from causaliq_core import ActionPattern
 
 from causaliq_workflow.registry import ActionRegistry, WorkflowContext
 from causaliq_workflow.schema import (
@@ -346,17 +350,10 @@ class WorkflowExecutor:
             if pattern != ActionPattern.AGGREGATE:
                 continue
 
-            # Check if step has cache input
+            # Check if step has cache input (.db files in input parameter)
             input_param = step_inputs.get("input")
-            aggregate_param = step_inputs.get("aggregate")
-
             cache_paths: List[str] = []
-            if aggregate_param:
-                if isinstance(aggregate_param, str):
-                    cache_paths = [aggregate_param]
-                elif isinstance(aggregate_param, list):
-                    cache_paths = list(aggregate_param)
-            elif input_param:
+            if input_param:
                 inputs = (
                     [input_param]
                     if isinstance(input_param, str)
@@ -394,7 +391,14 @@ class WorkflowExecutor:
         return set(matches)
 
     def _validate_template_variables(self, workflow: Dict[str, Any]) -> None:
-        """Validate that all template variables in workflow exist in context.
+        """Validate template variables in workflow.
+
+        Performs two validations:
+        1. All template variables must exist in the available context
+           (workflow variables, matrix variables, or built-ins).
+        2. All matrix variables must be used in at least one CREATE step's
+           template. AGGREGATE steps use matrix for grouping (not templating)
+           and UPDATE steps don't use explicit matrix.
 
         For UPDATE pattern steps, template variables not in the workflow
         context are allowed as they will be resolved from entry metadata
@@ -405,8 +409,10 @@ class WorkflowExecutor:
 
         Raises:
             WorkflowExecutionError: If unknown template variables found
-                (excluding UPDATE step variables which are deferred)
+                or if matrix variables are not used in any CREATE step
         """
+        from causaliq_core import ActionPattern
+
         # Build available context
         available_variables = {"id", "description"}
 
@@ -418,28 +424,54 @@ class WorkflowExecutor:
         }
         available_variables.update(workflow_vars)
 
-        # Add matrix variables if present
-        if "matrix" in workflow:
-            available_variables.update(workflow["matrix"].keys())
+        # Get matrix variables if present
+        matrix_vars = set(workflow.get("matrix", {}).keys())
+        available_variables.update(matrix_vars)
 
-        # Collect template variables per step, distinguishing UPDATE steps
+        # Collect template variables per step type
         update_step_variables: Set[str] = set()
-        other_step_variables: Set[str] = set()
+        create_step_variables: Set[str] = set()
 
         for step in workflow.get("steps", []):
             step_vars: Set[str] = set()
             self._collect_template_variables(step, step_vars)
 
-            # Check if this is an UPDATE pattern step
+            # Check step pattern type
             is_update = self._is_update_pattern_step(step, workflow)
+            is_aggregate = self._is_aggregate_pattern_step(step, workflow)
 
             if is_update:
                 update_step_variables.update(step_vars)
+            elif is_aggregate:
+                # AGGREGATE steps use matrix for grouping, not templating
+                # Still check for unknown variables but don't require matrix
+                # usage
+                pass
             else:
-                other_step_variables.update(step_vars)
+                # CREATE pattern step
+                create_step_variables.update(step_vars)
 
         # Check non-UPDATE variables for unknown references
-        unknown_variables = other_step_variables - available_variables
+        # (AGGREGATE step variables are checked but not collected for matrix
+        # usage validation)
+        all_non_update_vars: Set[str] = set()
+        has_create_steps = False
+        for step in workflow.get("steps", []):
+            is_update = self._is_update_pattern_step(step, workflow)
+            is_aggregate = self._is_aggregate_pattern_step(step, workflow)
+
+            if not is_update:
+                step_vars = set()
+                self._collect_template_variables(step, step_vars)
+                all_non_update_vars.update(step_vars)
+
+            # Check if step is CREATE pattern (ignoring workflow context)
+            # This determines if matrix usage validation applies
+            step_pattern = self._get_step_action_pattern(step)
+            if step_pattern == ActionPattern.CREATE:
+                has_create_steps = True
+
+        unknown_variables = all_non_update_vars - available_variables
 
         if unknown_variables:
             unknown_list = sorted(unknown_variables)
@@ -448,6 +480,18 @@ class WorkflowExecutor:
                 f"Unknown template variables: {unknown_list}. "
                 f"Available variables: {available_list}"
             )
+
+        # Validate all matrix variables are used in CREATE steps
+        # Only applies when there are CREATE pattern steps in the workflow
+        if matrix_vars and has_create_steps:
+            unused_matrix_vars = matrix_vars - create_step_variables
+            if unused_matrix_vars:
+                unused_list = sorted(unused_matrix_vars)
+                raise WorkflowExecutionError(
+                    f"Matrix variables not used in any step: {unused_list}. "
+                    f"Each matrix variable must appear in at least one "
+                    f"{{{{variable}}}} template in CREATE pattern steps."
+                )
 
     def _is_update_pattern_step(
         self,
@@ -486,6 +530,86 @@ class WorkflowExecutor:
             return pattern == ActionPattern.UPDATE
         except Exception:
             return False
+
+    def _is_aggregate_pattern_step(
+        self,
+        step: Dict[str, Any],
+        workflow: Dict[str, Any],
+    ) -> bool:
+        """Check if a step uses AGGREGATE pattern (for validation purposes).
+
+        AGGREGATE pattern steps use matrix variables for grouping entries,
+        not for templating parameters.
+
+        Args:
+            step: Step configuration dictionary
+            workflow: Full workflow dictionary
+
+        Returns:
+            True if step has .db input and is AGGREGATE pattern
+        """
+        from causaliq_core import ActionPattern
+
+        step_inputs = step.get("with", {})
+
+        # Check if step has cache input (.db files)
+        input_param = step_inputs.get("input")
+        has_cache_input = False
+        if input_param:
+            if isinstance(input_param, str):
+                inputs = [input_param]
+            elif isinstance(input_param, list):
+                inputs = list(input_param)
+            else:
+                inputs = []
+            has_cache_input = any(
+                str(p).lower().endswith(".db") for p in inputs
+            )
+
+        if not has_cache_input:
+            return False
+
+        # Check if action declares AGGREGATE pattern
+        provider_name = step.get("uses")
+        action_name = step_inputs.get("action")
+        if not provider_name or not action_name:
+            return False
+
+        try:
+            pattern = self.action_registry.get_action_pattern(
+                provider_name, action_name
+            )
+            return pattern == ActionPattern.AGGREGATE
+        except Exception:
+            return False
+
+    def _get_step_action_pattern(
+        self, step: Dict[str, Any]
+    ) -> Optional["ActionPattern"]:
+        """Get the action pattern for a step, if determinable.
+
+        This method checks only the action pattern, ignoring workflow context
+        like matrix presence. Used for matrix variable usage validation.
+
+        Args:
+            step: Step configuration dictionary
+
+        Returns:
+            The ActionPattern if determinable, None otherwise
+        """
+        provider_name = step.get("uses")
+        step_inputs = step.get("with", {})
+        action_name = step_inputs.get("action")
+
+        if not provider_name or not action_name:
+            return None
+
+        try:
+            return self.action_registry.get_action_pattern(
+                provider_name, action_name
+            )
+        except Exception:
+            return None
 
     def _collect_template_variables(
         self, obj: Any, used_variables: Set[str]
@@ -561,21 +685,20 @@ class WorkflowExecutor:
 
         step_inputs = step.get("with", {})
 
-        # Check if step has cache input (.db files)
+        # Check if step has cache input (.db files in input parameter)
         has_cache_input = False
-        if "aggregate" in step_inputs:
-            has_cache_input = True
-        else:
-            input_param = step_inputs.get("input")
-            if input_param:
-                inputs = (
-                    [input_param]
-                    if isinstance(input_param, str)
-                    else (list(input_param) if input_param else [])
-                )
-                has_cache_input = any(
-                    str(p).lower().endswith(".db") for p in inputs
-                )
+        input_param = step_inputs.get("input")
+        if input_param:
+            if isinstance(input_param, str):
+                inputs = [input_param]
+            elif isinstance(input_param, list):
+                inputs = list(input_param)
+            else:
+                # Non-string, non-list input cannot be .db files
+                inputs = []
+            has_cache_input = any(
+                str(p).lower().endswith(".db") for p in inputs
+            )
 
         if not has_cache_input:
             return False
@@ -1024,21 +1147,12 @@ class WorkflowExecutor:
 
         step_inputs = step.get("with", {})
 
-        # Get cache paths from either 'aggregate' or 'input' parameter
-        aggregate_param = step_inputs.get("aggregate")
+        # Get cache paths from 'input' parameter (.db files only)
         input_param = step_inputs.get("input")
 
         # Collect cache paths (.db files only)
         input_caches: List[str] = []
-
-        if aggregate_param:
-            # Explicit aggregate parameter takes precedence
-            if isinstance(aggregate_param, str):
-                input_caches = [aggregate_param]
-            elif isinstance(aggregate_param, list):
-                input_caches = list(aggregate_param)
-        elif input_param:
-            # Implicit aggregation from input .db files
+        if input_param:
             inputs = (
                 [input_param]
                 if isinstance(input_param, str)
@@ -1916,16 +2030,12 @@ class WorkflowExecutor:
                 action_inputs = step.get("with", {})
 
                 # Resolve template variables in inputs
+                # Matrix variables are available for substitution via {{var}}
+                # but are NOT automatically passed as action parameters.
+                # This ensures explicit specification in with: clause.
                 resolved_inputs = self._resolve_template_variables(
                     action_inputs, variables
                 )
-
-                # Implicitly pass matrix variables to action if not specified
-                # This allows actions to receive matrix values without
-                # explicit {{variable}} templates in the workflow
-                for matrix_var, matrix_val in job.items():
-                    if matrix_var not in resolved_inputs:
-                        resolved_inputs[matrix_var] = matrix_val
 
                 # Handle aggregation mode: scan input caches for matching
                 # entries. Aggregation mode is activated when step has 'input'
@@ -1941,11 +2051,6 @@ class WorkflowExecutor:
                     resolved_inputs["_aggregation_entries"] = matching_entries
                     # Remove 'aggregate' from resolved params (config only)
                     resolved_inputs.pop("aggregate", None)
-                    # Remove implicit matrix variables - for AGGREGATE pattern,
-                    # matrix vars are used only for filtering/grouping entries,
-                    # not as action parameters
-                    for matrix_var in job.keys():
-                        resolved_inputs.pop(matrix_var, None)
 
                 # Handle UPDATE pattern: process all entries in input cache
                 # UPDATE mode is activated when action declares UPDATE pattern

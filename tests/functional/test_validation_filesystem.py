@@ -274,7 +274,7 @@ def test_validate_aggregation_entries_missing_params(tmp_path) -> None:
                 "uses": "strict-agg",
                 "with": {
                     "action": "strict_agg",
-                    "aggregate": str(cache_path),
+                    "input": str(cache_path),
                     "output": str(tmp_path / "output.db"),
                 },
             }

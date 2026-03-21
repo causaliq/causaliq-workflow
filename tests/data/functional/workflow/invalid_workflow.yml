@@ -3,3 +3,5 @@ matrix:
 steps:
   - name: "Invalid Step"
     uses: "completely-unknown-action"
+    with:
+      data: "{{dataset}}"

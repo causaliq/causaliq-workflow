@@ -13,22 +13,22 @@ from causaliq_workflow.workflow import (
 # ============================================================================
 
 
-# Test _is_aggregation_step returns False when no matrix.
+# _is_aggregation_step returns False when no matrix and no AGGREGATE pattern.
 def test_is_aggregation_step_no_matrix(executor: WorkflowExecutor) -> None:
-    step = {"uses": "action", "with": {"aggregate": "cache.db"}}
+    step = {"uses": "action", "with": {"input": "cache.db"}}
     assert executor._is_aggregation_step(step, {}) is False
 
 
-# Test _is_aggregation_step returns False when no aggregate param.
-def test_is_aggregation_step_no_aggregate(executor: WorkflowExecutor) -> None:
+# Test _is_aggregation_step returns False when no .db input.
+def test_is_aggregation_step_no_db_input(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"other": "value"}}
     matrix = {"network": ["asia"]}
     assert executor._is_aggregation_step(step, matrix) is False
 
 
-# Test _is_aggregation_step returns True when matrix and aggregate present.
+# Test _is_aggregation_step returns True when matrix and .db input present.
 def test_is_aggregation_step_true(executor: WorkflowExecutor) -> None:
-    step = {"uses": "action", "with": {"aggregate": "cache.db"}}
+    step = {"uses": "action", "with": {"input": "cache.db"}}
     matrix = {"network": ["asia"]}
     assert executor._is_aggregation_step(step, matrix) is True
 
@@ -50,11 +50,11 @@ def test_get_aggregation_config_not_aggregation(
     assert config is None
 
 
-# Test _get_aggregation_config with single aggregate cache.
-def test_get_aggregation_config_single_aggregate(
+# Test _get_aggregation_config with single .db input cache.
+def test_get_aggregation_config_single_db_input(
     executor: WorkflowExecutor,
 ) -> None:
-    step = {"uses": "action", "with": {"aggregate": "cache.db"}}
+    step = {"uses": "action", "with": {"input": "cache.db"}}
     matrix = {"network": ["asia", "alarm"], "sample_size": [100, 500]}
     config = executor._get_aggregation_config(step, matrix)
 
@@ -65,13 +65,13 @@ def test_get_aggregation_config_single_aggregate(
     assert set(config.matrix_vars) == {"network", "sample_size"}
 
 
-# Test _get_aggregation_config with list of aggregate caches.
-def test_get_aggregation_config_multiple_aggregates(
+# Test _get_aggregation_config with list of .db input caches.
+def test_get_aggregation_config_multiple_db_inputs(
     executor: WorkflowExecutor,
 ) -> None:
     step = {
         "uses": "action",
-        "with": {"aggregate": ["cache1.db", "cache2.db"]},
+        "with": {"input": ["cache1.db", "cache2.db"]},
     }
     matrix = {"network": ["asia"]}
     config = executor._get_aggregation_config(step, matrix)
@@ -87,7 +87,7 @@ def test_get_aggregation_config_with_filter(
     step = {
         "uses": "action",
         "with": {
-            "aggregate": "cache.db",
+            "input": "cache.db",
             "filter": "status == 'completed'",
         },
     }
@@ -98,16 +98,16 @@ def test_get_aggregation_config_with_filter(
     assert config.filter_expr == "status == 'completed'"
 
 
-# Test _get_aggregation_config with non-string/list aggregate value.
-def test_get_aggregation_config_invalid_aggregate_type(
+# Test _get_aggregation_config returns None for non-.db input.
+def test_get_aggregation_config_non_db_input(
     executor: WorkflowExecutor,
 ) -> None:
-    step = {"uses": "action", "with": {"aggregate": 123}}
+    step = {"uses": "action", "with": {"input": 123}}
     matrix = {"network": ["asia"]}
     config = executor._get_aggregation_config(step, matrix)
 
-    assert config is not None
-    assert config.input_caches == []
+    # Non-.db input should result in no aggregation config
+    assert config is None
 
 
 # Test _is_aggregation_step returns True when input contains .db file.
@@ -586,7 +586,7 @@ def test_execute_job_aggregation_passes_entries(
                 "uses": "capture-action",
                 "with": {
                     "action": "do_aggregation",
-                    "aggregate": str(cache_path),
+                    "input": str(cache_path),
                 },
             }
         ],
@@ -1078,8 +1078,8 @@ def test_derive_workflow_matrix_skips_incomplete_steps(
     assert matrix == {}
 
 
-# Test _derive_workflow_matrix with aggregate parameter.
-def test_derive_workflow_matrix_from_aggregate_param(
+# Test _derive_workflow_matrix with .db input parameter.
+def test_derive_workflow_matrix_from_db_input(
     executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1097,7 +1097,7 @@ def test_derive_workflow_matrix_from_aggregate_param(
                 "uses": "test_provider",
                 "with": {
                     "action": "merge",
-                    "aggregate": str(cache_path),
+                    "input": str(cache_path),
                     "output": "out.db",
                 },
             }
@@ -1113,8 +1113,8 @@ def test_derive_workflow_matrix_from_aggregate_param(
     assert "network" in matrix
 
 
-# Test _derive_workflow_matrix with aggregate list parameter.
-def test_derive_workflow_matrix_from_aggregate_list(
+# Test _derive_workflow_matrix with .db input list parameter.
+def test_derive_workflow_matrix_from_db_input_list(
     executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1134,7 +1134,7 @@ def test_derive_workflow_matrix_from_aggregate_list(
                 "uses": "test_provider",
                 "with": {
                     "action": "merge",
-                    "aggregate": [str(cache1), str(cache2)],
+                    "input": [str(cache1), str(cache2)],
                     "output": "out.db",
                 },
             }

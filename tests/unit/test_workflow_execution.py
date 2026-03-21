@@ -239,11 +239,11 @@ def test_execute_workflow_missing_action(executor: WorkflowExecutor) -> None:
         executor.execute_workflow(workflow, mode="run")
 
 
-# Test matrix variables are passed implicitly to actions without templates.
-def test_execute_workflow_implicit_matrix_params(
+# Test matrix variables are NOT passed implicitly to actions (explicit only).
+def test_execute_workflow_matrix_params_require_explicit_specification(
     executor: WorkflowExecutor,
 ) -> None:
-    """Matrix variables should be passed to actions even without {{var}}."""
+    """Matrix variables should NOT be passed to actions without {{var}}."""
     workflow = {
         "matrix": {
             "network": ["asia", "alarm"],
@@ -263,7 +263,7 @@ def test_execute_workflow_implicit_matrix_params(
     # Should have 4 combinations (2 networks × 2 sample_sizes)
     assert len(results) == 4
 
-    # Verify each result has implicit matrix params
+    # Verify each result does NOT have implicit matrix params
     for result in results:
         step_result = result["steps"]["Test Step"]
         params = step_result["parameters"]
@@ -271,26 +271,24 @@ def test_execute_workflow_implicit_matrix_params(
         # Explicit param should be present
         assert params["explicit_param"] == "value"
 
-        # Matrix variables should be implicitly passed
-        assert "network" in params
-        assert "sample_size" in params
-        assert params["network"] in ["asia", "alarm"]
-        assert params["sample_size"] in [100, 500]
+        # Matrix variables should NOT be implicitly passed
+        assert "network" not in params
+        assert "sample_size" not in params
 
 
-# Test implicit matrix params do not override explicit params.
-def test_execute_workflow_implicit_does_not_override_explicit(
+# Test matrix params are passed when explicitly specified via templates.
+def test_execute_workflow_explicit_matrix_params_via_templates(
     executor: WorkflowExecutor,
 ) -> None:
-    """Explicit action params should not be overridden by matrix variables."""
+    """Matrix variables passed via {{var}} templates should work."""
     workflow = {
         "matrix": {"network": ["asia"]},
         "steps": [
             {
                 "uses": "mock_workflow_action",
                 "name": "Test Step",
-                # Explicit network param should take precedence
-                "with": {"action": "test", "network": "custom_value"},
+                # Explicit network param via template
+                "with": {"action": "test", "network": "{{network}}"},
             }
         ],
     }
@@ -300,8 +298,8 @@ def test_execute_workflow_implicit_does_not_override_explicit(
     step_result = results[0]["steps"]["Test Step"]
     params = step_result["parameters"]
 
-    # Explicit param should NOT be overridden
-    assert params["network"] == "custom_value"
+    # Explicit param via template should be present
+    assert params["network"] == "asia"
 
 
 # Test error when action produces objects but no workflow cache is open.

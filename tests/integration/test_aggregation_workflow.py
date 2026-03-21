@@ -76,7 +76,7 @@ def test_aggregation_workflow_end_to_end(
                 "uses": "aggregate-action",
                 "with": {
                     "action": "model_average",
-                    "aggregate": str(input_cache),
+                    "input": str(input_cache),
                 },
             }
         ],
@@ -139,7 +139,7 @@ def test_aggregation_with_filter(
                 "uses": "filter-action",
                 "with": {
                     "action": "summarise",
-                    "aggregate": str(input_cache),
+                    "input": str(input_cache),
                     "filter": "status == 'completed'",
                 },
             }
@@ -197,7 +197,7 @@ def test_aggregation_multiple_caches(
                 "uses": "merge-action",
                 "with": {
                     "action": "merge",
-                    "aggregate": [str(pc_cache), str(ges_cache)],
+                    "input": [str(pc_cache), str(ges_cache)],
                 },
             }
         ],
@@ -252,7 +252,7 @@ def test_aggregation_matrix_grouping(
                 "uses": "group-action",
                 "with": {
                     "action": "group",
-                    "aggregate": str(input_cache),
+                    "input": str(input_cache),
                 },
             }
         ],

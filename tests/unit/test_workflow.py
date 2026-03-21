@@ -443,7 +443,10 @@ def test_validate_create_pattern_requires_output(monkeypatch):
             {
                 "name": "create_step",
                 "uses": "test_provider",
-                "with": {"action": "create_action"},
+                "with": {
+                    "action": "create_action",
+                    "data": "{{dataset}}",  # Use matrix var to pass validation
+                },
             }
         ],
     }
@@ -526,7 +529,7 @@ def test_validate_create_pattern_prohibits_cache_input(monkeypatch):
                 "uses": "test_provider",
                 "with": {
                     "action": "create_action",
-                    "output": "result.db",
+                    "output": "{{dataset}}/result.db",  # Use matrix var
                     "input": "other_cache.db",
                 },
             }
@@ -870,8 +873,8 @@ def test_validate_create_pattern_valid(monkeypatch):
                 "uses": "test_provider",
                 "with": {
                     "action": "create_action",
-                    "output": "result.db",
-                    "data": "/path/to/data.csv",
+                    "output": "{{dataset}}_result.db",
+                    "data": "/path/to/{{dataset}}.csv",
                 },
             }
         ],
