@@ -165,6 +165,47 @@ Template variables can reference:
 | Matrix | User-defined matrix vars | `{{dataset}}`, `{{algorithm}}` |
 | Paths | `data_root`, `output_root` | `{{output_root}}/results` |
 
+### Matrix Variable Usage Requirement
+
+All matrix variables must be used in at least one **CREATE pattern** step's
+parameter templates. This ensures each matrix combination produces a distinct
+action invocation and prevents accidental matrix variable definitions that
+have no effect.
+
+```yaml
+# Valid: Both matrix variables are used
+matrix:
+  network: [asia, alarm]
+  seed: [1, 2, 3]
+steps:
+  - uses: causaliq-discovery
+    with:
+      action: run_pc
+      network: "{{network}}"
+      seed: "{{seed}}"
+      output: results.db
+```
+
+```yaml
+# Invalid: 'seed' is defined but never used
+matrix:
+  network: [asia, alarm]
+  seed: [1, 2, 3]  # Error: unused matrix variable
+steps:
+  - uses: causaliq-discovery
+    with:
+      action: run_pc
+      network: "{{network}}"
+      output: results.db
+```
+
+**Exceptions:**
+
+- **AGGREGATE pattern steps** use matrix for grouping entries, not templating.
+  Matrix variables don't need to appear in AGGREGATE step parameters.
+- **UPDATE pattern steps** derive their matrix from input cache entries,
+  not from explicit workflow matrix definitions.
+
 ## Aggregation Processing
 
 Aggregation mode enables workflow steps to consume entries from multiple cache
@@ -217,7 +258,7 @@ steps:
     uses: "causaliq-analysis"
     with:
       action: "merge_graphs"
-      aggregate: "results/graphs.db"
+      input: "results/graphs.db"
       filter: "algorithm == 'pc' and sample_size >= 1000"
       output: "results/merged.db"
 ```

@@ -526,12 +526,12 @@ steps:
 ```
 
 ```yaml
-# Explicit aggregation - aggregate parameter
+# Aggregation with multiple input caches
 steps:
   - uses: causaliq-analysis
     with:
       action: merge_graphs
-      aggregate:                  # Explicit cache list
+      input:                      # Multiple .db input caches
         - results/llm_graphs.db
         - results/discovery.db
       output: results/merged.db
@@ -561,7 +561,7 @@ metadata:
 ```yaml
 with:
   action: merge_graphs
-  aggregate: results/graphs.db
+  input: results/graphs.db
   filter: "algorithm == 'pc' and sample_size >= 1000"
 ```
 

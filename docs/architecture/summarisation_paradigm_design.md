@@ -8,6 +8,18 @@ causal discovery research where experiments are run across many parameter
 combinations (networks, sample sizes, algorithms) and results need to be
 combined for analysis, model averaging, or comparison.
 
+### Matrix Variable Handling
+
+Matrix variables serve different purposes depending on the action pattern:
+
+- **CREATE pattern**: Matrix variables must be used in `{{variable}}`
+  templates to produce distinct action invocations.
+- **AGGREGATE pattern**: Matrix variables define grouping dimensions for
+  entry selection. They are **not** required in parameter templates since
+  they control which cache entries are passed to the action.
+- **UPDATE pattern**: No explicit matrix is used; entry iteration is
+  controlled by the input cache contents.
+
 ## Motivation
 
 ### Research Workflow Pattern
@@ -43,7 +55,7 @@ The Summarisation Paradigm provides first-class support for this pattern.
 Aggregation mode is automatically activated when a step has:
 
 1. A workflow `matrix` definition
-2. An `aggregate` parameter specifying input cache(s)
+2. An `input` parameter with `.db` cache file(s)
 
 ```python
 def _is_aggregation_step(
@@ -55,7 +67,15 @@ def _is_aggregation_step(
     if not matrix:
         return False
     step_inputs = step.get("with", {})
-    return "aggregate" in step_inputs
+    input_param = step_inputs.get("input")
+    if input_param:
+        inputs = (
+            [input_param]
+            if isinstance(input_param, str)
+            else (list(input_param) if input_param else [])
+        )
+        return any(str(p).lower().endswith(".db") for p in inputs)
+    return False
 ```
 
 ### Aggregation Configuration
@@ -136,7 +156,7 @@ steps:
     uses: causaliq/analysis
     with:
       action: model_average
-      aggregate: graphs.db
+      input: graphs.db
       output: summaries.db
 ```
 
@@ -149,7 +169,7 @@ Filter entries before aggregation using metadata fields:
   uses: causaliq/analysis
   with:
     action: model_average
-    aggregate: graphs.db
+    input: graphs.db
     filter: "status == 'completed' and edge_count > 0"
     output: summaries.db
 ```
@@ -163,7 +183,7 @@ Combine results from multiple caches:
   uses: causaliq/analysis
   with:
     action: merge_graphs
-    aggregate:
+    input:
       - pc_results.db
       - ges_results.db
     output: merged.db
