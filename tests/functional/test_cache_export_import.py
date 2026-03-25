@@ -478,6 +478,53 @@ def test_round_trip_directory(tmp_path: Path) -> None:
         )
 
 
+# Test round-trip preserves matrix values with Windows-invalid characters.
+def test_round_trip_directory_with_colon_in_model(tmp_path: Path) -> None:
+    """Test export/import preserves model names containing colon."""
+    export_dir = tmp_path / "export_colon"
+
+    with WorkflowCache(":memory:") as source:
+        entry = CacheEntry(metadata={"source": "ollama"})
+        entry.objects["result"] = CacheObject(
+            format="json",
+            action="test",
+            content='{"ok": true}',
+        )
+        matrix_values = {
+            "dataset": "asia",
+            "model": "ollama_qwen3:1.7b",
+            "minimal": False,
+        }
+        source.put(matrix_values, entry)
+
+        export_entries(
+            source,
+            export_dir,
+            matrix_keys=["dataset", "model", "minimal"],
+        )
+
+    meta_path = export_dir / "asia" / "ollama_qwen3_1.7b" / "False"
+    meta_path = meta_path / "_meta.json"
+    assert meta_path.exists()
+
+    meta_content = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert meta_content["matrix_values"]["model"] == "ollama_qwen3:1.7b"
+
+    with WorkflowCache(":memory:") as dest:
+        count = import_entries(dest, export_dir)
+        assert count == 1
+
+        imported = dest.get(
+            {
+                "dataset": "asia",
+                "model": "ollama_qwen3:1.7b",
+                "minimal": False,
+            }
+        )
+        assert imported is not None
+        assert imported.metadata["source"] == "ollama"
+
+
 # Test export/import round-trip with zip preserves data.
 def test_round_trip_zip(tmp_path: Path) -> None:
     """Test export to zip then import preserves entry data."""

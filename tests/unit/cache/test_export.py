@@ -7,6 +7,7 @@ from causaliq_workflow.cache.export import (
     TYPE_EXTENSIONS,
     build_entry_path,
     get_extension_for_type,
+    sanitise_path_segment,
     serialise_objects,
     store_action_result,
 )
@@ -85,6 +86,32 @@ def test_build_entry_path_sanitises_characters() -> None:
     result = build_entry_path(matrix_values)
 
     assert result == Path("path_to_data")
+
+
+# Test build_entry_path sanitises Windows-invalid colon in values.
+def test_build_entry_path_sanitises_colon() -> None:
+    """Test path sanitises colon characters for Windows compatibility."""
+    matrix_values = {"model": "ollama_qwen3:1.7b"}
+
+    result = build_entry_path(matrix_values)
+
+    assert result == Path("ollama_qwen3_1.7b")
+
+
+# Test sanitise_path_segment returns underscore when value cleans empty.
+def test_sanitise_path_segment_empty_after_cleaning() -> None:
+    """Test segment falls back to underscore when all chars are invalid."""
+    result = sanitise_path_segment("...")
+
+    assert result == "_"
+
+
+# Test sanitise_path_segment wraps reserved Windows device names.
+def test_sanitise_path_segment_reserved_windows_name() -> None:
+    """Test reserved Windows names are made safe."""
+    result = sanitise_path_segment("con")
+
+    assert result == "_con_"
 
 
 # Test build_entry_path handles empty matrix values.

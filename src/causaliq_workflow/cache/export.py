@@ -27,6 +27,64 @@ FORMAT_EXTENSIONS: dict[str, str] = {
 # Legacy alias for backward compatibility with import_.py
 TYPE_EXTENSIONS: dict[str, str] = FORMAT_EXTENSIONS
 
+WINDOWS_RESERVED_NAMES: set[str] = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "COM5",
+    "COM6",
+    "COM7",
+    "COM8",
+    "COM9",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "LPT4",
+    "LPT5",
+    "LPT6",
+    "LPT7",
+    "LPT8",
+    "LPT9",
+}
+
+WINDOWS_INVALID_PATH_CHARS: set[str] = set('<>:"/\\|?*')
+
+
+def sanitise_path_segment(value: str) -> str:
+    """Create a filesystem-safe path segment for export.
+
+    This targets cross-platform safety and specifically handles Windows
+    filename restrictions while keeping output readable.
+
+    Args:
+        value: Raw matrix value string.
+
+    Returns:
+        Sanitised segment safe to use as a directory name.
+    """
+    cleaned_chars = []
+    for char in value:
+        is_control_char = ord(char) < 32
+        if is_control_char or char in WINDOWS_INVALID_PATH_CHARS:
+            cleaned_chars.append("_")
+        else:
+            cleaned_chars.append(char)
+
+    cleaned = "".join(cleaned_chars).rstrip(" .")
+
+    if not cleaned:
+        return "_"
+
+    if cleaned.upper() in WINDOWS_RESERVED_NAMES:
+        return f"_{cleaned}_"
+
+    return cleaned
+
 
 def get_extension_for_format(obj_format: str) -> str:
     """Get file extension for an object format.
@@ -77,7 +135,7 @@ def build_entry_path(
     for key in matrix_keys:
         if key in matrix_values:
             value = str(matrix_values[key])
-            safe_value = value.replace("/", "_").replace("\\", "_")
+            safe_value = sanitise_path_segment(value)
             segments.append(safe_value)
 
     if segments:
