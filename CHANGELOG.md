@@ -31,6 +31,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
+## [0.4.0] Conservative Execution - 2026-03-26
+
+### Added
+
+- **Action pattern validation** - Creation (output required, matrix required,
+  input prohibited), Update (input required, output prohibited, matrix
+  prohibited), Aggregation (input required, output required, matrix required)
+- **Update action support** - Actions that modify input cache entries by
+  adding metadata sections and objects to existing entries
+- **Conservative execution** - Skip work if results exist: creation skips
+  if entry with matching matrix values exists in output, update skips if
+  action metadata section exists in entry, aggregation skips if entry with
+  matching matrix values exists in output
+- `--mode=force` option to bypass conservative execution checks
+- All conservative execution logic implemented in workflow executor
+  (actions unaware)
+
+### Dependencies
+
+- Requires causaliq-core >= 0.6.0
+
 ## [0.3.0] Aggregation Workflows - 2026-03-01
 
 ### Added

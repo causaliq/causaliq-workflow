@@ -29,15 +29,19 @@
 - **Release v0.3.0 - Aggregation Workflows**: Matrix-driven aggregation
   processing with filter expressions for multi-source workflows.
 
+- **Release v0.4.0 - Conservative Execution**: Formalise action patterns
+  and implement conservative execution for creation, update and
+  aggregation steps.
+
 *See Git commit history for detailed implementation progress*
 
 🛣️ Upcoming Releases
 
-- **Release v0.4.0 - Step Output Chaining**: Step output references and cache
+- **Release v0.5.0 - Step Output Chaining**: Step output references and cache
   restoration for resumable workflows.
-- **Release v0.5.0 - Enhanced Workflow**: Dry and comparison runs, runtime
+- **Release v0.6.0 - Enhanced Workflow**: Dry and comparison runs, runtime
   estimation and processing summary
-- **Release v0.6.0 - Discovery Integration**: Structure learning algorithms
+- **Release v0.7.0 - Discovery Integration**: Structure learning algorithms
   integrated
 
 ## causaliq-core Integration
@@ -77,9 +81,9 @@ steps:
 
 **Execute with modes:**
 ```bash
-cqflow experiment.yml --mode=dry-run    # Validate and preview (default)
-cqflow experiment.yml --mode=run        # Execute (skip if outputs exist)
-cqflow experiment.yml --mode=compare    # Re-execute and compare outputs
+cqflow run experiment.yml --mode=dry-run  # Validate and preview (default)
+cqflow run experiment.yml --mode=run      # Execute (skip if outputs exist)
+cqflow run experiment.yml --mode=force    # Re-execute all without skip
 ```
 
 Note that **cqflow** is a short synonym for **causaliq-workflow** which can also be used.
@@ -120,7 +124,6 @@ tbc
 ### Prerequisites
 - Python 3.9-3.13
 - Git
-- R with bnlearn (optional, for external integration)
 
 ### Installation
 ```bash
@@ -132,7 +135,7 @@ scripts/setup-env.ps1 -Install
 scripts/activate.ps1
 ```
 
-**Example workflows**: [docs/example_workflows.md](docs/example_workflows.md)
+**Example workflows**: [docs/userguide/examples.md](docs/userguide/examples.md)
 
 
 
@@ -144,47 +147,17 @@ Supporting research for May 2026 paper on LLM integration for intelligent model 
 
 ## Quick Start
 
-```python
-# to be completed
+```powershell
+# Clone and set up
+git clone https://github.com/causaliq/causaliq-workflow.git
+cd causaliq-workflow
+.\scripts\setup-env.ps1 -Install
+.\scripts\activate.ps1
+
+# Verify installation
+cqflow --help
+.\scripts\check_ci.ps1
 ```
-
-## Getting started
-
-### Prerequisites
-
-- Git 
-- Latest stable versions of Python 3.9, 3.10. 3.11 and 3.12
-
-
-### Clone the new repo locally and check that it works
-
-Clone the causaliq-analysis repo locally as normal
-
-```bash
-git clone https://github.com/causaliq/causaliq-analysis.git
-```
-
-Set up the Python virtual environments and activate the default Python virtual environment. You may see
-messages from VSCode (if you are using it as your IDE) that new Python environments are being created
-as the scripts/setup-env runs - these messages can be safely ignored at this stage.
-
-```text
-scripts/setup-env -Install
-scripts/activate
-```
-
-Check that the causaliq-analysis CLI is working, check that all CI tests pass, and start up the local mkdocs webserver. There should be no errors  reported in any of these.
-
-```text
-causaliq-analysis --help
-scripts/check_ci
-mkdocs serve
-```
-
-Enter **http://127.0.0.1:8000/** in a browser and check that the 
-causaliq-data documentation is visible.
-
-If all of the above works, this confirms that the code is working successfully on your system.
 
 
 ## Documentation

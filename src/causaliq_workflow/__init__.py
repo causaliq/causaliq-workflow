@@ -1,5 +1,5 @@
 """
-causaliq-workflow: Template package for CausalIQ repos
+causaliq-workflow: Workflow orchestration for causal discovery
 """
 
 # Import core functionality
@@ -14,13 +14,13 @@ from .workflow import (
     WorkflowExecutor,
 )
 
-__version__ = "0.4.0.dev14"
+__version__ = "0.4.0"
 __author__ = "CausalIQ"
 __email__ = "info@causaliq.com"
 
 # Package metadata
 __title__ = "causaliq-workflow"
-__description__ = "Template package for CausalIQ repos"
+__description__ = "Workflow orchestration for causal discovery"
 
 __url__ = "https://github.com/causaliq/causaliq-workflow"
 __license__ = "MIT"

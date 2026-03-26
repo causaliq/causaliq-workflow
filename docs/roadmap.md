@@ -1,32 +1,8 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: March 04, 2026
+**Last updated**: March 26, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
-
-## 🚧  Under development
-
-### Release 0.4.0 - Conservative Execution
-
-Formalise action patterns and implement conservative execution.
-
-**Scope**:
-
-- **Action pattern validation**:
-  - Creation: output required, matrix required, input prohibited (for caches)
-  - Update: input required, output prohibited, matrix prohibited
-  - Aggregation: input required, output required, matrix required
-
-- **Update action support** - Actions that modify input cache entries
-  - Add metadata sections to existing entries
-  - Add objects to existing entries
-
-- **Conservative execution** - Skip work if results exist
-  - Creation: skip if entry with matching matrix values exists in output
-  - Update: skip if action metadata section exists in entry  
-  - Aggregation: skip if entry with matching matrix values exists in output
-  - Add `--mode=force` option to bypass checks
-  - All logic implemented in workflow executor (actions unaware)
 
 ## ✅ Previous Releases
 
@@ -35,6 +11,8 @@ Formalise action patterns and implement conservative execution.
 - **v0.2.0 Knowledge Workflows** [February 2026]: Include LLM graph generation in workflows and store results in Workflow caches.
 
 - **v0.3.0 Aggregation Workflows** [March 2026]: Matrix-driven aggregation processing for multi-source workflows.
+
+- **v0.4.0 Conservative Execution** [March 2026]: Formalised action patterns (creation, update, aggregation) and conservative execution to skip work if results exist.
 
 
 ## 🛣️ Upcoming Implementation
