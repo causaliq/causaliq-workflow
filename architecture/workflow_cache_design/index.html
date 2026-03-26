@@ -2767,12 +2767,12 @@ steps:
       input: results/graphs.db    # Triggers aggregation mode
       output: results/merged.db
 </code></pre>
-<pre><code class="language-yaml"># Explicit aggregation - aggregate parameter
+<pre><code class="language-yaml"># Aggregation with multiple input caches
 steps:
   - uses: causaliq-analysis
     with:
       action: merge_graphs
-      aggregate:                  # Explicit cache list
+      input:                      # Multiple .db input caches
         - results/llm_graphs.db
         - results/discovery.db
       output: results/merged.db
@@ -2795,7 +2795,7 @@ steps:
 metadata:</p>
 <pre><code class="language-yaml">with:
   action: merge_graphs
-  aggregate: results/graphs.db
+  input: results/graphs.db
   filter: &quot;algorithm == 'pc' and sample_size &gt;= 1000&quot;
 </code></pre>
 <p>Metadata flattening combines:</p>

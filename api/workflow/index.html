@@ -1523,6 +1523,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#matrix-variable-usage-requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Variable Usage Requirement
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2134,6 +2145,17 @@
     <span class="md-ellipsis">
       
         Available Template Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-variable-usage-requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Variable Usage Requirement
       
     </span>
   </a>
@@ -2780,6 +2802,41 @@ if &quot;matrix&quot; in workflow:
 </tr>
 </tbody>
 </table>
+<h3 id="matrix-variable-usage-requirement">Matrix Variable Usage Requirement</h3>
+<p>All matrix variables must be used in at least one <strong>CREATE pattern</strong> step's
+parameter templates. This ensures each matrix combination produces a distinct
+action invocation and prevents accidental matrix variable definitions that
+have no effect.</p>
+<pre><code class="language-yaml"># Valid: Both matrix variables are used
+matrix:
+  network: [asia, alarm]
+  seed: [1, 2, 3]
+steps:
+  - uses: causaliq-discovery
+    with:
+      action: run_pc
+      network: &quot;{{network}}&quot;
+      seed: &quot;{{seed}}&quot;
+      output: results.db
+</code></pre>
+<pre><code class="language-yaml"># Invalid: 'seed' is defined but never used
+matrix:
+  network: [asia, alarm]
+  seed: [1, 2, 3]  # Error: unused matrix variable
+steps:
+  - uses: causaliq-discovery
+    with:
+      action: run_pc
+      network: &quot;{{network}}&quot;
+      output: results.db
+</code></pre>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li><strong>AGGREGATE pattern steps</strong> use matrix for grouping entries, not templating.
+  Matrix variables don't need to appear in AGGREGATE step parameters.</li>
+<li><strong>UPDATE pattern steps</strong> derive their matrix from input cache entries,
+  not from explicit workflow matrix definitions.</li>
+</ul>
 <h2 id="aggregation-processing">Aggregation Processing</h2>
 <p>Aggregation mode enables workflow steps to consume entries from multiple cache
 entries. This is essential for research workflows that merge graphs or compute
@@ -3006,7 +3063,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
     uses: &quot;causaliq-analysis&quot;
     with:
       action: &quot;merge_graphs&quot;
-      aggregate: &quot;results/graphs.db&quot;
+      input: &quot;results/graphs.db&quot;
       filter: &quot;algorithm == 'pc' and sample_size &gt;= 1000&quot;
       output: &quot;results/merged.db&quot;
 </code></pre>

@@ -929,6 +929,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matrix-variable-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Variable Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1810,6 +1827,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matrix-variable-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrix Variable Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2175,6 +2209,17 @@ multiple matrix combinations into summary outputs. This is essential for
 causal discovery research where experiments are run across many parameter
 combinations (networks, sample sizes, algorithms) and results need to be
 combined for analysis, model averaging, or comparison.</p>
+<h3 id="matrix-variable-handling">Matrix Variable Handling</h3>
+<p>Matrix variables serve different purposes depending on the action pattern:</p>
+<ul>
+<li><strong>CREATE pattern</strong>: Matrix variables must be used in <code>{{variable}}</code>
+  templates to produce distinct action invocations.</li>
+<li><strong>AGGREGATE pattern</strong>: Matrix variables define grouping dimensions for
+  entry selection. They are <strong>not</strong> required in parameter templates since
+  they control which cache entries are passed to the action.</li>
+<li><strong>UPDATE pattern</strong>: No explicit matrix is used; entry iteration is
+  controlled by the input cache contents.</li>
+</ul>
 <h2 id="motivation">Motivation</h2>
 <h3 id="research-workflow-pattern">Research Workflow Pattern</h3>
 <p>A typical causal discovery workflow generates many individual results:</p>
@@ -2202,7 +2247,7 @@ steps:
 <p>Aggregation mode is automatically activated when a step has:</p>
 <ol>
 <li>A workflow <code>matrix</code> definition</li>
-<li>An <code>aggregate</code> parameter specifying input cache(s)</li>
+<li>An <code>input</code> parameter with <code>.db</code> cache file(s)</li>
 </ol>
 <pre><code class="language-python">def _is_aggregation_step(
     self,
@@ -2213,7 +2258,15 @@ steps:
     if not matrix:
         return False
     step_inputs = step.get(&quot;with&quot;, {})
-    return &quot;aggregate&quot; in step_inputs
+    input_param = step_inputs.get(&quot;input&quot;)
+    if input_param:
+        inputs = (
+            [input_param]
+            if isinstance(input_param, str)
+            else (list(input_param) if input_param else [])
+        )
+        return any(str(p).lower().endswith(&quot;.db&quot;) for p in inputs)
+    return False
 </code></pre>
 <h3 id="aggregation-configuration">Aggregation Configuration</h3>
 <p>The <code>AggregationConfig</code> dataclass captures all aggregation parameters:</p>
@@ -2275,7 +2328,7 @@ steps:
     uses: causaliq/analysis
     with:
       action: model_average
-      aggregate: graphs.db
+      input: graphs.db
       output: summaries.db
 </code></pre>
 <h3 id="with-filter-expression">With Filter Expression</h3>
@@ -2284,7 +2337,7 @@ steps:
   uses: causaliq/analysis
   with:
     action: model_average
-    aggregate: graphs.db
+    input: graphs.db
     filter: &quot;status == 'completed' and edge_count &gt; 0&quot;
     output: summaries.db
 </code></pre>
@@ -2294,7 +2347,7 @@ steps:
   uses: causaliq/analysis
   with:
     action: merge_graphs
-    aggregate:
+    input:
       - pc_results.db
       - ges_results.db
     output: merged.db

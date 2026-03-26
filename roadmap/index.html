@@ -696,34 +696,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#under-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🚧 Under development
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🚧 Under development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#release-040-conservative-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Release 0.4.0 - Conservative Execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#previous-releases" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1546,34 +1518,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#under-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🚧 Under development
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🚧 Under development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#release-040-conservative-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Release 0.4.0 - Conservative Execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#previous-releases" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1663,35 +1607,8 @@
 
 
 <h1 id="causaliq-workflow-development-roadmap">CausalIQ Workflow - Development Roadmap</h1>
-<p><strong>Last updated</strong>: March 04, 2026</p>
+<p><strong>Last updated</strong>: March 26, 2026</p>
 <p>This project roadmap fits into the <a href="https://causaliq.org/projects/ecosystem_roadmap/">overall ecosystem roadmap</a></p>
-<h2 id="under-development">🚧  Under development</h2>
-<h3 id="release-040-conservative-execution">Release 0.4.0 - Conservative Execution</h3>
-<p>Formalise action patterns and implement conservative execution.</p>
-<p><strong>Scope</strong>:</p>
-<ul>
-<li><strong>Action pattern validation</strong>:</li>
-<li>Creation: output required, matrix required, input prohibited (for caches)</li>
-<li>Update: input required, output prohibited, matrix prohibited</li>
-<li>
-<p>Aggregation: input required, output required, matrix required</p>
-</li>
-<li>
-<p><strong>Update action support</strong> - Actions that modify input cache entries</p>
-</li>
-<li>Add metadata sections to existing entries</li>
-<li>
-<p>Add objects to existing entries</p>
-</li>
-<li>
-<p><strong>Conservative execution</strong> - Skip work if results exist</p>
-</li>
-<li>Creation: skip if entry with matching matrix values exists in output</li>
-<li>Update: skip if action metadata section exists in entry  </li>
-<li>Aggregation: skip if entry with matching matrix values exists in output</li>
-<li>Add <code>--mode=force</code> option to bypass checks</li>
-<li>All logic implemented in workflow executor (actions unaware)</li>
-</ul>
 <h2 id="previous-releases">✅ Previous Releases</h2>
 <ul>
 <li>
@@ -1702,6 +1619,9 @@
 </li>
 <li>
 <p><strong>v0.3.0 Aggregation Workflows</strong> [March 2026]: Matrix-driven aggregation processing for multi-source workflows.</p>
+</li>
+<li>
+<p><strong>v0.4.0 Conservative Execution</strong> [March 2026]: Formalised action patterns (creation, update, aggregation) and conservative execution to skip work if results exist.</p>
 </li>
 </ul>
 <h2 id="upcoming-implementation">🛣️ Upcoming Implementation</h2>
