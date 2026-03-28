@@ -1281,7 +1281,9 @@ def test_scan_update_step_filter_skip_logs_per_entry(
     def capture_logger(action_method, step_name, status, matrix_values):
         log_calls.append((action_method, step_name, status, matrix_values))
 
-    executor._scan_update_step_entries(step, resolved_inputs, capture_logger)
+    executor._scan_update_step_entries(
+        step, resolved_inputs, step_logger=capture_logger
+    )
 
     # Step_logger called per-entry with WOULD IGNORE for filter mismatch
     assert len(log_calls) == 1
@@ -1331,7 +1333,9 @@ def test_scan_update_step_filter_exception_logs_per_entry(
     def capture_logger(action_method, step_name, status, matrix_values):
         log_calls.append((action_method, step_name, status, matrix_values))
 
-    executor._scan_update_step_entries(step, resolved_inputs, capture_logger)
+    executor._scan_update_step_entries(
+        step, resolved_inputs, step_logger=capture_logger
+    )
 
     # Step_logger called per-entry with WOULD IGNORE for filter exception
     assert len(log_calls) == 1
@@ -1379,7 +1383,9 @@ def test_scan_update_step_conservative_skip_logs_per_entry(
     def capture_logger(action_method, step_name, status, matrix_values):
         log_calls.append((action_method, step_name, status, matrix_values))
 
-    executor._scan_update_step_entries(step, resolved_inputs, capture_logger)
+    executor._scan_update_step_entries(
+        step, resolved_inputs, step_logger=capture_logger
+    )
 
     # Step_logger called per-entry with WOULD SKIP for conservative skip
     assert len(log_calls) == 1

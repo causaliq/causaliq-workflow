@@ -756,6 +756,17 @@ def test_matrix_values_match_partial_vars() -> None:
     assert _matrix_values_match(entry, target, matrix_vars) is True
 
 
+# Test _matrix_values_match skips None-valued target dimensions.
+def test_matrix_values_match_skips_none_target() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "sample_size": "1K"}
+    target = {"network": "asia", "sample_size": "1K", "llm_model": None}
+    matrix_vars = ["network", "sample_size", "llm_model"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
 # ============================================================================
 # Derived matrix from cache tests
 # ============================================================================

@@ -99,8 +99,12 @@ def _matrix_values_match(
         True if all matrix variables match
     """
     for var in matrix_vars:
+        target_val = target_values.get(var)
+        # None target means this dimension is N/A — skip it
+        if target_val is None:
+            continue
         entry_val = _normalise_matrix_value(entry_values.get(var))
-        target_val = _normalise_matrix_value(target_values.get(var))
+        target_val = _normalise_matrix_value(target_val)
         if entry_val != target_val:
             return False
     return True
@@ -519,10 +523,6 @@ class WorkflowExecutor:
         """
         from causaliq_core import ActionPattern
 
-        # UPDATE pattern prohibits matrix
-        if workflow.get("matrix"):
-            return False
-
         provider_name = step.get("uses")
         if not provider_name:
             return False
@@ -713,12 +713,7 @@ class WorkflowExecutor:
         if not has_cache_input:
             return False
 
-        # If matrix is provided, aggregation is active
-        if matrix:
-            return True
-
-        # No explicit matrix - check if action declares AGGREGATE pattern
-        # (matrix will be derived from input cache)
+        # Check the action's declared pattern
         provider_name = step.get("uses")
         action_name = step_inputs.get("action")
         if provider_name and action_name:
@@ -726,10 +721,19 @@ class WorkflowExecutor:
                 pattern = self.action_registry.get_action_pattern(
                     provider_name, action_name
                 )
+                # UPDATE pattern has its own execution path
+                if pattern == ActionPattern.UPDATE:
+                    return False
+                # Explicit AGGREGATE pattern is always aggregation
                 if pattern == ActionPattern.AGGREGATE:
                     return True
             except Exception:
                 pass
+
+        # If matrix is provided with cache input and no explicit
+        # pattern, treat as aggregation (legacy behaviour)
+        if matrix:
+            return True
 
         return False
 
@@ -744,7 +748,9 @@ class WorkflowExecutor:
         1. Action declares ActionPattern.UPDATE for the action name
         2. Step has input parameter pointing to .db cache file
 
-        UPDATE steps process all entries in the input cache (no matrix).
+        When the workflow has a matrix, the UPDATE step processes
+        only the entry matching the current matrix combination.
+        Without a matrix, all entries are processed.
 
         Args:
             step: Step configuration dictionary
@@ -754,10 +760,6 @@ class WorkflowExecutor:
             True if step should run in UPDATE mode
         """
         from causaliq_core import ActionPattern
-
-        # UPDATE pattern prohibits matrix
-        if matrix:
-            return False
 
         provider_name = step.get("uses")
         if not provider_name:
@@ -769,9 +771,12 @@ class WorkflowExecutor:
             return False
 
         # Check if action declares UPDATE pattern
-        pattern = self.action_registry.get_action_pattern(
-            provider_name, action_name
-        )
+        try:
+            pattern = self.action_registry.get_action_pattern(
+                provider_name, action_name
+            )
+        except (AttributeError, KeyError):
+            return False
         if pattern != ActionPattern.UPDATE:
             return False
 
@@ -867,9 +872,17 @@ class WorkflowExecutor:
         entries_updated = 0
         errors: List[str] = []
 
+        # When running inside a matrix job, process only the entry
+        # matching the current matrix combination.  Without a matrix,
+        # iterate all entries in the cache (original behaviour).
+        matrix_values = getattr(context, "matrix_values", None)
+
         for input_path in input_paths:
             with WorkflowCache(input_path) as cache:
-                entries = cache.list_entries()
+                if matrix_values:
+                    entries = [{"matrix_values": matrix_values}]
+                else:
+                    entries = cache.list_entries()
 
                 for entry_info in entries:
                     entry_matrix = entry_info.get("matrix_values", {})
@@ -1018,6 +1031,7 @@ class WorkflowExecutor:
         self,
         step: Dict[str, Any],
         resolved_inputs: Dict[str, Any],
+        context: Optional[WorkflowContext] = None,
         step_logger: Optional[
             Callable[[str, str, str, Dict[str, Any]], None]
         ] = None,
@@ -1031,6 +1045,7 @@ class WorkflowExecutor:
         Args:
             step: Step configuration dictionary
             resolved_inputs: Resolved action inputs
+            context: Workflow context
             step_logger: Optional logging function for per-entry status
 
         Returns:
@@ -1065,12 +1080,31 @@ class WorkflowExecutor:
         else:
             return {"would_process": 0, "would_skip": 0}
 
+        # When running inside a matrix job, target only the matching
+        # entry.  Without a matrix, scan all entries.
+        matrix_values = getattr(context, "matrix_values", None)
+
         for input_path in input_paths:
             if not Path(input_path).exists():
+                # Cache does not exist yet.  When targeting a specific
+                # matrix entry we can assume the upstream CREATE step
+                # will produce it, so count as "would execute".
+                if matrix_values:
+                    would_process += 1
+                    if step_logger:
+                        step_logger(
+                            action_method,
+                            step.get("name", "unknown"),
+                            "WOULD EXECUTE",
+                            matrix_values,
+                        )
                 continue
 
             with WorkflowCache(input_path) as cache:
-                entries = cache.list_entries()
+                if matrix_values:
+                    entries = [{"matrix_values": matrix_values}]
+                else:
+                    entries = cache.list_entries()
 
                 for entry_info in entries:
                     entry_matrix = entry_info.get("matrix_values", {})
@@ -1078,6 +1112,17 @@ class WorkflowExecutor:
                     # Get full entry
                     full_entry = cache.get(entry_matrix)
                     if full_entry is None:
+                        # Entry does not exist yet.  Same reasoning
+                        # as missing cache above.
+                        if matrix_values:
+                            would_process += 1
+                            if step_logger:
+                                step_logger(
+                                    action_method,
+                                    step.get("name", "unknown"),
+                                    "WOULD EXECUTE",
+                                    entry_matrix,
+                                )
                         continue
 
                     # Flatten metadata for filter evaluation
@@ -1245,9 +1290,16 @@ class WorkflowExecutor:
                     for entry_info in entries:
                         entry_matrix = entry_info.get("matrix_values", {})
 
-                        # Skip entries missing required matrix variables
+                        # Skip entries missing required matrix variables.
+                        # Variables whose current value is None (N/A
+                        # dimension) are not required in the entry.
+                        required_vars = [
+                            var
+                            for var in config.matrix_vars
+                            if matrix_values.get(var) is not None
+                        ]
                         if not all(
-                            var in entry_matrix for var in config.matrix_vars
+                            var in entry_matrix for var in required_vars
                         ):
                             continue
 
@@ -1488,11 +1540,6 @@ class WorkflowExecutor:
                     errors.append(
                         f"Step '{step_name}': UPDATE pattern prohibits "
                         f"'output' parameter"
-                    )
-                if has_matrix:
-                    errors.append(
-                        f"Step '{step_name}': UPDATE pattern prohibits "
-                        f"workflow 'matrix' definition"
                     )
 
             elif pattern == ActionPattern.AGGREGATE:
@@ -2069,10 +2116,16 @@ class WorkflowExecutor:
                     # Dry-run for UPDATE steps - scan cache and log per-entry
                     if context.mode == "dry-run":
                         entry_counts = self._scan_update_step_entries(
-                            step, resolved_inputs, step_logger
+                            step,
+                            resolved_inputs,
+                            context,
+                            step_logger,
                         )
+                        has_work = entry_counts.get("would_process", 0) > 0
                         step_results[step_name] = {
-                            "status": "would_execute",
+                            "status": (
+                                "would_execute" if has_work else "would_skip"
+                            ),
                             **entry_counts,
                         }
                         continue

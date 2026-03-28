@@ -645,9 +645,9 @@ def test_validate_update_pattern_prohibits_output(monkeypatch):
     assert "UPDATE pattern prohibits 'output'" in str(exc_info.value)
 
 
-# Test UPDATE pattern prohibits matrix definition.
-def test_validate_update_pattern_prohibits_matrix(monkeypatch):
-    """Test UPDATE pattern validation prohibits matrix definition."""
+# Test UPDATE pattern allows matrix definition.
+def test_validate_update_pattern_allows_matrix(monkeypatch):
+    """Test UPDATE pattern validation allows matrix definition."""
     from causaliq_core import ActionPattern
 
     workflow_data = {
@@ -681,9 +681,9 @@ def test_validate_update_pattern_prohibits_matrix(monkeypatch):
     executor.action_registry.get_action_pattern = fake_get_pattern
     executor.action_registry.validate_workflow_actions = lambda w: []
 
-    with pytest.raises(WorkflowExecutionError) as exc_info:
-        executor.parse_workflow("test.yml")
-    assert "UPDATE pattern prohibits workflow 'matrix'" in str(exc_info.value)
+    # UPDATE + matrix is now valid — should not raise
+    result = executor.parse_workflow("test.yml")
+    assert result is not None
 
 
 # Test AGGREGATE pattern requires input parameter.

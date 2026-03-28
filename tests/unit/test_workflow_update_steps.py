@@ -10,8 +10,8 @@ from causaliq_workflow.workflow import WorkflowExecutor
 # ===========================================================================
 
 
-# Test _is_update_step returns False when matrix is present.
-def test_is_update_step_false_with_matrix() -> None:
+# Test _is_update_step returns True when matrix is present.
+def test_is_update_step_true_with_matrix() -> None:
     from causaliq_core import ActionPattern
 
     executor = WorkflowExecutor()
@@ -26,7 +26,7 @@ def test_is_update_step_false_with_matrix() -> None:
     matrix = {"network": ["asia"]}  # Matrix present
 
     result = executor._is_update_step(step, matrix)
-    assert result is False
+    assert result is True
 
 
 # Test _is_update_step returns False for non-UPDATE pattern.
@@ -742,6 +742,7 @@ def test_scan_update_step_entries_multiple_caches(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
     from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
 
     # Create two caches with entries
     cache1_path = tmp_path / "cache1.db"  # type: ignore[operator]
@@ -772,7 +773,9 @@ def test_scan_update_step_entries_multiple_caches(
         "input": [str(cache1_path), str(cache2_path)],
     }
 
-    result = executor._scan_update_step_entries(step, resolved_inputs)
+    context = WorkflowContext(mode="dry-run", matrix={}, matrix_values={})
+
+    result = executor._scan_update_step_entries(step, resolved_inputs, context)
 
     # Total 3 entries across both caches
     assert result["would_process"] == 3
@@ -781,6 +784,8 @@ def test_scan_update_step_entries_multiple_caches(
 
 # Test _scan_update_step_entries returns zeros for invalid input type.
 def test_scan_update_step_entries_invalid_input_type() -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
     class MockAction:
         name = "mock-action"
 
@@ -795,8 +800,297 @@ def test_scan_update_step_entries_invalid_input_type() -> None:
 
     step = {"uses": "mock-provider"}
     resolved_inputs = {"action": "update", "input": 12345}  # Invalid type
+    context = WorkflowContext(mode="dry-run", matrix={}, matrix_values={})
 
-    result = executor._scan_update_step_entries(step, resolved_inputs)
+    result = executor._scan_update_step_entries(step, resolved_inputs, context)
 
     assert result["would_process"] == 0
     assert result["would_skip"] == 0
+
+
+# ===========================================================================
+# MATRIX-AWARE UPDATE TESTS
+# ===========================================================================
+
+
+# Test _execute_update_step targets only the matching matrix entry.
+def test_execute_update_step_targets_matrix_entry(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry1 = CacheEntry()
+        entry1.add_object("graph", "graphml", "<asia/>")
+        cache.put({"network": "asia"}, entry1)
+
+        entry2 = CacheEntry()
+        entry2.add_object("graph", "graphml", "<alarm/>")
+        cache.put({"network": "alarm"}, entry2)
+
+    class UpdateAction:
+        name = "update-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"score": 0.9}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-prov"] = UpdateAction
+
+    step = {"uses": "update-prov"}
+    resolved_inputs = {
+        "action": "evaluate",
+        "input": str(cache_path),
+    }
+    # Context targets only the "asia" entry
+    context = WorkflowContext(
+        mode="run",
+        matrix={"network": ["asia", "alarm"]},
+        matrix_values={"network": "asia"},
+    )
+
+    result = executor._execute_update_step(step, resolved_inputs, context)
+
+    assert result["status"] == "success"
+    assert result["entries_processed"] == 1
+    assert result["entries_updated"] == 1
+
+    # Only the asia entry should have action metadata
+    with WorkflowCache(str(cache_path)) as cache:
+        asia = cache.get({"network": "asia"})
+        assert asia is not None
+        assert "update-action" in asia.metadata
+
+        alarm = cache.get({"network": "alarm"})
+        assert alarm is not None
+        assert "update-action" not in alarm.metadata
+
+
+# Test _scan_update_step_entries targets only the matching matrix entry.
+def test_scan_update_step_entries_targets_matrix_entry(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        cache.put({"network": "asia"}, CacheEntry())
+        cache.put({"network": "alarm"}, CacheEntry())
+
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-prov"] = MockAction
+
+    step = {"uses": "mock-prov"}
+    resolved_inputs = {
+        "action": "evaluate",
+        "input": str(cache_path),
+    }
+    # Context targets only "asia"
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix={"network": ["asia", "alarm"]},
+        matrix_values={"network": "asia"},
+    )
+
+    result = executor._scan_update_step_entries(step, resolved_inputs, context)
+
+    # Only the asia entry should be counted
+    assert result["would_process"] == 1
+    assert result["would_skip"] == 0
+
+
+# Test _execute_job routes UPDATE step correctly within matrix.
+def test_execute_job_update_step_with_matrix(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        entry1 = CacheEntry()
+        entry1.add_object("graph", "graphml", "<asia/>")
+        cache.put({"network": "asia"}, entry1)
+
+        entry2 = CacheEntry()
+        entry2.add_object("graph", "graphml", "<alarm/>")
+        cache.put({"network": "alarm"}, entry2)
+
+    class UpdateAction:
+        name = "update-action"
+        action_patterns = {"evaluate": ActionPattern.UPDATE}
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {"f1": 0.95}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["update-prov"] = UpdateAction
+
+    workflow = {
+        "matrix": {"network": ["asia", "alarm"]},
+        "steps": [
+            {
+                "name": "eval-step",
+                "uses": "update-prov",
+                "with": {
+                    "action": "evaluate",
+                    "input": str(cache_path),
+                },
+            }
+        ],
+    }
+
+    # Run for the "asia" matrix combination
+    context = WorkflowContext(
+        mode="run",
+        matrix={"network": ["asia", "alarm"]},
+        matrix_values={"network": "asia"},
+    )
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    executor._execute_job(workflow, {}, context, {}, capture_logger)
+
+    # Logger called once for the asia entry only
+    assert len(log_calls) == 1
+    assert log_calls[0] == (
+        "evaluate",
+        "eval-step",
+        "EXECUTED",
+        {"network": "asia"},
+    )
+
+    # Only asia should have metadata
+    with WorkflowCache(str(cache_path)) as cache:
+        asia = cache.get({"network": "asia"})
+        assert asia is not None
+        assert "update-action" in asia.metadata
+
+        alarm = cache.get({"network": "alarm"})
+        assert alarm is not None
+        assert "update-action" not in alarm.metadata
+
+
+# Test scan logs WOULD EXECUTE when cache does not exist yet.
+def test_scan_update_entries_missing_cache_with_matrix(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-prov"] = MockAction
+
+    step = {"name": "eval-step", "uses": "mock-prov"}
+    nonexistent = str(tmp_path / "not-yet.db")  # type: ignore[operator]
+    resolved_inputs = {
+        "action": "evaluate",
+        "input": nonexistent,
+    }
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix={"network": ["asia"]},
+        matrix_values={"network": "asia"},
+    )
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    result = executor._scan_update_step_entries(
+        step, resolved_inputs, context, capture_logger
+    )
+
+    assert result["would_process"] == 1
+    assert result["would_skip"] == 0
+    assert len(log_calls) == 1
+    assert log_calls[0] == (
+        "evaluate",
+        "eval-step",
+        "WOULD EXECUTE",
+        {"network": "asia"},
+    )
+
+
+# Test scan logs WOULD EXECUTE when entry does not exist yet.
+def test_scan_update_entries_missing_entry_with_matrix(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    # Create cache with no entries
+    cache_path = tmp_path / "empty.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)):
+        pass  # empty cache
+
+    class MockAction:
+        name = "mock-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-prov"] = MockAction
+
+    step = {"name": "eval-step", "uses": "mock-prov"}
+    resolved_inputs = {
+        "action": "evaluate",
+        "input": str(cache_path),
+    }
+    context = WorkflowContext(
+        mode="dry-run",
+        matrix={"network": ["asia"]},
+        matrix_values={"network": "asia"},
+    )
+    log_calls: list = []
+
+    def capture_logger(action_method, step_name, status, matrix_values):
+        log_calls.append((action_method, step_name, status, matrix_values))
+
+    result = executor._scan_update_step_entries(
+        step, resolved_inputs, context, capture_logger
+    )
+
+    assert result["would_process"] == 1
+    assert result["would_skip"] == 0
+    assert len(log_calls) == 1
+    assert log_calls[0] == (
+        "evaluate",
+        "eval-step",
+        "WOULD EXECUTE",
+        {"network": "asia"},
+    )
