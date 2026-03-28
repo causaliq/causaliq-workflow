@@ -241,3 +241,60 @@ def test_get_action_pattern_returns_pattern(monkeypatch):
         assert result == ActionPattern.CREATE
     finally:
         action_class.action_patterns = original_patterns
+
+
+# Test execute_action strips None-valued parameters before dispatch.
+def test_execute_action_strips_none_parameters():
+    """None-valued params (N/A matrix dimensions) are stripped."""
+
+    from causaliq_workflow.registry import WorkflowContext
+
+    registry = ActionRegistry()
+    context = WorkflowContext(mode="dry-run", matrix={})
+
+    inputs = {
+        "action": "test",
+        "data_path": "/test/input.csv",
+        "output_dir": "/test/output",
+        "message": "Hello",
+        "model": None,
+        "sample_size": None,
+    }
+
+    # Capture the parameters passed to run()
+    action_class = registry.get_action_class("test_action")
+    original_run = action_class.run
+    captured = {}
+
+    def capturing_run(self, action, parameters, **kwargs):
+        captured["parameters"] = parameters
+        return original_run(self, action, parameters, **kwargs)
+
+    action_class.run = capturing_run
+    try:
+        registry.execute_action("test_action", inputs, context)
+    finally:
+        action_class.run = original_run
+
+    assert "model" not in captured["parameters"]
+    assert "sample_size" not in captured["parameters"]
+    assert captured["parameters"]["data_path"] == "/test/input.csv"
+    assert captured["parameters"]["message"] == "Hello"
+
+
+# Test validate_action_parameters strips None-valued parameters.
+def test_validate_strips_none_parameters():
+    """Validation also strips None-valued params before checking."""
+    registry = ActionRegistry()
+
+    # test_action has no validate_parameters raising on unknowns,
+    # so this just verifies it doesn't crash with None params
+    inputs = {
+        "action": "test",
+        "data_path": "/test/input.csv",
+        "output_dir": "/test/output",
+        "model": None,
+    }
+
+    # Should not raise
+    registry.validate_action_parameters("test_action", inputs)

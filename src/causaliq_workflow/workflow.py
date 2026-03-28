@@ -481,10 +481,20 @@ class WorkflowExecutor:
                 f"Available variables: {available_list}"
             )
 
-        # Validate all matrix variables are used in CREATE steps
-        # Only applies when there are CREATE pattern steps in the workflow
+        # Validate all matrix variables are used in CREATE steps.
+        # Only applies when there are CREATE pattern steps in the
+        # workflow.  Variables whose only values are None are exempt
+        # because they represent dimensions that are not applicable
+        # to this workflow (e.g. sample_size=[None] for LLM-only
+        # steps) and are used solely as cache key placeholders.
         if matrix_vars and has_create_steps:
+            matrix_def = workflow.get("matrix", {})
             unused_matrix_vars = matrix_vars - create_step_variables
+            unused_matrix_vars = {
+                var
+                for var in unused_matrix_vars
+                if not all(v is None for v in matrix_def.get(var, []))
+            }
             if unused_matrix_vars:
                 unused_list = sorted(unused_matrix_vars)
                 raise WorkflowExecutionError(

@@ -430,9 +430,15 @@ class ActionRegistry:
             action_class = self.get_action_class(name)
             action_instance = action_class()
 
-            # Extract action name from inputs, remaining are parameters
+            # Extract action name from inputs, remaining are parameters.
+            # Strip None-valued parameters: these represent matrix
+            # dimensions that are not applicable to this action.
             action_name = inputs.get("action", "")
-            parameters = {k: v for k, v in inputs.items() if k != "action"}
+            parameters = {
+                k: v
+                for k, v in inputs.items()
+                if k != "action" and v is not None
+            }
 
             logger.info(
                 f"Executing action '{action_name}' from provider '{name}' "
@@ -489,9 +495,15 @@ class ActionRegistry:
             if not hasattr(action_instance, "validate_parameters"):
                 return
 
-            # Extract action name from inputs, remaining are parameters
+            # Extract action name from inputs, remaining are parameters.
+            # Strip None-valued parameters: these represent matrix
+            # dimensions that are not applicable to this action.
             action_name = inputs.get("action", "")
-            parameters = {k: v for k, v in inputs.items() if k != "action"}
+            parameters = {
+                k: v
+                for k, v in inputs.items()
+                if k != "action" and v is not None
+            }
 
             # Validate parameters (raises ActionValidationError on failure)
             action_instance.validate_parameters(action_name, parameters)

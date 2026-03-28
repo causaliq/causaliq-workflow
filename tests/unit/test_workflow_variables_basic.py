@@ -498,6 +498,85 @@ def test_is_aggregate_pattern_step_handles_exception(executor, monkeypatch):
     assert executor._is_aggregate_pattern_step(step, workflow) is False
 
 
+# Test None-only matrix variables are exempt from usage validation.
+def test_none_only_matrix_variable_exempt(executor, monkeypatch):
+    """None-only matrix vars (N/A dimensions) skip usage check."""
+    from causaliq_core import ActionPattern
+
+    def mock_get_action_pattern(provider_name, action_name):
+        return ActionPattern.CREATE
+
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        mock_get_action_pattern,
+    )
+
+    workflow = {
+        "matrix": {
+            "network": ["asia", "sports"],
+            "sample_size": [None],
+            "llm_model": ["gpt-4"],
+        },
+        "steps": [
+            {
+                "name": "LLM Step",
+                "uses": "test-provider",
+                "with": {
+                    "action": "create_action",
+                    "network": "{{network}}",
+                    "llm_model": "{{llm_model}}",
+                    "output": "results.db",
+                },
+            }
+        ],
+    }
+
+    # sample_size=[None] should be exempt; should not raise
+    try:
+        executor._validate_template_variables(workflow)
+    except Exception as e:
+        pytest.fail(f"None-only matrix variable should be exempt: {e}")
+
+
+# Test mixed None matrix variable still requires usage.
+def test_mixed_none_matrix_variable_requires_usage(executor, monkeypatch):
+    """Matrix var with both None and real values must be used."""
+    from causaliq_core import ActionPattern
+
+    def mock_get_action_pattern(provider_name, action_name):
+        return ActionPattern.CREATE
+
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        mock_get_action_pattern,
+    )
+
+    workflow = {
+        "matrix": {
+            "network": ["asia"],
+            "sample_size": [None, "1K"],
+        },
+        "steps": [
+            {
+                "name": "Step",
+                "uses": "test-provider",
+                "with": {
+                    "action": "create_action",
+                    "network": "{{network}}",
+                    "output": "results.db",
+                },
+            }
+        ],
+    }
+
+    with pytest.raises(Exception) as exc_info:
+        executor._validate_template_variables(workflow)
+
+    assert "sample_size" in str(exc_info.value)
+
+
 # Test _is_aggregate_pattern_step with invalid input type.
 def test_is_aggregate_pattern_step_invalid_input_type(executor, monkeypatch):
     """Test AGGREGATE detection handles non-string/list input types."""
