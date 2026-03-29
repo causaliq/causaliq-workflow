@@ -89,6 +89,8 @@ def _matrix_values_match(
     """Check if entry matrix values match target values.
 
     Comparison is case-insensitive for numeric suffixes (k, M, etc).
+    A ``None`` value on either side means that dimension is not
+    applicable and is treated as a wildcard (always matches).
 
     Args:
         entry_values: Matrix values from cache entry
@@ -100,10 +102,11 @@ def _matrix_values_match(
     """
     for var in matrix_vars:
         target_val = target_values.get(var)
-        # None target means this dimension is N/A — skip it
-        if target_val is None:
+        entry_val = entry_values.get(var)
+        # None on either side means N/A dimension — skip it
+        if target_val is None or entry_val is None:
             continue
-        entry_val = _normalise_matrix_value(entry_values.get(var))
+        entry_val = _normalise_matrix_value(entry_val)
         target_val = _normalise_matrix_value(target_val)
         if entry_val != target_val:
             return False
@@ -1943,8 +1946,18 @@ class WorkflowExecutor:
 
             # Scan aggregation inputs for this matrix combo
             if agg_config is not None:
+                # Use the resolved filter (with template variables
+                # substituted) instead of the raw filter.
+                resolved_filter = resolved_inputs.get("filter")
+                scan_config = agg_config
+                if resolved_filter != agg_config.filter_expr:
+                    scan_config = AggregationConfig(
+                        input_caches=agg_config.input_caches,
+                        filter_expr=resolved_filter,
+                        matrix_vars=agg_config.matrix_vars,
+                    )
                 matching_entries = self._scan_aggregation_inputs(
-                    agg_config, job
+                    scan_config, job
                 )
                 resolved_inputs["_aggregation_entries"] = matching_entries
                 resolved_inputs.pop("aggregate", None)
@@ -2100,6 +2113,16 @@ class WorkflowExecutor:
                 matrix = workflow.get("matrix", {})
                 agg_config = self._get_aggregation_config(step, matrix)
                 if agg_config is not None:
+                    # Use the resolved filter (with template variables
+                    # substituted) instead of the raw filter from the
+                    # step definition.
+                    resolved_filter = resolved_inputs.get("filter")
+                    if resolved_filter != agg_config.filter_expr:
+                        agg_config = AggregationConfig(
+                            input_caches=agg_config.input_caches,
+                            filter_expr=resolved_filter,
+                            matrix_vars=agg_config.matrix_vars,
+                        )
                     matching_entries = self._scan_aggregation_inputs(
                         agg_config,
                         job,  # Current matrix values

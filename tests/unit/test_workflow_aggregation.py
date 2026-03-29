@@ -1179,3 +1179,297 @@ def test_is_aggregation_step_pattern_exception(
 
     # Should handle exception and return False
     assert executor._is_aggregation_step(step, {}) is False
+
+
+# ============================================================================
+# Null entry value wildcard tests
+# ============================================================================
+
+
+# Test _matrix_values_match skips None-valued entry dimensions.
+def test_matrix_values_match_skips_none_entry() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "llm_model": None}
+    target = {
+        "network": "asia",
+        "llm_model": "anthropic_claude",
+    }
+    matrix_vars = ["network", "llm_model"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match skips when both sides are None.
+def test_matrix_values_match_both_none() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "sample_size": None}
+    target = {"network": "asia", "sample_size": None}
+    matrix_vars = ["network", "sample_size"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match still rejects mismatched non-None values.
+def test_matrix_values_match_rejects_mismatch_with_nulls() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {
+        "network": "alarm",
+        "llm_model": None,
+        "sample_size": "1K",
+    }
+    target = {
+        "network": "asia",
+        "llm_model": "anthropic_claude",
+        "sample_size": "1K",
+    }
+    matrix_vars = ["network", "llm_model", "sample_size"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is False
+
+
+# Test aggregation scan matches entries with null dimensions.
+def test_scan_aggregation_inputs_null_entry_wildcard(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        # BNSL entry: has sample_size but no llm_model
+        bnsl = CacheEntry(metadata={"provider": {"action": {"type": "bnsl"}}})
+        cache.put(
+            {
+                "network": "asia",
+                "sample_size": "1K",
+                "llm_model": None,
+            },
+            bnsl,
+        )
+
+        # LLM entry: has llm_model but no sample_size
+        llm = CacheEntry(metadata={"provider": {"action": {"type": "llm"}}})
+        cache.put(
+            {
+                "network": "asia",
+                "sample_size": None,
+                "llm_model": "anthropic_claude",
+            },
+            llm,
+        )
+
+        # Different network entry (should not match)
+        other = CacheEntry(metadata={"provider": {"action": {"type": "bnsl"}}})
+        cache.put(
+            {
+                "network": "alarm",
+                "sample_size": "1K",
+                "llm_model": None,
+            },
+            other,
+        )
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network", "sample_size", "llm_model"],
+    )
+
+    # Target: asia, 1K, anthropic_claude
+    # BNSL entry (llm_model=None) should match (wildcard)
+    # LLM entry (sample_size=None) should match (wildcard)
+    # alarm entry should NOT match (network mismatch)
+    results = executor._scan_aggregation_inputs(
+        config,
+        {
+            "network": "asia",
+            "sample_size": "1K",
+            "llm_model": "anthropic_claude",
+        },
+    )
+
+    assert len(results) == 2
+    networks = {r["matrix_values"]["network"] for r in results}
+    assert networks == {"asia"}
+
+
+# ============================================================================
+# Filter template resolution tests
+# ============================================================================
+
+
+# Test aggregation uses resolved filter with template variables.
+def test_scan_aggregation_inputs_resolved_filter(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        # Entry that matches the filter
+        e1 = CacheEntry(
+            metadata={"provider": {"action": {"llm_model": "anthropic"}}}
+        )
+        cache.put({"network": "asia"}, e1)
+
+        # Entry that does not match the filter
+        e2 = CacheEntry(
+            metadata={"provider": {"action": {"llm_model": "gemini"}}}
+        )
+        cache.put({"network": "alarm"}, e2)
+
+    # Simulate what happens after template resolution:
+    # filter was "llm_model == '{{model}}'" and resolved to
+    # "llm_model == 'anthropic'"
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        filter_expr="llm_model == 'anthropic'",
+        matrix_vars=["network"],
+    )
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+    )
+
+    assert len(results) == 1
+    assert results[0]["matrix_values"]["network"] == "asia"
+
+
+# ============================================================================
+# Filter template resolution in execution paths
+# ============================================================================
+
+
+# Test _validate_aggregation_entries resolves filter templates.
+def test_validate_aggregation_entries_resolves_filter_template(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        e = CacheEntry(
+            metadata={
+                "prov": {
+                    "act": {
+                        "status": "ok",
+                        "model": "claude",
+                    }
+                }
+            }
+        )
+        cache.put({"network": "asia", "llm_model": "claude"}, e)
+
+    class StubAction:
+        name = "stub-action"
+        version = "1.0.0"
+        description = "Stub"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["stub-action"] = StubAction
+
+    step = {
+        "name": "fuse",
+        "uses": "stub-action",
+        "with": {
+            "action": "merge",
+            "input": str(cache_path),
+            "filter": "model == '{{llm_model}}'",
+            "output": "out.db",
+        },
+    }
+    workflow = {
+        "matrix": {
+            "network": ["asia"],
+            "llm_model": ["claude"],
+        },
+        "steps": [step],
+    }
+    jobs = [{"network": "asia", "llm_model": "claude"}]
+
+    # Template filter is resolved before scanning so the filter
+    # evaluates correctly and no errors are returned.
+    errors = executor._validate_aggregation_entries(step, jobs, workflow, {})
+    assert errors == []
+
+
+# Test _execute_job resolves filter templates in aggregation.
+def test_execute_job_aggregation_resolves_filter_template(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        e1 = CacheEntry(metadata={"prov": {"act": {"model": "claude"}}})
+        cache.put({"network": "asia", "llm_model": "claude"}, e1)
+
+        e2 = CacheEntry(metadata={"prov": {"act": {"model": "gemini"}}})
+        cache.put({"network": "asia", "llm_model": "gemini"}, e2)
+
+    captured_params: dict = {}
+
+    class CaptureAction:
+        name = "capture-action"
+        version = "1.0.0"
+        description = "Captures parameters"
+
+        def run(self, action, parameters, **kwargs):
+            captured_params.update(parameters)
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["capture-action"] = CaptureAction
+
+    workflow = {
+        "matrix": {
+            "network": ["asia"],
+            "llm_model": ["claude"],
+        },
+        "steps": [
+            {
+                "name": "fuse",
+                "uses": "capture-action",
+                "with": {
+                    "action": "merge",
+                    "input": str(cache_path),
+                    "filter": "model == '{{llm_model}}'",
+                },
+            }
+        ],
+    }
+
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={
+            "network": "asia",
+            "llm_model": "claude",
+        },
+    )
+
+    executor._execute_job(
+        workflow,
+        {"network": "asia", "llm_model": "claude"},
+        context,
+        {},
+    )
+
+    # Template filter resolved: only the 'claude' entry matches
+    entries = captured_params["_aggregation_entries"]
+    assert len(entries) == 1
+    assert entries[0]["matrix_values"]["llm_model"] == "claude"
