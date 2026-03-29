@@ -103,6 +103,25 @@ combination of `network` and `sample_size`.
 - Matrix values are available as template variables
 - Results are stored with matrix values as cache keys
 
+### Null Values and Wildcard Matching
+
+A matrix value of `null` marks a dimension as **not applicable**. During
+aggregation, `null` on either side (target or entry) acts as a wildcard and
+always matches. This is useful when aggregating entries from different
+sources that use different dimensions:
+
+```yaml
+matrix:
+  network: [asia, cancer]
+  llm_model: [anthropic_claude, gemini_flash]
+  sample_size: [1K, 10K]
+```
+
+If the input cache contains BNSL entries with `llm_model: null` and LLM
+entries with `sample_size: null`, both will match a target combination
+like `{network: asia, llm_model: anthropic_claude, sample_size: 1K}` —
+the null dimensions are skipped during comparison.
+
 ## Template Variables
 
 **Template variables** use `{{variable}}` syntax to reference workflow

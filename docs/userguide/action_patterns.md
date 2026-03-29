@@ -137,6 +137,11 @@ Entries from the input cache are automatically grouped by current matrix
 values. For each matrix combination, all matching entries are passed to the
 action for aggregation.
 
+A `null` value in either the matrix target or the cache entry is treated as
+a **wildcard** (N/A dimension) and always matches. This allows entries with
+different dimensionality to be aggregated together. For example, an entry
+with `llm_model: null` matches any target `llm_model` value, and vice versa.
+
 ### Filtering Entries
 
 Use the `filter` parameter to restrict which entries are aggregated:
@@ -151,6 +156,30 @@ steps:
       filter: "edge_count > 5 and sample_size >= 100"
       output: "results/merged.db"
 ```
+
+Filter expressions support **template variables**, so you can parameterise
+the filter per matrix combination:
+
+```yaml
+matrix:
+  network: [asia, cancer]
+  llm_model: [anthropic_claude, gemini_flash]
+  sample_size: [1K, 10K]
+
+steps:
+  - name: "Fuse LLM and BNSL PDGs"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      input: "results/pdgs.db"
+      filter: "llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'"
+      output: "results/fused.db"
+```
+
+Here, for each matrix combination the filter resolves to concrete values,
+selecting the matching LLM entry and the matching BNSL entry for fusion.
+Combined with null wildcard matching, entries whose `llm_model` or
+`sample_size` is `null` can match across dimensions.
 
 See [Common Parameters](common_parameters.md#filter-parameter) for filter
 expression syntax.

@@ -106,6 +106,30 @@ filter: "network in ['asia', 'cancer', 'alarm']"
 filter: "(sample_size >= 1000 or seed == 0) and status == 'success'"
 ```
 
+### Template Variables in Filters
+
+Filter expressions support `{{variable}}` template substitution, resolved
+from workflow properties and matrix values before evaluation. This enables
+parameterised filters that change per matrix combination:
+
+```yaml
+matrix:
+  network: [asia, cancer]
+  llm_model: [anthropic_claude, gemini_flash]
+
+steps:
+  - name: "Merge by Model"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      input: "results/pdgs.db"
+      filter: "llm_model == '{{llm_model}}' or sample_size == '1K'"
+      output: "results/merged.db"
+```
+
+For the `{network: asia, llm_model: anthropic_claude}` combination, the
+filter resolves to `llm_model == 'anthropic_claude' or sample_size == '1K'`.
+
 ### Filter vs Conservative Execution
 
 | Mechanism | Purpose | Result |

@@ -184,6 +184,35 @@ steps:
       reference: "networks/{{network}}/true.graphml"
 ```
 
+## Aggregation with Parameterised Filters
+
+Use template variables in filters to select different subsets per matrix
+combination. Combined with null wildcard matching, this enables fusion of
+entries from heterogeneous sources:
+
+```yaml
+# fuse.yml
+matrix:
+  network: [asia, sports]
+  llm_model: [anthropic_claude, gemini_flash]
+  sample_size: [1K, 10K]
+
+steps:
+  - name: "Fuse LLM and BNSL PDGs"
+    uses: "causaliq-analysis"
+    with:
+      action: "merge_graphs"
+      input: "results/pdgs.db"
+      filter: "llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'"
+      output: "results/fused.db"
+```
+
+For `{network: asia, llm_model: anthropic_claude, sample_size: 1K}`, the
+filter resolves to `llm_model == 'anthropic_claude' or sample_size == '1K'`,
+selecting the matching LLM entry (which has `sample_size: null`) and the
+matching BNSL entry (which has `llm_model: null`). Null dimensions act as
+wildcards and always match.
+
 ## Running Workflows
 
 ```bash
