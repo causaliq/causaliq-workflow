@@ -187,8 +187,8 @@ steps:
 ## Aggregation with Parameterised Filters
 
 Use template variables in filters to select different subsets per matrix
-combination. Combined with null wildcard matching, this enables fusion of
-entries from heterogeneous sources:
+combination. Store entries from different sources in **separate caches**
+and use the list syntax for `input:` to read from both:
 
 ```yaml
 # fuse.yml
@@ -202,16 +202,19 @@ steps:
     uses: "causaliq-analysis"
     with:
       action: "merge_graphs"
-      input: "results/pdgs.db"
+      input:
+        - "results/bnsl-pdgs.db"
+        - "results/llm-pdgs.db"
       filter: "llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'"
       output: "results/fused.db"
 ```
 
 For `{network: asia, llm_model: anthropic_claude, sample_size: 1K}`, the
 filter resolves to `llm_model == 'anthropic_claude' or sample_size == '1K'`,
-selecting the matching LLM entry (which has `sample_size: null`) and the
-matching BNSL entry (which has `llm_model: null`). Null dimensions act as
-wildcards and always match.
+selecting the matching LLM entry from one cache and the matching BNSL entry
+from the other. Each cache only contains dimensions relevant to its source;
+missing dimensions are treated as wildcards during matching (see
+[Null Values and Dimension Matching](core_concepts.md#null-values-and-dimension-matching)).
 
 ## Running Workflows
 

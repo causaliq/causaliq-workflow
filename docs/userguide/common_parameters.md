@@ -91,6 +91,32 @@ Filter expressions use Python syntax with supported operators:
 | `min()` | Minimum of values |
 | `max()` | Maximum of values |
 
+### Random Sampling in Filters
+
+The `random(count, seed)` function selects a reproducible random subset
+of values for a variable. Use it with the `in` operator:
+
+```yaml
+filter: "pdg_seed in random(5, 42)"
+```
+
+This collects all distinct values of `pdg_seed` across the entries,
+then deterministically selects 5 of them using the given seed. Only
+entries whose `pdg_seed` is in the selected set pass the filter.
+
+The selection is **deterministic** — the same seed always produces the
+same subset, ensuring reproducibility across runs.
+
+```yaml
+# Select 3 random seeds and 2 random sample sizes
+filter: "pdg_seed in random(3, 0) and sample_size in random(2, 1)"
+```
+
+!!! note
+    The total number of distinct values for the variable must be at
+    least as large as the requested count. If fewer distinct values
+    exist, an error is raised.
+
 ### Filter Variables
 
 Filter expressions can reference any metadata variable from cache entries:

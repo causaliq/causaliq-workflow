@@ -103,24 +103,44 @@ combination of `network` and `sample_size`.
 - Matrix values are available as template variables
 - Results are stored with matrix values as cache keys
 
-### Null Values and Wildcard Matching
+### Null Values and Dimension Matching
 
-A matrix value of `null` marks a dimension as **not applicable**. During
-aggregation, `null` on either side (target or entry) acts as a wildcard and
-always matches. This is useful when aggregating entries from different
-sources that use different dimensions:
+A `null` value on either side (target or entry) means the dimension is
+**not applicable** and is treated as a **wildcard** — it always matches.
+A **missing key** on the entry side (dimension absent from the input
+cache) is also treated as a wildcard, so that caches with fewer
+dimensions can be consumed by broader matrices.
 
 ```yaml
 matrix:
   network: [asia, cancer]
-  llm_model: [anthropic_claude, gemini_flash]
+  llm_model: [null]          # wildcard — match any llm_model
   sample_size: [1K, 10K]
 ```
 
-If the input cache contains BNSL entries with `llm_model: null` and LLM
-entries with `sample_size: null`, both will match a target combination
-like `{network: asia, llm_model: anthropic_claude, sample_size: 1K}` —
-the null dimensions are skipped during comparison.
+| Scenario | Target | Entry | Matches? |
+|----------|--------|-------|----------|
+| Target wildcard | `null` | any value | Yes |
+| Entry wildcard | `"claude"` | `null` | Yes |
+| Both null | `null` | `null` | Yes |
+| Missing key in entry | `"1K"` | *(absent)* | Yes |
+| Concrete match | `"asia"` | `"asia"` | Yes |
+| Concrete mismatch | `"asia"` | `"alarm"` | No |
+
+!!! tip "Separate caches for separate sources"
+    When aggregating entries from different sources (e.g. FGES and LLM
+    PDGs), store them in **separate caches** rather than one shared
+    cache with null dimensions. Use the list syntax for `input:` to
+    read from multiple caches:
+
+    ```yaml
+    input:
+      - results/fges-pdgs.db
+      - results/llm-pdgs.db
+    ```
+
+    This avoids entries from one source unintentionally matching
+    targets intended for the other source via null wildcard matching.
 
 ## Template Variables
 

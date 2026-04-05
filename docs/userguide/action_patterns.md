@@ -137,10 +137,11 @@ Entries from the input cache are automatically grouped by current matrix
 values. For each matrix combination, all matching entries are passed to the
 action for aggregation.
 
-A `null` value in either the matrix target or the cache entry is treated as
-a **wildcard** (N/A dimension) and always matches. This allows entries with
-different dimensionality to be aggregated together. For example, an entry
-with `llm_model: null` matches any target `llm_model` value, and vice versa.
+A `null` value on either side (target or entry) is treated as a wildcard
+and always matches. A **missing key** on the entry side (dimension absent
+from the input cache) is also treated as a wildcard. See
+[Null Values and Dimension Matching](core_concepts.md#null-values-and-dimension-matching)
+for the full matching rules.
 
 ### Filtering Entries
 
@@ -171,15 +172,18 @@ steps:
     uses: "causaliq-analysis"
     with:
       action: "merge_graphs"
-      input: "results/pdgs.db"
+      input:
+        - "results/bnsl-pdgs.db"
+        - "results/llm-pdgs.db"
       filter: "llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'"
       output: "results/fused.db"
 ```
 
 Here, for each matrix combination the filter resolves to concrete values,
-selecting the matching LLM entry and the matching BNSL entry for fusion.
-Combined with null wildcard matching, entries whose `llm_model` or
-`sample_size` is `null` can match across dimensions.
+selecting the matching LLM entry from one cache and the matching BNSL
+entry from the other for fusion. Entries from each cache only contain
+dimensions relevant to their source, and missing dimensions are treated
+as wildcards during matching.
 
 See [Common Parameters](common_parameters.md#filter-parameter) for filter
 expression syntax.
