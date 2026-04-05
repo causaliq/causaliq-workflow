@@ -228,7 +228,10 @@ def test_cli_run_successful_execution(
         "[causaliq-workflow] VALIDATED workflow successfully" in result.output
     )
     assert "[causaliq-workflow] EXECUTING" in result.output
-    assert "[causaliq-workflow] COMPLETED 3 steps: 3 executed" in result.output
+    assert (
+        "[causaliq-workflow] COMPLETED 3 steps: 3 executed (3 new entries)"
+        in result.output
+    )
 
 
 # Test run workflow execution failure.
@@ -908,8 +911,7 @@ def test_cli_run_update_step_shows_entry_counts(
     assert "10 to process" in result.output
     assert "2 to skip" in result.output
     # Check summary shows entry totals
-    assert "10 entries to process" in result.output
-    assert "2 entries to skip" in result.output
+    assert "10 updates" in result.output
 
 
 # Test UPDATE step dry-run with only entries to process (no skip).
@@ -961,7 +963,7 @@ def test_cli_run_update_step_entries_to_process_only(
     assert "5 to process" in result.output
     # Should not show "to skip" when count is 0
     assert "to skip" not in result.output
-    assert "5 entries to process" in result.output
+    assert "5 updates" in result.output
 
 
 # Test UPDATE step dry-run with only entries to skip (no process).
@@ -1013,4 +1015,5 @@ def test_cli_run_update_step_entries_to_skip_only(
     assert "3 to skip" in result.output
     # Should not show "to process" when count is 0
     assert "to process" not in result.output
-    assert "3 entries to skip" in result.output
+    # UPDATE step with 0 would_process shows no updates
+    assert "updates" not in result.output

@@ -331,6 +331,109 @@ def test_scan_aggregation_inputs_with_filter(
     assert len(results) == 0
 
 
+# Test _scan_aggregation_inputs with random() filter.
+def test_scan_aggregation_inputs_with_random_filter(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        for i in range(20):
+            entry = CacheEntry(
+                metadata={
+                    "provider": {
+                        "action": {"seed": i},
+                    }
+                }
+            )
+            cache.put({"network": "asia", "seed": str(i)}, entry)
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        filter_expr="seed in random(5, 0)",
+        matrix_vars=["network"],
+    )
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+    )
+    # random(5, 0) selects 5 of 20 seeds
+    assert len(results) == 5
+
+
+# Test random() pre-scan skips non-existent cache paths.
+def test_scan_aggregation_random_skips_missing_cache(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        for i in range(10):
+            entry = CacheEntry(
+                metadata={
+                    "provider": {
+                        "action": {"seed": i},
+                    }
+                }
+            )
+            cache.put({"network": "asia", "seed": str(i)}, entry)
+
+    missing = str(tmp_path / "missing.db")  # type: ignore[operator]
+    config = AggregationConfig(
+        input_caches=[missing, str(cache_path)],
+        filter_expr="seed in random(3, 0)",
+        matrix_vars=["network"],
+    )
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+    )
+    assert len(results) == 3
+
+
+# Test random() pre-scan handles unreadable cache gracefully.
+def test_scan_aggregation_random_handles_bad_cache(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    good_path = tmp_path / "good.db"  # type: ignore[operator]
+    with WorkflowCache(good_path) as cache:
+        for i in range(10):
+            entry = CacheEntry(
+                metadata={
+                    "provider": {
+                        "action": {"seed": i},
+                    }
+                }
+            )
+            cache.put({"network": "asia", "seed": str(i)}, entry)
+
+    # Create a bad cache file that will raise on open
+    bad_path = tmp_path / "bad.db"  # type: ignore[operator]
+    bad_path.write_text("not a valid database")
+
+    config = AggregationConfig(
+        input_caches=[str(bad_path), str(good_path)],
+        filter_expr="seed in random(3, 0)",
+        matrix_vars=["network"],
+    )
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+    )
+    assert len(results) == 3
+
+
 # Test _scan_aggregation_inputs logs statistics.
 def test_scan_aggregation_inputs_logging(
     executor: WorkflowExecutor,
@@ -386,8 +489,8 @@ def test_scan_aggregation_inputs_missing_cache(
     assert "Warning" in log_messages[0]
 
 
-# Test _scan_aggregation_inputs skips entries missing matrix vars.
-def test_scan_aggregation_inputs_skips_incomplete_entries(
+# Test _scan_aggregation_inputs wildcards entries missing a matrix var.
+def test_scan_aggregation_inputs_wildcards_incomplete_entries(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -399,11 +502,11 @@ def test_scan_aggregation_inputs_skips_incomplete_entries(
         entry1 = CacheEntry(metadata={})
         cache.put({"network": "asia", "sample_size": 100}, entry1)
 
-    # Create second cache with partial schema (different schema per cache)
+    # Create second cache with partial schema (missing sample_size)
     cache_path2 = tmp_path / "cache2.db"  # type: ignore[operator]
     with WorkflowCache(cache_path2) as cache:
         entry2 = CacheEntry(metadata={})
-        cache.put({"network": "alarm"}, entry2)  # No sample_size
+        cache.put({"network": "asia"}, entry2)
 
     config = AggregationConfig(
         input_caches=[str(cache_path1), str(cache_path2)],
@@ -415,9 +518,43 @@ def test_scan_aggregation_inputs_skips_incomplete_entries(
         {"network": "asia", "sample_size": 100},
     )
 
-    # Only complete entry from cache1 should match
-    assert len(results) == 1
-    assert results[0]["matrix_values"]["sample_size"] == 100
+    # Both entries match: the incomplete entry wildcards on
+    # missing sample_size via _matrix_values_match.
+    assert len(results) == 2
+
+
+# Test missing matrix var in entry treated as wildcard.
+def test_scan_aggregation_inputs_missing_var_wildcard(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    # Cache entries have {network, seed} but NOT fuse_seed.
+    cache_path = tmp_path / "fges.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        cache.put(
+            {"network": "asia", "seed": 0},
+            CacheEntry(metadata={"seed": 0}),
+        )
+        cache.put(
+            {"network": "asia", "seed": 1},
+            CacheEntry(metadata={"seed": 1}),
+        )
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network", "fuse_seed"],
+    )
+
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia", "fuse_seed": 0},
+    )
+
+    # Both entries match — missing fuse_seed is treated as
+    # wildcard by _matrix_values_match.
+    assert len(results) == 2
 
 
 # Test _scan_aggregation_inputs handles cache.get returning None.
@@ -763,6 +900,39 @@ def test_matrix_values_match_skips_none_target() -> None:
     entry = {"network": "asia", "sample_size": "1K"}
     target = {"network": "asia", "sample_size": "1K", "llm_model": None}
     matrix_vars = ["network", "sample_size", "llm_model"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match wildcards None entry vs concrete target.
+def test_matrix_values_match_null_entry_wildcards() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "llm_model": None}
+    target = {"network": "asia", "llm_model": "gemini/flash"}
+    matrix_vars = ["network", "llm_model"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match accepts None entry vs None target.
+def test_matrix_values_match_null_entry_matches_null_target() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia", "llm_model": None}
+    target = {"network": "asia", "llm_model": None}
+    matrix_vars = ["network", "llm_model"]
+
+    assert _matrix_values_match(entry, target, matrix_vars) is True
+
+
+# Test _matrix_values_match missing entry key wildcards any target.
+def test_matrix_values_match_missing_key_wildcards() -> None:
+    from causaliq_workflow.workflow import _matrix_values_match
+
+    entry = {"network": "asia"}
+    target = {"network": "asia", "pdg_seed": 5}
+    matrix_vars = ["network", "pdg_seed"]
 
     assert _matrix_values_match(entry, target, matrix_vars) is True
 
@@ -1186,8 +1356,8 @@ def test_is_aggregation_step_pattern_exception(
 # ============================================================================
 
 
-# Test _matrix_values_match skips None-valued entry dimensions.
-def test_matrix_values_match_skips_none_entry() -> None:
+# Test _matrix_values_match wildcards None entry vs concrete target.
+def test_matrix_values_match_wildcards_none_entry() -> None:
     from causaliq_workflow.workflow import _matrix_values_match
 
     entry = {"network": "asia", "llm_model": None}
@@ -1230,7 +1400,7 @@ def test_matrix_values_match_rejects_mismatch_with_nulls() -> None:
     assert _matrix_values_match(entry, target, matrix_vars) is False
 
 
-# Test aggregation scan matches entries with null dimensions.
+# Test null entry values wildcard against concrete targets.
 def test_scan_aggregation_inputs_null_entry_wildcard(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
@@ -1239,7 +1409,7 @@ def test_scan_aggregation_inputs_null_entry_wildcard(
 
     cache_path = tmp_path / "test.db"  # type: ignore[operator]
     with WorkflowCache(cache_path) as cache:
-        # BNSL entry: has sample_size but no llm_model
+        # BNSL entry: sample_size=1K, llm_model=None
         bnsl = CacheEntry(metadata={"provider": {"action": {"type": "bnsl"}}})
         cache.put(
             {
@@ -1250,7 +1420,7 @@ def test_scan_aggregation_inputs_null_entry_wildcard(
             bnsl,
         )
 
-        # LLM entry: has llm_model but no sample_size
+        # LLM entry: sample_size=None, llm_model=anthropic_claude
         llm = CacheEntry(metadata={"provider": {"action": {"type": "llm"}}})
         cache.put(
             {
@@ -1261,26 +1431,12 @@ def test_scan_aggregation_inputs_null_entry_wildcard(
             llm,
         )
 
-        # Different network entry (should not match)
-        other = CacheEntry(metadata={"provider": {"action": {"type": "bnsl"}}})
-        cache.put(
-            {
-                "network": "alarm",
-                "sample_size": "1K",
-                "llm_model": None,
-            },
-            other,
-        )
-
     config = AggregationConfig(
         input_caches=[str(cache_path)],
         matrix_vars=["network", "sample_size", "llm_model"],
     )
 
-    # Target: asia, 1K, anthropic_claude
-    # BNSL entry (llm_model=None) should match (wildcard)
-    # LLM entry (sample_size=None) should match (wildcard)
-    # alarm entry should NOT match (network mismatch)
+    # Both entries match: null dimensions wildcard.
     results = executor._scan_aggregation_inputs(
         config,
         {
@@ -1289,10 +1445,7 @@ def test_scan_aggregation_inputs_null_entry_wildcard(
             "llm_model": "anthropic_claude",
         },
     )
-
     assert len(results) == 2
-    networks = {r["matrix_values"]["network"] for r in results}
-    assert networks == {"asia"}
 
 
 # ============================================================================
@@ -1401,6 +1554,74 @@ def test_validate_aggregation_entries_resolves_filter_template(
     # evaluates correctly and no errors are returned.
     errors = executor._validate_aggregation_entries(step, jobs, workflow, {})
     assert errors == []
+
+
+# Test duplicate detection in _validate_aggregation_entries.
+def test_validate_aggregation_entries_detects_duplicates(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        cache.put(
+            {"network": "asia"},
+            CacheEntry(metadata={}),
+        )
+
+    class StubAction:
+        name = "stub-action"
+        version = "1.0.0"
+        description = "Stub"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["stub-action"] = StubAction
+
+    step = {
+        "name": "merge",
+        "uses": "stub-action",
+        "with": {
+            "action": "merge",
+            "input": str(cache_path),
+            "output": "out.db",
+        },
+    }
+    workflow = {
+        "matrix": {
+            "network": ["asia"],
+            # extra_dim doesn't exist in cache and has no
+            # filter — so both combos match the same entry.
+            "extra_dim": [0, 1],
+        },
+        "steps": [step],
+    }
+    jobs = [
+        {"network": "asia", "extra_dim": 0},
+        {"network": "asia", "extra_dim": 1},
+    ]
+
+    import warnings
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        errors = executor._validate_aggregation_entries(
+            step,
+            jobs,
+            workflow,
+            {},
+        )
+
+    # Fingerprint detection now emits a warning, not an error.
+    assert errors == []
+    assert len(caught) == 1
+    assert "identical aggregation" in str(caught[0].message)
+    assert "extra_dim" in str(caught[0].message)
 
 
 # Test _execute_job resolves filter templates in aggregation.

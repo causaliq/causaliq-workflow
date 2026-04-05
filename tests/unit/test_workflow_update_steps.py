@@ -289,6 +289,108 @@ def test_execute_update_step_with_filter(
     assert result["entries_updated"] == 1  # Only cancer updated
 
 
+# Test _resolve_filter resolves random() from cache entries.
+def test_resolve_filter_with_random(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        for i in range(20):
+            e = CacheEntry()
+            e.metadata["seed"] = i
+            cache.put({"seed": str(i)}, e)
+
+    executor = WorkflowExecutor()
+
+    with WorkflowCache(str(cache_path)) as cache:
+        entries = cache.list_entries()
+        resolved, extra = executor._resolve_filter(
+            "seed in random(5, 0)", cache, entries
+        )
+
+    assert "random(" not in resolved
+    assert len(extra) == 1
+    key = list(extra.keys())[0]
+    assert key.startswith("_random_")
+    assert len(extra[key]) == 5
+
+
+# Test _resolve_filter returns expression unchanged without random().
+def test_resolve_filter_without_random(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        e = CacheEntry()
+        cache.put({"network": "asia"}, e)
+
+    executor = WorkflowExecutor()
+
+    with WorkflowCache(str(cache_path)) as cache:
+        entries = cache.list_entries()
+        resolved, extra = executor._resolve_filter(
+            "network == 'asia'", cache, entries
+        )
+
+    assert resolved == "network == 'asia'"
+    assert extra == {}
+
+
+# Test _resolve_filter returns None unchanged when no filter.
+def test_resolve_filter_none() -> None:
+    executor = WorkflowExecutor()
+    resolved, extra = executor._resolve_filter(
+        None, None, []  # type: ignore[arg-type]
+    )
+    assert resolved is None
+    assert extra == {}
+
+
+# Test _execute_update_step with random() filter expression.
+def test_execute_update_step_with_random_filter(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(str(cache_path)) as cache:
+        for i in range(20):
+            e = CacheEntry()
+            e.metadata["seed"] = i
+            cache.put({"seed": str(i)}, e)
+
+    class UpdateAction:
+        name = "update-action"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["prov"] = UpdateAction
+
+    step = {"uses": "prov"}
+    resolved_inputs = {
+        "action": "evaluate",
+        "input": str(cache_path),
+        "filter": "seed in random(5, 0)",
+    }
+    context = WorkflowContext(mode="run", matrix={}, matrix_values={})
+
+    result = executor._execute_update_step(step, resolved_inputs, context)
+
+    assert result["entries_processed"] == 20
+    assert result["entries_skipped"] == 15
+    assert result["entries_updated"] == 5
+
+
 # Test _execute_job routes UPDATE step to _execute_update_step.
 def test_execute_job_routes_update_step(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]

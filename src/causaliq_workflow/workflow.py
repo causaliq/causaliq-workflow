@@ -24,6 +24,8 @@ from typing import (
 if TYPE_CHECKING:
     from causaliq_core import ActionPattern
 
+    from causaliq_workflow.cache import WorkflowCache
+
 from causaliq_workflow.registry import ActionRegistry, WorkflowContext
 from causaliq_workflow.schema import (
     WorkflowValidationError,
@@ -89,21 +91,30 @@ def _matrix_values_match(
     """Check if entry matrix values match target values.
 
     Comparison is case-insensitive for numeric suffixes (k, M, etc).
-    A ``None`` value on either side means that dimension is not
-    applicable and is treated as a wildcard (always matches).
+
+    A ``None`` value on either side (target or entry) means the
+    dimension is not applicable and is treated as a wildcard
+    (always matches).  A *missing* key on the entry side
+    (dimension absent from the input cache) is also treated as a
+    wildcard so that caches with fewer dimensions can still be
+    consumed by broader matrices.
 
     Args:
-        entry_values: Matrix values from cache entry
-        target_values: Target matrix values to match against
-        matrix_vars: List of matrix variable names to compare
+        entry_values: Matrix values from cache entry.
+        target_values: Target matrix values to match against.
+        matrix_vars: List of matrix variable names to compare.
 
     Returns:
-        True if all matrix variables match
+        True if all matrix variables match.
     """
+    _SENTINEL = object()
     for var in matrix_vars:
         target_val = target_values.get(var)
-        entry_val = entry_values.get(var)
-        # None on either side means N/A dimension — skip it
+        entry_val = entry_values.get(var, _SENTINEL)
+        # Missing key in entry — dimension absent, wildcard
+        if entry_val is _SENTINEL:
+            continue
+        # None on either side — N/A dimension, wildcard
         if target_val is None or entry_val is None:
             continue
         entry_val = _normalise_matrix_value(entry_val)
@@ -887,6 +898,11 @@ class WorkflowExecutor:
                 else:
                     entries = cache.list_entries()
 
+                # Pre-resolve random() calls in filter
+                resolved_filter, extra_names = self._resolve_filter(
+                    filter_expr, cache, entries
+                )
+
                 for entry_info in entries:
                     entry_matrix = entry_info.get("matrix_values", {})
                     entries_processed += 1
@@ -902,9 +918,12 @@ class WorkflowExecutor:
                     )
 
                     # Apply filter expression if present
-                    if filter_expr:
+                    if resolved_filter:
                         try:
-                            if not evaluate_filter(filter_expr, flat_meta):
+                            if not evaluate_filter(
+                                resolved_filter,
+                                {**flat_meta, **extra_names},
+                            ):
                                 entries_skipped += 1
                                 if step_logger:
                                     step_logger(
@@ -1109,6 +1128,11 @@ class WorkflowExecutor:
                 else:
                     entries = cache.list_entries()
 
+                # Pre-resolve random() calls in filter
+                resolved_filter, extra_names = self._resolve_filter(
+                    filter_expr, cache, entries
+                )
+
                 for entry_info in entries:
                     entry_matrix = entry_info.get("matrix_values", {})
 
@@ -1134,9 +1158,12 @@ class WorkflowExecutor:
                     )
 
                     # Apply filter expression if present
-                    if filter_expr:
+                    if resolved_filter:
                         try:
-                            if not evaluate_filter(filter_expr, flat_meta):
+                            if not evaluate_filter(
+                                resolved_filter,
+                                {**flat_meta, **extra_names},
+                            ):
                                 would_skip += 1
                                 if step_logger:
                                     step_logger(
@@ -1278,6 +1305,31 @@ class WorkflowExecutor:
         total_filtered = 0
         total_matched = 0
 
+        # Pre-resolve random() calls across all input caches
+        resolved_filter = config.filter_expr
+        extra_names: Dict[str, Any] = {}
+        if config.filter_expr and "random(" in config.filter_expr:
+            from causaliq_core.utils import resolve_random_calls
+
+            all_meta: List[Dict[str, Any]] = []
+            for cp in config.input_caches:
+                if not Path(cp).exists():
+                    continue
+                try:
+                    with WorkflowCache(cp) as c:
+                        for ei in c.list_entries():
+                            em = ei.get("matrix_values", {})
+                            fe = c.get(em)
+                            if fe is not None:
+                                all_meta.append(
+                                    self._flatten_metadata(em, fe.metadata)
+                                )
+                except Exception:
+                    continue
+            resolved_filter, extra_names = resolve_random_calls(
+                config.filter_expr, all_meta
+            )
+
         for cache_path in config.input_caches:
             # Skip non-existent caches with warning
             if not Path(cache_path).exists():
@@ -1293,19 +1345,6 @@ class WorkflowExecutor:
                     for entry_info in entries:
                         entry_matrix = entry_info.get("matrix_values", {})
 
-                        # Skip entries missing required matrix variables.
-                        # Variables whose current value is None (N/A
-                        # dimension) are not required in the entry.
-                        required_vars = [
-                            var
-                            for var in config.matrix_vars
-                            if matrix_values.get(var) is not None
-                        ]
-                        if not all(
-                            var in entry_matrix for var in required_vars
-                        ):
-                            continue
-
                         # Get full entry to access metadata
                         full_entry = cache.get(entry_matrix)
                         if full_entry is None:
@@ -1317,10 +1356,11 @@ class WorkflowExecutor:
                         )
 
                         # Apply filter expression if present
-                        if config.filter_expr:
+                        if resolved_filter:
                             try:
                                 if not evaluate_filter(
-                                    config.filter_expr, flat_meta
+                                    resolved_filter,
+                                    {**flat_meta, **extra_names},
                                 ):
                                     total_filtered += 1
                                     continue
@@ -1332,7 +1372,9 @@ class WorkflowExecutor:
                         # Check if entry matches current matrix values
                         # (case-insensitive for numeric suffixes like 1k/1K)
                         matches = _matrix_values_match(
-                            entry_matrix, matrix_values, config.matrix_vars
+                            entry_matrix,
+                            matrix_values,
+                            config.matrix_vars,
                         )
 
                         if matches:
@@ -1407,6 +1449,47 @@ class WorkflowExecutor:
                 flat[provider_name] = provider_data
 
         return flat
+
+    def _resolve_filter(
+        self,
+        filter_expr: Optional[str],
+        cache: "WorkflowCache",
+        entries: List[Dict[str, Any]],
+    ) -> Tuple[Optional[str], Dict[str, Any]]:
+        """Pre-resolve ``random()`` calls in a filter expression.
+
+        Scans *entries* from *cache* to build the distinct-value
+        populations needed by ``random(count, seed)`` patterns,
+        then returns a rewritten expression and a dictionary of
+        pre-computed frozen sets.
+
+        When *filter_expr* contains no ``random()`` calls the
+        original expression is returned unchanged with an empty
+        dictionary.
+
+        Args:
+            filter_expr: Filter expression string, or ``None``.
+            cache: Open cache used to retrieve full entries.
+            entries: Entry list from ``cache.list_entries()``.
+
+        Returns:
+            Tuple of *(resolved_expression, extra_names)*.
+        """
+        if not filter_expr or "random(" not in filter_expr:
+            return filter_expr, {}
+
+        from causaliq_core.utils import resolve_random_calls
+
+        all_meta: List[Dict[str, Any]] = []
+        for entry_info in entries:
+            entry_matrix = entry_info.get("matrix_values", {})
+            full_entry = cache.get(entry_matrix)
+            if full_entry is not None:
+                all_meta.append(
+                    self._flatten_metadata(entry_matrix, full_entry.metadata)
+                )
+
+        return resolve_random_calls(filter_expr, all_meta)
 
     def _validate_required_variables(
         self, workflow: Dict[str, Any], cli_params: Dict[str, Any]
@@ -1717,7 +1800,7 @@ class WorkflowExecutor:
                 errors.extend(update_errors)
 
             elif is_aggregation:
-                # AGGREGATE pattern: validate per matrix combo
+                # AGGREGATE pattern: validate per matrix combo.
                 agg_errors = self._validate_aggregation_entries(
                     step, jobs, workflow, cli_params
                 )
@@ -1793,6 +1876,11 @@ class WorkflowExecutor:
         with WorkflowCache(input_path) as cache:
             entries = cache.list_entries()
 
+            # Pre-resolve random() calls in filter
+            resolved_filter, extra_names = self._resolve_filter(
+                filter_expr, cache, entries
+            )
+
             for entry_info in entries:
                 entry_matrix = entry_info.get("matrix_values", {})
 
@@ -1807,9 +1895,12 @@ class WorkflowExecutor:
                 )
 
                 # Apply filter expression if present
-                if filter_expr:
+                if resolved_filter:
                     try:
-                        if not evaluate_filter(filter_expr, flat_meta):
+                        if not evaluate_filter(
+                            resolved_filter,
+                            {**flat_meta, **extra_names},
+                        ):
                             continue  # Would be filtered out
                     except FilterExpressionError as e:
                         # Semantic filter error - undefined variable
@@ -1926,6 +2017,11 @@ class WorkflowExecutor:
         # Get aggregation config for scanning
         agg_config = self._get_aggregation_config(step, matrix)
 
+        # Track entry fingerprints per output matrix combo to
+        # detect silent duplication (different combos producing
+        # identical aggregation input sets).
+        fingerprints: Dict[frozenset, Dict[str, Any]] = {}
+
         for job in jobs:
             # Combine all variable sources
             variables = {
@@ -1961,6 +2057,34 @@ class WorkflowExecutor:
                 )
                 resolved_inputs["_aggregation_entries"] = matching_entries
                 resolved_inputs.pop("aggregate", None)
+
+                # Build fingerprint from matched entry hashes.
+                # Skip empty sets — the input cache may not
+                # exist yet (created by an earlier step).
+                fp = frozenset(
+                    e.get("entry_hash", id(e)) for e in matching_entries
+                )
+                if fp and fp in fingerprints:
+                    prev = fingerprints[fp]
+                    diff = {
+                        k: (prev[k], job[k])
+                        for k in job
+                        if job[k] != prev.get(k)
+                    }
+                    import warnings
+
+                    warnings.warn(
+                        f"Step '{step_name}': matrix combos"
+                        f" differ only in {diff} but"
+                        f" select identical aggregation"
+                        f" entries — the differing"
+                        f" dimension(s) may need a filter"
+                        f" or should be removed from the"
+                        f" matrix",
+                        stacklevel=1,
+                    )
+                elif fp:
+                    fingerprints[fp] = job
 
             # Validate action parameters
             try:
@@ -2042,7 +2166,11 @@ class WorkflowExecutor:
 
                 # Execute job steps
                 job_result = self._execute_job(
-                    workflow, job, context, cli_params, step_logger
+                    workflow,
+                    job,
+                    context,
+                    cli_params,
+                    step_logger,
                 )
                 results.append(job_result)
 
@@ -2362,6 +2490,11 @@ class WorkflowExecutor:
                 raise WorkflowExecutionError(
                     f"Step '{step_name}' must have 'uses' or 'run'"
                 )
+
+            # Restore original matrix values after each step so
+            # that dedup projection for one step does not leak
+            # into the next step in the same job.
+            context.matrix_values = job
 
         return {
             "job": job,

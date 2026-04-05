@@ -216,8 +216,7 @@ def test_report_results_with_entry_counts(
 
     captured = capsys.readouterr()
     assert "1 would execute" in captured.out
-    assert "10 entries to process" in captured.out
-    assert "2 entries to skip" in captured.out
+    assert "10 updates" in captured.out
 
 
 # Test _report_results with only entries to process (no skip).
@@ -240,12 +239,10 @@ def test_report_results_entries_to_process_only(
     _report_results(results, {}, "dry-run", "all")
 
     captured = capsys.readouterr()
-    assert "5 entries to process" in captured.out
-    # Should not show "entries to skip" when count is 0
-    assert "entries to skip" not in captured.out
+    assert "5 updates" in captured.out
 
 
-# Test _report_results with only entries to skip (no process).
+# Test _report_results UPDATE step with only skips (no process).
 def test_report_results_entries_to_skip_only(
     capsys: "pytest.CaptureFixture",
 ) -> None:
@@ -265,9 +262,32 @@ def test_report_results_entries_to_skip_only(
     _report_results(results, {}, "dry-run", "all")
 
     captured = capsys.readouterr()
-    assert "3 entries to skip" in captured.out
-    # Should not show "entries to process" when count is 0
-    assert "entries to process" not in captured.out
+    # UPDATE step with 0 would_process but 3 would_skip still
+    # counts as an UPDATE step, but shows no updates in summary.
+    assert "updates" not in captured.out
+
+
+# Test _report_results counts updates from executed UPDATE steps.
+def test_report_results_executed_update_step(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [
+        {
+            "steps": {
+                "update-step": {
+                    "status": "success",
+                    "entries_updated": 3,
+                }
+            }
+        }
+    ]
+    _report_results(results, {}, "run", "all")
+
+    captured = capsys.readouterr()
+    assert "1 executed" in captured.out
+    assert "3 updates" in captured.out
 
 
 # Test CLI runs with non-YAML exception (covers else branch).

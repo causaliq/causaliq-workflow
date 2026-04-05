@@ -202,9 +202,9 @@ def _report_results(
     would_skip = 0
     failed = 0
 
-    # Track UPDATE step entry counts
-    entries_would_process = 0
-    entries_would_skip = 0
+    # Track new-entry vs update counts for summary detail
+    new_entries = 0
+    updates = 0
 
     # Collect error messages
     error_messages: List[str] = []
@@ -217,13 +217,24 @@ def _report_results(
                     forced += 1
                 else:
                     executed += 1
+                # Track new entries vs updates
+                eu = step_result.get("entries_updated", 0)
+                if eu > 0:
+                    updates += eu
+                else:
+                    new_entries += 1
             elif status == "skipped":
                 skipped += 1
             elif status == "would_execute":
                 would_execute += 1
-                # Accumulate UPDATE step entry counts
-                entries_would_process += step_result.get("would_process", 0)
-                entries_would_skip += step_result.get("would_skip", 0)
+                wp = step_result.get("would_process", 0)
+                ws = step_result.get("would_skip", 0)
+                if wp > 0 or ws > 0:
+                    # UPDATE step with sub-entries
+                    updates += wp
+                else:
+                    # CREATE / AGGREGATE step
+                    new_entries += 1
             elif status == "would_skip":
                 would_skip += 1
             elif status in ("error", "failed"):
@@ -254,19 +265,24 @@ def _report_results(
 
     summary = ", ".join(parts) if parts else "0 steps"
 
-    # Build entry-level summary for UPDATE steps
-    entry_summary = ""
-    if entries_would_process > 0 or entries_would_skip > 0:
-        entry_parts = []
-        if entries_would_process > 0:
-            entry_parts.append(f"{entries_would_process} entries to process")
-        if entries_would_skip > 0:
-            entry_parts.append(f"{entries_would_skip} entries to skip")
-        entry_summary = f" ({', '.join(entry_parts)})"
+    # Build detail breakdown (new entries vs updates)
+    detail = ""
+    if new_entries > 0 or updates > 0:
+        detail_parts = []
+        if new_entries > 0:
+            detail_parts.append(
+                f"{new_entries} new entr"
+                f"{'ies' if new_entries != 1 else 'y'}"
+            )
+        if updates > 0:
+            detail_parts.append(
+                f"{updates} update{'s' if updates != 1 else ''}"
+            )
+        detail = f" ({', '.join(detail_parts)})"
 
     click.echo(
         f"{timestamp} [causaliq-workflow] COMPLETED {total} steps: "
-        f"{summary}{entry_summary}"
+        f"{summary}{detail}"
     )
 
     # Display error messages if any
