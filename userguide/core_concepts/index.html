@@ -613,6 +613,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#null-values-and-dimension-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Null Values and Dimension Matching
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1672,6 +1683,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#null-values-and-dimension-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Null Values and Dimension Matching
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1861,6 +1883,79 @@ combination of <code>network</code> and <code>sample_size</code>.</p>
 <li>Matrix values are available as template variables</li>
 <li>Results are stored with matrix values as cache keys</li>
 </ul>
+<h3 id="null-values-and-dimension-matching">Null Values and Dimension Matching</h3>
+<p>A <code>null</code> value on either side (target or entry) means the dimension is
+<strong>not applicable</strong> and is treated as a <strong>wildcard</strong> — it always matches.
+A <strong>missing key</strong> on the entry side (dimension absent from the input
+cache) is also treated as a wildcard, so that caches with fewer
+dimensions can be consumed by broader matrices.</p>
+<pre><code class="language-yaml">matrix:
+  network: [asia, cancer]
+  llm_model: [null]          # wildcard — match any llm_model
+  sample_size: [1K, 10K]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Target</th>
+<th>Entry</th>
+<th>Matches?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Target wildcard</td>
+<td><code>null</code></td>
+<td>any value</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Entry wildcard</td>
+<td><code>"claude"</code></td>
+<td><code>null</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Both null</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Missing key in entry</td>
+<td><code>"1K"</code></td>
+<td><em>(absent)</em></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Concrete match</td>
+<td><code>"asia"</code></td>
+<td><code>"asia"</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Concrete mismatch</td>
+<td><code>"asia"</code></td>
+<td><code>"alarm"</code></td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>!!! tip "Separate caches for separate sources"
+    When aggregating entries from different sources (e.g. FGES and LLM
+    PDGs), store them in <strong>separate caches</strong> rather than one shared
+    cache with null dimensions. Use the list syntax for <code>input:</code> to
+    read from multiple caches:</p>
+<pre><code>```yaml
+input:
+  - results/fges-pdgs.db
+  - results/llm-pdgs.db
+```
+
+This avoids entries from one source unintentionally matching
+targets intended for the other source via null wildcard matching.
+</code></pre>
 <h2 id="template-variables">Template Variables</h2>
 <p><strong>Template variables</strong> use <code>{{variable}}</code> syntax to reference workflow
 properties and matrix values within step parameters.</p>

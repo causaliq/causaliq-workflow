@@ -1968,6 +1968,11 @@ produces 2 entries in <code>merged.db</code> — one merged result per network.<
 <p>Entries from the input cache are automatically grouped by current matrix
 values. For each matrix combination, all matching entries are passed to the
 action for aggregation.</p>
+<p>A <code>null</code> value on either side (target or entry) is treated as a wildcard
+and always matches. A <strong>missing key</strong> on the entry side (dimension absent
+from the input cache) is also treated as a wildcard. See
+<a href="../core_concepts/#null-values-and-dimension-matching">Null Values and Dimension Matching</a>
+for the full matching rules.</p>
 <h3 id="filtering-entries">Filtering Entries</h3>
 <p>Use the <code>filter</code> parameter to restrict which entries are aggregated:</p>
 <pre><code class="language-yaml">steps:
@@ -1979,6 +1984,29 @@ action for aggregation.</p>
       filter: &quot;edge_count &gt; 5 and sample_size &gt;= 100&quot;
       output: &quot;results/merged.db&quot;
 </code></pre>
+<p>Filter expressions support <strong>template variables</strong>, so you can parameterise
+the filter per matrix combination:</p>
+<pre><code class="language-yaml">matrix:
+  network: [asia, cancer]
+  llm_model: [anthropic_claude, gemini_flash]
+  sample_size: [1K, 10K]
+
+steps:
+  - name: &quot;Fuse LLM and BNSL PDGs&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;merge_graphs&quot;
+      input:
+        - &quot;results/bnsl-pdgs.db&quot;
+        - &quot;results/llm-pdgs.db&quot;
+      filter: &quot;llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'&quot;
+      output: &quot;results/fused.db&quot;
+</code></pre>
+<p>Here, for each matrix combination the filter resolves to concrete values,
+selecting the matching LLM entry from one cache and the matching BNSL
+entry from the other for fusion. Entries from each cache only contain
+dimensions relevant to their source, and missing dimensions are treated
+as wildcards during matching.</p>
 <p>See <a href="../common_parameters/#filter-parameter">Common Parameters</a> for filter
 expression syntax.</p>
 <h3 id="conservative-execution_2">Conservative Execution</h3>

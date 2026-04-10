@@ -763,6 +763,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#aggregation-with-parameterised-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation with Parameterised Filters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1669,6 +1680,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#aggregation-with-parameterised-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregation with Parameterised Filters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1852,6 +1874,33 @@ steps:
       filter: &quot;edge_count &gt; 5 and sample_size &gt;= 100&quot;
       reference: &quot;networks/{{network}}/true.graphml&quot;
 </code></pre>
+<h2 id="aggregation-with-parameterised-filters">Aggregation with Parameterised Filters</h2>
+<p>Use template variables in filters to select different subsets per matrix
+combination. Store entries from different sources in <strong>separate caches</strong>
+and use the list syntax for <code>input:</code> to read from both:</p>
+<pre><code class="language-yaml"># fuse.yml
+matrix:
+  network: [asia, sports]
+  llm_model: [anthropic_claude, gemini_flash]
+  sample_size: [1K, 10K]
+
+steps:
+  - name: &quot;Fuse LLM and BNSL PDGs&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;merge_graphs&quot;
+      input:
+        - &quot;results/bnsl-pdgs.db&quot;
+        - &quot;results/llm-pdgs.db&quot;
+      filter: &quot;llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'&quot;
+      output: &quot;results/fused.db&quot;
+</code></pre>
+<p>For <code>{network: asia, llm_model: anthropic_claude, sample_size: 1K}</code>, the
+filter resolves to <code>llm_model == 'anthropic_claude' or sample_size == '1K'</code>,
+selecting the matching LLM entry from one cache and the matching BNSL entry
+from the other. Each cache only contains dimensions relevant to its source;
+missing dimensions are treated as wildcards during matching (see
+<a href="../core_concepts/#null-values-and-dimension-matching">Null Values and Dimension Matching</a>).</p>
 <h2 id="running-workflows">Running Workflows</h2>
 <pre><code class="language-bash"># Validate and preview (default)
 cqflow run workflow.yml

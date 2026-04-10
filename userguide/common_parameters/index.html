@@ -698,10 +698,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#random-sampling-in-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Random Sampling in Filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#filter-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
         Filter Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variables-in-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variables in Filters
       
     </span>
   </a>
@@ -1689,10 +1711,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#random-sampling-in-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Random Sampling in Filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#filter-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
         Filter Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-variables-in-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template Variables in Filters
       
     </span>
   </a>
@@ -1930,6 +1974,23 @@ in the input cache directly.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="random-sampling-in-filters">Random Sampling in Filters</h3>
+<p>The <code>random(count, seed)</code> function selects a reproducible random subset
+of values for a variable. Use it with the <code>in</code> operator:</p>
+<pre><code class="language-yaml">filter: &quot;pdg_seed in random(5, 42)&quot;
+</code></pre>
+<p>This collects all distinct values of <code>pdg_seed</code> across the entries,
+then deterministically selects 5 of them using the given seed. Only
+entries whose <code>pdg_seed</code> is in the selected set pass the filter.</p>
+<p>The selection is <strong>deterministic</strong> — the same seed always produces the
+same subset, ensuring reproducibility across runs.</p>
+<pre><code class="language-yaml"># Select 3 random seeds and 2 random sample sizes
+filter: &quot;pdg_seed in random(3, 0) and sample_size in random(2, 1)&quot;
+</code></pre>
+<p>!!! note
+    The total number of distinct values for the variable must be at
+    least as large as the requested count. If fewer distinct values
+    exist, an error is raised.</p>
 <h3 id="filter-variables">Filter Variables</h3>
 <p>Filter expressions can reference any metadata variable from cache entries:</p>
 <pre><code class="language-yaml"># Filter by algorithm and score
@@ -1941,6 +2002,25 @@ filter: &quot;network in ['asia', 'cancer', 'alarm']&quot;
 # Complex conditions
 filter: &quot;(sample_size &gt;= 1000 or seed == 0) and status == 'success'&quot;
 </code></pre>
+<h3 id="template-variables-in-filters">Template Variables in Filters</h3>
+<p>Filter expressions support <code>{{variable}}</code> template substitution, resolved
+from workflow properties and matrix values before evaluation. This enables
+parameterised filters that change per matrix combination:</p>
+<pre><code class="language-yaml">matrix:
+  network: [asia, cancer]
+  llm_model: [anthropic_claude, gemini_flash]
+
+steps:
+  - name: &quot;Merge by Model&quot;
+    uses: &quot;causaliq-analysis&quot;
+    with:
+      action: &quot;merge_graphs&quot;
+      input: &quot;results/pdgs.db&quot;
+      filter: &quot;llm_model == '{{llm_model}}' or sample_size == '1K'&quot;
+      output: &quot;results/merged.db&quot;
+</code></pre>
+<p>For the <code>{network: asia, llm_model: anthropic_claude}</code> combination, the
+filter resolves to <code>llm_model == 'anthropic_claude' or sample_size == '1K'</code>.</p>
 <h3 id="filter-vs-conservative-execution">Filter vs Conservative Execution</h3>
 <table>
 <thead>
