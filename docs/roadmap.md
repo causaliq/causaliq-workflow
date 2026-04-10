@@ -1,6 +1,6 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: March 26, 2026
+**Last updated**: April 10, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
@@ -14,11 +14,13 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 
 - **v0.4.0 Conservative Execution** [March 2026]: Formalised action patterns (creation, update, aggregation) and conservative execution to skip work if results exist.
 
+- **v0.5.0 Multi-step Workflows** [April 2026]: Multi-step workflows and matrix nulls as wildcards.
+
 
 ## 🛣️ Upcoming Implementation
 
 
-### Release 0.5.0 - Step Output Chaining
+### Release 0.6.0 - Step Output Chaining
 
 Enable workflow steps to consume outputs from previous steps.
 
@@ -34,7 +36,7 @@ Enable workflow steps to consume outputs from previous steps.
   - Support forced re-execution flag
 
 
-### Release 0.6.0: Enhanced Workflow
+### Release 0.7.0: Enhanced Workflow
 
 Dry and comparison runs, runtime estimation and processing summary
 
@@ -49,7 +51,7 @@ Dry and comparison runs, runtime estimation and processing summary
 - progress indicators
 
 
-### Release 0.7.0: Discovery Integration
+### Release 0.8.0: Discovery Integration
 
 Structure learning algorithms integrated
 

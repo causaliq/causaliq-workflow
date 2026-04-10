@@ -31,6 +31,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
+## [0.5.0] Multi-step Workflows - 2026-04-10
+
+### Added
+
+- **Multi-step workflow execution** - Steps execute sequentially within
+  each matrix job, with step outputs available to subsequent steps via
+  template variables
+- **Null values as wildcards** - `null` in matrix variables treated as
+  wildcards during matching; missing keys in entry metadata also match
+  as wildcards, allowing caches with fewer dimensions to be consumed
+  by broader matrices
+- **Template variables in filter expressions** - Filter `filter`
+  parameter now resolves `{{variable}}` templates before evaluation
+- **`random()` function in filters** - Filter expressions support
+  `random()` for random sampling of cache entries
+- **Relaxed matrix matching** - Case-insensitive numeric suffix
+  normalisation (k, M, G, T) and wildcard support in dimension
+  matching
+- **Improved CLI reporting** - Enhanced summary output for workflow
+  execution results
+
+### Dependencies
+
+- Requires causaliq-core >= 0.7.0 (for `random()` in filter expressions)
+
 ## [0.4.0] Conservative Execution - 2026-03-26
 
 ### Added

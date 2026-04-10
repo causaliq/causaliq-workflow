@@ -33,15 +33,18 @@
   and implement conservative execution for creation, update and
   aggregation steps.
 
+- **Release v0.5.0 - Multi-step Workflows**: Multi-step workflows and
+  matrix nulls as wildcards.
+
 *See Git commit history for detailed implementation progress*
 
 🛣️ Upcoming Releases
 
-- **Release v0.5.0 - Step Output Chaining**: Step output references and cache
+- **Release v0.6.0 - Step Output Chaining**: Step output references and cache
   restoration for resumable workflows.
-- **Release v0.6.0 - Enhanced Workflow**: Dry and comparison runs, runtime
+- **Release v0.7.0 - Enhanced Workflow**: Dry and comparison runs, runtime
   estimation and processing summary
-- **Release v0.7.0 - Discovery Integration**: Structure learning algorithms
+- **Release v0.8.0 - Discovery Integration**: Structure learning algorithms
   integrated
 
 ## causaliq-core Integration
