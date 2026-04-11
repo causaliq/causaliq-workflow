@@ -16,7 +16,7 @@ from .workflow import (
 
 __version__ = "0.5.0"
 __author__ = "CausalIQ"
-__email__ = "info@causaliq.com"
+__email__ = "info@causaliq.org"
 
 # Package metadata
 __title__ = "causaliq-workflow"
