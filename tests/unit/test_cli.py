@@ -24,7 +24,9 @@ def test_cli_version(runner: CliRunner) -> None:
 def test_cli_help(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
-    assert "Usage: causaliq-workflow [OPTIONS] COMMAND" in result.output
+    # Click usage formatting varies by version; assert stable semantics.
+    assert "Usage: causaliq-workflow" in result.output
+    assert "[OPTIONS]" in result.output
     assert "run" in result.output
     assert "export-cache" in result.output
     assert "import-cache" in result.output

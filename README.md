@@ -112,9 +112,9 @@ Note that **cqflow** is a short synonym for **causaliq-workflow** which can also
 
 - 🔍 **CausalIQ Discovery** is called by this package to perform structure learning.
 - 📊 **CausalIQ Analysis** is called by this package to perform results analysis and generate assets for research papers.
-- 🔮 **CausalIQ Predict** is called by this package to perform causal prediction.
+- 🔮 **CausalIQ Whatif** is called by this package to perform causal prediction.
 - 🔄 **Zenodo Synchronisation** is used by this package to download datasets and upload results.
-- 🧪 **CausalIQ Papers** are defined in terms of CausalIQ Workflows allowing the reproduction of experiments, results and published paper assets created by the CausalIQ ecosystem.
+- 🧪 CausalIQ Papers are defined in terms of CausalIQ Workflows allowing the reproduction of experiments, results and published paper assets created by the CausalIQ ecosystem.
 
 ## LLM Support
 
