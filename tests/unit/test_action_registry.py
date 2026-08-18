@@ -298,3 +298,33 @@ def test_validate_strips_none_parameters():
 
     # Should not raise
     registry.validate_action_parameters("test_action", inputs)
+
+
+# execute_action prefers the tuple status over a metadata status key.
+def test_execute_action_status_tuple_precedence():
+    """Metadata status keys don't override the action result status."""
+
+    from causaliq_core import CausalIQActionProvider
+
+    from causaliq_workflow.registry import WorkflowContext
+
+    class StatusAction(CausalIQActionProvider):
+        name = "status-action"
+        supported_actions = {"learn"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            metadata = {"status": "learnt-ok", "algorithm": "hc"}
+            return ("success", metadata, [])
+
+    registry = ActionRegistry()
+    registry._actions["status_action"] = StatusAction
+
+    context = WorkflowContext(mode="run", matrix={})
+    result = registry.execute_action(
+        "status_action", {"action": "learn"}, context
+    )
+
+    assert result["status"] == "success"
+    assert result["algorithm"] == "hc"
+    assert result["_action_metadata"]["status"] == "learnt-ok"
+    assert result["_action_metadata"]["algorithm"] == "hc"

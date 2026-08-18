@@ -215,18 +215,23 @@ def test_export_entries_empty_cache(tmp_path: Path) -> None:
         assert count == 0
 
 
-# Test export_entries skips entries without objects.
-def test_export_entries_skips_empty_entries(tmp_path: Path) -> None:
-    """Test export_entries skips entries with no objects."""
+# Test export_entries exports metadata-only entries.
+def test_export_entries_metadata_only_entry(tmp_path: Path) -> None:
+    """Test export_entries exports entries with metadata but no objects."""
     with WorkflowCache(":memory:") as cache:
-        # Add entry without objects
+        # Add entry without objects but with metadata
         entry = CacheEntry(metadata={"empty": True})
         cache.put({"test": "empty"}, entry)
 
         output_dir = tmp_path / "export"
         count = export_entries(cache, output_dir)
 
-        assert count == 0
+        assert count == 1
+        meta_path = output_dir / "empty" / "_meta.json"
+        assert meta_path.exists()
+        saved = json.loads(meta_path.read_text())
+        assert saved["metadata"] == {"empty": True}
+        assert saved["objects"] == {}
 
 
 # Test export_entries with multiple entries.

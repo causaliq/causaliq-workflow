@@ -450,10 +450,16 @@ class ActionRegistry:
                 action_name, parameters, mode=context.mode, context=context
             )
 
-            # Build result dict from tuple (flatten metadata into result)
+            # Build result dict from tuple (flatten metadata into result).
+            # The action's status tuple always takes precedence over
+            # any "status" key inside the metadata dict.  The original
+            # metadata dict (including its status/error fields) is
+            # preserved under "_action_metadata" so workflow cache
+            # storage can record the full outcome.
             result: Dict[str, Any] = {
                 "status": status,
-                **metadata,  # Flatten metadata directly into result
+                **{k: v for k, v in metadata.items() if k != "status"},
+                "_action_metadata": metadata,
                 "objects": objects,
             }
 

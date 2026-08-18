@@ -327,8 +327,10 @@ def _export_single_entry(
     if entry is None:
         return False  # pragma: no cover
 
-    # Skip if no objects
-    if not entry.objects:
+    # Skip only when there is nothing to record (no objects and no
+    # metadata).  Metadata-only entries (e.g. recorded failures) are
+    # exported so their _meta.json is still produced.
+    if not entry.objects and not entry.metadata:
         return False
 
     # Build objects dict for export

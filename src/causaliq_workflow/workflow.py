@@ -988,12 +988,9 @@ class WorkflowExecutor:
                         )
 
                         if result.get("status") == "success":
-                            # Extract metadata (exclude status and objects)
-                            raw_metadata = {
-                                k: v
-                                for k, v in result.items()
-                                if k not in ("status", "objects")
-                            }
+                            # Preserve the action metadata (including
+                            # its status/error fields) for storage.
+                            raw_metadata = result.get("_action_metadata", {})
 
                             # Structure metadata by provider/action
                             structured_metadata = {
@@ -2387,46 +2384,56 @@ class WorkflowExecutor:
                         action_name, resolved_inputs, context
                     )
 
-                    # Store results to cache if successful and objects present
-                    if (
-                        context.cache is not None
-                        and step_result.get("status") == "success"
-                        and step_result.get("objects")
-                    ):
-                        from causaliq_workflow.cache import store_action_result
-
-                        objects = step_result.get("objects", [])
-                        raw_metadata = {
-                            k: v
-                            for k, v in step_result.items()
-                            if k not in ("status", "objects")
-                        }
-
-                        # Structure metadata by provider/action
-                        action_class = self.action_registry.get_action_class(
-                            action_name
+                    # Store results to cache.  Successful actions are
+                    # stored with their objects; actions that return an
+                    # "error" status together with structured failure
+                    # metadata (status + error) are stored metadata-only
+                    # so their _meta.json can be produced on export.
+                    if context.cache is not None:
+                        raw_metadata = step_result.get("_action_metadata", {})
+                        recorded_failure = (
+                            step_result.get("status") == "error"
+                            and "status" in raw_metadata
+                            and "error" in raw_metadata
                         )
-                        provider_name = getattr(
-                            action_class, "name", action_name
-                        )
-                        action_method = resolved_inputs.get(
-                            "action", "default"
-                        )
-                        metadata = {
-                            provider_name: {action_method: raw_metadata}
-                        }
+                        if (
+                            step_result.get("status") == "success"
+                            and step_result.get("objects")
+                        ) or recorded_failure:
+                            from causaliq_workflow.cache import (
+                                store_action_result,
+                            )
 
-                        # Pass matrix key order for export directory structure
-                        matrix_key_order = list(context.matrix.keys())
+                            objects = step_result.get("objects", [])
 
-                        store_action_result(
-                            cache=context.cache,
-                            context=context,
-                            entry_type="graph",
-                            metadata=metadata,
-                            objects=objects,
-                            matrix_key_order=matrix_key_order,
-                        )
+                            # Structure metadata by provider/action
+                            action_class = (
+                                self.action_registry.get_action_class(
+                                    action_name
+                                )
+                            )
+                            provider_name = getattr(
+                                action_class, "name", action_name
+                            )
+                            action_method = resolved_inputs.get(
+                                "action", "default"
+                            )
+                            metadata = {
+                                provider_name: {action_method: raw_metadata}
+                            }
+
+                            # Pass matrix key order for export directory
+                            # structure
+                            matrix_key_order = list(context.matrix.keys())
+
+                            store_action_result(
+                                cache=context.cache,
+                                context=context,
+                                entry_type="graph",
+                                metadata=metadata,
+                                objects=objects,
+                                matrix_key_order=matrix_key_order,
+                            )
 
                     # Check for objects that couldn't be stored
                     # (action produced objects but no .db cache was open)

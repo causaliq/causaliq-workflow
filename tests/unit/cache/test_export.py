@@ -1,5 +1,6 @@
 """Unit tests for cache export module."""
 
+import json
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -267,3 +268,43 @@ def test_store_action_result_ignores_entry_type() -> None:
     calls = mock_cache.put_from_action.call_args_list
     assert len(calls) == 2
     assert calls[0] == calls[1]
+
+
+# Metadata-only entries are exported so their _meta.json is produced.
+def test_export_entries_metadata_only(tmp_path: Path) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.cache.export import export_entries
+
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry()
+        entry.metadata["provider"] = {
+            "learn_graph": {"status": "input", "error": "bad data"}
+        }
+        cache.put({"dataset": "asia"}, entry)
+
+        count = export_entries(cache, tmp_path, ["dataset"])
+
+        assert count == 1
+        meta_path = tmp_path / "asia" / "_meta.json"
+        assert meta_path.exists()
+        saved = json.loads(meta_path.read_text())
+        learn = saved["metadata"]["provider"]["learn_graph"]
+        assert learn["status"] == "input"
+        assert learn["error"] == "bad data"
+        assert saved["objects"] == {}
+
+
+# Entries with neither objects nor metadata are skipped on export.
+def test_export_entries_skips_truly_empty_entries(
+    tmp_path: Path,
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.cache.export import export_entries
+
+    with WorkflowCache(":memory:") as cache:
+        cache.put({"dataset": "asia"}, CacheEntry())
+
+        count = export_entries(cache, tmp_path, ["dataset"])
+
+        assert count == 0
+        assert not (tmp_path / "asia").exists()

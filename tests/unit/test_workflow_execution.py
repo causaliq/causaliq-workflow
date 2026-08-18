@@ -1,5 +1,7 @@
 """Unit tests for WorkflowExecutor - execution and template variables."""
 
+from pathlib import Path
+
 import pytest
 
 from causaliq_workflow.workflow import (
@@ -322,3 +324,52 @@ def test_execute_workflow_objects_without_cache_raises_error(
         match="produced objects but no workflow cache is open",
     ):
         executor.execute_workflow(workflow, mode="run")
+
+
+# A step returning error with failure metadata records a cache entry.
+def test_execute_workflow_records_failure_entry(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    from causaliq_core import CausalIQActionProvider
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    class MockFailureRecordingAction(CausalIQActionProvider):
+        name = "mock-failure-recording"
+        supported_actions = {"learn_graph"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            metadata = {"status": "input", "error": "bad data"}
+            return ("error", metadata, [])
+
+    executor.action_registry._actions["mock_failure_recording"] = (
+        MockFailureRecordingAction
+    )
+
+    db_path = tmp_path / "out.db"
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_failure_recording",
+                "name": "Test Step",
+                "with": {
+                    "action": "learn_graph",
+                    "output": str(db_path),
+                },
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run")
+    step_result = results[0]["steps"]["Test Step"]
+    assert step_result["status"] == "error"
+
+    with WorkflowCache(str(db_path)) as cache:
+        entries = cache.list_entries()
+        assert len(entries) == 1
+        entry = cache.get(entries[0]["matrix_values"])
+        assert entry is not None
+        assert entry.objects == {}
+        learn = entry.metadata["mock-failure-recording"]["learn_graph"]
+        assert learn["status"] == "input"
+        assert learn["error"] == "bad data"
