@@ -555,6 +555,39 @@ class WorkflowExecutor:
         except Exception:
             return False
 
+    def _is_nocache_step(self, step: Dict[str, Any]) -> bool:
+        """Check if a step uses the NOCACHES pattern.
+
+        NOCACHES pattern steps operate on plain files (not workflow
+        caches) and do not use the workflow matrix, so they run once
+        regardless of the matrix.
+
+        Args:
+            step: Step configuration dictionary
+
+        Returns:
+            True if the action declares NOCACHES pattern
+        """
+        from causaliq_core import ActionPattern
+
+        provider_name = step.get("uses")
+        if not provider_name:
+            return False
+
+        step_inputs = step.get("with", {})
+        action_name = step_inputs.get("action")
+        if not action_name:
+            return False
+
+        # Check if action declares NOCACHES pattern
+        try:
+            pattern = self.action_registry.get_action_pattern(
+                provider_name, action_name
+            )
+            return pattern == ActionPattern.NOCACHES
+        except Exception:
+            return False
+
     def _is_aggregate_pattern_step(
         self,
         step: Dict[str, Any],
@@ -1643,6 +1676,21 @@ class WorkflowExecutor:
                         f"workflow 'matrix' definition or cache input"
                     )
 
+            elif pattern == ActionPattern.NOCACHES:
+                # NOCACHES actions read/write plain files directly and
+                # so have no cache or matrix requirements.
+                if has_cache_input:
+                    errors.append(
+                        f"Step '{step_name}': NOCACHES pattern prohibits "
+                        f"cache input (.db files)"
+                    )
+                output_param = step_inputs.get("output")
+                if output_param and str(output_param).lower().endswith(".db"):
+                    errors.append(
+                        f"Step '{step_name}': NOCACHES pattern prohibits "
+                        f"cache output (.db files)"
+                    )
+
         return errors
 
     def _validate_step_filters(self, workflow: Dict[str, Any]) -> List[str]:
@@ -1802,6 +1850,13 @@ class WorkflowExecutor:
                     step, jobs, workflow, cli_params
                 )
                 errors.extend(agg_errors)
+
+            elif self._is_nocache_step(step):
+                # NOCACHES pattern: validate once without matrix variables.
+                nocache_errors = self._validate_nocache_entries(
+                    step, workflow, cli_params
+                )
+                errors.extend(nocache_errors)
 
             else:
                 # CREATE pattern: validate per matrix combo
@@ -1979,6 +2034,47 @@ class WorkflowExecutor:
                 )
             except ActionValidationError as e:
                 errors.append(f"Step '{step_name}': {e}")
+
+        return errors
+
+    def _validate_nocache_entries(
+        self,
+        step: Dict[str, Any],
+        workflow: Dict[str, Any],
+        cli_params: Dict[str, Any],
+    ) -> List[str]:
+        """Validate NOCACHES pattern entries (once, without matrix).
+
+        NOCACHES steps operate on plain files and do not use the workflow
+        matrix, so their parameters are validated a single time with no
+        implicit matrix variables added.
+
+        Args:
+            step: Step configuration dictionary
+            workflow: Full workflow dictionary
+            cli_params: CLI parameters
+
+        Returns:
+            List of validation error messages
+        """
+        from causaliq_core import ActionValidationError
+
+        errors: List[str] = []
+        step_name = step.get("name", "unnamed")
+        provider_name = str(step.get("uses", ""))
+        step_inputs = step.get("with", {})
+
+        variables = {**workflow, **cli_params}
+        resolved_inputs = self._resolve_template_variables(
+            step_inputs, variables
+        )
+
+        try:
+            self.action_registry.validate_action_parameters(
+                provider_name, resolved_inputs
+            )
+        except ActionValidationError as e:
+            errors.append(f"Step '{step_name}': {e}")
 
         return errors
 
@@ -2231,6 +2327,26 @@ class WorkflowExecutor:
                 resolved_inputs = self._resolve_template_variables(
                     action_inputs, variables
                 )
+
+                # Handle NOCACHES pattern: run once on the first matrix
+                # job, skip on subsequent jobs. NOCACHES actions operate
+                # on plain files and do not use the workflow matrix.
+                if self._is_nocache_step(step) and context.job_index > 0:
+                    if step_logger:
+                        action_method = resolved_inputs.get(
+                            "action", "default"
+                        )
+                        step_logger(
+                            action_method,
+                            step_name,
+                            "SKIPPED",
+                            context.matrix_values,
+                        )
+                    step_results[step_name] = {
+                        "status": "skipped",
+                        "reason": "nocache-step-runs-once",
+                    }
+                    continue
 
                 # Handle aggregation mode: scan input caches for matching
                 # entries. Aggregation mode is activated when step has 'input'

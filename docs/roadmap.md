@@ -20,7 +20,20 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 ## 🛣️ Upcoming Implementation
 
 
-### Release 0.6.0 - Step Output Chaining
+### Release 0.6.0: Discovery Integration
+
+Structure learning algorithms integrated
+
+**Scope**:
+
+- causaliq-discovery algorithms integrated
+- timeout supported
+
+Items:
+
+1. support expressions for all parameters not just the `trace` parameter - they can support returning any variable type, and if ... elseif .... else constructs
+
+### Release 0.7.0 - Step Output Chaining
 
 Enable workflow steps to consume outputs from previous steps.
 
@@ -36,7 +49,7 @@ Enable workflow steps to consume outputs from previous steps.
   - Support forced re-execution flag
 
 
-### Release 0.7.0: Enhanced Workflow
+### Release 0.8.0: Enhanced Workflow
 
 Dry and comparison runs, runtime estimation and processing summary
 
@@ -51,14 +64,6 @@ Dry and comparison runs, runtime estimation and processing summary
 - progress indicators
 
 
-### Release 0.8.0: Discovery Integration
-
-Structure learning algorithms integrated
-
-**Scope**:
-
-- causaliq-discovery algorithms integrated
-- timeout supported
 
 
 ## 🚀 Possible Future Features
