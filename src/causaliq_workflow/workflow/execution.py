@@ -497,8 +497,11 @@ class ExecutionMixin(WorkflowExecutorBase):
 
         action_class = self.action_registry.get_action_class(action_name)
         provider_name = getattr(action_class, "name", action_name)
-        action_method = resolved_inputs.get("action", "default")
-        metadata = {provider_name: {action_method: raw_metadata}}
+        metadata = {
+            provider_name: {
+                resolved_inputs.get("action", "default"): raw_metadata
+            }
+        }
 
         # Pass matrix key order for export directory structure
         store_action_result(
@@ -509,6 +512,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             objects=step_result.get("objects", []),
             matrix_key_order=list(state.context.matrix.keys()),
         )
+        self._invalidate_scan_index(state.context.cache)
 
     def _log_step_completion(
         self,

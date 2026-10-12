@@ -162,36 +162,56 @@ class AggregationMixin(WorkflowExecutorBase):
         self, cache_paths: List[str]
     ) -> List[Dict[str, Any]]:
         """Collect flattened metadata from every entry in the caches."""
-        from pathlib import Path
-
         all_meta: List[Dict[str, Any]] = []
         for cache_path in cache_paths:
-            if not Path(cache_path).exists():
-                continue
-            all_meta.extend(self._safe_cache_metadata(cache_path))
+            all_meta.extend(self._safe_scan_metadata(cache_path))
         return all_meta
 
-    def _safe_cache_metadata(self, cache_path: str) -> List[Dict[str, Any]]:
-        """Open a cache and collect metadata, ignoring read failures."""
-        from causaliq_workflow.cache import WorkflowCache
-
+    def _safe_scan_metadata(self, cache_path: str) -> List[Dict[str, Any]]:
+        """Return flattened metadata for one cache, ignoring read errors."""
         try:
-            with WorkflowCache(cache_path) as cache:
-                return self._cache_metadata(cache)
+            index = self._scan_index_for(cache_path)
         except Exception:
             return []
+        return [entry["flat_meta"] for entry in index]
 
-    def _cache_metadata(self, cache: Any) -> List[Dict[str, Any]]:
-        """Flatten metadata for every entry in an open cache."""
-        all_meta: List[Dict[str, Any]] = []
-        for entry_info in cache.list_entries():
-            entry_matrix = entry_info.get("matrix_values", {})
-            full_entry = cache.get(entry_matrix)
-            if full_entry is not None:
-                all_meta.append(
-                    self._flatten_metadata(entry_matrix, full_entry.metadata)
+    def _scan_index_for(self, cache_path: str) -> List[Dict[str, Any]]:
+        """Return the memoised entry index for one input cache.
+
+        The index (matrix values plus flattened metadata per entry) is
+        built once per cache and reused across every matrix job, so a
+        large cache is not re-read for each combination.
+        """
+        from pathlib import Path
+
+        key = str(cache_path)
+        if key in self._scan_index:
+            return self._scan_index[key]
+
+        index: List[Dict[str, Any]] = []
+        if Path(cache_path).exists():
+            index = self._build_scan_index(cache_path)
+        self._scan_index[key] = index
+        return index
+
+    def _build_scan_index(self, cache_path: str) -> List[Dict[str, Any]]:
+        """Read entry summaries and flatten metadata for one cache."""
+        from causaliq_workflow.cache import WorkflowCache
+
+        index: List[Dict[str, Any]] = []
+        with WorkflowCache(cache_path) as cache:
+            for summary in cache.list_entry_summaries():
+                matrix_values = summary["matrix_values"]
+                index.append(
+                    {
+                        "matrix_values": matrix_values,
+                        "flat_meta": self._flatten_metadata(
+                            matrix_values, summary["metadata"]
+                        ),
+                        "hash": summary["hash"],
+                    }
                 )
-        return all_meta
+        return index
 
     def _scan_one_cache(
         self,
@@ -231,20 +251,23 @@ class AggregationMixin(WorkflowExecutorBase):
         resolved_filter: Optional[str],
         extra_names: Dict[str, Any],
     ) -> None:
-        """Open a cache and scan its entries."""
+        """Scan a cache's memoised index, loading only matched entries."""
         from causaliq_workflow.cache import WorkflowCache
 
+        index = self._scan_index_for(cache_path)
+        scan.scanned += len(index)
+        if not index:
+            return
+
         with WorkflowCache(cache_path) as cache:
-            entries = cache.list_entries()
-            scan.scanned += len(entries)
-            for entry_info in entries:
+            for entry in index:
                 self._scan_entry(
                     scan,
                     config,
                     matrix_values,
                     cache_path,
                     cache,
-                    entry_info,
+                    entry,
                     resolved_filter,
                     extra_names,
                 )
@@ -256,31 +279,35 @@ class AggregationMixin(WorkflowExecutorBase):
         matrix_values: Dict[str, Any],
         cache_path: str,
         cache: Any,
-        entry_info: Dict[str, Any],
+        entry: Dict[str, Any],
         resolved_filter: Optional[str],
         extra_names: Dict[str, Any],
     ) -> None:
-        """Filter and match one entry, appending it when it matches."""
-        entry_matrix = entry_info.get("matrix_values", {})
-        full_entry = cache.get(entry_matrix)
-        if full_entry is None:
-            return
-
-        flat_meta = self._flatten_metadata(entry_matrix, full_entry.metadata)
-        if _aggregation_filter_skip(resolved_filter, extra_names, flat_meta):
+        """Filter and match one indexed entry, loading it when it matches."""
+        if _aggregation_filter_skip(
+            resolved_filter, extra_names, entry["flat_meta"]
+        ):
             scan.filtered += 1
             return
 
         # Check if entry matches current matrix values
         # (case-insensitive for numeric suffixes like 1k/1K)
         if not _matrix_values_match(
-            entry_matrix, matrix_values, config.matrix_vars
+            entry["matrix_values"], matrix_values, config.matrix_vars
         ):
             return
 
+        full_entry = cache.get(entry["matrix_values"])
+        if full_entry is None:
+            return
         scan.matched += 1
         scan.matching_entries.append(
-            _aggregated_entry(entry_matrix, full_entry, cache_path, entry_info)
+            _aggregated_entry(
+                entry["matrix_values"],
+                full_entry,
+                cache_path,
+                {"hash": entry.get("hash")},
+            )
         )
 
 

@@ -35,6 +35,12 @@ class WorkflowExecutorBase:  # pragma: no cover
 
     action_registry: ActionRegistry
 
+    _scan_index: Dict[str, List[Dict[str, Any]]]
+
+    def _invalidate_scan_index(self, cache: Any) -> None:
+        """Drop the memoised scan index for a cache that was written."""
+        raise NotImplementedError
+
     def expand_matrix(
         self, matrix: Dict[str, List[Any]]
     ) -> List[Dict[str, Any]]:

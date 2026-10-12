@@ -348,6 +348,49 @@ def test_list_entries() -> None:
         assert all("created_at" in e for e in entries)
 
 
+# Test list_entry_summaries returns matrix values and metadata only.
+def test_list_entry_summaries() -> None:
+    with WorkflowCache(":memory:") as cache:
+        entry = CacheEntry(metadata={"provider": {"action": {"v": 1}}})
+        entry.add_object("graph", "graphml", "<graphml/>")
+        cache.put({"algo": "pc", "data": "asia"}, entry)
+
+        summaries = cache.list_entry_summaries()
+
+        assert len(summaries) == 1
+        assert summaries[0]["matrix_values"] == {
+            "algo": "pc",
+            "data": "asia",
+        }
+        assert summaries[0]["metadata"] == {"provider": {"action": {"v": 1}}}
+        assert "objects" not in summaries[0]
+
+
+# Test list_entry_summaries excludes the internal config entry.
+def test_list_entry_summaries_skips_config() -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.set_matrix_key_order(["algo"])
+        cache.put({"algo": "pc"}, CacheEntry(metadata={"v": 1}))
+
+        summaries = cache.list_entry_summaries()
+
+        assert len(summaries) == 1
+        assert summaries[0]["matrix_values"] == {"algo": "pc"}
+
+
+# Test metadata decompression returns {} when blob or compressor absent.
+def test_decompress_entry_metadata_absent() -> None:
+    from causaliq_workflow.cache.workflow_cache import (
+        _decompress_entry_metadata,
+    )
+
+    with WorkflowCache(":memory:") as cache:
+        token_cache = cache.token_cache
+
+    assert _decompress_entry_metadata(None, token_cache, None) == {}
+    assert _decompress_entry_metadata(None, token_cache, b"x") == {}
+
+
 # Test token_count returns count of tokens.
 def test_token_count() -> None:
     with WorkflowCache(":memory:") as cache:

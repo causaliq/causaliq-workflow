@@ -276,6 +276,7 @@ class UpdateMixin(WorkflowExecutorBase):
         if not cache.update_entry(entry_matrix, structured_metadata, objects):
             return
 
+        self._invalidate_scan_index(cache)
         run.counts.updated += 1
         status = "FORCED" if run.context.mode == "force" else "EXECUTED"
         _log_update_event(run, entry_matrix, status)

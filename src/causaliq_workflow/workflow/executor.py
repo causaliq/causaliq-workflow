@@ -1,5 +1,7 @@
 """Composition of the WorkflowExecutor from its functional mixins."""
 
+from typing import Any, Dict, List
+
 from causaliq_workflow.registry import ActionRegistry
 from causaliq_workflow.workflow.aggregation import AggregationMixin
 from causaliq_workflow.workflow.execution import ExecutionMixin
@@ -37,3 +39,18 @@ class WorkflowExecutor(
     def __init__(self) -> None:
         """Initialize workflow executor with action registry."""
         self.action_registry = ActionRegistry()
+        self._scan_index: Dict[str, List[Dict[str, Any]]] = {}
+
+    def _invalidate_scan_index(self, cache: Any) -> None:
+        """Drop the memoised scan index for a cache that was written.
+
+        The aggregation scan caches each input cache's entry summaries
+        for the duration of a run. Writing new entries invalidates that
+        cache so any later scan observes the update.
+
+        Args:
+            cache: Open workflow cache that was written to, or None.
+        """
+        path = getattr(cache, "db_path", None)
+        if path is not None:
+            self._scan_index.pop(str(path), None)

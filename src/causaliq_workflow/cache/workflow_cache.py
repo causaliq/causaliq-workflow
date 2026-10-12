@@ -519,6 +519,36 @@ class WorkflowCache:
             )
         return entries
 
+    def list_entry_summaries(self) -> list[dict[str, Any]]:
+        """List entries with parsed matrix values and metadata (no objects).
+
+        Each summary omits object payloads (e.g. graphs), so callers can
+        filter and match entries without decompressing their data. This
+        is far cheaper than ``get()`` when only the metadata is needed.
+
+        Returns:
+            List of entry dictionaries with keys: hash, matrix_values
+            (dict) and metadata (dict). The internal config entry is
+            excluded.
+
+        Example:
+            >>> with WorkflowCache("cache.db") as cache:
+            ...     cache.put({"algorithm": "pc"}, CacheEntry())
+            ...     summaries = cache.list_entry_summaries()
+            ...     summaries[0]["matrix_values"]
+            {'algorithm': 'pc'}
+        """
+        token_cache = self.token_cache
+        compressor = token_cache.get_compressor()
+        summaries: list[dict[str, Any]] = []
+        for row in token_cache.list_entries():
+            if row["hash"] == self.CONFIG_HASH:
+                continue
+            summaries.append(
+                _build_entry_summary(row, compressor, token_cache)
+            )
+        return summaries
+
     def token_count(self) -> int:
         """Count tokens in the shared dictionary.
 
@@ -729,3 +759,31 @@ def _add_entry_objects(
             obj.get("content"),
             obj.get("action", "unknown"),
         )
+
+
+def _build_entry_summary(
+    row: dict[str, Any],
+    compressor: Compressor | None,
+    token_cache: TokenCache,
+) -> dict[str, Any]:
+    """Build an entry summary (hash, matrix values, metadata) from a row."""
+    key_json = row["key_json"]
+    return {
+        "hash": row["hash"],
+        "matrix_values": json.loads(key_json) if key_json else {},
+        "metadata": _decompress_entry_metadata(
+            compressor, token_cache, row["metadata"]
+        ),
+    }
+
+
+def _decompress_entry_metadata(
+    compressor: Compressor | None,
+    token_cache: TokenCache,
+    blob: bytes | None,
+) -> dict[str, Any]:
+    """Decompress an entry metadata blob, returning {} when absent."""
+    if blob is None or compressor is None:
+        return {}
+    metadata = compressor.decompress(blob, token_cache)
+    return metadata if isinstance(metadata, dict) else {}

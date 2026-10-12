@@ -463,6 +463,62 @@ def test_scan_aggregation_inputs_logging(
     assert "matched=1" in log_messages[0]
 
 
+# Test scanning an existing but empty cache returns no matches.
+def test_scan_aggregation_inputs_empty_cache(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import WorkflowCache
+
+    cache_path = tmp_path / "empty.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path):
+        pass
+
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network"],
+    )
+
+    log_messages: list = []
+    results = executor._scan_aggregation_inputs(
+        config,
+        {"network": "asia"},
+        logger=log_messages.append,
+    )
+
+    assert results == []
+    assert "scanned=0" in log_messages[0]
+
+
+# Test the scan index is memoised across scans and invalidated on write.
+def test_scan_index_memoised_and_invalidated(
+    executor: WorkflowExecutor,
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+    mocker: "pytest_mock.MockerFixture",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "test.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        cache.put({"network": "asia"}, CacheEntry(metadata={}))
+
+    spy = mocker.spy(WorkflowCache, "list_entry_summaries")
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        matrix_vars=["network"],
+    )
+
+    first = executor._scan_aggregation_inputs(config, {"network": "asia"})
+    executor._scan_aggregation_inputs(config, {"network": "asia"})
+
+    assert len(first) == 1
+    assert spy.call_count == 1
+
+    executor._invalidate_scan_index(WorkflowCache(str(cache_path)))
+    executor._scan_aggregation_inputs(config, {"network": "asia"})
+    assert spy.call_count == 2
+
+
 # Test _scan_aggregation_inputs with missing cache.
 def test_scan_aggregation_inputs_missing_cache(
     executor: WorkflowExecutor,
