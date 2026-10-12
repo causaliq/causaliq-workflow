@@ -2,6 +2,23 @@
 
 The workflow execution engine provides powerful workflow parsing, validation, and execution with matrix expansion and template variable support.
 
+## Package Structure
+
+The engine is a package (`causaliq_workflow.workflow`) of focused mixin
+modules composed into `WorkflowExecutor`. The package re-exports the public
+names so existing imports keep resolving:
+
+- `matrix` — matrix expansion, derivation and value matching;
+- `templates` — template variable extraction and resolution;
+- `patterns` — step pattern detection;
+- `filters` — metadata flattening and filter resolution;
+- `update` — UPDATE pattern execution and dry-run scanning;
+- `aggregation` — AGGREGATE pattern configuration and input scanning;
+- `validation` / `validation_entries` — configuration and per-entry
+  validation;
+- `execution` — parsing and job execution;
+- `executor` — the composed `WorkflowExecutor`.
+
 ## Core Classes
 
 ### causaliq_workflow.workflow
@@ -94,7 +111,7 @@ valid_workflow = {
 }
 
 try:
-    workflow = executor.parse_workflow_dict(valid_workflow)
+    workflow = executor.parse_workflow("workflow.yml")
     print("Template validation passed!")
 except WorkflowExecutionError as e:
     if "Unknown template variables" in str(e):
@@ -241,7 +258,7 @@ steps:
 
 # Execute with aggregation mode
 executor = WorkflowExecutor()
-workflow = executor.parse_workflow_dict(yaml.safe_load(workflow_yaml))
+workflow = executor.parse_workflow("workflow.yml")
 
 # For each matrix value (asia, cancer), the action receives
 # all cache entries from llm_graphs.db that match that model

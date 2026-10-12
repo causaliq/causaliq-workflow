@@ -136,7 +136,7 @@ for step in workflow["steps"]:
 # Current integration
 workflow = load_workflow_file(path)     # schema.py
 validate_workflow(workflow)             # schema.py
-jobs = executor.expand_matrix(workflow["matrix"])  # workflow.py
+jobs = executor.expand_matrix(workflow["matrix"])  # workflow/matrix.py
 ```
 
 ### With DASK (Future)

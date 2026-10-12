@@ -1,39 +1,50 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: April 10, 2026
+**Last updated**: October 12, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
+## 🚧  Under development
+
+### v0.6.0 Failure Handling & Optimisation [October 2026]
+
+1. ✅ Failure statuses recorded in workflow caches
+1. ✅ NOCACHES ActionPattern for file input/output actions
+1. ✅ [Refactor to meet development guidelines](current_task.md)
+1. 🛣️ analyse slow performance e.g. on `summarise`
+1. 🛣️ Support Python 3.10-14, with 3.12 as default, and badge as [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
+
 ## ✅ Previous Releases
 
-- **v0.1.0 Workflow Foundations** [February 2026]: Framework for plug-in actions, basic workflow and CLI support
+### v0.5.0 Multi-step Workflows [April 2026]
+- **Multi-step workflows**
+- **matrix nulls** as wildcards
 
-- **v0.2.0 Knowledge Workflows** [February 2026]: Include LLM graph generation in workflows and store results in Workflow caches.
+### v0.4.0 Conservative Execution [March 2026]
 
-- **v0.3.0 Aggregation Workflows** [March 2026]: Matrix-driven aggregation processing for multi-source workflows.
+- **Formalised action patterns**: creation, update, aggregation
+- **Conservative execution** to skip work if results exist.
 
-- **v0.4.0 Conservative Execution** [March 2026]: Formalised action patterns (creation, update, aggregation) and conservative execution to skip work if results exist.
+### v0.3.0 Aggregation Workflows [March 2026]
 
-- **v0.5.0 Multi-step Workflows** [April 2026]: Multi-step workflows and matrix nulls as wildcards.
+- **Matrix-driven aggregation** processing for multi-source workflows.
+
+### v0.2.0 Knowledge Workflows [February 2026]
+
+- **LLM graph generation** in workflows
+- **Workflow caches** for storing results
+
+### v0.1.0 Workflow Foundations [February 2026]
+
+- **plug-in actions frameaork**
+- **basic workflow**
+- **CLI support**
 
 
 ## 🛣️ Upcoming Implementation
 
 
-### Release 0.6.0: Discovery Integration
-
-Structure learning algorithms integrated
-
-**Scope**:
-
-- causaliq-discovery algorithms integrated
-- timeout supported
-
-Items:
-
-1. support expressions for all parameters not just the `trace` parameter - they can support returning any variable type, and if ... elseif .... else constructs
-
-### Release 0.7.0 - Step Output Chaining
+### Release 0.8.0 - Step Output Chaining
 
 Enable workflow steps to consume outputs from previous steps.
 
@@ -49,7 +60,7 @@ Enable workflow steps to consume outputs from previous steps.
   - Support forced re-execution flag
 
 
-### Release 0.8.0: Enhanced Workflow
+### Release 0.9.0: Enhanced Workflow
 
 Dry and comparison runs, runtime estimation and processing summary
 
@@ -68,12 +79,6 @@ Dry and comparison runs, runtime estimation and processing summary
 
 ## 🚀 Possible Future Features
 
-**External Algorithm Integration** (After robust test infrastructure):
-
-- Multi-language workflows (R bnlearn, Java Tetrad, Python causal-learn)
-- External CausalIQ package integration (discovery, analysis)
-- Matrix-driven algorithm comparisons across datasets
-- Automatic dataset download and preprocessing
 
 **Production Features:****
 

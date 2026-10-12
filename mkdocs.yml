@@ -48,7 +48,9 @@ nav:
     - Common Parameters: userguide/common_parameters.md
     - CLI Usage: userguide/cli.md
     - Examples: userguide/examples.md
-  - Roadmap: roadmap.md
+  - Roadmap:
+    - Roadmap: roadmap.md
+    - Current task: current_task.md
   - Architecture: 
     - Architectural Overview: architecture/overview.md
     - Design Documents:

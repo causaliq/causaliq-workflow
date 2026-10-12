@@ -402,3 +402,37 @@ class Action(CausalIQActionProvider):
 - Community potential for shared actions
 
 This architecture transforms causal discovery workflow definition from domain-specific patterns into familiar CI/CD workflows, dramatically reducing the learning curve while providing enterprise-grade features for research.
+
+
+## Workflow Engine Module Structure
+
+The workflow engine (`src/causaliq_workflow/workflow/`) was decomposed from a
+single monolithic module into a package of single-responsibility mixins. This
+keeps every module and method within the CausalIQ code limits while leaving the
+public API and import paths unchanged.
+
+Workflow engine sub-package:
+
+- `workflow/__init__.py` — re-exports the public names (`WorkflowExecutor`,
+  `WorkflowExecutionError`, `AggregationConfig`) plus the helpers imported by
+  tests, so `from causaliq_workflow.workflow import ...` keeps resolving.
+- `workflow/_base.py` — declares the shared method surface the mixins call on
+  one another, so each mixin type-checks independently.
+- `workflow/errors.py` — `WorkflowExecutionError`.
+- `workflow/matrix.py` — matrix expansion, derivation and value matching.
+- `workflow/templates.py` — template variable extraction and resolution.
+- `workflow/patterns.py` — step pattern (CREATE, UPDATE, AGGREGATE and
+  NOCACHES) detection.
+- `workflow/filters.py` — metadata flattening and filter resolution.
+- `workflow/update.py` — UPDATE pattern execution and dry-run scanning.
+- `workflow/aggregation.py` — AGGREGATE pattern configuration and input
+  scanning (`AggregationConfig`).
+- `workflow/validation.py` — workflow and action configuration validation.
+- `workflow/validation_entries.py` — per-entry validation for the execution
+  pass.
+- `workflow/execution.py` — workflow parsing and job execution entry points.
+- `workflow/executor.py` — composes the mixins into `WorkflowExecutor`.
+
+The command-line interface was reduced in the same way: result reporting now
+lives in `causaliq_workflow/cli_report.py` and is re-used by the `cli` module,
+which continues to expose `cli`, `main` and `_report_results`.
