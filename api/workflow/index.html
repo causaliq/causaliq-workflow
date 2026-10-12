@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -250,17 +250,18 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="../../roadmap/" class="md-tabs__link">
-        
-  
-  
     
+    
+      <li class="md-tabs__item">
+        <a href="../../roadmap/" class="md-tabs__link">
+          
+  
   
   Roadmap
 
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
@@ -635,6 +636,60 @@
   
   
   
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../roadmap/" class="md-nav__link">
         
@@ -652,6 +707,42 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../current_task/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Current task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1237,6 +1328,17 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#package-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Structure
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#core-classes" class="md-nav__link">
@@ -1867,6 +1969,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#package-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-classes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2303,6 +2416,22 @@
 
 <h1 id="workflow-engine">Workflow Engine</h1>
 <p>The workflow execution engine provides powerful workflow parsing, validation, and execution with matrix expansion and template variable support.</p>
+<h2 id="package-structure">Package Structure</h2>
+<p>The engine is a package (<code>causaliq_workflow.workflow</code>) of focused mixin
+modules composed into <code>WorkflowExecutor</code>. The package re-exports the public
+names so existing imports keep resolving:</p>
+<ul>
+<li><code>matrix</code> — matrix expansion, derivation and value matching;</li>
+<li><code>templates</code> — template variable extraction and resolution;</li>
+<li><code>patterns</code> — step pattern detection;</li>
+<li><code>filters</code> — metadata flattening and filter resolution;</li>
+<li><code>update</code> — UPDATE pattern execution and dry-run scanning;</li>
+<li><code>aggregation</code> — AGGREGATE pattern configuration and input scanning;</li>
+<li><code>validation</code> / <code>validation_entries</code> — configuration and per-entry
+  validation;</li>
+<li><code>execution</code> — parsing and job execution;</li>
+<li><code>executor</code> — the composed <code>WorkflowExecutor</code>.</li>
+</ul>
 <h2 id="core-classes">Core Classes</h2>
 <h3 id="causaliq_workflowworkflow">causaliq_workflow.workflow</h3>
 
@@ -2322,11 +2451,12 @@
     <div class="doc doc-contents first">
 
 
-        <p>Parse and execute GitHub Actions-style workflows with matrix expansion.</p>
-<p>This class handles the parsing of YAML workflow files and expansion of
-matrix strategies into individual experiment jobs. It provides the
-foundation for executing multi-step causal discovery workflows with
-parameterised experiments using flexible action parameter templating.</p>
+        <p>Parse and execute GitHub Actions-style workflows.</p>
+<p>This class handles the parsing of YAML workflow files and expansion
+of matrix strategies into individual experiment jobs. It provides
+the foundation for executing multi-step causal discovery workflows
+with parameterised experiments using flexible action parameter
+templating.</p>
 
           
 
@@ -2437,7 +2567,7 @@ parameterised experiments using flexible action parameter templating.</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.errors.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
             –
           <div class="doc-md-description">
             <p>If workflow parsing or validation fails</p>
@@ -2499,7 +2629,7 @@ integer values [0, 1, 2, ..., 24].</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.errors.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
             –
           <div class="doc-md-description">
             <p>If matrix expansion fails</p>
@@ -2602,7 +2732,7 @@ in each step's 'with' block. Each step can write to its own cache.</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            WorkflowExecutionError (causaliq_workflow.workflow.errors.WorkflowExecutionError)" href="#causaliq_workflow.workflow.WorkflowExecutionError">WorkflowExecutionError</a></code>
             –
           <div class="doc-md-description">
             <p>If validation or execution fails</p>
@@ -2717,7 +2847,7 @@ valid_workflow = {
 }
 
 try:
-    workflow = executor.parse_workflow_dict(valid_workflow)
+    workflow = executor.parse_workflow(&quot;workflow.yml&quot;)
     print(&quot;Template validation passed!&quot;)
 except WorkflowExecutionError as e:
     if &quot;Unknown template variables&quot; in str(e):
@@ -3050,7 +3180,7 @@ steps:
 
 # Execute with aggregation mode
 executor = WorkflowExecutor()
-workflow = executor.parse_workflow_dict(yaml.safe_load(workflow_yaml))
+workflow = executor.parse_workflow(&quot;workflow.yml&quot;)
 
 # For each matrix value (asia, cancer), the action receives
 # all cache entries from llm_graphs.db that match that model

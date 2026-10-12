@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../../roadmap/">
+        <link rel="prev" href="../../current_task/">
       
       
         <link rel="next" href="../cache_object_model/">
@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -250,17 +250,18 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="../../roadmap/" class="md-tabs__link">
-        
-  
-  
     
+    
+      <li class="md-tabs__item">
+        <a href="../../roadmap/" class="md-tabs__link">
+          
+  
   
   Roadmap
 
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
@@ -635,6 +636,60 @@
   
   
   
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../roadmap/" class="md-nav__link">
         
@@ -652,6 +707,42 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../current_task/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Current task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1182,6 +1273,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-engine-module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Engine Module Structure
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2263,6 +2365,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#workflow-engine-module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Engine Module Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2614,6 +2727,36 @@ class Action(CausalIQActionProvider):
 <li>Community potential for shared actions</li>
 </ul>
 <p>This architecture transforms causal discovery workflow definition from domain-specific patterns into familiar CI/CD workflows, dramatically reducing the learning curve while providing enterprise-grade features for research.</p>
+<h2 id="workflow-engine-module-structure">Workflow Engine Module Structure</h2>
+<p>The workflow engine (<code>src/causaliq_workflow/workflow/</code>) was decomposed from a
+single monolithic module into a package of single-responsibility mixins. This
+keeps every module and method within the CausalIQ code limits while leaving the
+public API and import paths unchanged.</p>
+<p>Workflow engine sub-package:</p>
+<ul>
+<li><code>workflow/__init__.py</code> — re-exports the public names (<code>WorkflowExecutor</code>,
+  <code>WorkflowExecutionError</code>, <code>AggregationConfig</code>) plus the helpers imported by
+  tests, so <code>from causaliq_workflow.workflow import ...</code> keeps resolving.</li>
+<li><code>workflow/_base.py</code> — declares the shared method surface the mixins call on
+  one another, so each mixin type-checks independently.</li>
+<li><code>workflow/errors.py</code> — <code>WorkflowExecutionError</code>.</li>
+<li><code>workflow/matrix.py</code> — matrix expansion, derivation and value matching.</li>
+<li><code>workflow/templates.py</code> — template variable extraction and resolution.</li>
+<li><code>workflow/patterns.py</code> — step pattern (CREATE, UPDATE, AGGREGATE and
+  NOCACHES) detection.</li>
+<li><code>workflow/filters.py</code> — metadata flattening and filter resolution.</li>
+<li><code>workflow/update.py</code> — UPDATE pattern execution and dry-run scanning.</li>
+<li><code>workflow/aggregation.py</code> — AGGREGATE pattern configuration and input
+  scanning (<code>AggregationConfig</code>).</li>
+<li><code>workflow/validation.py</code> — workflow and action configuration validation.</li>
+<li><code>workflow/validation_entries.py</code> — per-entry validation for the execution
+  pass.</li>
+<li><code>workflow/execution.py</code> — workflow parsing and job execution entry points.</li>
+<li><code>workflow/executor.py</code> — composes the mixins into <code>WorkflowExecutor</code>.</li>
+</ul>
+<p>The command-line interface was reduced in the same way: result reporting now
+lives in <code>causaliq_workflow/cli_report.py</code> and is re-used by the <code>cli</code> module,
+which continues to expose <code>cli</code>, <code>main</code> and <code>_report_results</code>.</p>
 
 
 
@@ -2651,7 +2794,7 @@ class Action(CausalIQActionProvider):
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../roadmap/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Roadmap">
+          <a href="../../current_task/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Current task">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2661,7 +2804,7 @@ class Action(CausalIQActionProvider):
                 Previous
               </span>
               <div class="md-ellipsis">
-                Roadmap
+                Current task
               </div>
             </div>
           </a>
