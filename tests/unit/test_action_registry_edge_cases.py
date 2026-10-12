@@ -95,6 +95,28 @@ def test_discovery_skips_underscore_modules():
         sys.modules.update(original_modules)
 
 
+# Test discovery ignores an ActionProvider that is not a provider subclass.
+def test_discovery_ignores_invalid_provider():
+    # Create a mock module whose ActionProvider is not a valid provider
+    mock_module = ModuleType("test_invalid_provider")
+    mock_module.__file__ = "/fake/path/test_invalid_provider.py"
+    mock_module.ActionProvider = InvalidAction
+
+    original_modules = sys.modules.copy()
+    try:
+        sys.modules["test_invalid_provider"] = mock_module
+
+        registry = ActionRegistry()
+        actions = registry.get_available_actions()
+
+        # Should not discover an invalid provider
+        assert "test_invalid_provider" not in actions
+
+    finally:
+        sys.modules.clear()
+        sys.modules.update(original_modules)
+
+
 # Test discovery skips submodules of standard library
 def test_discovery_skips_stdlib_submodules():
     # The registry actually discovers 'os' as it's not a built-in module name

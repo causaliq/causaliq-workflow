@@ -264,39 +264,69 @@ def export_entries(
     Returns:
         Number of entries exported.
     """
-    output_path = Path(output_path)
-    is_zip = output_path.suffix.lower() == ".zip"
-
+    target = Path(output_path)
     entries_info = cache.list_entries()
+
+    if target.suffix.lower() == ".zip":
+        return _export_entries_to_zip(cache, entries_info, matrix_keys, target)
+    return _export_entries_to_dir(cache, entries_info, matrix_keys, target)
+
+
+def _export_entries_to_zip(
+    cache: "WorkflowCache",
+    entries_info: list[dict[str, Any]],
+    matrix_keys: list[str] | None,
+    output_path: Path,
+) -> int:
+    """Export entries into a zip archive; return the exported count."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     count = 0
 
-    if is_zip:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            for entry_info in entries_info:
-                exported = _export_single_entry(
-                    cache,
-                    entry_info,
-                    matrix_keys,
-                    lambda path, info, objs, meta: write_entry_to_zip(
-                        zf, path, info, objs, meta
-                    ),
-                )
-                if exported:
-                    count += 1
-    else:
-        output_path.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for entry_info in entries_info:
-            exported = _export_single_entry(
-                cache,
-                entry_info,
-                matrix_keys,
-                lambda path, info, objs, meta: write_entry_to_dir(
-                    output_path, path, info, objs, meta
-                ),
-            )
-            if exported:
-                count += 1
+            count += _export_zip_entry(cache, entry_info, matrix_keys, zf)
+
+    return count
+
+
+def _export_zip_entry(
+    cache: "WorkflowCache",
+    entry_info: dict[str, Any],
+    matrix_keys: list[str] | None,
+    zf: zipfile.ZipFile,
+) -> int:
+    """Export one entry into an open zip; return 1 when written, else 0."""
+    written = _export_single_entry(
+        cache,
+        entry_info,
+        matrix_keys,
+        lambda path, info, objs, meta: write_entry_to_zip(
+            zf, path, info, objs, meta
+        ),
+    )
+    return 1 if written else 0
+
+
+def _export_entries_to_dir(
+    cache: "WorkflowCache",
+    entries_info: list[dict[str, Any]],
+    matrix_keys: list[str] | None,
+    output_path: Path,
+) -> int:
+    """Export entries into a directory tree; return the exported count."""
+    output_path.mkdir(parents=True, exist_ok=True)
+    count = 0
+
+    for entry_info in entries_info:
+        if _export_single_entry(
+            cache,
+            entry_info,
+            matrix_keys,
+            lambda path, info, objs, meta: write_entry_to_dir(
+                output_path, path, info, objs, meta
+            ),
+        ):
+            count += 1
 
     return count
 

@@ -341,3 +341,10 @@ def test_cli_run_yaml_exception(runner: CliRunner, monkeypatch) -> None:
 
     assert result.exit_code == 1, f"Output: {result.output}"
     assert "Invalid YAML in workflow file" in result.output
+
+
+# Test _format_entry_counts is empty when both counts are zero.
+def test_format_entry_counts_zero() -> None:
+    from causaliq_workflow.cli import _format_entry_counts
+
+    assert _format_entry_counts(0, 0) == ""

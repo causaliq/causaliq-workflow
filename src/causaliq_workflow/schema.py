@@ -84,22 +84,23 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
         return  # Let jsonschema handle this
 
     for step in steps:
-        if not isinstance(step, dict):
-            continue  # Let jsonschema handle this
+        _pre_validate_step(step)
 
-        has_name = "name" in step
-        has_uses = "uses" in step
-        has_run = "run" in step
 
-        if not has_name:
-            raise WorkflowValidationError("Step missing 'name' parameter")
+def _pre_validate_step(step: Any) -> None:
+    """Validate the required structural fields of a single step."""
+    if not isinstance(step, dict):
+        return  # Let jsonschema handle this
 
-        step_name = step["name"]
+    if "name" not in step:
+        raise WorkflowValidationError("Step missing 'name' parameter")
 
-        if not has_uses and not has_run:
-            raise WorkflowValidationError(
-                f"Step '{step_name}': Missing 'uses' or 'run' parameter"
-            )
+    step_name = step["name"]
+
+    if "uses" not in step and "run" not in step:
+        raise WorkflowValidationError(
+            f"Step '{step_name}': Missing 'uses' or 'run' parameter"
+        )
 
 
 def validate_workflow(

@@ -188,30 +188,40 @@ class ActionRegistry:
         ep = self._entry_points[name]
         try:
             action_class = ep.load()
-            if (
-                inspect.isclass(action_class)
-                and issubclass(action_class, CausalIQActionProvider)
-                and action_class is not CausalIQActionProvider
-            ):
-                # Cache the loaded class
-                self._actions[name] = action_class
-                logger.info(
-                    f"Loaded action from entry point: "
-                    f"{name} -> {action_class.__name__}"
-                )
-                return action_class
-            else:
-                error_msg = (
-                    f"Entry point {name} does not export ActionProvider"
-                )
-                self._discovery_errors.append(error_msg)
-                logger.warning(error_msg)
-                return None
         except Exception as e:
-            error_msg = f"Error loading entry point {name}: {e}"
-            self._discovery_errors.append(error_msg)
-            logger.warning(error_msg)
+            self._record_discovery_error(
+                f"Error loading entry point {name}: {e}"
+            )
             return None
+
+        return self._register_entry_point(name, action_class)
+
+    def _register_entry_point(
+        self, name: str, action_class: Any
+    ) -> Optional[Type[CausalIQActionProvider]]:
+        """Cache a loaded entry point class when it is a valid provider."""
+        if not (
+            inspect.isclass(action_class)
+            and issubclass(action_class, CausalIQActionProvider)
+            and action_class is not CausalIQActionProvider
+        ):
+            self._record_discovery_error(
+                f"Entry point {name} does not export ActionProvider"
+            )
+            return None
+
+        # Cache the loaded class
+        self._actions[name] = action_class
+        logger.info(
+            f"Loaded action from entry point: "
+            f"{name} -> {action_class.__name__}"
+        )
+        return action_class
+
+    def _record_discovery_error(self, message: str) -> None:
+        """Record and log an action discovery error."""
+        self._discovery_errors.append(message)
+        logger.warning(message)
 
     def _discover_via_modules(self) -> None:
         """Discover actions by scanning imported modules for ActionProvider."""
@@ -239,48 +249,50 @@ class ActionRegistry:
     def _scan_module_for_actions(self, module_name: str, module: Any) -> None:
         """Scan a specific module for ActionProvider classes."""
         try:
-            # Look for ActionProvider class exported at module level
-            provider_class = None
-            if hasattr(module, "ActionProvider"):
-                provider_class = getattr(module, "ActionProvider")
-
-            if provider_class is not None:
-                action_class = provider_class
-
-                # Verify it's actually a CausalIQActionProvider subclass
-                if (
-                    inspect.isclass(action_class)
-                    and issubclass(action_class, CausalIQActionProvider)
-                    and action_class is not CausalIQActionProvider
-                ):
-
-                    # Use the root package name as action name
-                    action_name = module_name.split(".")[0]
-
-                    if action_name not in self._actions:
-                        self._actions[action_name] = action_class
-                        logger.info(
-                            f"Registered action: {action_name} -> "
-                            f"{action_class.__name__}"
-                        )
-
-                        # Also register by action hyphenated name if different
-                        if (
-                            hasattr(action_class, "name")
-                            and action_class.name != action_name
-                        ):
-                            hyphenated_name = action_class.name
-                            if hyphenated_name not in self._actions:
-                                self._actions[hyphenated_name] = action_class
-                                logger.info(
-                                    f"Registered action: {hyphenated_name} -> "
-                                    f"{action_class.__name__} (alias)"
-                                )
-
+            provider_class = getattr(module, "ActionProvider", None)
+            self._register_scanned_provider(module_name, provider_class)
         except Exception as e:
-            error_msg = f"Error scanning module {module_name}: {e}"
-            self._discovery_errors.append(error_msg)
-            logger.warning(error_msg)
+            self._record_discovery_error(
+                f"Error scanning module {module_name}: {e}"
+            )
+
+    def _register_scanned_provider(
+        self, module_name: str, provider_class: Any
+    ) -> None:
+        """Register the ActionProvider exported by a scanned module."""
+        if provider_class is None:
+            return
+
+        # Verify it's actually a CausalIQActionProvider subclass
+        if not (
+            inspect.isclass(provider_class)
+            and issubclass(provider_class, CausalIQActionProvider)
+            and provider_class is not CausalIQActionProvider
+        ):
+            return
+
+        # Use the root package name as action name
+        action_name = module_name.split(".")[0]
+        if action_name in self._actions:
+            return
+
+        self._actions[action_name] = provider_class
+        logger.info(
+            f"Registered action: {action_name} -> "
+            f"{provider_class.__name__}"
+        )
+        self._register_scanned_alias(provider_class)
+
+    def _register_scanned_alias(self, action_class: Any) -> None:
+        """Register an action's hyphenated name as an alias if different."""
+        hyphenated_name = getattr(action_class, "name", None)
+        if not hyphenated_name or hyphenated_name in self._actions:
+            return
+        self._actions[hyphenated_name] = action_class
+        logger.info(
+            f"Registered action: {hyphenated_name} -> "
+            f"{action_class.__name__} (alias)"
+        )
 
     @classmethod
     def register_action(
@@ -537,18 +549,24 @@ class ActionRegistry:
 
         # Extract all action names from workflow steps
         for step in workflow.get("steps", []):
-            if "uses" in step:
-                action_name = step["uses"]
-                if not self.has_action(action_name):
-                    errors.append(
-                        f"Step '{step.get('name', 'unnamed')}': "
-                        f"Unknown provider '{action_name}'"
-                    )
+            errors.extend(self._unknown_provider_errors(step))
 
         # Include discovery errors
         errors.extend(self._discovery_errors)
 
         return errors
+
+    def _unknown_provider_errors(self, step: Dict[str, Any]) -> List[str]:
+        """Return errors for a step referencing an unknown provider."""
+        if "uses" not in step:
+            return []
+        action_name = step["uses"]
+        if self.has_action(action_name):
+            return []
+        return [
+            f"Step '{step.get('name', 'unnamed')}': "
+            f"Unknown provider '{action_name}'"
+        ]
 
     def list_actions_by_package(self) -> Dict[str, List[str]]:
         """Group actions by source package for documentation.

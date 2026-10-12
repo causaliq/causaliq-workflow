@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import zipfile
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
 from causaliq_workflow.cache.entry import CacheEntry, CacheObject
 from causaliq_workflow.cache.export import TYPE_EXTENSIONS
@@ -89,55 +89,57 @@ def _import_from_dir(
         raise FileNotFoundError(f"Input directory not found: {input_dir}")
 
     count = 0
-
-    # Find all _meta.json files
     for meta_path in input_dir.rglob("_meta.json"):
-        entry_dir = meta_path.parent
-
-        # Read metadata
-        meta_content = json.loads(meta_path.read_text(encoding="utf-8"))
-        matrix_values = meta_content.get("matrix_values", {})
-        metadata = meta_content.get("metadata", {})
-        objects_info = meta_content.get("objects", {})
-
-        # Build entry from files in directory
-        entry = CacheEntry(metadata=metadata)
-
-        for file_path in entry_dir.iterdir():
-            if file_path.name == "_meta.json":
-                continue
-            if file_path.is_dir():
-                continue
-
-            name = file_path.stem
-            ext = file_path.suffix
-            content = file_path.read_text(encoding="utf-8")
-
-            # Get type/format from metadata - handle both old and new format
-            obj_meta = objects_info.get(name)
-            if isinstance(obj_meta, dict):
-                # New format: {"type": "dag", "format": "graphml"}
-                _ = obj_meta.get("type", name)  # Type is dict key
-                obj_format = obj_meta.get(
-                    "format", get_type_for_extension(ext)
-                )
-            else:
-                # Legacy format: type was actually the format
-                _ = name  # Unused in legacy path
-                obj_format = (
-                    obj_meta if obj_meta else get_type_for_extension(ext)
-                )
-
-            entry.objects[name] = CacheObject(
-                format=obj_format, action="import", content=content
-            )
-
-        # Store in cache
+        matrix_values, entry = _dir_cache_entry(meta_path.parent, meta_path)
         if entry.objects:
             cache.put(matrix_values, entry)
             count += 1
 
     return count
+
+
+def _dir_cache_entry(
+    entry_dir: Path, meta_path: Path
+) -> Tuple[Dict[str, Any], CacheEntry]:
+    """Build a CacheEntry and its matrix values from an entry directory."""
+    matrix_values, metadata, objects_info = _read_meta(
+        meta_path.read_text(encoding="utf-8")
+    )
+    entry = CacheEntry(metadata=metadata)
+
+    for file_path in entry_dir.iterdir():
+        if file_path.name == "_meta.json" or file_path.is_dir():
+            continue
+        name = file_path.stem
+        entry.objects[name] = CacheObject(
+            format=_object_format(objects_info, name, file_path.suffix),
+            action="import",
+            content=file_path.read_text(encoding="utf-8"),
+        )
+
+    return matrix_values, entry
+
+
+def _read_meta(
+    meta_content: str,
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    """Parse a _meta.json payload into values, metadata and objects."""
+    data = json.loads(meta_content)
+    return (
+        data.get("matrix_values", {}),
+        data.get("metadata", {}),
+        data.get("objects", {}),
+    )
+
+
+def _object_format(objects_info: Dict[str, Any], name: str, ext: str) -> Any:
+    """Resolve an object's format from metadata (old or new format)."""
+    obj_meta = objects_info.get(name)
+    if isinstance(obj_meta, dict):
+        # New format: {"type": "dag", "format": "graphml"}
+        return obj_meta.get("format", get_type_for_extension(ext))
+    # Legacy format: type was actually the format
+    return obj_meta if obj_meta else get_type_for_extension(ext)
 
 
 def _import_from_zip(
@@ -162,72 +164,77 @@ def _import_from_zip(
     if not zip_path.exists():
         raise FileNotFoundError(f"Zip file not found: {zip_path}")
 
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        return _import_zip_archive(cache, zf)
+
+
+def _import_zip_archive(cache: "WorkflowCache", zf: zipfile.ZipFile) -> int:
+    """Import every entry from an open zip archive; return the count."""
+    dirs_files = _group_zip_dir_files(zf)
+    processed_dirs: Set[str] = set()
     count = 0
 
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        # Group files by directory
-        dirs_files: dict[str, list[str]] = {}
-        for name in zf.namelist():
-            if name.endswith("/"):
-                continue
-            parent = str(PurePosixPath(name).parent)
-            if parent not in dirs_files:
-                dirs_files[parent] = []
-            dirs_files[parent].append(name)
-
-        # Find directories with _meta.json
-        processed_dirs: set[str] = set()
-
-        for name in zf.namelist():
-            if not name.endswith("_meta.json"):
-                continue
-
-            entry_dir = str(PurePosixPath(name).parent)
-            if entry_dir in processed_dirs:
-                continue  # pragma: no cover
-            processed_dirs.add(entry_dir)
-
-            # Read metadata
-            meta_content = json.loads(zf.read(name).decode("utf-8"))
-            matrix_values = meta_content.get("matrix_values", {})
-            metadata = meta_content.get("metadata", {})
-            objects_info = meta_content.get("objects", {})
-
-            # Build entry from files in directory
-            entry = CacheEntry(metadata=metadata)
-            dir_files = dirs_files.get(entry_dir, [])
-
-            for file_name in dir_files:
-                fname = PurePosixPath(file_name).name
-                if fname == "_meta.json":
-                    continue
-
-                stem = PurePosixPath(file_name).stem
-                ext = PurePosixPath(file_name).suffix
-                content = zf.read(file_name).decode("utf-8")
-
-                # Get type/format from metadata - handle old and new format
-                obj_meta = objects_info.get(stem)
-                if isinstance(obj_meta, dict):
-                    # New format: {"type": "dag", "format": "graphml"}
-                    _ = obj_meta.get("type", stem)  # Type is dict key
-                    obj_format = obj_meta.get(
-                        "format", get_type_for_extension(ext)
-                    )
-                else:
-                    # Legacy format: type was actually the format
-                    _ = stem  # Unused in legacy path
-                    obj_format = (
-                        obj_meta if obj_meta else get_type_for_extension(ext)
-                    )
-
-                entry.objects[stem] = CacheObject(
-                    format=obj_format, action="import", content=content
-                )
-
-            # Store in cache
-            if entry.objects:
-                cache.put(matrix_values, entry)
-                count += 1
+    for name in zf.namelist():
+        meta_entry = _zip_meta_entry(zf, name, dirs_files, processed_dirs)
+        if meta_entry is None:
+            continue
+        matrix_values, entry = meta_entry
+        if entry.objects:
+            cache.put(matrix_values, entry)
+            count += 1
 
     return count
+
+
+def _group_zip_dir_files(zf: zipfile.ZipFile) -> Dict[str, List[str]]:
+    """Group a zip archive's file names by their parent directory."""
+    dirs_files: Dict[str, List[str]] = {}
+    for name in zf.namelist():
+        if name.endswith("/"):
+            continue
+        parent = str(PurePosixPath(name).parent)
+        dirs_files.setdefault(parent, []).append(name)
+    return dirs_files
+
+
+def _zip_meta_entry(
+    zf: zipfile.ZipFile,
+    name: str,
+    dirs_files: Dict[str, List[str]],
+    processed_dirs: Set[str],
+) -> Optional[Tuple[Dict[str, Any], CacheEntry]]:
+    """Build a (matrix_values, entry) pair from one zip member, or None."""
+    if not name.endswith("_meta.json"):
+        return None
+
+    entry_dir = str(PurePosixPath(name).parent)
+    if entry_dir in processed_dirs:  # pragma: no cover - duplicate guard
+        return None
+    processed_dirs.add(entry_dir)
+
+    matrix_values, metadata, objects_info = _read_meta(
+        zf.read(name).decode("utf-8")
+    )
+    entry = CacheEntry(metadata=metadata)
+    for file_name in dirs_files.get(entry_dir, []):
+        _add_zip_object(zf, entry, file_name, objects_info)
+    return matrix_values, entry
+
+
+def _add_zip_object(
+    zf: zipfile.ZipFile,
+    entry: CacheEntry,
+    file_name: str,
+    objects_info: Dict[str, Any],
+) -> None:
+    """Add a single file from a zip archive to an entry's objects."""
+    if PurePosixPath(file_name).name == "_meta.json":
+        return
+    stem = PurePosixPath(file_name).stem
+    entry.objects[stem] = CacheObject(
+        format=_object_format(
+            objects_info, stem, PurePosixPath(file_name).suffix
+        ),
+        action="import",
+        content=zf.read(file_name).decode("utf-8"),
+    )

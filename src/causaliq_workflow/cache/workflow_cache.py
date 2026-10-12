@@ -430,26 +430,8 @@ class WorkflowCache:
         if entry is None:
             return False
 
-        # Deep merge metadata at top level (provider keys)
-        for provider_key, provider_data in metadata.items():
-            if provider_key not in entry.metadata:
-                entry.metadata[provider_key] = {}
-            if isinstance(provider_data, dict) and isinstance(
-                entry.metadata[provider_key], dict
-            ):
-                entry.metadata[provider_key].update(provider_data)
-            else:
-                entry.metadata[provider_key] = provider_data
-
-        # Add new objects
-        if objects:
-            for obj in objects:
-                obj_type = obj.get("type", "unknown")
-                obj_format = obj.get("format", "dat")
-                obj_action = obj.get("action", "unknown")
-                entry.add_object(
-                    obj_type, obj_format, obj.get("content"), obj_action
-                )
+        _merge_entry_metadata(entry, metadata)
+        _add_entry_objects(entry, objects)
 
         # Store updated entry
         self.put(key_data, entry)
@@ -720,3 +702,30 @@ class WorkflowCache:
         """
         entry = CacheEntry.from_action_result(metadata, objects)
         return self.put(key_data, entry)
+
+
+def _merge_entry_metadata(entry: CacheEntry, metadata: dict[str, Any]) -> None:
+    """Deep-merge provider metadata into an existing entry."""
+    for provider_key, provider_data in metadata.items():
+        if provider_key not in entry.metadata:
+            entry.metadata[provider_key] = {}
+        current = entry.metadata[provider_key]
+        if isinstance(provider_data, dict) and isinstance(current, dict):
+            current.update(provider_data)
+        else:
+            entry.metadata[provider_key] = provider_data
+
+
+def _add_entry_objects(
+    entry: CacheEntry, objects: list[dict[str, Any]] | None
+) -> None:
+    """Add or replace an entry's objects from a list of object dicts."""
+    if not objects:
+        return
+    for obj in objects:
+        entry.add_object(
+            obj.get("type", "unknown"),
+            obj.get("format", "dat"),
+            obj.get("content"),
+            obj.get("action", "unknown"),
+        )
