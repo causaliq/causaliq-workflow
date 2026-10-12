@@ -68,7 +68,12 @@ def test_cli_run_successful_execution_empty_results(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -95,6 +100,37 @@ def test_cli_run_successful_execution_empty_results(
     assert "[causaliq-workflow] COMPLETED 0 steps" in result.output
 
 
+# Test the CLI disables the redundant validation pass on execution.
+def test_cli_run_passes_validate_false(
+    cli_runner: CliRunner, monkeypatch
+) -> None:
+    """The executor validates once, then executes without revalidating."""
+    from causaliq_workflow.workflow import WorkflowExecutor
+
+    calls: list = []
+
+    def mock_parse_workflow(self, filepath):
+        return {"jobs": []}
+
+    def recording_execute(self, workflow, **kwargs):
+        calls.append(kwargs)
+        return []
+
+    monkeypatch.setattr(
+        WorkflowExecutor, "parse_workflow", mock_parse_workflow
+    )
+    monkeypatch.setattr(
+        WorkflowExecutor, "execute_workflow", recording_execute
+    )
+
+    workflow_file = "tests/data/functional/test_cli_workflow.yml"
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=none"])
+
+    assert result.exit_code == 0
+    assert calls[0]["mode"] == "validate"
+    assert calls[1]["validate"] is False
+
+
 # Test run successful execution with log level none.
 def test_cli_run_successful_execution_log_none(
     cli_runner: CliRunner, monkeypatch
@@ -105,7 +141,12 @@ def test_cli_run_successful_execution_log_none(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -136,7 +177,12 @@ def test_cli_run_keyboard_interrupt(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -190,7 +236,12 @@ def test_cli_run_successful_execution(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -242,7 +293,12 @@ def test_cli_run_execution_failure(cli_runner: CliRunner, monkeypatch) -> None:
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -281,7 +337,12 @@ def test_cli_run_validation_failure(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             raise ValueError("Validation error: missing required field")
@@ -825,7 +886,12 @@ def test_cli_run_step_logger_with_matrix_values(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -868,7 +934,12 @@ def test_cli_run_update_step_shows_entry_counts(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -924,7 +995,12 @@ def test_cli_run_update_step_entries_to_process_only(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []
@@ -976,7 +1052,12 @@ def test_cli_run_update_step_entries_to_skip_only(
         return {"jobs": []}
 
     def mock_execute_workflow(
-        self, workflow, mode="dry-run", step_logger=None, cache=None
+        self,
+        workflow,
+        mode="dry-run",
+        step_logger=None,
+        cache=None,
+        validate=True,
     ):
         if mode == "validate":
             return []

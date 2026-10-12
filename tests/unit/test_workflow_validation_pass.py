@@ -267,6 +267,40 @@ def test_execute_workflow_proceeds_after_valid() -> None:
     assert len(results) == 1
 
 
+# Test execute_workflow can skip the validation pass when requested.
+def test_execute_workflow_skips_validation_when_disabled(monkeypatch) -> None:
+    """validate=False bypasses the validation pass."""
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockActionProvider
+
+    calls = {"count": 0}
+    original = executor._validate_execution
+
+    def counting_validate(workflow, cli_params):
+        calls["count"] += 1
+        return original(workflow, cli_params)
+
+    monkeypatch.setattr(executor, "_validate_execution", counting_validate)
+
+    workflow = {
+        "matrix": {"x": [1]},
+        "steps": [
+            {
+                "name": "test",
+                "uses": "mock-provider",
+                "with": {"action": "test_action"},
+            }
+        ],
+    }
+
+    results = executor.execute_workflow(
+        workflow, mode="dry-run", validate=False
+    )
+
+    assert len(results) == 1
+    assert calls["count"] == 0
+
+
 # Test ActionRegistryError is re-raised from validate_action_parameters.
 def test_validate_action_parameters_reraises_registry_error() -> None:
     """ActionRegistryError from get_action_class is re-raised."""

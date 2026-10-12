@@ -72,6 +72,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         step_logger: Optional[
             Callable[[str, str, str, Dict[str, Any]], None]
         ] = None,
+        validate: bool = True,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
 
@@ -91,6 +92,9 @@ class ExecutionMixin(WorkflowExecutorBase):
             cli_params: Additional parameters from CLI
             step_logger: Optional function to log step execution
                 (action_method, step_name, status, matrix_values)
+            validate: When True (default) run the validation pass first.
+                Set False when the caller has already validated the same
+                workflow to avoid a redundant pass.
 
         Returns:
             List of job results from matrix expansion
@@ -102,7 +106,8 @@ class ExecutionMixin(WorkflowExecutorBase):
             cli_params = {}
 
         try:
-            self._validate_execution(workflow, cli_params)
+            if validate:
+                self._validate_execution(workflow, cli_params)
 
             # Validate-only mode: skip execution pass
             if mode == "validate":

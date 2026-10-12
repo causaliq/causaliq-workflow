@@ -154,7 +154,10 @@ def _run_workflow_jobs(
     _log_cli_message(log_level, f"EXECUTING workflow in {mode} mode...")
     try:
         return executor.execute_workflow(
-            workflow, mode=mode, step_logger=step_logger
+            workflow,
+            mode=mode,
+            step_logger=step_logger,
+            validate=False,
         )
     except Exception as e:
         _log_cli_error(f"Workflow execution failed: {e}")
