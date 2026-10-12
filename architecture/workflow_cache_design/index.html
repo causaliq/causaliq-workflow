@@ -2869,15 +2869,19 @@ steps:
       output: results/merged.db
 </code></pre>
 <h3 id="entry-scanning-flow">Entry Scanning Flow</h3>
-<p>The <code>_scan_aggregation_inputs()</code> method:</p>
+<p>The <code>_scan_aggregation_inputs()</code> method scans a memoised per-cache index
+rather than re-reading the cache for every matrix job:</p>
 <ol>
-<li>Opens each input cache</li>
-<li>Iterates all entries</li>
-<li>Skips entries missing required matrix variables</li>
-<li>Applies filter expression (if present)</li>
-<li>Groups entries by current matrix values</li>
-<li>Returns list of matching entry dictionaries</li>
+<li>Build or reuse an index of each entry's matrix values and flattened
+   metadata (<code>WorkflowCache.list_entry_summaries()</code>, which does not
+   decompress object payloads)</li>
+<li>Apply the filter expression (if present)</li>
+<li>Match entries against the current matrix values</li>
+<li>Load only matched entries in full and return them as entry dictionaries</li>
 </ol>
+<p>The index is held on the executor and invalidated whenever the cache is
+written, so results stay consistent within a run while avoiding repeated
+full-cache reads.</p>
 <pre><code class="language-python"># Scan statistics logged during execution
 # &quot;Aggregation scan: scanned=100, filtered=20, matched=8&quot;
 </code></pre>

@@ -2380,15 +2380,29 @@ class AggregationConfig:
     &quot;&quot;&quot;Scan input caches and collect entries matching matrix values.&quot;&quot;&quot;
 </code></pre>
 <p><strong>Scan Process:</strong></p>
+<p>The scan runs once per matrix job, but each input cache is read only
+once per run:</p>
 <ol>
-<li>Open each input cache</li>
-<li>Iterate all entries</li>
-<li>Skip entries missing required matrix variables</li>
-<li>Flatten metadata for filter evaluation</li>
-<li>Apply filter expression (if present)</li>
-<li>Match entries to current matrix combination</li>
-<li>Return matching entries with provenance</li>
+<li>Build or reuse a <strong>memoised scan index</strong> for each input cache. The
+   index holds each entry's parsed matrix values and flattened metadata,
+   read via <code>WorkflowCache.list_entry_summaries()</code> without decompressing
+   object payloads (e.g. graphs).</li>
+<li>Apply the filter expression (if present) against the flattened
+   metadata; rejected entries are counted as <code>filtered</code>.</li>
+<li>Match surviving entries to the current matrix combination; non-matching
+   entries are skipped.</li>
+<li>Load only the <strong>matched</strong> entries in full (via <code>cache.get()</code>) and
+   return them with provenance.</li>
 </ol>
+<p>The <code>random()</code> filter population and the matching step both read from the
+same index, so a large cache is not re-read for every matrix combination.
+A cache's index is discarded whenever that cache is written (a step store
+or an UPDATE), so later scans observe new entries.</p>
+<p><strong>Performance:</strong></p>
+<p>Scanning is O(cache entries) per input cache rather than
+O(matrix jobs × cache entries): the index is built once and reused across
+every matrix job and across the validation and execution passes. Only
+matched entries pay the cost of decompressing their object payloads.</p>
 <h4 id="phase-2-execute">Phase 2: Execute</h4>
 <p>The execute phase passes grouped entries to the action:</p>
 <pre><code class="language-python"># In _execute_job:

@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#refactor-codebase-according-to-module-and-method-rules" class="md-skip">
+        <a href="#remove-redundant-workflow-validation-pass" class="md-skip">
           Skip to content
         </a>
       
@@ -782,10 +782,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constraints-learned-from-other-package-refactors" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constraints learned from other package refactors
+        Summary
       
     </span>
   </a>
@@ -793,10 +793,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#commits" class="md-nav__link">
+  <a href="#why-it-is-not-urgent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Commits
+        Why it is not urgent
       
     </span>
   </a>
@@ -804,10 +804,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#gates-after-each-slice-as-in-scriptscheck_cips1" class="md-nav__link">
+  <a href="#proposed-change" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Gates after each slice (as in scripts/check_ci.ps1)
+        Proposed change
       
     </span>
   </a>
@@ -815,41 +815,46 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#outcome" class="md-nav__link">
+  <a href="#impact" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outcome
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Outcome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#what-changed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What changed
+        Impact
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#verification" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verification
+        Alternatives considered
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#scope-and-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope and constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance criteria
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1612,10 +1617,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constraints-learned-from-other-package-refactors" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constraints learned from other package refactors
+        Summary
       
     </span>
   </a>
@@ -1623,10 +1628,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#commits" class="md-nav__link">
+  <a href="#why-it-is-not-urgent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Commits
+        Why it is not urgent
       
     </span>
   </a>
@@ -1634,10 +1639,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#gates-after-each-slice-as-in-scriptscheck_cips1" class="md-nav__link">
+  <a href="#proposed-change" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Gates after each slice (as in scripts/check_ci.ps1)
+        Proposed change
       
     </span>
   </a>
@@ -1645,41 +1650,46 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#outcome" class="md-nav__link">
+  <a href="#impact" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outcome
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Outcome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#what-changed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What changed
+        Impact
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#verification" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verification
+        Alternatives considered
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#scope-and-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope and constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance criteria
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1700,90 +1710,57 @@
 
 
 
-<h1 id="refactor-codebase-according-to-module-and-method-rules">refactor codebase according to module and method rules</h1>
-<p>Plan to refactor all modules to obey the development policies. This is
-for standardisation and preparatory work before an analysis and
-improvement of slow performance [subsequent tasks].</p>
-<h2 id="constraints-learned-from-other-package-refactors">Constraints learned from other package refactors</h2>
-<ul>
-<li><strong>Behaviour must stay byte-identical</strong></li>
-<li><strong>Preserve import binding sites</strong></li>
-<li><strong>No behaviour-free bulk test rewrites</strong>: add focused tests
-  only where coverage gaps appear</li>
-</ul>
-<h2 id="commits">Commits</h2>
-<p>Stage the work as <strong>three to four commits</strong> which the user will do:</p>
+<h1 id="remove-redundant-workflow-validation-pass">Remove redundant workflow validation pass</h1>
+<h2 id="summary">Summary</h2>
+<p><code>cqflow run</code> validates a workflow twice before executing it:</p>
 <ol>
-<li><strong>workflow.py</strong> is by far the biggest challenge and may need to be done in
-several slices of work: aim to split it up into meaningful functional areas:
-e.g. validation, execution, matrix handling etc.</li>
-<li><strong>remaining modules</strong> can probably be done in one commit (slice)</li>
-<li><strong>documentation</strong> — one documentation commit <strong>after</strong> all code and test changes committed</li>
+<li><code>cli.py</code> calls <code>executor.execute_workflow(workflow, mode="validate")</code>
+   to report validation errors early, then</li>
+<li><code>execute_workflow</code> unconditionally runs <code>_validate_execution(...)</code>
+   again at the start of the execution call.</li>
 </ol>
-<p>Do not mix documentation-only changes into the code commit.</p>
-<h2 id="gates-after-each-slice-as-in-scriptscheck_cips1">Gates after each slice (as in <code>scripts/check_ci.ps1</code>)</h2>
+<p>Both passes iterate every matrix job and, for AGGREGATE and UPDATE steps,
+scan the input caches, so the validation work is duplicated.</p>
+<h2 id="why-it-is-not-urgent">Why it is not urgent</h2>
+<p>The aggregation scan now reuses a memoised per-cache index (see the
+completed "analyse slow performance" task), so the second validation pass
+no longer re-reads and decompresses the caches. The remaining cost is the
+per-job matching and filter evaluation, which is small but still redundant.</p>
+<h2 id="proposed-change">Proposed change</h2>
+<p>Skip the second validation when the caller has already validated the same
+workflow. Preferred approach:</p>
 <ul>
-<li><code>black --check src tests</code></li>
-<li><code>isort --check-only src tests</code></li>
-<li><code>flake8 src tests</code></li>
-<li><code>mypy src/</code></li>
-<li><code>python scripts/check_code_rules.py --strict src/causaliq_data</code></li>
+<li>Add <code>execute_workflow(..., validate: bool = True)</code>.</li>
+<li>Pass <code>validate=False</code> from <code>cli._run_workflow_jobs()</code>.</li>
 </ul>
-<h2 id="outcome">Outcome</h2>
-<p>The refactor is complete. <code>python scripts/check_code_rules.py --strict
-src/causaliq_workflow</code> reports zero breaches across all 26 modules, the full
-test suite passes with 100 % coverage, and behaviour is unchanged.</p>
-<table>
-<thead>
-<tr>
-<th>Stage</th>
-<th>Modules refactored</th>
-<th>Breaches reported</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Starting point</td>
-<td>–</td>
-<td>37</td>
-</tr>
-<tr>
-<td>Slice 1</td>
-<td><code>workflow</code> (split into a 12-module sub-package)</td>
-<td>13</td>
-</tr>
-<tr>
-<td>Slice 2</td>
-<td><code>cli</code>, <code>registry</code>, <code>schema</code>, <code>cache/export</code>, <code>cache/import_</code>, <code>cache/workflow_cache</code></td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="what-changed">What changed</h3>
+<h2 id="impact">Impact</h2>
 <ul>
-<li><code>workflow.py</code> (2199 lines, 926 statements) was decomposed into the
-  <code>workflow/</code> sub-package of functional mixins which the original module path
-  re-exports, so the public API, module paths and import sites are unchanged.
-  The decomposition is recorded in the
-  <a href="../architecture/overview/">architecture overview</a>.</li>
-<li>The CLI moved its result-reporting helpers into <code>cli_report.py</code>, re-used by
-  <code>cli.py</code>, so <code>causaliq_workflow.cli._report_results</code> still resolves.</li>
-<li>Long functions across <code>cli</code>, <code>registry</code>, <code>schema</code> and the <code>cache</code> modules
-  were split into private helpers, keeping every function within the statement
-  and nesting-depth limits.</li>
-<li>Import binding sites and patch targets were preserved: modules whose
-  functions are substituted in tests with <code>monkeypatch.setattr</code> still intercept
-  the calls (for example <code>causaliq_workflow.workflow.load_workflow_file</code> and
-  <code>causaliq_workflow.workflow.validate_workflow</code> resolve through the package).</li>
-<li>Runtime behaviour is unchanged; focused tests were added only where the
-  refactor created coverage gaps.</li>
+<li>No change to behaviour or log output: the CLI still prints
+  "VALIDATING ... VALIDATED" once before "EXECUTING".</li>
+<li>The <code>execute_workflow</code> mocks in <code>tests/functional/test_cli.py</code> must
+  accept the new keyword argument.</li>
 </ul>
-<h3 id="verification">Verification</h3>
+<h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
-<li><code>python scripts/check_code_rules.py --strict src/causaliq_workflow</code> — zero
-  breaches across 26 modules.</li>
-<li><code>black --check</code>, <code>isort --check-only</code>, <code>flake8</code>, <code>mypy src/</code> — clean.</li>
-<li><code>pytest</code> full suite — passes with 100 % coverage.</li>
+<li>Cache the validation result on the executor keyed by the workflow
+  object. Fragile (identity-based) and less explicit.</li>
+<li>Move validation entirely into <code>execute_workflow</code> and drop the CLI pass.
+  Rejected: it would remove the early "VALIDATING/VALIDATED" reporting.</li>
+</ul>
+<h2 id="scope-and-constraints">Scope and constraints</h2>
+<ul>
+<li>Hat 1 (Fix) only: no structural refactor or file moves.</li>
+<li>Update only the tests directly affected by the signature change.</li>
+<li>79-character lines, British English, and the usual quality gates
+  (<code>black</code>, <code>isort</code>, <code>flake8</code>, <code>mypy</code>, <code>pytest</code> at 100% coverage).</li>
+<li>Do not commit changes (development policy).</li>
+</ul>
+<h2 id="acceptance-criteria">Acceptance criteria</h2>
+<ul>
+<li>A single <code>cqflow run</code> invocation performs the entry-validation pass
+  once.</li>
+<li>All existing CLI tests pass with the updated mocks.</li>
+<li>No change to user-visible workflow output.</li>
 </ul>
 
 

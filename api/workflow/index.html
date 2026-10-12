@@ -1498,6 +1498,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2137,6 +2148,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2656,6 +2678,7 @@ integer values [0, 1, 2, ..., 24].</p>
     <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="cli_params (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)">cli_params</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="step_logger (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger)">step_logger</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Callable">Callable</span></span><span class="p">[[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="validate (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate)">validate</a></span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
 </code></pre></div>
 
@@ -2712,6 +2735,18 @@ in each step's 'with' block. Each step can write to its own cache.</p>
           <div class="doc-md-description">
             <p>Optional function to log step execution
 (action_method, step_name, status, matrix_values)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate)" class="doc doc-heading doc-heading-parameter">              <b><code>validate</code></b>
+</h5>              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>When True (default) run the validation pass first.
+Set False when the caller has already validated the same
+workflow to avoid a redundant pass.</p>
           </div>
         </li>
     </ul>
