@@ -110,13 +110,31 @@ def _scan_aggregation_inputs(
 
 **Scan Process:**
 
-1. Open each input cache
-2. Iterate all entries
-3. Skip entries missing required matrix variables
-4. Flatten metadata for filter evaluation
-5. Apply filter expression (if present)
-6. Match entries to current matrix combination
-7. Return matching entries with provenance
+The scan runs once per matrix job, but each input cache is read only
+once per run:
+
+1. Build or reuse a **memoised scan index** for each input cache. The
+   index holds each entry's parsed matrix values and flattened metadata,
+   read via `WorkflowCache.list_entry_summaries()` without decompressing
+   object payloads (e.g. graphs).
+2. Apply the filter expression (if present) against the flattened
+   metadata; rejected entries are counted as `filtered`.
+3. Match surviving entries to the current matrix combination; non-matching
+   entries are skipped.
+4. Load only the **matched** entries in full (via `cache.get()`) and
+   return them with provenance.
+
+The `random()` filter population and the matching step both read from the
+same index, so a large cache is not re-read for every matrix combination.
+A cache's index is discarded whenever that cache is written (a step store
+or an UPDATE), so later scans observe new entries.
+
+**Performance:**
+
+Scanning is O(cache entries) per input cache rather than
+O(matrix jobs × cache entries): the index is built once and reused across
+every matrix job and across the validation and execution passes. Only
+matched entries pay the cost of decompressing their object payloads.
 
 #### Phase 2: Execute
 

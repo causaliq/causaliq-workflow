@@ -539,14 +539,19 @@ steps:
 
 ### Entry Scanning Flow
 
-The `_scan_aggregation_inputs()` method:
+The `_scan_aggregation_inputs()` method scans a memoised per-cache index
+rather than re-reading the cache for every matrix job:
 
-1. Opens each input cache
-2. Iterates all entries
-3. Skips entries missing required matrix variables
-4. Applies filter expression (if present)
-5. Groups entries by current matrix values
-6. Returns list of matching entry dictionaries
+1. Build or reuse an index of each entry's matrix values and flattened
+   metadata (`WorkflowCache.list_entry_summaries()`, which does not
+   decompress object payloads)
+2. Apply the filter expression (if present)
+3. Match entries against the current matrix values
+4. Load only matched entries in full and return them as entry dictionaries
+
+The index is held on the executor and invalidated whenever the cache is
+written, so results stay consistent within a run while avoiding repeated
+full-cache reads.
 
 ```python
 # Scan statistics logged during execution

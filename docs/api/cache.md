@@ -28,6 +28,8 @@ The workflow cache imports the following from causaliq-core:
         - get
         - exists
         - entry_count
+        - list_entries
+        - list_entry_summaries
         - export
         - import_entries
 
