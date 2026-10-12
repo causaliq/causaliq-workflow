@@ -9,11 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Nothing yet
+- `WorkflowCache.list_entry_summaries()` - list each entry's matrix values
+  and metadata without decompressing object payloads
 
 ### Changed
 
-- Nothing yet
+- **Aggregation scan performance** - matrix jobs now reuse a memoised
+  per-cache index (matrix values and metadata only) instead of re-reading
+  and fully decompressing every cache entry for every job; the index is
+  invalidated when the cache is written
+- **Single validation pass** - `cqflow run` now validates once: the CLI's
+  execution call passes `validate=False` (the new default-`True`
+  `execute_workflow` flag) so the entry-validation pass is not repeated
 
 ### Deprecated
 

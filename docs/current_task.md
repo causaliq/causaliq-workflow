@@ -1,35 +1,57 @@
-# Investigate poor performance of workflows
+# Remove redundant workflow validation pass
 
-Some workflows seem to be awfully slow - worrinygly so, considering the
-workflow caches have perhaps hundreds of entries in them but 
-workflows need to scale to many orders of magnitude more. The problem seems particullrly serious with `summarise` actions
-such as `merge_graphs`.
+## Summary
 
-One such example can be seen on the `causaliq-research` repo which is
-where I perform active research using the CausalIQ packages. It can be seen by performing the following commands:
+`cqflow run` validates a workflow twice before executing it:
 
-```bash
-cd ../causaliq-research
-scripts/activate
-cqflow run papers/pdg-merge/workflows/bnsl-pdgs-2.yml --log-level all
-```
+1. `cli.py` calls `executor.execute_workflow(workflow, mode="validate")`
+   to report validation errors early, then
+2. `execute_workflow` unconditionally runs `_validate_execution(...)`
+   again at the start of the execution call.
 
-which produces the following output showing lengthy processing even in dry run mode - 6 minutes before processing actions starts, and 15 seconds for each action:
+Both passes iterate every matrix job and, for AGGREGATE and UPDATE steps,
+scan the input caches, so the validation work is duplicated.
 
-```plaintext
-(py311) PS C:\dev\causaliq\causaliq-research> cqflow run papers/pdg-merge/workflows/bnsl-pdgs-2.yml --log-level all
-2026-10-12 20:11:37 [causaliq-workflow] LOADING workflow from: papers\pdg-merge\workflows\bnsl-pdgs-2.yml
-2026-10-12 20:11:44 [causaliq-workflow] VALIDATING workflow syntax and parameters...
-2026-10-12 20:14:46 [causaliq-workflow] VALIDATED workflow successfully
-2026-10-12 20:14:46 [causaliq-workflow] EXECUTING workflow in dry-run mode...
-2026-10-12 20:17:46 [merge_graphs] WOULD SKIP   Merge FGES graphs with different seeds [network=seismic, series=TETRAD/FGES_BASE4, sample_size=1K, pdg_seed=0, llm_model=None, prompt_detail=None, llm_temperature=None, llm_seed=None]
-2026-10-12 20:18:01 [merge_graphs] WOULD SKIP   Merge FGES graphs with different seeds [network=seismic, series=TETRAD/FGES_BASE4, sample_size=1K, pdg_seed=1, llm_model=None, prompt_detail=None, llm_temperature=None, llm_seed=None]
-....
-2026-10-12 20:20:25 [merge_graphs] WOULD SKIP   Merge FGES graphs with different seeds [network=seismic, series=BNLEARN/PC_BASE4, sample_size=10K, pdg_seed=1, llm_model=None, prompt_detail=None, llm_temperature=None, llm_seed=None]
-2026-10-12 20:20:25 [causaliq-workflow] COMPLETED 12 steps: 12 would skip
-```
+## Why it is not urgent
 
-Can you investigate this by inspecting the code (probably in causaliq-workflow and causaliq-analysis), and if necessary develop a plan for temporary code instrumentation to
-get any necessary diagnostics (you will likely have to change the example problem so that things run in a reasonable time).
+The aggregation scan now reuses a memoised per-cache index (see the
+completed "analyse slow performance" task), so the second validation pass
+no longer re-reads and decompresses the caches. The remaining cost is the
+per-job matching and filter evaluation, which is small but still redundant.
 
-Please do not **permanently** change any code in any repo.
+## Proposed change
+
+Skip the second validation when the caller has already validated the same
+workflow. Preferred approach:
+
+- Add `execute_workflow(..., validate: bool = True)`.
+- Pass `validate=False` from `cli._run_workflow_jobs()`.
+
+## Impact
+
+- No change to behaviour or log output: the CLI still prints
+  "VALIDATING ... VALIDATED" once before "EXECUTING".
+- The `execute_workflow` mocks in `tests/functional/test_cli.py` must
+  accept the new keyword argument.
+
+## Alternatives considered
+
+- Cache the validation result on the executor keyed by the workflow
+  object. Fragile (identity-based) and less explicit.
+- Move validation entirely into `execute_workflow` and drop the CLI pass.
+  Rejected: it would remove the early "VALIDATING/VALIDATED" reporting.
+
+## Scope and constraints
+
+- Hat 1 (Fix) only: no structural refactor or file moves.
+- Update only the tests directly affected by the signature change.
+- 79-character lines, British English, and the usual quality gates
+  (`black`, `isort`, `flake8`, `mypy`, `pytest` at 100% coverage).
+- Do not commit changes (development policy).
+
+## Acceptance criteria
+
+- A single `cqflow run` invocation performs the entry-validation pass
+  once.
+- All existing CLI tests pass with the updated mocks.
+- No change to user-visible workflow output.
