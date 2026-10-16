@@ -262,14 +262,21 @@ class ExecutionMixin(WorkflowExecutorBase):
         step_name: str,
         resolved_inputs: Dict[str, Any],
     ) -> bool:
-        """Skip NOCACHES steps on every matrix job after the first."""
-        if not self._is_nocache_step(step) or state.context.job_index <= 0:
+        """Skip single-run steps on every matrix job after the first.
+
+        A step that writes no workflow cache has no output dimensionality,
+        so it runs once. It is skipped on later jobs.
+        """
+        if (
+            not self._runs_once(step, bool(state.workflow.get("matrix", {})))
+            or state.context.job_index <= 0
+        ):
             return False
 
         _log_step_status(state, step_name, resolved_inputs, "SKIPPED")
         state.step_results[step_name] = {
             "status": "skipped",
-            "reason": "nocache-step-runs-once",
+            "reason": "single-run-step-runs-once",
         }
         return True
 

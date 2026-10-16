@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
+from causaliq_workflow.workflow.matrix import _runs_once
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.cache import WorkflowCache
@@ -81,7 +82,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
             return self._validate_aggregation_entries(
                 step, jobs, workflow, cli_params
             )
-        if self._is_nocache_step(step):
+        if _runs_once(step, bool(matrix)):
             return self._validate_nocache_entries(step, workflow, cli_params)
         return self._validate_create_entries(step, jobs, workflow, cli_params)
 

@@ -87,8 +87,8 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Return True when a step declares the UPDATE pattern."""
         raise NotImplementedError
 
-    def _is_nocache_step(self, step: Dict[str, Any]) -> bool:
-        """Return True when a step declares the NOCACHES pattern."""
+    def _runs_once(self, step: Dict[str, Any], has_matrix: bool) -> bool:
+        """Return True when a step runs once rather than per matrix job."""
         raise NotImplementedError
 
     def _is_aggregate_pattern_step(

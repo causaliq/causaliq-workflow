@@ -157,6 +157,67 @@ def _merge_entry_keys(
     return entry_keys, value_sets
 
 
+def _has_cache_output(step: Dict[str, Any]) -> bool:
+    """Return True when a step writes a workflow cache (``.db`` output).
+
+    A step's output cache is what gives it a matrix dimensionality: one
+    entry per key. A step whose output is not a workflow cache has no
+    output keys and therefore runs once.
+
+    Args:
+        step: Step configuration dictionary.
+
+    Returns:
+        True when the step's ``output`` names a workflow cache.
+    """
+    output = step.get("with", {}).get("output")
+    if output is None:
+        return False
+    return str(output).lower().endswith(".db")
+
+
+def _has_file_output(step: Dict[str, Any]) -> bool:
+    """Return True when a step writes a file rather than a workflow cache.
+
+    Args:
+        step: Step configuration dictionary.
+
+    Returns:
+        True when the step's ``output`` is present and is not a cache.
+    """
+    output = step.get("with", {}).get("output")
+    if output is None:
+        return False
+    return not str(output).lower().endswith(".db")
+
+
+def _runs_once(step: Dict[str, Any], has_matrix: bool) -> bool:
+    """Return True when a step runs once, outside matrix expansion.
+
+    A step that writes a file rather than a workflow cache has no output
+    dimensionality, so it runs once instead of once per matrix
+    combination. This replaces the ``NOCACHES`` pattern: a step may read
+    a cache (for example ``plot`` reading a metrics cache) yet still run
+    once because it writes no cache.
+
+    A step with a file output that declares a workflow matrix keeps its
+    per-job granularity (for example ``summarise`` writing one ``.csv``
+    row per combination) until its output becomes a workflow cache. A
+    step with no output at all is not a single-run step, so its missing
+    ``output`` or ``input`` is still reported by pattern validation.
+
+    Args:
+        step: Step configuration dictionary.
+        has_matrix: Whether the workflow declares a matrix.
+
+    Returns:
+        True when the step runs once rather than per matrix combination.
+    """
+    if has_matrix:
+        return False
+    return _has_file_output(step)
+
+
 def _cache_input_paths(input_param: Any) -> List[Any]:
     """Return the cache (.db) paths named by a step input parameter."""
     if not input_param:
@@ -318,6 +379,8 @@ class MatrixMixin(WorkflowExecutorBase):
         """
         from causaliq_core import ActionPattern
 
+        if not _has_cache_output(step):
+            return {}
         if self._get_step_action_pattern(step) != ActionPattern.AGGREGATE:
             return {}
 

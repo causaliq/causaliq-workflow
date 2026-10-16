@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
-from causaliq_workflow.workflow.matrix import _has_db_input
+from causaliq_workflow.workflow.matrix import _has_db_input, _runs_once
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_core import ActionPattern
@@ -11,6 +11,21 @@ if TYPE_CHECKING:  # pragma: no cover
 
 class PatternMixin(WorkflowExecutorBase):
     """Step pattern detection methods for WorkflowExecutor."""
+
+    def _runs_once(self, step: Dict[str, Any], has_matrix: bool) -> bool:
+        """Return True when a step runs once rather than per matrix job.
+
+        A step that writes a file rather than a workflow cache has no
+        output dimensionality, so it runs once.
+
+        Args:
+            step: Step configuration dictionary.
+            has_matrix: Whether the workflow declares a matrix.
+
+        Returns:
+            True when the step runs once rather than per job.
+        """
+        return _runs_once(step, has_matrix)
 
     def _is_update_pattern_step(
         self,
@@ -43,39 +58,6 @@ class PatternMixin(WorkflowExecutorBase):
                 provider_name, action_name
             )
             return pattern == ActionPattern.UPDATE
-        except Exception:
-            return False
-
-    def _is_nocache_step(self, step: Dict[str, Any]) -> bool:
-        """Check if a step uses the NOCACHES pattern.
-
-        NOCACHES pattern steps operate on plain files (not workflow
-        caches) and do not use the workflow matrix, so they run once
-        regardless of the matrix.
-
-        Args:
-            step: Step configuration dictionary
-
-        Returns:
-            True if the action declares NOCACHES pattern
-        """
-        from causaliq_core import ActionPattern
-
-        provider_name = step.get("uses")
-        if not provider_name:
-            return False
-
-        step_inputs = step.get("with", {})
-        action_name = step_inputs.get("action")
-        if not action_name:
-            return False
-
-        # Check if action declares NOCACHES pattern
-        try:
-            pattern = self.action_registry.get_action_pattern(
-                provider_name, action_name
-            )
-            return pattern == ActionPattern.NOCACHES
         except Exception:
             return False
 

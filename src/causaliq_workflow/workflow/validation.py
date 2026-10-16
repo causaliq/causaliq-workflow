@@ -7,6 +7,7 @@ from causaliq_core import ActionPattern
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.matrix import _runs_once
 
 _SKIP_KEYS = {"id", "description", "matrix", "steps"}
 
@@ -252,6 +253,8 @@ class ValidationMixin(WorkflowExecutorBase):
         """Validate one step's configuration against its action pattern."""
         step_name = step.get("name", "unnamed")
         step_inputs = step.get("with", {})
+        if _runs_once(step, has_matrix):
+            return []
         pattern = self._step_pattern(
             step.get("uses"), step_inputs.get("action")
         )
