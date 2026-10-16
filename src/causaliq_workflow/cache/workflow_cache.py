@@ -17,6 +17,11 @@ from typing import Any
 from causaliq_core.cache import TokenCache
 from causaliq_core.cache.compressors import Compressor, JsonCompressor
 
+from causaliq_workflow.cache.contract import (
+    pin_cache_type,
+    store_failure_entry,
+    store_typed_entry,
+)
 from causaliq_workflow.cache.entry import CacheEntry
 
 
@@ -383,6 +388,78 @@ class WorkflowCache:
         hash_key = self.compute_hash(key_data)
         key_json = self._key_json(key_data)
         return self.token_cache.delete(hash=hash_key, key_json=key_json)
+
+    # ========================================================================
+    # Typed object contract
+    # ========================================================================
+
+    def get_cache_type(self) -> str | None:
+        """Get the cache's pinned object type.
+
+        Returns:
+            The pinned object type, or None when the cache is unpinned.
+        """
+        return self._get_config().get("cache_type")
+
+    def set_cache_type(self, cache_type: str) -> str:
+        """Pin the cache's object type, raising on a conflict.
+
+        Args:
+            cache_type: Object type being written.
+
+        Returns:
+            The pinned object type.
+
+        Raises:
+            CacheTypeError: If the cache is already pinned to another type.
+        """
+        config = self._get_config()
+        pinned = pin_cache_type(config.get("cache_type"), cache_type)
+        config["cache_type"] = pinned
+        self._put_config(config)
+        return pinned
+
+    def put_typed(self, key_data: dict[str, Any], entry: CacheEntry) -> str:
+        """Store an entry, enforcing one object of the cache's type.
+
+        Args:
+            key_data: Dictionary of matrix variable values (cache key).
+            entry: CacheEntry holding exactly one typed object.
+
+        Returns:
+            The hash key used for storage.
+
+        Raises:
+            CacheTypeError: If the entry does not hold exactly one object,
+                or its type conflicts with the cache's pinned type.
+        """
+        return store_typed_entry(self, key_data, entry)
+
+    def put_failure(
+        self,
+        key_data: dict[str, Any],
+        provenance: dict[str, Any],
+        action: str,
+        cache_type: str | None = None,
+    ) -> str:
+        """Store a failure: provenance plus an empty object of the type.
+
+        Args:
+            key_data: Dictionary of matrix variable values (cache key).
+            provenance: Provenance metadata, typically including status
+                and error fields.
+            action: Action name that failed.
+            cache_type: Object type to pin when the cache is unpinned.
+
+        Returns:
+            The hash key used for storage.
+
+        Raises:
+            CacheTypeError: If the cache type is unknown.
+        """
+        return store_failure_entry(
+            self, key_data, provenance, action, cache_type
+        )
 
     def update_entry(
         self,

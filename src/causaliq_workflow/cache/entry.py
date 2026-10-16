@@ -9,6 +9,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
+# Format marker identifying an empty placeholder object. Failure entries
+# carry an empty object of the cache's type so the cache shape is preserved.
+EMPTY_FORMAT = "empty"
+
 
 @dataclass
 class CacheObject:
@@ -66,6 +70,18 @@ class CacheObject:
             action=data.get("action", "unknown"),
             content=data.get("content"),
         )
+
+    @property
+    def is_empty(self) -> bool:
+        """Return True when this object is an empty placeholder.
+
+        Failure entries carry an empty object of the cache's type so the
+        cache keeps a single-object shape without inventing a result.
+
+        Returns:
+            True when the object's format is the empty marker.
+        """
+        return self.format == EMPTY_FORMAT
 
 
 @dataclass

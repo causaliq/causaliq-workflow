@@ -12,6 +12,10 @@ Built on causaliq-core's TokenCache with workflow-specific features:
 - Import/export to open formats (GraphML, JSON)
 """
 
+from causaliq_workflow.cache.contract import (
+    EMPTY_FORMAT,
+    CacheTypeError,
+)
 from causaliq_workflow.cache.entry import CacheEntry, CacheObject
 from causaliq_workflow.cache.export import (
     export_entries,
@@ -26,8 +30,10 @@ from causaliq_workflow.cache.workflow_cache import (
 )
 
 __all__ = [
+    "EMPTY_FORMAT",
     "CacheEntry",
     "CacheObject",
+    "CacheTypeError",
     "MatrixSchemaError",
     "WorkflowCache",
     "export_entries",
