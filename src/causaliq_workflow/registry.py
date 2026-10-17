@@ -397,7 +397,11 @@ class ActionRegistry:
         provider_name: str,
         action_name: str,
     ) -> Optional[ActionPattern]:
-        """Get the execution pattern for an action.
+        """Get the declared execution pattern for an action.
+
+        Actions declare either ``CREATE`` (writes a workflow cache
+        without reading one) or ``AGGREGATE`` (reads a workflow cache and
+        writes one).
 
         Args:
             provider_name: Provider name (e.g., 'causaliq-analysis')

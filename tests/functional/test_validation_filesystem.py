@@ -1,7 +1,7 @@
 """Functional tests for two-pass workflow validation with filesystem.
 
-Tests that require cache files to exercise UPDATE and AGGREGATE pattern
-validation paths.
+Tests that require cache files to exercise AGGREGATE pattern validation
+paths.
 """
 
 from causaliq_core import (
@@ -12,47 +12,6 @@ from causaliq_core import (
 
 from causaliq_workflow.cache import CacheEntry, WorkflowCache
 from causaliq_workflow.workflow import WorkflowExecutor
-
-
-class UpdateActionProvider(CausalIQActionProvider):
-    """UPDATE pattern action provider for testing."""
-
-    name = "update-provider"
-    version = "1.0.0"
-    supported_actions = {"update_action"}
-    action_patterns = {"update_action": ActionPattern.UPDATE}
-
-    def _execute(self, action, parameters, mode, context, logger):
-        return ("success", {}, [])
-
-
-class StrictUpdateProvider(CausalIQActionProvider):
-    """UPDATE pattern action that validates required parameters."""
-
-    name = "strict-update"
-    version = "1.0.0"
-    supported_actions = {"strict_update"}
-    action_patterns = {"strict_update": ActionPattern.UPDATE}
-
-    def validate_parameters(self, action, parameters):
-        super().validate_parameters(action, parameters)
-        if "required_param" not in parameters:
-            raise ActionValidationError("Missing required_param")
-
-    def _execute(self, action, parameters, mode, context, logger):
-        return ("success", {}, [])
-
-
-class AggregateActionProvider(CausalIQActionProvider):
-    """AGGREGATE pattern action provider for testing."""
-
-    name = "agg-provider"
-    version = "1.0.0"
-    supported_actions = {"aggregate_action"}
-    action_patterns = {"aggregate_action": ActionPattern.AGGREGATE}
-
-    def _execute(self, action, parameters, mode, context, logger):
-        return ("success", {}, [])
 
 
 class StrictAggregateProvider(CausalIQActionProvider):
