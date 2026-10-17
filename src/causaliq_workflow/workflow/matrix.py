@@ -196,9 +196,8 @@ def _runs_once(step: Dict[str, Any], has_matrix: bool) -> bool:
 
     A step that writes a file rather than a workflow cache has no output
     dimensionality, so it runs once instead of once per matrix
-    combination. This replaces the ``NOCACHES`` pattern: a step may read
-    a cache (for example ``plot`` reading a metrics cache) yet still run
-    once because it writes no cache.
+    combination. Such a step may still read a cache (for example ``plot``
+    reading a metrics cache) because it writes no cache.
 
     A step with a file output that declares a workflow matrix keeps its
     per-job granularity (for example ``summarise`` writing one ``.csv``

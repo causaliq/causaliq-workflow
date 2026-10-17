@@ -473,9 +473,6 @@ class WorkflowCache:
         at the top level (provider keys are merged, not replaced). New
         objects are added or replace existing objects with the same name.
 
-        This method is used by UPDATE pattern actions to add analysis
-        results to existing entries without overwriting previous data.
-
         Args:
             key_data: Dictionary of matrix variable values (cache key).
             metadata: Metadata to merge into existing entry. Typically
@@ -523,7 +520,7 @@ class WorkflowCache:
         """Check if entry has metadata from a specific action.
 
         Used for conservative execution - skip entries that have already
-        been processed by an UPDATE action.
+        been processed by an action.
 
         Args:
             key_data: Dictionary of matrix variable values (cache key).
@@ -794,7 +791,7 @@ class WorkflowCache:
         metadata: dict[str, Any],
         objects: list[dict[str, Any]],
     ) -> str:
-        """Store action result in legacy format.
+        """Store one action result, enforcing the one-object contract.
 
         Convenience method for storing results from actions that still
         return (status, metadata, objects) tuples.
@@ -802,13 +799,18 @@ class WorkflowCache:
         Args:
             key_data: Dictionary of matrix variable values (cache key).
             metadata: Action metadata dictionary.
-            objects: List of object dicts with 'type', 'name', 'content'.
+            objects: List holding exactly one object dict with 'type',
+                'format', 'action' and 'content'.
 
         Returns:
             The hash key used for storage.
+
+        Raises:
+            CacheTypeError: If the result does not hold exactly one
+                object, or its type conflicts with the cache's pinned type.
         """
         entry = CacheEntry.from_action_result(metadata, objects)
-        return self.put(key_data, entry)
+        return self.put_typed(key_data, entry)
 
 
 def _merge_entry_metadata(entry: CacheEntry, metadata: dict[str, Any]) -> None:

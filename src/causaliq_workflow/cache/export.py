@@ -15,6 +15,8 @@ import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
+from causaliq_workflow.cache.entry import CacheEntry
+
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.cache.workflow_cache import WorkflowCache
 
@@ -414,6 +416,46 @@ def store_action_result(
         metadata=metadata,
         objects=objects,
     )
+
+
+def store_failure_result(
+    cache: "WorkflowCache | None",
+    context: Any,
+    metadata: dict[str, Any],
+    action: str,
+    matrix_key_order: list[str] | None = None,
+) -> str | None:
+    """Record a failed step as provenance plus an empty typed object.
+
+    A failed run writes provenance (status and failure reason) together
+    with an empty object of the cache's type, replacing any prior entry
+    for the key. When the cache type is not yet pinned the failure is
+    recorded as provenance only, so the first successful write can still
+    pin the type.
+
+    Args:
+        cache: WorkflowCache instance to store into, or None.
+        context: WorkflowContext with matrix_values for the cache key.
+        metadata: Provenance metadata, namespaced as
+            provider -> action -> fields.
+        action: Action name that failed.
+        matrix_key_order: Optional ordered list of matrix variable names
+            for export directory structure.
+
+    Returns:
+        Hash key used for storage, or None if no cache is available.
+    """
+    if cache is None:
+        return None
+
+    if matrix_key_order is not None and cache.get_matrix_key_order() is None:
+        cache.set_matrix_key_order(matrix_key_order)
+
+    key_data = context.matrix_values
+    cache_type = cache.get_cache_type()
+    if cache_type is None:
+        return cache.put(key_data, CacheEntry(metadata=dict(metadata)))
+    return cache.put_failure(key_data, metadata, action, cache_type)
 
 
 def serialise_objects(

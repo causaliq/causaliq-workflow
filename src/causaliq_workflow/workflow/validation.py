@@ -80,27 +80,6 @@ def _check_create_pattern(
     return errors
 
 
-def _check_update_pattern(
-    step_name: str,
-    step_inputs: Dict[str, Any],
-    has_matrix: bool,
-    has_cache_input: bool,
-) -> List[str]:
-    """Return UPDATE pattern validation errors for one step."""
-    errors: List[str] = []
-    if "input" not in step_inputs:
-        errors.append(
-            f"Step '{step_name}': UPDATE pattern requires "
-            f"'input' parameter"
-        )
-    if "output" in step_inputs:
-        errors.append(
-            f"Step '{step_name}': UPDATE pattern prohibits "
-            f"'output' parameter"
-        )
-    return errors
-
-
 def _check_aggregate_pattern(
     step_name: str,
     step_inputs: Dict[str, Any],
@@ -128,37 +107,9 @@ def _check_aggregate_pattern(
     return errors
 
 
-def _check_nocaches_pattern(
-    step_name: str,
-    step_inputs: Dict[str, Any],
-    has_matrix: bool,
-    has_cache_input: bool,
-) -> List[str]:
-    """Return NOCACHES pattern validation errors for one step.
-
-    NOCACHES actions read/write plain files directly, so they have no
-    cache or matrix requirements.
-    """
-    errors: List[str] = []
-    if has_cache_input:
-        errors.append(
-            f"Step '{step_name}': NOCACHES pattern prohibits "
-            f"cache input (.db files)"
-        )
-    output_param = step_inputs.get("output")
-    if output_param and str(output_param).lower().endswith(".db"):
-        errors.append(
-            f"Step '{step_name}': NOCACHES pattern prohibits "
-            f"cache output (.db files)"
-        )
-    return errors
-
-
 _PATTERN_CHECKS = {
     ActionPattern.CREATE: _check_create_pattern,
-    ActionPattern.UPDATE: _check_update_pattern,
     ActionPattern.AGGREGATE: _check_aggregate_pattern,
-    ActionPattern.NOCACHES: _check_nocaches_pattern,
 }
 
 
@@ -217,7 +168,7 @@ class ValidationMixin(WorkflowExecutorBase):
         if pattern_errors:
             raise WorkflowExecutionError("; ".join(pattern_errors))
 
-        # Validate filter expressions for UPDATE steps
+        # Validate filter expressions in steps
         filter_errors = self._validate_step_filters(workflow)
         if filter_errors:
             raise WorkflowExecutionError(
@@ -230,7 +181,6 @@ class ValidationMixin(WorkflowExecutorBase):
         Checks that each step's input/output/matrix configuration matches
         the declared pattern for its action:
         - CREATE: output required, matrix required, cache input prohibited
-        - UPDATE: input required, output prohibited, matrix prohibited
         - AGGREGATE: input required, output required, matrix required
 
         Args:

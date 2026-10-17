@@ -1,30 +1,20 @@
 """Shared type surface for the WorkflowExecutor functional mixins.
 
 ``WorkflowExecutor`` is composed from single-responsibility mixins (matrix,
-templates, patterns, filters, update, aggregation, validation and
+templates, patterns, filters, aggregation, validation and
 execution). Each mixin calls methods and attributes provided by the others;
 this base declares that shared surface so every mixin type-checks on its
 own. The declarations are never executed at runtime (the mixins override
 them all) and are excluded from coverage.
 """
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
 
 from causaliq_core import ActionPattern
 
-from causaliq_workflow.registry import ActionRegistry, WorkflowContext
+from causaliq_workflow.registry import ActionRegistry
 
 if TYPE_CHECKING:  # pragma: no cover
-    from causaliq_workflow.cache import WorkflowCache
     from causaliq_workflow.workflow.aggregation import AggregationConfig
 
 _StepLogger = Optional[Callable[[str, str, str, Dict[str, Any]], None]]
@@ -81,12 +71,6 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Resolve template variables in a workflow object."""
         raise NotImplementedError
 
-    def _is_update_pattern_step(
-        self, step: Dict[str, Any], workflow: Dict[str, Any]
-    ) -> bool:
-        """Return True when a step declares the UPDATE pattern."""
-        raise NotImplementedError
-
     def _runs_once(self, step: Dict[str, Any], has_matrix: bool) -> bool:
         """Return True when a step runs once rather than per matrix job."""
         raise NotImplementedError
@@ -109,12 +93,6 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Return True when a step runs in aggregation mode."""
         raise NotImplementedError
 
-    def _is_update_step(
-        self, step: Dict[str, Any], matrix: Dict[str, List[Any]]
-    ) -> bool:
-        """Return True when a step runs in UPDATE mode."""
-        raise NotImplementedError
-
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
         """Return True when step inputs name any cache (.db) file."""
         raise NotImplementedError
@@ -125,15 +103,6 @@ class WorkflowExecutorBase:  # pragma: no cover
         metadata: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Flatten nested metadata for filter evaluation."""
-        raise NotImplementedError
-
-    def _resolve_filter(
-        self,
-        filter_expr: Optional[str],
-        cache: "WorkflowCache",
-        entries: List[Dict[str, Any]],
-    ) -> Tuple[Optional[str], Dict[str, Any]]:
-        """Pre-resolve random() calls in a filter expression."""
         raise NotImplementedError
 
     def _get_aggregation_config(
@@ -151,26 +120,6 @@ class WorkflowExecutorBase:  # pragma: no cover
         logger: Optional[Callable[[str], None]] = None,
     ) -> List[Dict[str, Any]]:
         """Scan input caches for entries matching matrix values."""
-        raise NotImplementedError
-
-    def _execute_update_step(
-        self,
-        step: Dict[str, Any],
-        resolved_inputs: Dict[str, Any],
-        context: WorkflowContext,
-        step_logger: _StepLogger = None,
-    ) -> Dict[str, Any]:
-        """Execute a step in UPDATE pattern mode."""
-        raise NotImplementedError
-
-    def _scan_update_step_entries(
-        self,
-        step: Dict[str, Any],
-        resolved_inputs: Dict[str, Any],
-        context: Optional[WorkflowContext] = None,
-        step_logger: _StepLogger = None,
-    ) -> Dict[str, int]:
-        """Scan UPDATE step caches for dry-run reporting."""
         raise NotImplementedError
 
     def _validate_required_variables(
@@ -205,15 +154,6 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Validate all entries before the execution pass."""
         raise NotImplementedError
 
-    def _validate_update_entries(
-        self,
-        step: Dict[str, Any],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-    ) -> List[str]:
-        """Validate UPDATE pattern entries by iterating an input cache."""
-        raise NotImplementedError
-
     def _validate_create_entries(
         self,
         step: Dict[str, Any],
@@ -224,13 +164,13 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Validate CREATE pattern entries by expanding the matrix."""
         raise NotImplementedError
 
-    def _validate_nocache_entries(
+    def _validate_single_run_entries(
         self,
         step: Dict[str, Any],
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> List[str]:
-        """Validate NOCACHES pattern entries once, without a matrix."""
+        """Validate single-run step entries once, without a matrix."""
         raise NotImplementedError
 
     def _validate_aggregation_entries(

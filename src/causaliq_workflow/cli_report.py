@@ -120,7 +120,7 @@ def _count_would_execute(
     would_process = step_result.get("would_process", 0)
     would_skip = step_result.get("would_skip", 0)
     if would_process > 0 or would_skip > 0:
-        # UPDATE step with sub-entries
+        # step with per-entry sub-counts
         counts.updates += would_process
     else:
         # CREATE / AGGREGATE step

@@ -2,7 +2,7 @@
 
 A step's job dimensionality comes from its output: the workflow matrix if
 declared, else the output cache keys, else a single job when the step
-writes no workflow cache. This replaces the NOCACHES action pattern.
+writes no workflow cache.
 """
 
 from typing import Any, Dict, List, Optional
@@ -37,33 +37,10 @@ class OutputActionProvider(CausalIQActionProvider):
         return ("success", {"ran": True}, [])
 
 
-class NocachesActionProvider(CausalIQActionProvider):
-    """Mock provider declaring the retired NOCACHES pattern."""
-
-    name = "nocaches-provider"
-    version = "1.0.0"
-    supported_actions = {"nocache_action"}
-    action_patterns = {"nocache_action": ActionPattern.NOCACHES}
-
-    def _execute(
-        self,
-        action: str,
-        parameters: Dict[str, Any],
-        mode: str,
-        context: Optional[Any],
-        logger: Optional[Any],
-    ) -> Any:
-        """Execute the mock NOCACHES action."""
-        return ("success", {"ran": True}, [])
-
-
 def _make_executor() -> WorkflowExecutor:
-    """Create an executor with the output providers registered."""
+    """Create an executor with the output provider registered."""
     executor = WorkflowExecutor()
     executor.action_registry._actions["output-provider"] = OutputActionProvider
-    executor.action_registry._actions["nocaches-provider"] = (
-        NocachesActionProvider
-    )
     return executor
 
 
@@ -182,45 +159,6 @@ def test_run_once_step_passes_pattern_validation() -> None:
     executor = _make_executor()
     errors = executor._validate_action_patterns(_workflow())
     assert errors == []
-
-
-# A NOCACHES step with a matrix and a cache input is rejected.
-def test_nocaches_with_matrix_and_cache_input_is_rejected() -> None:
-    """A NOCACHES step may not read a cache when it keeps a matrix."""
-    executor = _make_executor()
-    workflow: Dict[str, Any] = {
-        "matrix": {"network": ["asia"]},
-        "steps": [
-            {
-                "name": "nocache-step",
-                "uses": "nocaches-provider",
-                "with": {
-                    "action": "nocache_action",
-                    "input": "graphs.db",
-                    "output": "out.png",
-                },
-            }
-        ],
-    }
-    errors = executor._validate_action_patterns(workflow)
-    assert any("prohibits cache input" in e for e in errors)
-
-
-# A NOCACHES step that writes a cache is rejected.
-def test_nocaches_with_cache_output_is_rejected() -> None:
-    """A NOCACHES step may not write a workflow cache."""
-    executor = _make_executor()
-    workflow: Dict[str, Any] = {
-        "steps": [
-            {
-                "name": "nocache-step",
-                "uses": "nocaches-provider",
-                "with": {"action": "nocache_action", "output": "out.db"},
-            }
-        ]
-    }
-    errors = executor._validate_action_patterns(workflow)
-    assert any("prohibits cache output" in e for e in errors)
 
 
 class StrictOutputActionProvider(OutputActionProvider):

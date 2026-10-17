@@ -1,14 +1,11 @@
 """Per-entry validation for the execution pass."""
 
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.matrix import _runs_once
-
-if TYPE_CHECKING:  # pragma: no cover
-    from causaliq_workflow.cache import WorkflowCache
 
 
 class EntryValidationMixin(WorkflowExecutorBase):
@@ -33,8 +30,8 @@ class EntryValidationMixin(WorkflowExecutorBase):
         Pattern-specific validation:
 
         - CREATE: Expand matrix, validate each combination
-        - UPDATE: Open cache, iterate entries, apply filter, validate
         - AGGREGATE: Expand matrix, scan entries, validate each combo
+        - single-run step: validate once, without a matrix
 
         Args:
             workflow: Parsed workflow dictionary
@@ -76,135 +73,15 @@ class EntryValidationMixin(WorkflowExecutorBase):
         if not step_inputs.get("action"):
             return [f"Step '{step_name}': Missing 'action' parameter"]
 
-        if self._is_update_step(step, matrix):
-            return self._validate_update_entries(step, workflow, cli_params)
         if self._is_aggregation_step(step, matrix):
             return self._validate_aggregation_entries(
                 step, jobs, workflow, cli_params
             )
         if _runs_once(step, bool(matrix)):
-            return self._validate_nocache_entries(step, workflow, cli_params)
+            return self._validate_single_run_entries(
+                step, workflow, cli_params
+            )
         return self._validate_create_entries(step, jobs, workflow, cli_params)
-
-    def _validate_update_entries(
-        self,
-        step: Dict[str, Any],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-    ) -> List[str]:
-        """Validate UPDATE pattern entries by iterating input cache.
-
-        Opens the input cache, iterates all entries, applies the filter
-        expression, and validates parameters for each matching entry.
-
-        Args:
-            step: Step configuration dictionary
-            workflow: Full workflow dictionary for variable resolution
-            cli_params: CLI parameters
-
-        Returns:
-            List of validation error messages
-        """
-        from pathlib import Path
-
-        from causaliq_workflow.cache import WorkflowCache
-
-        errors: List[str] = []
-        step_name = step.get("name", "unnamed")
-        resolved_inputs = self._resolve_template_variables(
-            step.get("with", {}), {**workflow, **cli_params}
-        )
-
-        input_path = resolved_inputs.get("input")
-        if input_path is None:
-            errors.append(
-                f"Step '{step_name}': UPDATE pattern requires 'input'"
-            )
-            return errors
-
-        if not Path(input_path).exists():
-            # Skip cache validation if cache doesn't exist
-            # (will be caught at execution time)
-            return errors
-
-        with WorkflowCache(input_path) as cache:
-            errors.extend(
-                self._validate_update_cache(
-                    cache,
-                    resolved_inputs,
-                    step_name,
-                    str(step.get("uses", "")),
-                )
-            )
-
-        return errors
-
-    def _validate_update_cache(
-        self,
-        cache: "WorkflowCache",
-        resolved_inputs: Dict[str, Any],
-        step_name: str,
-        provider_name: str,
-    ) -> List[str]:
-        """Validate every matching entry in an open UPDATE input cache."""
-        errors: List[str] = []
-        entries = cache.list_entries()
-        resolved_filter, extra_names = self._resolve_filter(
-            resolved_inputs.get("filter"), cache, entries
-        )
-
-        for entry_info in entries:
-            entry_matrix = entry_info.get("matrix_values", {})
-            full_entry = cache.get(entry_matrix)
-            if full_entry is None:
-                continue
-            error = self._validate_update_entry(
-                full_entry,
-                entry_matrix,
-                resolved_inputs,
-                resolved_filter,
-                extra_names,
-                step_name,
-                provider_name,
-            )
-            if error:
-                errors.append(error)
-
-        return errors
-
-    def _validate_update_entry(
-        self,
-        full_entry: Any,
-        entry_matrix: Dict[str, Any],
-        resolved_inputs: Dict[str, Any],
-        resolved_filter: Optional[str],
-        extra_names: Dict[str, Any],
-        step_name: str,
-        provider_name: str,
-    ) -> Optional[str]:
-        """Validate one UPDATE entry, returning an error message or None."""
-        from causaliq_core import ActionValidationError
-
-        flat_meta = self._flatten_metadata(entry_matrix, full_entry.metadata)
-        filtered_out, error = _entry_filter_error(
-            step_name, resolved_filter, extra_names, flat_meta
-        )
-        if error:
-            return error
-        if filtered_out:
-            return None
-
-        # Resolve remaining template variables from entry metadata
-        action_inputs = self._resolve_template_variables(
-            resolved_inputs, flat_meta
-        )
-        try:
-            self.action_registry.validate_action_parameters(
-                provider_name, action_inputs
-            )
-        except ActionValidationError as e:
-            return f"Step '{step_name}': {e}"
-        return None
 
     def _validate_create_entries(
         self,
@@ -275,17 +152,17 @@ class EntryValidationMixin(WorkflowExecutorBase):
             return f"Step '{step_name}': {e}"
         return None
 
-    def _validate_nocache_entries(
+    def _validate_single_run_entries(
         self,
         step: Dict[str, Any],
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> List[str]:
-        """Validate NOCACHES pattern entries (once, without matrix).
+        """Validate single-run step entries (once, without matrix).
 
-        NOCACHES steps operate on plain files and do not use the workflow
-        matrix, so their parameters are validated a single time with no
-        implicit matrix variables added.
+        Single-run steps write no workflow cache and do not use the
+        workflow matrix, so their parameters are validated a single time
+        with no implicit matrix variables added.
 
         Args:
             step: Step configuration dictionary
@@ -421,28 +298,6 @@ class EntryValidationMixin(WorkflowExecutorBase):
         except ActionValidationError as e:
             return f"Step '{step_name}': {e}"
         return None
-
-
-def _entry_filter_error(
-    step_name: str,
-    resolved_filter: Optional[str],
-    extra_names: Dict[str, Any],
-    flat_meta: Dict[str, Any],
-) -> Tuple[bool, Optional[str]]:
-    """Return (filtered_out, error) for one entry's filter evaluation."""
-    from causaliq_core.utils import FilterExpressionError, evaluate_filter
-
-    if not resolved_filter:
-        return False, None
-
-    try:
-        passed = evaluate_filter(resolved_filter, {**flat_meta, **extra_names})
-    except FilterExpressionError as e:
-        # Semantic filter error - undefined variable
-        return False, f"Step '{step_name}': Filter error - {e}"
-    except Exception as e:
-        return False, f"Step '{step_name}': Filter evaluation failed - {e}"
-    return (not passed), None
 
 
 def _check_aggregation_fingerprint(

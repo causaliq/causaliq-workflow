@@ -11,6 +11,7 @@ from causaliq_workflow.cache.export import (
     sanitise_path_segment,
     serialise_objects,
     store_action_result,
+    store_failure_result,
 )
 
 # =============================================================================
@@ -218,6 +219,22 @@ def test_store_action_result_returns_none_when_no_cache() -> None:
         entry_type="workflow",
         metadata={"status": "success"},
         objects=[{"type": "json", "name": "result", "content": "{}"}],
+    )
+
+    assert result is None
+
+
+# Test store_failure_result returns None when cache is None.
+def test_store_failure_result_returns_none_when_no_cache() -> None:
+    """store_failure_result returns None when there is no cache."""
+    context = MagicMock()
+    context.matrix_values = {"dataset": "asia"}
+
+    result = store_failure_result(
+        cache=None,
+        context=context,
+        metadata={"provider": {"action": {"status": "error"}}},
+        action="action",
     )
 
     assert result is None

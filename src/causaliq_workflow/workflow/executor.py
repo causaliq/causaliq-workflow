@@ -9,7 +9,6 @@ from causaliq_workflow.workflow.filters import FilterMixin
 from causaliq_workflow.workflow.matrix import MatrixMixin
 from causaliq_workflow.workflow.patterns import PatternMixin
 from causaliq_workflow.workflow.templates import TemplateMixin
-from causaliq_workflow.workflow.update import UpdateMixin
 from causaliq_workflow.workflow.validation import ValidationMixin
 from causaliq_workflow.workflow.validation_entries import (
     EntryValidationMixin,
@@ -21,7 +20,6 @@ class WorkflowExecutor(
     TemplateMixin,
     PatternMixin,
     FilterMixin,
-    UpdateMixin,
     AggregationMixin,
     ValidationMixin,
     EntryValidationMixin,

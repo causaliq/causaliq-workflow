@@ -373,3 +373,164 @@ def test_execute_workflow_records_failure_entry(
         learn = entry.metadata["mock-failure-recording"]["learn_graph"]
         assert learn["status"] == "input"
         assert learn["error"] == "bad data"
+
+
+# A failure replaces a typed entry with provenance and an empty object.
+def test_execute_workflow_failure_replaces_entry_with_empty_object(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    from causaliq_core import CausalIQActionProvider
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    class MockFailingLearner(CausalIQActionProvider):
+        name = "mock-failing-learner"
+        supported_actions = {"learn_graph"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            return ("error", {"status": "failed", "error": "boom"}, [])
+
+    executor.action_registry._actions["mock_failing_learner"] = (
+        MockFailingLearner
+    )
+
+    db_path = tmp_path / "out.db"
+    key = {"dataset": "asia"}
+    with WorkflowCache(str(db_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("dag", "graphml", "<graphml/>", "learn_graph")
+        cache.put_typed(key, entry)
+
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_failing_learner",
+                "name": "Test Step",
+                "with": {"action": "learn_graph", "output": str(db_path)},
+            }
+        ],
+    }
+    executor.execute_workflow(workflow, mode="force")
+
+    with WorkflowCache(str(db_path)) as cache:
+        entry = cache.get(key)
+        assert entry is not None
+        assert list(entry.objects) == ["dag"]
+        assert entry.objects["dag"].format == "empty"
+        assert entry.objects["dag"].content == ""
+        learn = entry.metadata["mock-failing-learner"]["learn_graph"]
+        assert learn["error"] == "boom"
+
+
+# Test step logging reports executed and forced completions.
+def test_execute_workflow_logs_step_completion(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    from causaliq_core import CausalIQActionProvider
+
+    class MockSuccessfulAction(CausalIQActionProvider):
+        name = "mock-successful"
+        supported_actions = {"learn_graph"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            return (
+                "success",
+                {"status": "done"},
+                [
+                    {
+                        "type": "dag",
+                        "format": "graphml",
+                        "action": "learn_graph",
+                        "content": "<graphml/>",
+                    }
+                ],
+            )
+
+    executor.action_registry._actions["mock_successful"] = MockSuccessfulAction
+    statuses = []
+
+    def step_logger(action_method, step_name, status, matrix_values):
+        statuses.append(status)
+
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_successful",
+                "name": "Test Step",
+                "with": {
+                    "action": "learn_graph",
+                    "output": str(tmp_path / "out.db"),
+                },
+            }
+        ],
+    }
+    executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
+    executor.execute_workflow(workflow, mode="force", step_logger=step_logger)
+
+    assert statuses == ["EXECUTED", "FORCED"]
+
+
+# Test step logging reports a failed step.
+def test_execute_workflow_logs_failed_step(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    from causaliq_core import CausalIQActionProvider
+
+    class MockErrorAction(CausalIQActionProvider):
+        name = "mock-error-action"
+        supported_actions = {"learn_graph"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            return ("error", {"status": "failed", "error": "boom"}, [])
+
+    executor.action_registry._actions["mock_error_action"] = MockErrorAction
+    statuses = []
+
+    def step_logger(action_method, step_name, status, matrix_values):
+        statuses.append(status)
+
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_error_action",
+                "name": "Test Step",
+                "with": {
+                    "action": "learn_graph",
+                    "output": str(tmp_path / "out.db"),
+                },
+            }
+        ],
+    }
+    executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
+
+    assert statuses == ["FAILED"]
+
+
+# Test dry-run reports would_skip when the output cache holds the entry.
+def test_execute_workflow_dry_run_skips_existing_cache_entry(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    db_path = tmp_path / "out.db"
+    with WorkflowCache(str(db_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("dag", "graphml", "<graphml/>", "learn_graph")
+        cache.put_typed({"dataset": "asia"}, entry)
+
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                "with": {"action": "test", "output": str(db_path)},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="dry-run")
+
+    assert results[0]["steps"]["Test Step"]["status"] == "would_skip"

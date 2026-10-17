@@ -27,40 +27,6 @@ class PatternMixin(WorkflowExecutorBase):
         """
         return _runs_once(step, has_matrix)
 
-    def _is_update_pattern_step(
-        self,
-        step: Dict[str, Any],
-        workflow: Dict[str, Any],
-    ) -> bool:
-        """Check if a step uses UPDATE pattern (for validation purposes).
-
-        Args:
-            step: Step configuration dictionary
-            workflow: Full workflow dictionary
-
-        Returns:
-            True if step declares UPDATE pattern
-        """
-        from causaliq_core import ActionPattern
-
-        provider_name = step.get("uses")
-        if not provider_name:
-            return False
-
-        step_inputs = step.get("with", {})
-        action_name = step_inputs.get("action")
-        if not action_name:
-            return False
-
-        # Check if action declares UPDATE pattern
-        try:
-            pattern = self.action_registry.get_action_pattern(
-                provider_name, action_name
-            )
-            return pattern == ActionPattern.UPDATE
-        except Exception:
-            return False
-
     def _is_aggregate_pattern_step(
         self,
         step: Dict[str, Any],
@@ -168,9 +134,8 @@ class PatternMixin(WorkflowExecutorBase):
     ) -> Optional[bool]:
         """Return the aggregation decision implied by the action pattern.
 
-        Returns True for an AGGREGATE pattern, False for an UPDATE
-        pattern and None when no relevant pattern is declared (or it
-        cannot be determined).
+        Returns True for an AGGREGATE pattern and None when no relevant
+        pattern is declared (or it cannot be determined).
         """
         from causaliq_core import ActionPattern
 
@@ -186,63 +151,9 @@ class PatternMixin(WorkflowExecutorBase):
         except Exception:
             return None
 
-        if pattern is None:
-            return None
-
-        flags = {ActionPattern.UPDATE: False, ActionPattern.AGGREGATE: True}
-        return flags.get(pattern)
-
-    def _is_update_step(
-        self,
-        step: Dict[str, Any],
-        matrix: Dict[str, List[Any]],
-    ) -> bool:
-        """Check if a step should run in UPDATE pattern mode.
-
-        UPDATE pattern is detected when:
-        1. Action declares ActionPattern.UPDATE for the action name
-        2. Step has input parameter pointing to .db cache file
-
-        When the workflow has a matrix, the UPDATE step processes
-        only the entry matching the current matrix combination.
-        Without a matrix, all entries are processed.
-
-        Args:
-            step: Step configuration dictionary
-            matrix: Workflow matrix definition
-
-        Returns:
-            True if step should run in UPDATE mode
-        """
-        input_param = step.get("with", {}).get("input")
-
-        if not self._declares_update(step):
-            return False
-
-        # Must have input pointing to .db cache
-        if not input_param:
-            return False
-
-        return str(input_param).lower().endswith(".db")
-
-    def _declares_update(self, step: Dict[str, Any]) -> bool:
-        """Return True when the step's action declares the UPDATE pattern."""
-        from causaliq_core import ActionPattern
-
-        provider_name = step.get("uses")
-        step_inputs = step.get("with", {})
-        action_name = step_inputs.get("action")
-        if not provider_name or not action_name:
-            return False
-
-        # Check if action declares UPDATE pattern
-        try:
-            pattern = self.action_registry.get_action_pattern(
-                provider_name, action_name
-            )
-        except (AttributeError, KeyError):
-            return False
-        return pattern == ActionPattern.UPDATE
+        if pattern == ActionPattern.AGGREGATE:
+            return True
+        return None
 
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
         """Check if step inputs include cache file (.db) inputs.

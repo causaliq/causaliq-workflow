@@ -5,6 +5,7 @@ from pytest_mock import MockerFixture
 
 from causaliq_workflow.cache import (
     CacheEntry,
+    CacheTypeError,
     MatrixSchemaError,
     WorkflowCache,
 )
@@ -597,14 +598,13 @@ def test_matrix_schema_error_importable() -> None:
 # ============================================================================
 
 
-# Test put_from_action stores action result format.
+# Test put_from_action stores a single typed object.
 def test_put_from_action() -> None:
     with WorkflowCache(":memory:") as cache:
         key = {"algorithm": "pc"}
         metadata = {"node_count": 5}
         objects = [
             {"type": "dag", "format": "graphml", "content": "<graphml/>"},
-            {"type": "data", "format": "json", "content": '{"key": "val"}'},
         ]
         hash_key = cache.put_from_action(key, metadata, objects)
         assert hash_key == cache.compute_hash(key)
@@ -613,7 +613,18 @@ def test_put_from_action() -> None:
         assert result is not None
         assert result.metadata["node_count"] == 5
         assert result.has_object("dag")
-        assert result.has_object("data")
+        assert cache.get_cache_type() == "dag"
+
+
+# Test put_from_action rejects several objects for one key.
+def test_put_from_action_rejects_multiple_objects() -> None:
+    with WorkflowCache(":memory:") as cache:
+        objects = [
+            {"type": "dag", "format": "graphml", "content": "<graphml/>"},
+            {"type": "data", "format": "json", "content": "{}"},
+        ]
+        with pytest.raises(CacheTypeError, match="exactly one object"):
+            cache.put_from_action({"algorithm": "pc"}, {}, objects)
 
 
 # ============================================================================

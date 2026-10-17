@@ -36,12 +36,8 @@ class TemplateMixin(WorkflowExecutorBase):
         1. All template variables must exist in the available context
            (workflow variables, matrix variables, or built-ins).
         2. All matrix variables must be used in at least one CREATE step's
-           template. AGGREGATE steps use matrix for grouping (not templating)
-           and UPDATE steps don't use explicit matrix.
-
-        For UPDATE pattern steps, template variables not in the workflow
-        context are allowed as they will be resolved from entry metadata
-        at runtime.
+           template. AGGREGATE steps use matrix for grouping (not
+           templating).
 
         Args:
             workflow: Parsed workflow dictionary
@@ -52,64 +48,53 @@ class TemplateMixin(WorkflowExecutorBase):
         """
         matrix_vars = set(workflow.get("matrix", {}).keys())
         available = _collect_available_variables(workflow, matrix_vars)
-        update_vars, create_vars = self._collect_typed_step_variables(workflow)
-        all_non_update_vars, has_create_steps = self._scan_step_variables(
-            workflow
-        )
+        all_vars, has_create_steps = self._scan_step_variables(workflow)
+        create_vars = self._collect_create_variables(workflow)
 
-        _raise_unknown_variables(all_non_update_vars, available)
+        _raise_unknown_variables(all_vars, available)
         if matrix_vars and has_create_steps:
             _raise_unused_matrix_variables(
                 matrix_vars, create_vars, workflow.get("matrix", {})
             )
 
-    def _collect_typed_step_variables(
-        self, workflow: Dict[str, Any]
-    ) -> Tuple[Set[str], Set[str]]:
-        """Collect template variables used by UPDATE and CREATE steps.
+    def _collect_create_variables(self, workflow: Dict[str, Any]) -> Set[str]:
+        """Collect template variables used by CREATE steps.
 
-        AGGREGATE step variables are intentionally neither collected nor
-        returned: their matrix variables group entries rather than
-        templating parameters.
+        AGGREGATE step variables are intentionally not collected: their
+        matrix variables group entries rather than templating parameters.
         """
-        update_vars: Set[str] = set()
         create_vars: Set[str] = set()
 
         for step in workflow.get("steps", []):
+            if self._is_aggregate_pattern_step(step, workflow):
+                continue
             step_vars: Set[str] = set()
             self._collect_template_variables(step, step_vars)
+            create_vars.update(step_vars)
 
-            if self._is_update_pattern_step(step, workflow):
-                update_vars.update(step_vars)
-            elif self._is_aggregate_pattern_step(step, workflow):
-                continue
-            else:
-                create_vars.update(step_vars)
-
-        return update_vars, create_vars
+        return create_vars
 
     def _scan_step_variables(
         self, workflow: Dict[str, Any]
     ) -> Tuple[Set[str], bool]:
-        """Collect non-UPDATE variables and detect CREATE steps.
+        """Collect template variables and detect CREATE steps.
 
-        Returns a tuple of (all_non_update_vars, has_create_steps).
+        Returns a tuple of (all_vars, has_create_steps).
         """
         from causaliq_core import ActionPattern
 
-        all_non_update_vars: Set[str] = set()
+        all_vars: Set[str] = set()
         has_create_steps = False
 
         for step in workflow.get("steps", []):
-            if not self._is_update_pattern_step(step, workflow):
-                step_vars: Set[str] = set()
-                self._collect_template_variables(step, step_vars)
-                all_non_update_vars.update(step_vars)
+            step_vars: Set[str] = set()
+            self._collect_template_variables(step, step_vars)
+            all_vars.update(step_vars)
 
             if self._get_step_action_pattern(step) == ActionPattern.CREATE:
                 has_create_steps = True
 
-        return all_non_update_vars, has_create_steps
+        return all_vars, has_create_steps
 
     def _collect_template_variables(
         self, obj: Any, used_variables: Set[str]

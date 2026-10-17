@@ -22,6 +22,7 @@ from causaliq_workflow.cache.export import (
     get_extension_for_type,
     serialise_objects,
     store_action_result,
+    store_failure_result,
 )
 from causaliq_workflow.cache.import_ import import_entries
 from causaliq_workflow.cache.workflow_cache import (
@@ -41,4 +42,5 @@ __all__ = [
     "import_entries",
     "serialise_objects",
     "store_action_result",
+    "store_failure_result",
 ]

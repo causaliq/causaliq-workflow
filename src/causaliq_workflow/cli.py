@@ -181,7 +181,7 @@ def _make_step_logger(
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Extract UPDATE step entry counts if present
+        # Extract per-entry counts from a dry-run scan if present
         would_process = matrix_values.pop("_entries_would_process", None)
         would_skip = matrix_values.pop("_entries_would_skip", None)
 
@@ -207,7 +207,7 @@ def _format_matrix_values(matrix_values: Dict[str, Any]) -> str:
 
 
 def _format_entry_counts(would_process: Any, would_skip: Any) -> str:
-    """Format UPDATE entry counts as ' (n to process, m to skip)'."""
+    """Format per-entry counts as ' (n to process, m to skip)'."""
     if would_process is None and would_skip is None:
         return ""
 
