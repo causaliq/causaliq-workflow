@@ -935,6 +935,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1289,6 +1317,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -1948,8 +2004,9 @@ action has specific parameters documented in its package.</p>
   input: &quot;results/graphs.db&quot;
   output: &quot;results/merged.db&quot;
 </code></pre>
-<p>Actions follow one of three patterns — create, update, or aggregate — which
-determine their input/output behaviour. See <a href="../action_patterns/">Action Patterns</a>.</p>
+<p>Actions follow one of two patterns — create or aggregate — determined by
+whether the step reads a workflow cache. Steps that write plain files run
+once. See <a href="../action_patterns/">Action Patterns</a>.</p>
 <h2 id="matrix-expansion">Matrix Expansion</h2>
 <p>The <strong>matrix</strong> feature runs steps across multiple parameter combinations,
 essential for comparative experiments.</p>
@@ -2067,17 +2124,18 @@ steps:
 <ol>
 <li><strong>Workflow properties</strong>: <code>id</code>, <code>description</code>, custom workflow-level values</li>
 <li><strong>Matrix variables</strong>: Values from the current matrix combination</li>
-<li><strong>Entry metadata</strong>: For UPDATE pattern steps, values from cache entry
-   metadata</li>
 </ol>
 <h3 id="validation">Validation</h3>
-<p>Template variables are validated at parse time for CREATE and AGGREGATE
-patterns. Unknown variables cause a validation error:</p>
+<p>Template variables are validated at parse time. Unknown variables cause a
+validation error:</p>
 <pre><code>WorkflowExecutionError: Unknown template variables: unknown_var
 Available context: id, description, network
 </code></pre>
-<p>For UPDATE patterns, variables not in workflow context are deferred to runtime
-resolution from entry metadata.</p>
+<p>AGGREGATE steps also see the matrix keys derived from their input caches, so
+<code>{{network}}</code> resolves from a learned graph cache even when the workflow
+declares no matrix. When an input cache does not exist yet — it may be
+produced by an earlier step — that step's variables are resolved at runtime
+instead.</p>
 
 
 

@@ -940,6 +940,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1294,6 +1322,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -1917,7 +1973,8 @@ results here:</p>
 <p>The presence of action-specific metadata (e.g., <code>evaluate_graph</code>) indicates
 that action has been applied to the entry.</p>
 <h3 id="entry-objects">Entry Objects</h3>
-<p>Objects are named data items stored with an entry:</p>
+<p>Each cache holds one object type, and every entry holds exactly one object
+of that type:</p>
 <table>
 <thead>
 <tr>
@@ -1928,36 +1985,42 @@ that action has been applied to the entry.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>graph</code></td>
+<td><code>dag</code></td>
 <td>GraphML</td>
-<td>Learned or generated graph</td>
+<td>Learned DAG</td>
+</tr>
+<tr>
+<td><code>pdg</code></td>
+<td>GraphML</td>
+<td>Merged or LLM-sourced PDG</td>
+</tr>
+<tr>
+<td><code>metrics</code></td>
+<td>JSON</td>
+<td>Evaluation scores</td>
 </tr>
 <tr>
 <td><code>trace</code></td>
 <td>JSON</td>
 <td>Algorithm iteration history</td>
 </tr>
-<tr>
-<td><code>summary</code></td>
-<td>JSON</td>
-<td>Statistical summary table</td>
-</tr>
 </tbody>
 </table>
-<p>Objects are stored as content strings with a format identifier.</p>
+<p>Objects are stored as content strings with a format identifier. See
+<a href="../../architecture/cache_type_model/">Cache Type Model</a> for the full design.</p>
 <h2 id="conservative-execution">Conservative Execution</h2>
 <p>By default, workflows execute <strong>conservatively</strong> — skipping work that has
 already been completed:</p>
 <ul>
 <li><strong>Create steps</strong>: Skip if entry with matching key exists</li>
-<li><strong>Update steps</strong>: Skip if action metadata already present on entry</li>
 <li><strong>Aggregate steps</strong>: Skip if output entry with matching key exists</li>
+<li><strong>Run-once steps</strong>: Execute on the first job only</li>
 </ul>
 <p>This enables:</p>
 <ul>
 <li><strong>Resumable workflows</strong>: Restart interrupted workflows without re-running
   completed steps</li>
-<li><strong>Incremental updates</strong>: Add new analysis to existing results</li>
+<li><strong>Incremental analysis</strong>: Write new results to their own typed caches</li>
 <li><strong>Efficient iteration</strong>: Modify workflow and re-run without starting from
   scratch</li>
 </ul>

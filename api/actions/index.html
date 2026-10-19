@@ -740,6 +740,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1094,6 +1122,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -2448,11 +2504,9 @@ The 'action' input parameter selects which action to execute.</p>
 operations. Workflow uses these to build a registry of which provider
 handles compression for each data type.</p>
 <p>Action patterns define how actions interact with workflow caches:
-- CREATE: Creates new entries (output + matrix required, input prohibited)
-- UPDATE: Modifies existing entries (input required, output/matrix
+- CREATE: Writes new entries (output + matrix required, input
           prohibited)
-- AGGREGATE: Combines entries (input + output + matrix required)
-- NOCACHES: Operates on files without caches or matrix (no constraints)</p>
+- AGGREGATE: Combines entries (input + output + matrix required)</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>

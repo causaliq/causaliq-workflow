@@ -962,6 +962,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1316,6 +1344,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -1927,8 +1983,8 @@ behaviour.</p>
 <pre><code class="language-yaml">with:
   input: &quot;results/graphs.db&quot;       # Process entries from cache
 </code></pre>
-<p>For <strong>update</strong> and <strong>aggregate</strong> patterns, <code>input</code> typically points to a
-workflow cache. For <strong>create</strong> patterns, it may point to data files.</p>
+<p>For <strong>aggregate</strong> steps, <code>input</code> points to a workflow cache. For <strong>create</strong>
+steps, it may point to data files.</p>
 <h3 id="multiple-inputs">Multiple Inputs</h3>
 <p>Some actions accept multiple input sources:</p>
 <pre><code class="language-yaml">with:
@@ -1959,8 +2015,8 @@ workflow cache. For <strong>create</strong> patterns, it may point to data files
 <pre><code class="language-yaml">with:
   output: &quot;results/merged.db&quot;      # Store results in cache
 </code></pre>
-<p><strong>Note</strong>: Update pattern actions do not use <code>output</code> — they modify entries
-in the input cache directly.</p>
+<p><strong>Note</strong>: Steps that write a plain file (for example <code>plot</code>) also take
+<code>output</code>; it names the file rather than a workflow cache.</p>
 <h3 id="output-behaviour-by-pattern">Output Behaviour by Pattern</h3>
 <table>
 <thead>
@@ -1977,14 +2033,14 @@ in the input cache directly.</p>
 <td>New entries added to output cache</td>
 </tr>
 <tr>
-<td>Update</td>
-<td>Prohibited</td>
-<td>Results added to input cache entries</td>
-</tr>
-<tr>
 <td>Aggregate</td>
 <td>Required</td>
 <td>Aggregated entries added to output cache</td>
+</tr>
+<tr>
+<td>Run once</td>
+<td>Required file</td>
+<td>One file written, outside matrix expansion</td>
 </tr>
 </tbody>
 </table>

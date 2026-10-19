@@ -740,6 +740,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1094,6 +1122,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -2320,9 +2376,8 @@ cqflow run experiment.yml --mode=run --log-level=all
 <li><code>--log-level</code> - Logging level: <code>none</code>, <code>summary</code> (default), or <code>all</code></li>
 </ul>
 <h4 id="log-output-status-messages">Log Output Status Messages</h4>
-<p>When <code>--log-level=all</code>, the CLI outputs per-entry status messages for UPDATE
-pattern steps. Each entry in the cache receives its own log line with one of
-the following statuses:</p>
+<p>When <code>--log-level=all</code>, the CLI outputs a status line per job. Each matrix
+combination receives its own log line with one of the following statuses:</p>
 <table>
 <thead>
 <tr>
@@ -2335,27 +2390,27 @@ the following statuses:</p>
 <tr>
 <td><strong>EXECUTED</strong></td>
 <td>WOULD EXECUTE</td>
-<td>Entry processed successfully</td>
+<td>Job processed successfully</td>
 </tr>
 <tr>
 <td><strong>FORCED</strong></td>
 <td>-</td>
-<td>Entry processed in force mode (bypasses conservative execution)</td>
+<td>Job processed in force mode (bypasses conservative execution)</td>
 </tr>
 <tr>
 <td><strong>SKIPPED</strong></td>
 <td>WOULD SKIP</td>
-<td>Conservative skip - action already applied to this entry</td>
+<td>Conservative skip - entry already exists</td>
 </tr>
 <tr>
 <td><strong>IGNORED</strong></td>
 <td>WOULD IGNORE</td>
-<td>Entry filtered out by <code>filter</code> expression (never executes)</td>
+<td>Job filtered out by <code>filter</code> expression (never executes)</td>
 </tr>
 <tr>
 <td><strong>FAILED</strong></td>
 <td>-</td>
-<td>Action raised an exception for this entry</td>
+<td>Action raised an exception for this job</td>
 </tr>
 </tbody>
 </table>

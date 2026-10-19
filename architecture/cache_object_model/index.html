@@ -740,6 +740,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1404,6 +1432,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2048,6 +2104,14 @@
 
 
 <h1 id="cache-object-model">Cache Object Model</h1>
+<p>!!! note "Superseded by the cache type model"</p>
+<pre><code>The object model below describes the original design in which a single
+entry could hold several objects of different types (for example a
+graph and a trace). The simplified
+[Cache Type Model](cache_type_model.md) now applies: one cache holds
+one object type and every entry holds provenance metadata plus exactly
+one typed object.
+</code></pre>
 <h2 id="overview">Overview</h2>
 <p>This document defines the model for objects stored within workflow cache
 entries. Objects are the primary data artefacts produced by actions, such
@@ -2320,12 +2384,14 @@ entry.objects = {
 <li>[ ] Update <code>to_storage()</code> and <code>from_storage()</code> methods</li>
 <li>[ ] Update action return format in all providers</li>
 <li>[ ] Add output reference to action metadata</li>
-<li>[ ] Update <code>best_graph</code> to CHANGE pattern</li>
+<li>[ ] Confirm <code>best_graph</code> writes a single <code>dag</code> object (AGGREGATE)</li>
 <li>[ ] Update tests</li>
 <li>[ ] Regenerate test caches</li>
 </ul>
 <h2 id="see-also">See Also</h2>
 <ul>
+<li><a href="../cache_type_model/">Cache Type Model</a> - simplified model: one object
+  type per cache, provenance metadata and exactly one typed object</li>
 <li><a href="../workflow_cache_design/">Workflow Cache Design</a> - Overall cache architecture</li>
 <li><a href="../action_architecture_design/">Action Architecture</a> - Action patterns</li>
 </ul>

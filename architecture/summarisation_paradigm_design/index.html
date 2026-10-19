@@ -740,6 +740,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1514,6 +1542,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -2308,8 +2364,8 @@ combined for analysis, model averaging, or comparison.</p>
 <li><strong>AGGREGATE pattern</strong>: Matrix variables define grouping dimensions for
   entry selection. They are <strong>not</strong> required in parameter templates since
   they control which cache entries are passed to the action.</li>
-<li><strong>UPDATE pattern</strong>: No explicit matrix is used; entry iteration is
-  controlled by the input cache contents.</li>
+<li><strong>Run-once steps</strong>: A step writing a plain file runs once, so matrix
+  variables do not define its dimensionality.</li>
 </ul>
 <h2 id="motivation">Motivation</h2>
 <h3 id="research-workflow-pattern">Research Workflow Pattern</h3>

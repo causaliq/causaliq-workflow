@@ -740,6 +740,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1094,6 +1122,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -2447,7 +2503,6 @@ names so existing imports keep resolving:</p>
 <li><code>templates</code> — template variable extraction and resolution;</li>
 <li><code>patterns</code> — step pattern detection;</li>
 <li><code>filters</code> — metadata flattening and filter resolution;</li>
-<li><code>update</code> — UPDATE pattern execution and dry-run scanning;</li>
 <li><code>aggregation</code> — AGGREGATE pattern configuration and input scanning;</li>
 <li><code>validation</code> / <code>validation_entries</code> — configuration and per-entry
   validation;</li>
@@ -2999,8 +3054,6 @@ steps:
 <ul>
 <li><strong>AGGREGATE pattern steps</strong> use matrix for grouping entries, not templating.
   Matrix variables don't need to appear in AGGREGATE step parameters.</li>
-<li><strong>UPDATE pattern steps</strong> derive their matrix from input cache entries,
-  not from explicit workflow matrix definitions.</li>
 </ul>
 <h2 id="aggregation-processing">Aggregation Processing</h2>
 <p>Aggregation mode enables workflow steps to consume entries from multiple cache

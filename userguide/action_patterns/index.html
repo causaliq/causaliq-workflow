@@ -592,54 +592,26 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pattern-2-update" class="md-nav__link">
+  <a href="#run-once-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pattern 2: Update
+        Run-once Steps
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Pattern 2: Update">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#conservative-execution_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Conservative Execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#template-resolution-for-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template Resolution for Updates
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#pattern-3-aggregate" class="md-nav__link">
+  <a href="#pattern-2-aggregate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pattern 3: Aggregate
+        Pattern 2: Aggregate
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Pattern 3: Aggregate">
+    <nav class="md-nav" aria-label="Pattern 2: Aggregate">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -665,7 +637,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#conservative-execution_2" class="md-nav__link">
+  <a href="#conservative-execution_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Conservative Execution
@@ -927,6 +899,34 @@
     
   
     Current task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
   
 
     
@@ -1294,6 +1294,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -1729,54 +1757,26 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pattern-2-update" class="md-nav__link">
+  <a href="#run-once-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pattern 2: Update
+        Run-once Steps
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Pattern 2: Update">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#conservative-execution_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Conservative Execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#template-resolution-for-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template Resolution for Updates
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#pattern-3-aggregate" class="md-nav__link">
+  <a href="#pattern-2-aggregate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pattern 3: Aggregate
+        Pattern 2: Aggregate
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Pattern 3: Aggregate">
+    <nav class="md-nav" aria-label="Pattern 2: Aggregate">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1802,7 +1802,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#conservative-execution_2" class="md-nav__link">
+  <a href="#conservative-execution_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Conservative Execution
@@ -1857,9 +1857,11 @@
 
 
 <h1 id="action-patterns">Action Patterns</h1>
-<p>CausalIQ workflow actions follow one of three patterns, determined by their
-<code>input</code> and <code>output</code> parameter usage. Understanding these patterns is key to
-building correct workflows.</p>
+<p>CausalIQ workflow actions follow one of two patterns, determined by whether
+they read a workflow cache: <strong>Create</strong> writes entries without reading a
+cache, and <strong>Aggregate</strong> reads entries from a cache and writes new ones.
+Actions that write a plain file instead of a cache run <strong>once</strong>, outside
+matrix expansion.</p>
 <h2 id="pattern-summary">Pattern Summary</h2>
 <table>
 <thead>
@@ -1878,13 +1880,6 @@ building correct workflows.</p>
 <td>required</td>
 <td>required</td>
 <td>Generate new cache entries</td>
-</tr>
-<tr>
-<td><strong>Update</strong></td>
-<td>required</td>
-<td>prohibited</td>
-<td>prohibited</td>
-<td>Add analysis to existing entries</td>
 </tr>
 <tr>
 <td><strong>Aggregate</strong></td>
@@ -1938,8 +1933,8 @@ steps:
 <h3 id="conservative-execution">Conservative Execution</h3>
 <p>An entry is created only if it does not already exist. If an entry with
 matching matrix values exists, the action is skipped for that combination.</p>
-<h2 id="pattern-2-update">Pattern 2: Update</h2>
-<p><strong>Update actions add analysis results to existing cache entries.</strong></p>
+<h2 id="run-once-steps">Run-once Steps</h2>
+<p><strong>Steps that write a plain file instead of a workflow cache run once.</strong></p>
 <table>
 <thead>
 <tr>
@@ -1950,73 +1945,37 @@ matching matrix values exists, the action is skipped for that combination.</p>
 <tbody>
 <tr>
 <td><code>input</code></td>
-<td>Required (workflow cache path)</td>
+<td>Any (data files or a workflow cache)</td>
 </tr>
 <tr>
 <td><code>output</code></td>
-<td>Prohibited</td>
+<td>Required, but not a <code>.db</code> cache</td>
 </tr>
 <tr>
 <td><code>matrix</code></td>
-<td>Prohibited</td>
+<td>Not required</td>
 </tr>
 </tbody>
 </table>
-<p>The action processes <strong>all</strong> entries in the input cache (subject to any
-<code>filter</code>), adding results to each entry's metadata and objects. This ensures
-analysis is applied consistently without risk of matrix mismatch.</p>
-<pre><code class="language-yaml">steps:
-  - name: &quot;Evaluate Graphs&quot;
+<p>A file output has no cache dimensionality, so the step runs a single time
+however many matrix combinations the workflow declares, and it is skipped
+on later jobs. Such a step may still read a cache: <code>plot</code> reads a metrics
+cache and writes one image. A file-output step that also declares a matrix
+keeps per-combination granularity; <code>summarise</code> relies on this to write one
+row per combination.</p>
+<pre><code class="language-yaml">matrix:
+  network: [asia, cancer]
+  sample_size: [100, 1000]
+
+steps:
+  - name: &quot;Plot F1&quot;
     uses: &quot;causaliq-analysis&quot;
     with:
-      action: &quot;evaluate_graph&quot;
-      input: &quot;results/graphs.db&quot;
-      reference: &quot;networks/{{network}}/true.graphml&quot;
+      action: &quot;plot&quot;
+      input: &quot;results/metrics.db&quot;
+      output: &quot;results/f1.png&quot;
 </code></pre>
-<p>Note: The <code>{{network}}</code> variable is resolved from each entry's metadata at
-runtime.</p>
-<h3 id="conservative-execution_1">Conservative Execution</h3>
-<p>An action is applied only if the entry exists <strong>and</strong> the action has not yet
-been performed on it:</p>
-<table>
-<thead>
-<tr>
-<th>Entry exists?</th>
-<th>Action metadata exists?</th>
-<th>Behaviour</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>No</td>
-<td>—</td>
-<td>Skip</td>
-</tr>
-<tr>
-<td>Yes</td>
-<td>No</td>
-<td><strong>Run</strong></td>
-</tr>
-<tr>
-<td>Yes</td>
-<td>Yes</td>
-<td>Skip</td>
-</tr>
-</tbody>
-</table>
-<h3 id="template-resolution-for-updates">Template Resolution for Updates</h3>
-<p>Update actions can use template variables that resolve from entry metadata:</p>
-<pre><code class="language-yaml">steps:
-  - name: &quot;Evaluate&quot;
-    uses: &quot;causaliq-analysis&quot;
-    with:
-      action: &quot;evaluate_graph&quot;
-      input: &quot;results/graphs.db&quot;
-      reference: &quot;networks/{{network}}/true.graphml&quot;  # From entry metadata
-</code></pre>
-<p>If an entry has <code>network: "asia"</code> in its metadata, the reference path becomes
-<code>networks/asia/true.graphml</code> for that entry.</p>
-<h2 id="pattern-3-aggregate">Pattern 3: Aggregate</h2>
+<h2 id="pattern-2-aggregate">Pattern 2: Aggregate</h2>
 <p><strong>Aggregate actions combine multiple entries into summary entries.</strong></p>
 <table>
 <thead>
@@ -2100,7 +2059,7 @@ dimensions relevant to their source, and missing dimensions are treated
 as wildcards during matching.</p>
 <p>See <a href="../common_parameters/#filter-parameter">Common Parameters</a> for filter
 expression syntax.</p>
-<h3 id="conservative-execution_2">Conservative Execution</h3>
+<h3 id="conservative-execution_1">Conservative Execution</h3>
 <p>An output entry is created only if it does not already exist in the output
 cache.</p>
 <h2 id="choosing-the-right-pattern">Choosing the Right Pattern</h2>
@@ -2117,8 +2076,8 @@ cache.</p>
 <td>Create</td>
 </tr>
 <tr>
-<td>Add metrics to existing graphs</td>
-<td>Update</td>
+<td>Evaluate graphs and store metrics</td>
+<td>Aggregate</td>
 </tr>
 <tr>
 <td>Merge multiple graphs into one</td>
@@ -2131,6 +2090,10 @@ cache.</p>
 <tr>
 <td>Convert file formats</td>
 <td>Create</td>
+</tr>
+<tr>
+<td>Plot results to an image</td>
+<td>Run once (file output)</td>
 </tr>
 </tbody>
 </table>

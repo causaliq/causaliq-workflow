@@ -720,10 +720,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#update-pattern" class="md-nav__link">
+  <a href="#run-once-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Update Pattern
+        Run-once Steps
       
     </span>
   </a>
@@ -909,6 +909,34 @@
     
   
     Current task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
   
 
     
@@ -1276,6 +1304,34 @@
     
   
     Workflow Cache Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cache_type_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Type Model
   
 
     
@@ -1727,10 +1783,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#update-pattern" class="md-nav__link">
+  <a href="#run-once-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Update Pattern
+        Run-once Steps
       
     </span>
   </a>
@@ -1901,18 +1957,21 @@ steps:
       sample_size: &quot;{{sample_size}}&quot;
       output: &quot;results/graphs.db&quot;
 </code></pre>
-<h2 id="update-pattern">Update Pattern</h2>
-<p>Add analysis to existing entries (requires input, no matrix or output):</p>
-<pre><code class="language-yaml"># update_pattern.yml
+<h2 id="run-once-steps">Run-once Steps</h2>
+<p>Steps that write a plain file run once, even when the workflow declares a
+matrix:</p>
+<pre><code class="language-yaml"># plot_pattern.yml
+matrix:
+  network: [asia, cancer]
+
 steps:
-  - name: &quot;Evaluate Graphs&quot;
+  - name: &quot;Plot Metrics&quot;
     uses: &quot;causaliq-analysis&quot;
     with:
-      action: &quot;evaluate_graph&quot;
-      input: &quot;results/graphs.db&quot;
-      reference: &quot;networks/{{network}}/true.graphml&quot;
+      action: &quot;plot&quot;
+      input: &quot;results/metrics.db&quot;
+      output: &quot;results/f1.png&quot;
 </code></pre>
-<p>The <code>{{network}}</code> variable resolves from each entry's metadata at runtime.</p>
 <h2 id="aggregate-pattern">Aggregate Pattern</h2>
 <p>Combine entries into summaries (requires input, output, and matrix):</p>
 <pre><code class="language-yaml"># aggregate_pattern.yml
@@ -2008,7 +2067,7 @@ cqflow run workflow.yml --mode=run --log-level=all
 <h2 id="further-reading">Further Reading</h2>
 <ul>
 <li><a href="../core_concepts/">Core Concepts</a> — Workflows, steps, matrix</li>
-<li><a href="../action_patterns/">Action Patterns</a> — Create, update, aggregate</li>
+<li><a href="../action_patterns/">Action Patterns</a> — Create, aggregate and run-once steps</li>
 <li><a href="../caching/">Workflow Caching</a> — Result storage</li>
 <li><a href="../common_parameters/">Common Parameters</a> — Shared parameters</li>
 <li><a href="../cli/">CLI Usage</a> — Command-line interface</li>
