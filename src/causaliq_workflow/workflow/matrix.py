@@ -157,6 +157,22 @@ def _merge_entry_keys(
     return entry_keys, value_sets
 
 
+def _cache_entry_exists(
+    is_cache_output: bool,
+    output_path: Any,
+    matrix_values: Dict[str, Any],
+) -> bool:
+    """Return True when a .db output cache already holds the entry."""
+    from pathlib import Path
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    if not is_cache_output or not Path(output_path).exists():
+        return False
+    with WorkflowCache(output_path) as cache:
+        return cache.exists(matrix_values)
+
+
 def _has_cache_output(step: Dict[str, Any]) -> bool:
     """Return True when a step writes a workflow cache (``.db`` output).
 

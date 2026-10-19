@@ -5,6 +5,10 @@ from typing import Any, Dict, Set, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.matrix import (
+    _cache_input_paths,
+    _derive_matrix_from_caches,
+)
 
 
 class TemplateMixin(WorkflowExecutorBase):
@@ -34,10 +38,15 @@ class TemplateMixin(WorkflowExecutorBase):
 
         Performs two validations:
         1. All template variables must exist in the available context
-           (workflow variables, matrix variables, or built-ins).
+           (workflow variables, matrix variables, keys derived from an
+           AGGREGATE step's input cache, or built-ins).
         2. All matrix variables must be used in at least one CREATE step's
            template. AGGREGATE steps use matrix for grouping (not
            templating).
+
+        Variables used only by an AGGREGATE step whose input cache does not
+        exist yet (it may be produced by an earlier step) are deferred to
+        runtime resolution.
 
         Args:
             workflow: Parsed workflow dictionary
@@ -47,15 +56,48 @@ class TemplateMixin(WorkflowExecutorBase):
                 or if matrix variables are not used in any CREATE step
         """
         matrix_vars = set(workflow.get("matrix", {}).keys())
+        derived_vars, deferred_vars = self._aggregate_template_scope(workflow)
         available = _collect_available_variables(workflow, matrix_vars)
+        available.update(derived_vars)
         all_vars, has_create_steps = self._scan_step_variables(workflow)
         create_vars = self._collect_create_variables(workflow)
 
-        _raise_unknown_variables(all_vars, available)
+        _raise_unknown_variables(all_vars - deferred_vars, available)
         if matrix_vars and has_create_steps:
             _raise_unused_matrix_variables(
                 matrix_vars, create_vars, workflow.get("matrix", {})
             )
+
+    def _aggregate_template_scope(
+        self, workflow: Dict[str, Any]
+    ) -> Tuple[Set[str], Set[str]]:
+        """Return (derived matrix keys, deferred variables).
+
+        An AGGREGATE step without an explicit matrix takes its
+        dimensionality from the entries of its input caches. When a cache
+        exists its keys are known now, so templates using them are
+        validated strictly; when no cache exists yet the step's variables
+        are deferred to runtime resolution.
+        """
+        derived: Set[str] = set()
+        deferred: Set[str] = set()
+
+        for step in workflow.get("steps", []):
+            if not self._is_aggregate_pattern_step(step, workflow):
+                continue
+            matrix_keys = _cached_matrix_keys(step)
+            if matrix_keys:
+                derived.update(matrix_keys)
+            else:
+                deferred.update(self._step_template_variables(step))
+
+        return derived, deferred
+
+    def _step_template_variables(self, step: Dict[str, Any]) -> Set[str]:
+        """Return the template variables used by a single step."""
+        step_vars: Set[str] = set()
+        self._collect_template_variables(step, step_vars)
+        return step_vars
 
     def _collect_create_variables(self, workflow: Dict[str, Any]) -> Set[str]:
         """Collect template variables used by CREATE steps.
@@ -168,11 +210,20 @@ def _collect_available_variables(
     return available
 
 
-def _raise_unknown_variables(
-    all_non_update_vars: Set[str], available: Set[str]
-) -> None:
+def _cached_matrix_keys(step: Dict[str, Any]) -> Set[str]:
+    """Return matrix keys derivable from a step's input caches.
+
+    Returns an empty set when the step names no cache input or when none of
+    its input caches exist yet.
+    """
+    cache_paths = _cache_input_paths(step.get("with", {}).get("input"))
+    matrix_keys, _ = _derive_matrix_from_caches(cache_paths)
+    return set(matrix_keys)
+
+
+def _raise_unknown_variables(used_vars: Set[str], available: Set[str]) -> None:
     """Raise when template variables are not in the available context."""
-    unknown = all_non_update_vars - available
+    unknown = used_vars - available
     if not unknown:
         return
     raise WorkflowExecutionError(

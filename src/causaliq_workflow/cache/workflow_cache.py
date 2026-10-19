@@ -609,7 +609,7 @@ class WorkflowCache:
             >>> with WorkflowCache("cache.db") as cache:
             ...     cache.put({"algorithm": "pc"}, CacheEntry())
             ...     summaries = cache.list_entry_summaries()
-            ...     summaries[0]["matrix_values"]
+            ...     summaries[0].get("matrix_values")
             {'algorithm': 'pc'}
         """
         token_cache = self.token_cache

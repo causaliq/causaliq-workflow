@@ -231,7 +231,7 @@ def test_export_entries_metadata_only_entry(tmp_path: Path) -> None:
         assert meta_path.exists()
         saved = json.loads(meta_path.read_text())
         assert saved["metadata"] == {"empty": True}
-        assert saved["objects"] == {}
+        assert "objects" not in saved
 
 
 # Test export_entries with multiple entries.

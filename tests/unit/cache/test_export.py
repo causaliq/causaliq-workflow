@@ -234,7 +234,6 @@ def test_store_failure_result_returns_none_when_no_cache() -> None:
         cache=None,
         context=context,
         metadata={"provider": {"action": {"status": "error"}}},
-        action="action",
     )
 
     assert result is None
@@ -308,7 +307,7 @@ def test_export_entries_metadata_only(tmp_path: Path) -> None:
         learn = saved["metadata"]["provider"]["learn_graph"]
         assert learn["status"] == "input"
         assert learn["error"] == "bad data"
-        assert saved["objects"] == {}
+        assert "objects" not in saved
 
 
 # Entries with neither objects nor metadata are skipped on export.

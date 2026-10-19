@@ -9,6 +9,7 @@ from causaliq_workflow.schema import WorkflowValidationError
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.matrix import _cache_entry_exists
 
 
 @dataclass
@@ -439,10 +440,9 @@ class ExecutionMixin(WorkflowExecutorBase):
         """Store a step result to the open cache when appropriate.
 
         Successful actions store their single typed object. Actions that
-        return an "error" status record provenance (status and failure
-        reason) plus an empty object of the cache's type, replacing any
-        prior entry for the key so the failure is reproducible and its
-        _meta.json can be produced on export.
+        return an "error" status record provenance only (status and failure
+        reason), replacing any prior entry for the key so the latest run
+        wins and the failure is exported as _meta.json.
         """
         if state.context.cache is None:
             return
@@ -471,7 +471,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         resolved_inputs: Dict[str, Any],
         step_result: Dict[str, Any],
     ) -> None:
-        """Record a failed step as provenance plus an empty object."""
+        """Record a failed step as provenance only."""
         from causaliq_workflow.cache import store_failure_result
 
         action_method = resolved_inputs.get("action", "default")
@@ -485,7 +485,6 @@ class ExecutionMixin(WorkflowExecutorBase):
             cache=state.context.cache,
             context=state.context,
             metadata=metadata,
-            action=action_method,
             matrix_key_order=list(state.context.matrix.keys()),
         )
         self._invalidate_scan_index(state.context.cache)
@@ -536,8 +535,11 @@ class ExecutionMixin(WorkflowExecutorBase):
             return
 
         action_method = resolved_inputs.get("action", "default")
-        if step_result.get("status", "unknown") == "success":
+        status = step_result.get("status", "unknown")
+        if status == "success":
             status = "FORCED" if state.context.mode == "force" else "EXECUTED"
+        elif status == "skipped":
+            status = "SKIPPED"
         else:
             status = "FAILED"
         state.step_logger(
@@ -548,22 +550,6 @@ class ExecutionMixin(WorkflowExecutorBase):
 def _has_output(output_path: Any) -> bool:
     """Return True when an output parameter names a real destination."""
     return output_path is not None and str(output_path).lower() != "none"
-
-
-def _cache_entry_exists(
-    is_cache_output: bool,
-    output_path: Any,
-    matrix_values: Dict[str, Any],
-) -> bool:
-    """Return True when a .db output cache already holds the entry."""
-    from pathlib import Path
-
-    from causaliq_workflow.cache import WorkflowCache
-
-    if not is_cache_output or not Path(output_path).exists():
-        return False
-    with WorkflowCache(output_path) as cache:
-        return cache.exists(matrix_values)
 
 
 def _raise_unstored_objects(

@@ -375,8 +375,8 @@ def test_execute_workflow_records_failure_entry(
         assert learn["error"] == "bad data"
 
 
-# A failure replaces a typed entry with provenance and an empty object.
-def test_execute_workflow_failure_replaces_entry_with_empty_object(
+# A failure replaces a typed entry with provenance only.
+def test_execute_workflow_failure_replaces_entry_with_provenance(
     executor: WorkflowExecutor, tmp_path: Path
 ) -> None:
     from causaliq_core import CausalIQActionProvider
@@ -416,11 +416,11 @@ def test_execute_workflow_failure_replaces_entry_with_empty_object(
     with WorkflowCache(str(db_path)) as cache:
         entry = cache.get(key)
         assert entry is not None
-        assert list(entry.objects) == ["dag"]
-        assert entry.objects["dag"].format == "empty"
-        assert entry.objects["dag"].content == ""
-        learn = entry.metadata["mock-failing-learner"]["learn_graph"]
-        assert learn["error"] == "boom"
+        assert entry.objects == {}
+        assert (
+            entry.metadata["mock-failing-learner"]["learn_graph"]["error"]
+            == "boom"
+        )
 
 
 # Test step logging reports executed and forced completions.
@@ -507,6 +507,43 @@ def test_execute_workflow_logs_failed_step(
     executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
 
     assert statuses == ["FAILED"]
+
+
+# Test step logging reports a skipped step.
+def test_execute_workflow_logs_skipped_step(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    from causaliq_core import CausalIQActionProvider
+
+    class MockSkippingAction(CausalIQActionProvider):
+        name = "mock-skipping"
+        supported_actions = {"learn_graph"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            return ("skipped", {"reason": "recorded failure"}, [])
+
+    executor.action_registry._actions["mock_skipping"] = MockSkippingAction
+    statuses = []
+
+    def step_logger(action_method, step_name, status, matrix_values):
+        statuses.append(status)
+
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_skipping",
+                "name": "Test Step",
+                "with": {
+                    "action": "learn_graph",
+                    "output": str(tmp_path / "out.db"),
+                },
+            }
+        ],
+    }
+    executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
+
+    assert statuses == ["SKIPPED"]
 
 
 # Test dry-run reports would_skip when the output cache holds the entry.

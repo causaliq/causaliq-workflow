@@ -176,21 +176,11 @@ def write_entry_to_dir(
         file_path = full_dir / f"{name}{ext}"
         file_path.write_text(content, encoding="utf-8")
 
-    # Build objects info for metadata (stores action and format)
-    objects_info = {
-        name: {
-            "format": obj.get("format", "dat"),
-            "action": obj.get("action", "unknown"),
-        }
-        for name, obj in objects.items()
-    }
-
     # Write metadata file
     meta_data = {
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
         "metadata": metadata,
-        "objects": objects_info,
     }
     meta_path = full_dir / "_meta.json"
     meta_path.write_text(
@@ -223,21 +213,11 @@ def write_entry_to_zip(
         arc_name = str(entry_path / f"{name}{ext}")
         zf.writestr(arc_name, content)
 
-    # Build objects info for metadata (stores action and format)
-    objects_info = {
-        name: {
-            "format": obj.get("format", "dat"),
-            "action": obj.get("action", "unknown"),
-        }
-        for name, obj in objects.items()
-    }
-
     # Write metadata file
     meta_data = {
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
         "metadata": metadata,
-        "objects": objects_info,
     }
     meta_arc = str(entry_path / "_meta.json")
     zf.writestr(meta_arc, json.dumps(meta_data, indent=2, sort_keys=False))
@@ -422,23 +402,20 @@ def store_failure_result(
     cache: "WorkflowCache | None",
     context: Any,
     metadata: dict[str, Any],
-    action: str,
     matrix_key_order: list[str] | None = None,
 ) -> str | None:
-    """Record a failed step as provenance plus an empty typed object.
+    """Record a failed step as provenance only.
 
-    A failed run writes provenance (status and failure reason) together
-    with an empty object of the cache's type, replacing any prior entry
-    for the key. When the cache type is not yet pinned the failure is
-    recorded as provenance only, so the first successful write can still
-    pin the type.
+    A failed run writes provenance (status and failure reason) and no
+    object: an object would be indistinguishable from the result of a
+    successful run and could be scored. The entry replaces any prior entry
+    for the key, so the latest run wins.
 
     Args:
         cache: WorkflowCache instance to store into, or None.
         context: WorkflowContext with matrix_values for the cache key.
         metadata: Provenance metadata, namespaced as
             provider -> action -> fields.
-        action: Action name that failed.
         matrix_key_order: Optional ordered list of matrix variable names
             for export directory structure.
 
@@ -451,11 +428,9 @@ def store_failure_result(
     if matrix_key_order is not None and cache.get_matrix_key_order() is None:
         cache.set_matrix_key_order(matrix_key_order)
 
-    key_data = context.matrix_values
-    cache_type = cache.get_cache_type()
-    if cache_type is None:
-        return cache.put(key_data, CacheEntry(metadata=dict(metadata)))
-    return cache.put_failure(key_data, metadata, action, cache_type)
+    return cache.put(
+        context.matrix_values, CacheEntry(metadata=dict(metadata))
+    )
 
 
 def serialise_objects(

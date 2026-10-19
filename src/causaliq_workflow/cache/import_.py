@@ -91,7 +91,7 @@ def _import_from_dir(
     count = 0
     for meta_path in input_dir.rglob("_meta.json"):
         matrix_values, entry = _dir_cache_entry(meta_path.parent, meta_path)
-        if entry.objects:
+        if entry.objects or entry.metadata:
             cache.put(matrix_values, entry)
             count += 1
 
@@ -102,17 +102,14 @@ def _dir_cache_entry(
     entry_dir: Path, meta_path: Path
 ) -> Tuple[Dict[str, Any], CacheEntry]:
     """Build a CacheEntry and its matrix values from an entry directory."""
-    matrix_values, metadata, objects_info = _read_meta(
-        meta_path.read_text(encoding="utf-8")
-    )
+    matrix_values, metadata = _read_meta(meta_path.read_text(encoding="utf-8"))
     entry = CacheEntry(metadata=metadata)
 
     for file_path in entry_dir.iterdir():
         if file_path.name == "_meta.json" or file_path.is_dir():
             continue
-        name = file_path.stem
-        entry.objects[name] = CacheObject(
-            format=_object_format(objects_info, name, file_path.suffix),
+        entry.objects[file_path.stem] = CacheObject(
+            format=get_type_for_extension(file_path.suffix),
             action="import",
             content=file_path.read_text(encoding="utf-8"),
         )
@@ -122,24 +119,10 @@ def _dir_cache_entry(
 
 def _read_meta(
     meta_content: str,
-) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
-    """Parse a _meta.json payload into values, metadata and objects."""
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Parse a _meta.json payload into matrix values and metadata."""
     data = json.loads(meta_content)
-    return (
-        data.get("matrix_values", {}),
-        data.get("metadata", {}),
-        data.get("objects", {}),
-    )
-
-
-def _object_format(objects_info: Dict[str, Any], name: str, ext: str) -> Any:
-    """Resolve an object's format from metadata (old or new format)."""
-    obj_meta = objects_info.get(name)
-    if isinstance(obj_meta, dict):
-        # New format: {"type": "dag", "format": "graphml"}
-        return obj_meta.get("format", get_type_for_extension(ext))
-    # Legacy format: type was actually the format
-    return obj_meta if obj_meta else get_type_for_extension(ext)
+    return data.get("matrix_values", {}), data.get("metadata", {})
 
 
 def _import_from_zip(
@@ -179,7 +162,7 @@ def _import_zip_archive(cache: "WorkflowCache", zf: zipfile.ZipFile) -> int:
         if meta_entry is None:
             continue
         matrix_values, entry = meta_entry
-        if entry.objects:
+        if entry.objects or entry.metadata:
             cache.put(matrix_values, entry)
             count += 1
 
@@ -212,12 +195,10 @@ def _zip_meta_entry(
         return None
     processed_dirs.add(entry_dir)
 
-    matrix_values, metadata, objects_info = _read_meta(
-        zf.read(name).decode("utf-8")
-    )
+    matrix_values, metadata = _read_meta(zf.read(name).decode("utf-8"))
     entry = CacheEntry(metadata=metadata)
     for file_name in dirs_files.get(entry_dir, []):
-        _add_zip_object(zf, entry, file_name, objects_info)
+        _add_zip_object(zf, entry, file_name)
     return matrix_values, entry
 
 
@@ -225,16 +206,13 @@ def _add_zip_object(
     zf: zipfile.ZipFile,
     entry: CacheEntry,
     file_name: str,
-    objects_info: Dict[str, Any],
 ) -> None:
     """Add a single file from a zip archive to an entry's objects."""
     if PurePosixPath(file_name).name == "_meta.json":
         return
-    stem = PurePosixPath(file_name).stem
-    entry.objects[stem] = CacheObject(
-        format=_object_format(
-            objects_info, stem, PurePosixPath(file_name).suffix
-        ),
+    suffix = PurePosixPath(file_name).suffix
+    entry.objects[PurePosixPath(file_name).stem] = CacheObject(
+        format=get_type_for_extension(suffix),
         action="import",
         content=zf.read(file_name).decode("utf-8"),
     )
