@@ -18,8 +18,8 @@ with:
   input: "results/graphs.db"       # Process entries from cache
 ```
 
-For **update** and **aggregate** patterns, `input` typically points to a
-workflow cache. For **create** patterns, it may point to data files.
+For **aggregate** steps, `input` points to a workflow cache. For **create**
+steps, it may point to data files.
 
 ### Multiple Inputs
 
@@ -46,16 +46,16 @@ with:
   output: "results/merged.db"      # Store results in cache
 ```
 
-**Note**: Update pattern actions do not use `output` — they modify entries
-in the input cache directly.
+**Note**: Steps that write a plain file (for example `plot`) also take
+`output`; it names the file rather than a workflow cache.
 
 ### Output Behaviour by Pattern
 
 | Pattern | Output | Behaviour |
 |---------|--------|-----------|
 | Create | Required | New entries added to output cache |
-| Update | Prohibited | Results added to input cache entries |
 | Aggregate | Required | Aggregated entries added to output cache |
+| Run once | Required file | One file written, outside matrix expansion |
 
 ## `filter` Parameter
 

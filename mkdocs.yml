@@ -51,6 +51,7 @@ nav:
   - Roadmap:
     - Roadmap: roadmap.md
     - Current task: current_task.md
+    - Metadata: metadata.md
   - Architecture: 
     - Architectural Overview: architecture/overview.md
     - Design Documents:
@@ -62,6 +63,7 @@ nav:
       - Workflow Executor: architecture/workflow_executor_design.md
       - Logging Architecture: architecture/logging_architecture_design.md
       - Workflow Cache Design: architecture/workflow_cache_design.md
+      - Cache Type Model: architecture/cache_type_model.md
   - API Reference:
     - Overview: api/overview.md
     - Action Framework: api/actions.md

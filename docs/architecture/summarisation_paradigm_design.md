@@ -17,8 +17,8 @@ Matrix variables serve different purposes depending on the action pattern:
 - **AGGREGATE pattern**: Matrix variables define grouping dimensions for
   entry selection. They are **not** required in parameter templates since
   they control which cache entries are passed to the action.
-- **UPDATE pattern**: No explicit matrix is used; entry iteration is
-  controlled by the input cache contents.
+- **Run-once steps**: A step writing a plain file runs once, so matrix
+  variables do not define its dimensionality.
 
 ## Motivation
 

@@ -1,5 +1,14 @@
 # Cache Object Model
 
+!!! note "Superseded by the cache type model"
+
+    The object model below describes the original design in which a single
+    entry could hold several objects of different types (for example a
+    graph and a trace). The simplified
+    [Cache Type Model](cache_type_model.md) now applies: one cache holds
+    one object type and every entry holds provenance metadata plus exactly
+    one typed object.
+
 ## Overview
 
 This document defines the model for objects stored within workflow cache
@@ -244,11 +253,13 @@ def get_object_by_type(self, obj_type: str) -> CacheObject | None:
 - [ ] Update `to_storage()` and `from_storage()` methods
 - [ ] Update action return format in all providers
 - [ ] Add output reference to action metadata
-- [ ] Update `best_graph` to CHANGE pattern
+- [ ] Confirm `best_graph` writes a single `dag` object (AGGREGATE)
 - [ ] Update tests
 - [ ] Regenerate test caches
 
 ## See Also
 
+- [Cache Type Model](cache_type_model.md) - simplified model: one object
+  type per cache, provenance metadata and exactly one typed object
 - [Workflow Cache Design](workflow_cache_design.md) - Overall cache architecture
 - [Action Architecture](action_architecture_design.md) - Action patterns

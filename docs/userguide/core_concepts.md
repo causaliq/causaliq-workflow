@@ -71,8 +71,9 @@ with:
   output: "results/merged.db"
 ```
 
-Actions follow one of three patterns — create, update, or aggregate — which
-determine their input/output behaviour. See [Action Patterns](action_patterns.md).
+Actions follow one of two patterns — create or aggregate — determined by
+whether the step reads a workflow cache. Steps that write plain files run
+once. See [Action Patterns](action_patterns.md).
 
 ## Matrix Expansion
 
@@ -167,18 +168,19 @@ Variables are resolved in this order:
 
 1. **Workflow properties**: `id`, `description`, custom workflow-level values
 2. **Matrix variables**: Values from the current matrix combination
-3. **Entry metadata**: For UPDATE pattern steps, values from cache entry
-   metadata
 
 ### Validation
 
-Template variables are validated at parse time for CREATE and AGGREGATE
-patterns. Unknown variables cause a validation error:
+Template variables are validated at parse time. Unknown variables cause a
+validation error:
 
 ```
 WorkflowExecutionError: Unknown template variables: unknown_var
 Available context: id, description, network
 ```
 
-For UPDATE patterns, variables not in workflow context are deferred to runtime
-resolution from entry metadata.
+AGGREGATE steps also see the matrix keys derived from their input caches, so
+`{{network}}` resolves from a learned graph cache even when the workflow
+declares no matrix. When an input cache does not exist yet — it may be
+produced by an earlier step — that step's variables are resolved at runtime
+instead.

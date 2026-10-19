@@ -421,10 +421,8 @@ Workflow engine sub-package:
 - `workflow/errors.py` — `WorkflowExecutionError`.
 - `workflow/matrix.py` — matrix expansion, derivation and value matching.
 - `workflow/templates.py` — template variable extraction and resolution.
-- `workflow/patterns.py` — step pattern (CREATE, UPDATE, AGGREGATE and
-  NOCACHES) detection.
-- `workflow/filters.py` — metadata flattening and filter resolution.
-- `workflow/update.py` — UPDATE pattern execution and dry-run scanning.
+- `workflow/patterns.py` — step pattern (CREATE and AGGREGATE) detection.
+- `workflow/filters.py` — metadata flattening for filter evaluation.
 - `workflow/aggregation.py` — AGGREGATE pattern configuration and input
   scanning (`AggregationConfig`).
 - `workflow/validation.py` — workflow and action configuration validation.

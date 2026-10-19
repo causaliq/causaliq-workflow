@@ -14,7 +14,7 @@ executing causal discovery and analysis pipelines. It is part of the
 | **Matrix expansion** | Run steps across multiple parameter combinations |
 | **Template variables** | Reference workflow and matrix values in step parameters |
 | **Workflow caching** | SQLite-based result storage with conservative execution |
-| **Action patterns** | Create, update, and aggregate patterns for different use cases |
+| **Action patterns** | Create and aggregate patterns, plus run-once steps |
 | **CLI and programmatic access** | Execute workflows from command line or Python code |
 
 ## Documentation Structure
@@ -24,7 +24,7 @@ This user guide covers how to use CausalIQ Workflow effectively:
 | Section | Content |
 |---------|---------|
 | [Core Concepts](core_concepts.md) | Workflows, steps, actions, and matrix expansion |
-| [Action Patterns](action_patterns.md) | Create, update, and aggregate step patterns |
+| [Action Patterns](action_patterns.md) | Create, aggregate and run-once step patterns |
 | [Workflow Caching](caching.md) | Result storage and conservative execution |
 | [Common Parameters](common_parameters.md) | Parameters shared across all actions |
 | [CLI Usage](cli.md) | Command-line interface and execution modes |

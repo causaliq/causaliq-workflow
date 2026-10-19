@@ -1,57 +1,65 @@
-# Remove redundant workflow validation pass
+# Simplification of Workflow Caches and Action Patterns
 
-## Summary
+The workflow cache model and the action patterns declared by analysis actions
+were simplified so that caches hold typed results rather than mixed metadata,
+and so that only two patterns remain. The goal is simpler code and a simpler
+interface for workflow authors.
 
-`cqflow run` validates a workflow twice before executing it:
+## Simpler cache model
 
-1. `cli.py` calls `executor.execute_workflow(workflow, mode="validate")`
-   to report validation errors early, then
-2. `execute_workflow` unconditionally runs `_validate_execution(...)`
-   again at the start of the execution call.
+- Each cache holds a single object type, pinned by the first write.
+- Each entry holds provenance metadata plus exactly one object of that type.
+- Metrics are typed objects in their own cache, not extra metadata on the
+  graph entry that produced them.
+- A failed run records provenance (status and failure reason) and no object,
+  so a failure can never be mistaken for a result or scored. Failures still
+  appear in downstream caches: evaluation writes a provenance-only entry to
+  the metrics cache for each failed input, so failure cases can be analysed.
+- An action writes at most one object per key; entries are never lumped
+  together under generated names such as `dag_0`, `dag_1`.
+- A workflow file can write to several typed caches, so the number of caches
+  scales with object types rather than pipeline stages.
+- Entries are distinguished by ordinary matrix keys; there is no special
+  reserved key or per-step pinning.
 
-Both passes iterate every matrix job and, for AGGREGATE and UPDATE steps,
-scan the input caches, so the validation work is duplicated.
+## Two action patterns
 
-## Why it is not urgent
+| Pattern | Reads a workflow cache | Requirements |
+|---------|------------------------|--------------|
+| CREATE | No | Output cache and matrix |
+| AGGREGATE | Yes | Input cache(s) and output cache |
 
-The aggregation scan now reuses a memoised per-cache index (see the
-completed "analyse slow performance" task), so the second validation pass
-no longer re-reads and decompresses the caches. The remaining cost is the
-per-job matching and filter evaluation, which is small but still redundant.
+A step that writes a plain file instead of a cache runs **once**, outside
+matrix expansion, because a file output has no cache dimensionality.
 
-## Proposed change
+`UPDATE` and `NOCACHES` were removed. `UPDATE` is unnecessary now that
+analysis results are written as objects to their own caches, and `NOCACHES`
+is redundant because `plot` reads a metrics cache and the run-once rule
+covers file outputs.
 
-Skip the second validation when the caller has already validated the same
-workflow. Preferred approach:
+## What changed in the analysis actions
 
-- Add `execute_workflow(..., validate: bool = True)`.
-- Pass `validate=False` from `cli._run_workflow_jobs()`.
+- `evaluate_graph` writes a `metrics` object to an output cache (AGGREGATE)
+  instead of adding results to the learned graph's entry.
+- `plot` reads a metrics cache (AGGREGATE) and writes one image (run-once).
+- `best_graph` writes a `dag` to its own output cache (AGGREGATE).
+- `merge_graphs` continues to aggregate PDGs into a `pdg` object
+  (AGGREGATE).
+- `migrate_trace` writes a `dag` per key, without the `dag_0..dag_n`
+  lumping that occurred when the matrix omitted a distinguishing dimension.
+- `summarise` continues to write one CSV row per matrix combination. It is
+  planned to write workflow caches and LaTeX tables as well, which would
+  supersede the earlier idea of a separate `table` action.
 
-## Impact
+## Compatibility
 
-- No change to behaviour or log output: the CLI still prints
-  "VALIDATING ... VALIDATED" once before "EXECUTING".
-- The `execute_workflow` mocks in `tests/functional/test_cli.py` must
-  accept the new keyword argument.
+Workflow caches are treated as disposable until the Zenodo deposit, so no
+data migration tooling is provided: re-run the workflow to regenerate a
+cache in the new shape. Import and export tooling keeps using the permissive
+write path, whilst action writes enforce the one-object and cache-type rules.
 
-## Alternatives considered
+## See also
 
-- Cache the validation result on the executor keyed by the workflow
-  object. Fragile (identity-based) and less explicit.
-- Move validation entirely into `execute_workflow` and drop the CLI pass.
-  Rejected: it would remove the early "VALIDATING/VALIDATED" reporting.
-
-## Scope and constraints
-
-- Hat 1 (Fix) only: no structural refactor or file moves.
-- Update only the tests directly affected by the signature change.
-- 79-character lines, British English, and the usual quality gates
-  (`black`, `isort`, `flake8`, `mypy`, `pytest` at 100% coverage).
-- Do not commit changes (development policy).
-
-## Acceptance criteria
-
-- A single `cqflow run` invocation performs the entry-validation pass
-  once.
-- All existing CLI tests pass with the updated mocks.
-- No change to user-visible workflow output.
+- [Action Patterns](https://causaliq.org/projects/causaliq-workflow/userguide/action_patterns/)
+- [Cache Type Model](https://causaliq.org/projects/causaliq-workflow/architecture/cache_type_model/)
+- [causaliq-workflow documentation](https://causaliq.org/projects/causaliq-workflow/)

@@ -102,22 +102,24 @@ steps:
       output: "results/graphs.db"
 ```
 
-## Update Pattern
+## Run-once Steps
 
-Add analysis to existing entries (requires input, no matrix or output):
+Steps that write a plain file run once, even when the workflow declares a
+matrix:
 
 ```yaml
-# update_pattern.yml
+# plot_pattern.yml
+matrix:
+  network: [asia, cancer]
+
 steps:
-  - name: "Evaluate Graphs"
+  - name: "Plot Metrics"
     uses: "causaliq-analysis"
     with:
-      action: "evaluate_graph"
-      input: "results/graphs.db"
-      reference: "networks/{{network}}/true.graphml"
+      action: "plot"
+      input: "results/metrics.db"
+      output: "results/f1.png"
 ```
-
-The `{{network}}` variable resolves from each entry's metadata at runtime.
 
 ## Aggregate Pattern
 
@@ -235,7 +237,7 @@ cqflow run workflow.yml --mode=run --log-level=all
 ## Further Reading
 
 - [Core Concepts](core_concepts.md) — Workflows, steps, matrix
-- [Action Patterns](action_patterns.md) — Create, update, aggregate
+- [Action Patterns](action_patterns.md) — Create, aggregate and run-once steps
 - [Workflow Caching](caching.md) — Result storage
 - [Common Parameters](common_parameters.md) — Shared parameters
 - [CLI Usage](cli.md) — Command-line interface

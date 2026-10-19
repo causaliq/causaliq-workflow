@@ -60,15 +60,18 @@ that action has been applied to the entry.
 
 ### Entry Objects
 
-Objects are named data items stored with an entry:
+Each cache holds one object type, and every entry holds exactly one object
+of that type:
 
 | Name | Format | Description |
 |------|--------|-------------|
-| `graph` | GraphML | Learned or generated graph |
+| `dag` | GraphML | Learned DAG |
+| `pdg` | GraphML | Merged or LLM-sourced PDG |
+| `metrics` | JSON | Evaluation scores |
 | `trace` | JSON | Algorithm iteration history |
-| `summary` | JSON | Statistical summary table |
 
-Objects are stored as content strings with a format identifier.
+Objects are stored as content strings with a format identifier. See
+[Cache Type Model](../architecture/cache_type_model.md) for the full design.
 
 ## Conservative Execution
 
@@ -76,14 +79,14 @@ By default, workflows execute **conservatively** — skipping work that has
 already been completed:
 
 - **Create steps**: Skip if entry with matching key exists
-- **Update steps**: Skip if action metadata already present on entry
 - **Aggregate steps**: Skip if output entry with matching key exists
+- **Run-once steps**: Execute on the first job only
 
 This enables:
 
 - **Resumable workflows**: Restart interrupted workflows without re-running
   completed steps
-- **Incremental updates**: Add new analysis to existing results
+- **Incremental analysis**: Write new results to their own typed caches
 - **Efficient iteration**: Modify workflow and re-run without starting from
   scratch
 

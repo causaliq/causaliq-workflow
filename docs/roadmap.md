@@ -1,6 +1,6 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: October 12, 2026
+**Last updated**: October 19, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
@@ -9,10 +9,12 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 ### v0.6.0 Failure Handling & Optimisation [October 2026]
 
 1. ✅ Failure statuses recorded in workflow caches
-1. ✅ NOCACHES ActionPattern for file input/output actions
+1. ✅ Output-driven run-once rule for file input/output steps (replaces NOCACHES)
 1. ✅ Refactor to meet development guidelines
 1. ✅ analyse and fix slow performance e.g. on `summarise`
-1. ✅ [remove redundant validation pass](current_task.md)
+1. ✅ remove redundant validation pass
+1. ✅ [Simplification of Workflow Caches and Action Patterns](current_task.md)
+1. 🛣️ [Metadata structure and propagation](metadata.md)
 1. 🛣️ Support Python 3.10-14, with 3.12 as default, and badge as [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
 
 ## ✅ Previous Releases

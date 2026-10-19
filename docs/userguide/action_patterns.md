@@ -1,15 +1,16 @@
 # Action Patterns
 
-CausalIQ workflow actions follow one of three patterns, determined by their
-`input` and `output` parameter usage. Understanding these patterns is key to
-building correct workflows.
+CausalIQ workflow actions follow one of two patterns, determined by whether
+they read a workflow cache: **Create** writes entries without reading a
+cache, and **Aggregate** reads entries from a cache and writes new ones.
+Actions that write a plain file instead of a cache run **once**, outside
+matrix expansion.
 
 ## Pattern Summary
 
 | Pattern | Input | Output | Matrix | Purpose |
 |---------|-------|--------|--------|---------|
 | **Create** | action-specific | required | required | Generate new cache entries |
-| **Update** | required | prohibited | prohibited | Add analysis to existing entries |
 | **Aggregate** | required | required | required | Combine entries into summaries |
 
 ## Pattern 1: Create
@@ -47,62 +48,38 @@ This creates 4 entries (2 networks × 2 sample sizes) in `graphs.db`.
 An entry is created only if it does not already exist. If an entry with
 matching matrix values exists, the action is skipped for that combination.
 
-## Pattern 2: Update
+## Run-once Steps
 
-**Update actions add analysis results to existing cache entries.**
+**Steps that write a plain file instead of a workflow cache run once.**
 
 | Parameter | Requirement |
 |-----------|-------------|
-| `input` | Required (workflow cache path) |
-| `output` | Prohibited |
-| `matrix` | Prohibited |
+| `input` | Any (data files or a workflow cache) |
+| `output` | Required, but not a `.db` cache |
+| `matrix` | Not required |
 
-The action processes **all** entries in the input cache (subject to any
-`filter`), adding results to each entry's metadata and objects. This ensures
-analysis is applied consistently without risk of matrix mismatch.
-
-```yaml
-steps:
-  - name: "Evaluate Graphs"
-    uses: "causaliq-analysis"
-    with:
-      action: "evaluate_graph"
-      input: "results/graphs.db"
-      reference: "networks/{{network}}/true.graphml"
-```
-
-Note: The `{{network}}` variable is resolved from each entry's metadata at
-runtime.
-
-### Conservative Execution
-
-An action is applied only if the entry exists **and** the action has not yet
-been performed on it:
-
-| Entry exists? | Action metadata exists? | Behaviour |
-|--------------|------------------------|-----------|
-| No | — | Skip |
-| Yes | No | **Run** |
-| Yes | Yes | Skip |
-
-### Template Resolution for Updates
-
-Update actions can use template variables that resolve from entry metadata:
+A file output has no cache dimensionality, so the step runs a single time
+however many matrix combinations the workflow declares, and it is skipped
+on later jobs. Such a step may still read a cache: `plot` reads a metrics
+cache and writes one image. A file-output step that also declares a matrix
+keeps per-combination granularity; `summarise` relies on this to write one
+row per combination.
 
 ```yaml
+matrix:
+  network: [asia, cancer]
+  sample_size: [100, 1000]
+
 steps:
-  - name: "Evaluate"
+  - name: "Plot F1"
     uses: "causaliq-analysis"
     with:
-      action: "evaluate_graph"
-      input: "results/graphs.db"
-      reference: "networks/{{network}}/true.graphml"  # From entry metadata
+      action: "plot"
+      input: "results/metrics.db"
+      output: "results/f1.png"
 ```
 
-If an entry has `network: "asia"` in its metadata, the reference path becomes
-`networks/asia/true.graphml` for that entry.
-
-## Pattern 3: Aggregate
+## Pattern 2: Aggregate
 
 **Aggregate actions combine multiple entries into summary entries.**
 
@@ -198,10 +175,11 @@ cache.
 | You want to... | Use pattern |
 |----------------|-------------|
 | Generate graphs from data | Create |
-| Add metrics to existing graphs | Update |
+| Evaluate graphs and store metrics | Aggregate |
 | Merge multiple graphs into one | Aggregate |
 | Compute statistics across experiments | Aggregate |
 | Convert file formats | Create |
+| Plot results to an image | Run once (file output) |
 
 ## Force Mode
 

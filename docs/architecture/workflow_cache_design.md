@@ -613,3 +613,8 @@ Workflow Caches span three packages:
 - SDG edge attributes
 - Cache key strategies beyond matrix values
 - Cache comparison and diff tools
+
+## See Also
+
+- [Cache Type Model](cache_type_model.md) - one object type per cache,
+  provenance metadata and exactly one typed object per entry

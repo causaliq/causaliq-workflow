@@ -12,7 +12,6 @@ names so existing imports keep resolving:
 - `templates` — template variable extraction and resolution;
 - `patterns` — step pattern detection;
 - `filters` — metadata flattening and filter resolution;
-- `update` — UPDATE pattern execution and dry-run scanning;
 - `aggregation` — AGGREGATE pattern configuration and input scanning;
 - `validation` / `validation_entries` — configuration and per-entry
   validation;
@@ -220,8 +219,6 @@ steps:
 
 - **AGGREGATE pattern steps** use matrix for grouping entries, not templating.
   Matrix variables don't need to appear in AGGREGATE step parameters.
-- **UPDATE pattern steps** derive their matrix from input cache entries,
-  not from explicit workflow matrix definitions.
 
 ## Aggregation Processing
 

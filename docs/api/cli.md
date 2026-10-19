@@ -49,17 +49,16 @@ Options:
 
 #### Log Output Status Messages
 
-When `--log-level=all`, the CLI outputs per-entry status messages for UPDATE
-pattern steps. Each entry in the cache receives its own log line with one of
-the following statuses:
+When `--log-level=all`, the CLI outputs a status line per job. Each matrix
+combination receives its own log line with one of the following statuses:
 
 | Status | Dry-run Equivalent | Description |
 |--------|-------------------|-------------|
-| **EXECUTED** | WOULD EXECUTE | Entry processed successfully |
-| **FORCED** | - | Entry processed in force mode (bypasses conservative execution) |
-| **SKIPPED** | WOULD SKIP | Conservative skip - action already applied to this entry |
-| **IGNORED** | WOULD IGNORE | Entry filtered out by `filter` expression (never executes) |
-| **FAILED** | - | Action raised an exception for this entry |
+| **EXECUTED** | WOULD EXECUTE | Job processed successfully |
+| **FORCED** | - | Job processed in force mode (bypasses conservative execution) |
+| **SKIPPED** | WOULD SKIP | Conservative skip - entry already exists |
+| **IGNORED** | WOULD IGNORE | Job filtered out by `filter` expression (never executes) |
+| **FAILED** | - | Action raised an exception for this job |
 
 Example output with `--log-level=all`:
 
