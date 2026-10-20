@@ -1,6 +1,6 @@
 """Composition of the WorkflowExecutor from its functional mixins."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from causaliq_workflow.registry import ActionRegistry
 from causaliq_workflow.workflow.aggregation import AggregationMixin
@@ -38,6 +38,8 @@ class WorkflowExecutor(
         """Initialize workflow executor with action registry."""
         self.action_registry = ActionRegistry()
         self._scan_index: Dict[str, List[Dict[str, Any]]] = {}
+        self._environment: Optional[Dict[str, Any]] = None
+        self._environment_ready = False
 
     def _invalidate_scan_index(self, cache: Any) -> None:
         """Drop the memoised scan index for a cache that was written.

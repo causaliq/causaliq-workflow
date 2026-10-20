@@ -12,6 +12,8 @@ import zipfile
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
+from causaliq_core.metadata import normalise_metadata
+
 from causaliq_workflow.cache.entry import CacheEntry, CacheObject
 from causaliq_workflow.cache.export import TYPE_EXTENSIONS
 
@@ -120,9 +122,21 @@ def _dir_cache_entry(
 def _read_meta(
     meta_content: str,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Parse a _meta.json payload into matrix values and metadata."""
+    """Parse a _meta.json payload into matrix values and metadata.
+
+    Version 1 metadata is normalised to the version 2 envelope so all
+    readers see the same structure.
+
+    Args:
+        meta_content: JSON text read from a _meta.json file.
+
+    Returns:
+        Tuple of (matrix values, metadata envelope).
+    """
     data = json.loads(meta_content)
-    return data.get("matrix_values", {}), data.get("metadata", {})
+    raw_metadata = data.get("metadata", {})
+    metadata = normalise_metadata(raw_metadata) if raw_metadata else {}
+    return data.get("matrix_values", {}), metadata
 
 
 def _import_from_zip(

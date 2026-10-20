@@ -27,6 +27,10 @@ class WorkflowExecutorBase:  # pragma: no cover
 
     _scan_index: Dict[str, List[Dict[str, Any]]]
 
+    _environment: Optional[Dict[str, Any]]
+
+    _environment_ready: bool
+
     def _invalidate_scan_index(self, cache: Any) -> None:
         """Drop the memoised scan index for a cache that was written."""
         raise NotImplementedError

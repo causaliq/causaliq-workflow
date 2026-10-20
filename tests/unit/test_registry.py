@@ -5,8 +5,13 @@ Simple, direct tests for 100% registry coverage.
 import sys
 from types import ModuleType
 
-from causaliq_workflow.registry import ActionRegistry
+from causaliq_workflow.registry import ActionRegistry, _result_fields
 from tests.functional.fixtures.test_action import ActionProvider
+
+
+# Test _result_fields returns an empty mapping for non-dict metadata.
+def test_result_fields_returns_empty_for_non_mapping():
+    assert _result_fields(None) == {}
 
 
 # Test that None modules are skipped (line 64)

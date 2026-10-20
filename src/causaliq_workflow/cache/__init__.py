@@ -12,11 +12,12 @@ Built on causaliq-core's TokenCache with workflow-specific features:
 - Import/export to open formats (GraphML, JSON)
 """
 
-from causaliq_workflow.cache.contract import (
+from causaliq_workflow.cache.contract import CacheTypeError
+from causaliq_workflow.cache.entry import (
     EMPTY_FORMAT,
-    CacheTypeError,
+    CacheEntry,
+    CacheObject,
 )
-from causaliq_workflow.cache.entry import CacheEntry, CacheObject
 from causaliq_workflow.cache.export import (
     export_entries,
     get_extension_for_type,

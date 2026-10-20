@@ -13,14 +13,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Protocol
 
-from causaliq_workflow.cache.entry import (
-    EMPTY_FORMAT,
-    CacheEntry,
-    CacheObject,
-)
+from causaliq_core.metadata import normalise_metadata
+
+from causaliq_workflow.cache.entry import CacheEntry
 
 __all__ = [
-    "EMPTY_FORMAT",
     "CacheTypeError",
     "TypedCache",
     "build_failure_entry",
@@ -83,28 +80,20 @@ def single_object_type(entry: CacheEntry) -> str:
     return next(iter(entry.objects))
 
 
-def build_failure_entry(
-    cache_type: str,
-    action: str,
-    provenance: Dict[str, Any] | None = None,
-) -> CacheEntry:
-    """Build a failure entry: provenance plus an empty object.
+def build_failure_entry(metadata: Dict[str, Any]) -> CacheEntry:
+    """Build a failure entry: version 2 metadata and no object.
+
+    A failure entry records provenance only. An object would be
+    indistinguishable from the result of a successful run and could be
+    scored, so none is written.
 
     Args:
-        cache_type: Object type of the cache recording the failure.
-        action: Action name that failed.
-        provenance: Provenance metadata, typically including status and
-            error fields.
+        metadata: Version 2 metadata envelope recording the failure.
 
     Returns:
-        Cache entry holding the provenance and an empty object of the
-        cache's type.
+        Cache entry holding the provenance and no object.
     """
-    entry = CacheEntry(metadata=dict(provenance or {}))
-    entry.objects[cache_type] = CacheObject(
-        format=EMPTY_FORMAT, action=action, content=""
-    )
-    return entry
+    return CacheEntry(metadata=normalise_metadata(metadata))
 
 
 class TypedCache(Protocol):
@@ -178,18 +167,15 @@ def store_typed_entry(
 def store_failure_entry(
     cache: TypedCache,
     key_data: Dict[str, Any],
-    provenance: Dict[str, Any],
-    action: str,
+    metadata: Dict[str, Any],
     cache_type: Optional[str] = None,
 ) -> str:
-    """Store a failure: provenance plus an empty object of the type.
+    """Store a failure: version 2 metadata and no object.
 
     Args:
         cache: Cache receiving the failure entry.
         key_data: Dictionary of matrix variable values (cache key).
-        provenance: Provenance metadata, typically including status and
-            error fields.
-        action: Action name that failed.
+        metadata: Version 2 metadata envelope recording the failure.
         cache_type: Object type to pin when the cache is unpinned.
 
     Returns:
@@ -200,5 +186,5 @@ def store_failure_entry(
     """
     resolved = resolve_cache_type(cache.get_cache_type(), cache_type)
     cache.set_cache_type(resolved)
-    entry = build_failure_entry(resolved, action, provenance)
+    entry = build_failure_entry(metadata)
     return cache.put(key_data, entry)

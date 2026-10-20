@@ -1,6 +1,7 @@
 """Unit tests for the cache type and one-object contract."""
 
 import pytest
+from causaliq_core.metadata import build_metadata
 
 from causaliq_workflow.cache import (
     EMPTY_FORMAT,
@@ -13,6 +14,17 @@ from causaliq_workflow.cache.contract import (
     pin_cache_type,
     single_object_type,
 )
+
+
+def _failure_metadata():
+    """Return a version 2 metadata envelope for a failed run."""
+    return build_metadata(
+        "causaliq-discovery",
+        "learn_graph",
+        {},
+        {"status": "error"},
+    )
+
 
 # ============================================================================
 # Contract helper tests
@@ -57,23 +69,25 @@ def test_single_object_type_raises_when_multiple() -> None:
         single_object_type(entry)
 
 
-# Test build_failure_entry keys the empty object by the cache type.
-def test_build_failure_entry_holds_empty_object() -> None:
-    entry = build_failure_entry("dag", "learn_graph", {"status": "error"})
-    assert single_object_type(entry) == "dag"
-    assert entry.objects["dag"].is_empty is True
+# Test build_failure_entry writes metadata and no object.
+def test_build_failure_entry_holds_no_object() -> None:
+    entry = build_failure_entry(_failure_metadata())
+    assert entry.objects == {}
+    assert entry.metadata["result"] == {"status": "error"}
 
 
 # Test build_failure_entry records the supplied provenance.
 def test_build_failure_entry_uses_provenance() -> None:
-    entry = build_failure_entry("dag", "learn_graph", {"status": "error"})
-    assert entry.metadata == {"status": "error"}
+    entry = build_failure_entry(_failure_metadata())
+    assert entry.metadata["provenance"]["provider"] == "causaliq-discovery"
+    assert entry.metadata["provenance"]["action"] == "learn_graph"
 
 
-# Test build_failure_entry defaults to empty provenance.
-def test_build_failure_entry_defaults_provenance() -> None:
-    entry = build_failure_entry("dag", "learn_graph")
-    assert entry.metadata == {}
+# Test build_failure_entry normalises an empty metadata mapping.
+def test_build_failure_entry_defaults_metadata() -> None:
+    entry = build_failure_entry({})
+    assert entry.metadata["result"] == {}
+    assert entry.metadata["provenance"]["provider"] is None
 
 
 # ============================================================================
@@ -81,11 +95,12 @@ def test_build_failure_entry_defaults_provenance() -> None:
 # ============================================================================
 
 
-# Test an empty marker object reports is_empty.
+# Test the empty marker object reports is_empty.
 def test_empty_object_reports_is_empty() -> None:
-    entry = build_failure_entry("dag", "learn_graph")
-    assert entry.objects["dag"].format == EMPTY_FORMAT
-    assert entry.objects["dag"].is_empty is True
+    from causaliq_workflow.cache import CacheObject
+
+    obj = CacheObject(format=EMPTY_FORMAT, action="test", content="")
+    assert obj.is_empty is True
 
 
 # Test a populated object does not report is_empty.
@@ -168,18 +183,19 @@ def test_put_typed_rejects_conflicting_type() -> None:
 def test_put_failure_requires_known_type() -> None:
     with WorkflowCache(":memory:") as cache:
         with pytest.raises(CacheTypeError, match="before the cache"):
-            cache.put_failure({"algo": "pc"}, {"status": "error"}, "learn")
+            cache.put_failure({"algo": "pc"}, _failure_metadata())
 
 
-# Test put_failure stores provenance plus an empty object.
-def test_put_failure_stores_empty_object() -> None:
+# Test put_failure stores metadata only.
+def test_put_failure_stores_metadata_only() -> None:
     with WorkflowCache(":memory:") as cache:
         cache.set_cache_type("dag")
-        cache.put_failure({"algo": "pc"}, {"status": "error"}, "learn_graph")
+        metadata = _failure_metadata()
+        cache.put_failure({"algo": "pc"}, metadata)
         result = cache.get({"algo": "pc"})
         assert result is not None
-        assert result.metadata == {"status": "error"}
-        assert result.objects["dag"].is_empty is True
+        assert result.metadata["result"] == {"status": "error"}
+        assert result.objects == {}
 
 
 # Test put_failure pins an explicitly supplied cache type.
@@ -187,8 +203,7 @@ def test_put_failure_pins_explicit_type() -> None:
     with WorkflowCache(":memory:") as cache:
         cache.put_failure(
             {"algo": "pc"},
-            {"status": "error"},
-            "learn_graph",
+            _failure_metadata(),
             cache_type="dag",
         )
         assert cache.get_cache_type() == "dag"

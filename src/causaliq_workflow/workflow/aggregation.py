@@ -323,12 +323,12 @@ def _aggregation_filter_skip(
     flat_meta: Dict[str, Any],
 ) -> bool:
     """Return True when the entry is filtered out of the aggregation."""
-    from causaliq_core.utils import evaluate_filter
+    from causaliq_workflow.cache.reporting import evaluate_entry_filter
 
     if not resolved_filter:
         return False
     try:
-        return not evaluate_filter(
+        return not evaluate_entry_filter(
             resolved_filter, {**flat_meta, **extra_names}
         )
     except Exception:

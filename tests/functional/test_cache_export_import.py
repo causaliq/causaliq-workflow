@@ -97,7 +97,10 @@ def test_write_entry_to_dir_writes_metadata(tmp_path: Path) -> None:
     meta_content = json.loads(meta_path.read_text())
     assert meta_content["matrix_values"] == {"dataset": "asia"}
     assert meta_content["created_at"] == "2026-02-17T10:00:00Z"
-    assert meta_content["metadata"] == {"status": "success", "elapsed": 1.5}
+    assert meta_content["metadata"]["result"] == {
+        "status": "success",
+        "elapsed": 1.5,
+    }
 
 
 # =============================================================================
@@ -153,7 +156,7 @@ def test_write_entry_to_zip_writes_metadata(tmp_path: Path) -> None:
     with zipfile.ZipFile(zip_path, "r") as zf:
         meta_content = json.loads(zf.read("test/_meta.json").decode("utf-8"))
         assert meta_content["matrix_values"] == {"x": "1"}
-        assert meta_content["metadata"] == {"key": "value"}
+        assert meta_content["metadata"]["result"] == {"key": "value"}
 
 
 # =============================================================================
@@ -230,7 +233,7 @@ def test_export_entries_metadata_only_entry(tmp_path: Path) -> None:
         meta_path = output_dir / "empty" / "_meta.json"
         assert meta_path.exists()
         saved = json.loads(meta_path.read_text())
-        assert saved["metadata"] == {"empty": True}
+        assert saved["metadata"]["result"] == {"empty": True}
         assert "objects" not in saved
 
 
@@ -286,7 +289,7 @@ def test_import_entries_from_directory(tmp_path: Path) -> None:
         assert entry is not None
         assert "graph" in entry.objects
         assert entry.objects["graph"].content == "<graphml>imported</graphml>"
-        assert entry.metadata.get("imported") is True
+        assert entry.metadata["result"].get("imported") is True
 
 
 # Test import_entries imports from zip file.
@@ -474,8 +477,8 @@ def test_round_trip_directory(tmp_path: Path) -> None:
 
         imported = dest.get({"dataset": "asia", "method": "pc"})
         assert imported is not None
-        assert imported.metadata.get("original") is True
-        assert imported.metadata.get("count") == 42
+        assert imported.metadata["result"].get("original") is True
+        assert imported.metadata["result"].get("count") == 42
         assert "graph" in imported.objects
         assert "stats" in imported.objects
         assert (
@@ -527,7 +530,7 @@ def test_round_trip_directory_with_colon_in_model(tmp_path: Path) -> None:
             }
         )
         assert imported is not None
-        assert imported.metadata["source"] == "ollama"
+        assert imported.metadata["result"]["source"] == "ollama"
 
 
 # Test export/import round-trip with zip preserves data.
@@ -552,7 +555,7 @@ def test_round_trip_zip(tmp_path: Path) -> None:
 
         imported = dest.get({"test": "zip_roundtrip"})
         assert imported is not None
-        assert imported.metadata.get("from_zip") is True
+        assert imported.metadata["result"].get("from_zip") is True
         assert imported.objects["result"].content == '{"success": true}'
 
 
@@ -581,4 +584,4 @@ def test_round_trip_multiple_entries(tmp_path: Path) -> None:
         for i in range(5):
             entry = dest.get({"entry_id": str(i)})
             assert entry is not None
-            assert entry.metadata.get("index") == i
+            assert entry.metadata["result"].get("index") == i

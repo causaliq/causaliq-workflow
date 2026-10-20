@@ -5,6 +5,7 @@ creation, entry storage, scanning, filtering, and action execution.
 """
 
 import pytest
+from causaliq_core.metadata import build_metadata
 
 from causaliq_workflow.cache import CacheEntry, WorkflowCache
 from causaliq_workflow.workflow import AggregationConfig, WorkflowExecutor
@@ -101,14 +102,12 @@ def test_aggregation_with_filter(
         # Mix of completed and failed entries
         for i, status in enumerate(["completed", "failed", "completed"]):
             entry = CacheEntry(
-                metadata={
-                    "provider": {
-                        "action": {
-                            "status": status,
-                            "index": i,
-                        }
-                    }
-                }
+                metadata=build_metadata(
+                    "provider",
+                    "action",
+                    {},
+                    {"status": status, "index": i},
+                )
             )
             cache.put({"network": "asia", "run": i}, entry)
 
@@ -140,7 +139,7 @@ def test_aggregation_with_filter(
                 "with": {
                     "action": "summarise",
                     "input": str(input_cache),
-                    "filter": "status == 'completed'",
+                    "filter": "action.status == 'completed'",
                 },
             }
         ],
@@ -151,7 +150,7 @@ def test_aggregation_with_filter(
     # Only 2 completed entries should pass filter
     assert len(captured_entries) == 2
     for entry in captured_entries:
-        status = entry["metadata"]["provider"]["action"]["status"]
+        status = entry["metadata"]["result"]["status"]
         assert status == "completed"
 
 
@@ -275,7 +274,12 @@ def test_aggregation_scan_logging(
         for i in range(5):
             status = "completed" if i < 3 else "failed"
             entry = CacheEntry(
-                metadata={"provider": {"action": {"status": status}}}
+                metadata=build_metadata(
+                    "provider",
+                    "action",
+                    {},
+                    {"status": status},
+                )
             )
             cache.put({"network": "asia", "run": i}, entry)
 
@@ -283,7 +287,7 @@ def test_aggregation_scan_logging(
 
     config = AggregationConfig(
         input_caches=[str(input_cache)],
-        filter_expr="status == 'completed'",
+        filter_expr="action.status == 'completed'",
         matrix_vars=["network"],
     )
 

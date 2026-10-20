@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_mock
+from causaliq_core.metadata import build_metadata
 
 from causaliq_workflow.workflow import (
     AggregationConfig,
@@ -88,14 +89,14 @@ def test_get_aggregation_config_with_filter(
         "uses": "action",
         "with": {
             "input": "cache.db",
-            "filter": "status == 'completed'",
+            "filter": "action.status == 'completed'",
         },
     }
     matrix = {"network": ["asia"]}
     config = executor._get_aggregation_config(step, matrix)
 
     assert config is not None
-    assert config.filter_expr == "status == 'completed'"
+    assert config.filter_expr == "action.status == 'completed'"
 
 
 # Test _get_aggregation_config returns None for non-.db input.
@@ -198,53 +199,63 @@ def test_flatten_metadata_matrix_only(executor: WorkflowExecutor) -> None:
 # Test _flatten_metadata with nested provider metadata.
 def test_flatten_metadata_nested(executor: WorkflowExecutor) -> None:
     matrix_values = {"network": "asia"}
-    metadata = {
-        "causaliq-research": {
-            "generate_graph": {
-                "node_count": 5,
-                "edge_count": 8,
-            }
-        }
-    }
+    metadata = build_metadata(
+        "causaliq-research",
+        "generate_graph",
+        {},
+        {"node_count": 5, "edge_count": 8},
+    )
     result = executor._flatten_metadata(matrix_values, metadata)
 
-    # Simple keys available
+    # Matrix value remains bare
     assert result["network"] == "asia"
-    assert result["node_count"] == 5
-    assert result["edge_count"] == 8
 
-    # Fully qualified keys also available
-    assert result["causaliq-research.generate_graph.node_count"] == 5
+    # Short action-qualified names are available when unique
+    assert result["generate_graph.node_count"] == 5
+    assert result["generate_graph.edge_count"] == 8
+
+    # Provider-qualified names are also available
+    assert result["causaliq_research.generate_graph.node_count"] == 5
 
 
-# Test _flatten_metadata handles key conflicts.
+# Test _flatten_metadata keeps metadata names qualified on conflict.
 def test_flatten_metadata_key_conflict(executor: WorkflowExecutor) -> None:
     matrix_values = {"network": "asia"}
-    metadata = {
-        "provider1": {"action1": {"network": "overridden"}},
-        "provider2": {"action2": {"network": "also_overridden"}},
-    }
+    metadata = build_metadata(
+        "provider1",
+        "action1",
+        {},
+        {"network": "overridden"},
+        history={
+            "provider2.action2": {
+                "inputs": {},
+                "result": {"network": "also_overridden"},
+            }
+        },
+    )
     result = executor._flatten_metadata(matrix_values, metadata)
 
-    # Matrix value takes precedence for simple key
+    # Matrix value takes precedence for the bare name
     assert result["network"] == "asia"
 
-    # Fully qualified keys preserve all values
-    assert result["provider1.action1.network"] == "overridden"
-    assert result["provider2.action2.network"] == "also_overridden"
+    # Qualified names preserve all values
+    assert result["action1.network"] == "overridden"
+    assert result["action2.network"] == "also_overridden"
 
 
-# Test _flatten_metadata with non-dict nested values.
+# Test _flatten_metadata flattens nested dictionaries.
 def test_flatten_metadata_non_dict_nested(executor: WorkflowExecutor) -> None:
     matrix_values = {"network": "asia"}
-    metadata = {
-        "simple_key": "simple_value",
-        "provider": {"action": "string_action_data"},
-    }
+    metadata = build_metadata(
+        "provider",
+        "action",
+        {},
+        {"simple_key": "simple_value", "nested": {"value": 1}},
+    )
     result = executor._flatten_metadata(matrix_values, metadata)
 
-    assert result["simple_key"] == "simple_value"
-    assert result["provider.action"] == "string_action_data"
+    assert result["action.simple_key"] == "simple_value"
+    assert result["action.nested.value"] == 1
 
 
 # Test _scan_aggregation_inputs with in-memory cache.
@@ -311,7 +322,7 @@ def test_scan_aggregation_inputs_with_filter(
 
     config = AggregationConfig(
         input_caches=[str(cache_path)],
-        filter_expr="status == 'completed'",
+        filter_expr="action.status == 'completed'",
         matrix_vars=["network"],
     )
 
@@ -352,7 +363,7 @@ def test_scan_aggregation_inputs_with_random_filter(
 
     config = AggregationConfig(
         input_caches=[str(cache_path)],
-        filter_expr="seed in random(5, 0)",
+        filter_expr="action.seed in random(5, 0)",
         matrix_vars=["network"],
     )
 
@@ -386,7 +397,7 @@ def test_scan_aggregation_random_skips_missing_cache(
     missing = str(tmp_path / "missing.db")  # type: ignore[operator]
     config = AggregationConfig(
         input_caches=[missing, str(cache_path)],
-        filter_expr="seed in random(3, 0)",
+        filter_expr="action.seed in random(3, 0)",
         matrix_vars=["network"],
     )
 
@@ -423,7 +434,7 @@ def test_scan_aggregation_random_handles_bad_cache(
 
     config = AggregationConfig(
         input_caches=[str(bad_path), str(good_path)],
-        filter_expr="seed in random(3, 0)",
+        filter_expr="action.seed in random(3, 0)",
         matrix_vars=["network"],
     )
 
@@ -723,7 +734,7 @@ def test_scan_aggregation_inputs_filter_logging(
 
     config = AggregationConfig(
         input_caches=[str(cache_path)],
-        filter_expr="status == 'completed'",
+        filter_expr="action.status == 'completed'",
         matrix_vars=["network"],
     )
 
@@ -1532,10 +1543,10 @@ def test_scan_aggregation_inputs_resolved_filter(
 
     # Simulate what happens after template resolution:
     # filter was "llm_model == '{{model}}'" and resolved to
-    # "llm_model == 'anthropic'"
+    # "action.llm_model == 'anthropic'"
     config = AggregationConfig(
         input_caches=[str(cache_path)],
-        filter_expr="llm_model == 'anthropic'",
+        filter_expr="action.llm_model == 'anthropic'",
         matrix_vars=["network"],
     )
 
@@ -1593,7 +1604,7 @@ def test_validate_aggregation_entries_resolves_filter_template(
         "with": {
             "action": "merge",
             "input": str(cache_path),
-            "filter": "model == '{{llm_model}}'",
+            "filter": "act.model == '{{llm_model}}'",
             "output": "out.db",
         },
     }
@@ -1724,7 +1735,7 @@ def test_execute_job_aggregation_resolves_filter_template(
                 "with": {
                     "action": "merge",
                     "input": str(cache_path),
-                    "filter": "model == '{{llm_model}}'",
+                    "filter": "act.model == '{{llm_model}}'",
                 },
             }
         ],

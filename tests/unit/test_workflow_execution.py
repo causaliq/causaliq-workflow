@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from pytest_mock import MockerFixture
 
 from causaliq_workflow.workflow import (
     WorkflowExecutionError,
@@ -370,9 +371,11 @@ def test_execute_workflow_records_failure_entry(
         entry = cache.get(entries[0]["matrix_values"])
         assert entry is not None
         assert entry.objects == {}
-        learn = entry.metadata["mock-failure-recording"]["learn_graph"]
-        assert learn["status"] == "input"
-        assert learn["error"] == "bad data"
+        metadata = entry.metadata
+        assert metadata["provenance"]["provider"] == "mock-failure-recording"
+        assert metadata["provenance"]["action"] == "learn_graph"
+        assert metadata["result"]["status"] == "input"
+        assert metadata["result"]["error"] == "bad data"
 
 
 # A failure replaces a typed entry with provenance only.
@@ -417,10 +420,10 @@ def test_execute_workflow_failure_replaces_entry_with_provenance(
         entry = cache.get(key)
         assert entry is not None
         assert entry.objects == {}
-        assert (
-            entry.metadata["mock-failing-learner"]["learn_graph"]["error"]
-            == "boom"
-        )
+        metadata = entry.metadata
+        assert metadata["provenance"]["provider"] == "mock-failing-learner"
+        assert metadata["provenance"]["action"] == "learn_graph"
+        assert metadata["result"]["error"] == "boom"
 
 
 # Test step logging reports executed and forced completions.
@@ -571,3 +574,76 @@ def test_execute_workflow_dry_run_skips_existing_cache_entry(
     results = executor.execute_workflow(workflow, mode="dry-run")
 
     assert results[0]["steps"]["Test Step"]["status"] == "would_skip"
+
+
+# Test a successful step stores the version 2 envelope with provenance.
+def test_execute_workflow_records_version_two_envelope(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    mocker: MockerFixture,
+) -> None:
+    from causaliq_core import CausalIQActionProvider
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    mocker.patch(
+        "causaliq_workflow.workflow.execution.collect_environment",
+        return_value={
+            "os": "test-os",
+            "cpu": "test-cpu",
+            "python": "3.12.4",
+            "ram": 8,
+        },
+    )
+
+    class MockVersionTwoAction(CausalIQActionProvider):
+        name = "mock-version-two"
+        version = "1.2.3"
+        supported_actions = {"learn_graph"}
+
+        def _execute(self, action, parameters, mode, context, logger):
+            metadata = {"status": "ok", "node_count": 5}
+            objects = [{"type": "dag", "format": "graphml", "content": "<g/>"}]
+            return ("success", metadata, objects)
+
+    executor.action_registry._actions["mock-version-two"] = (
+        MockVersionTwoAction
+    )
+
+    db_path = tmp_path / "out.db"
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock-version-two",
+                "name": "Test Step",
+                "with": {
+                    "action": "learn_graph",
+                    "output": str(db_path),
+                },
+            }
+        ],
+    }
+    executor.execute_workflow(workflow, mode="run")
+
+    with WorkflowCache(str(db_path)) as cache:
+        entry = cache.get({"dataset": "asia"})
+        assert entry is not None
+        metadata = entry.metadata
+        assert set(metadata) == {
+            "provenance",
+            "inputs",
+            "result",
+            "history",
+        }
+        provenance = metadata["provenance"]
+        assert provenance["provider"] == "mock-version-two"
+        assert provenance["provider_version"] == "1.2.3"
+        assert provenance["action"] == "learn_graph"
+        assert provenance["environment"]["python"] == "3.12.4"
+        assert provenance["started_at"] is not None
+        assert provenance["finished_at"] is not None
+        assert isinstance(provenance["duration_seconds"], float)
+        assert metadata["inputs"] == {}
+        assert metadata["result"]["node_count"] == 5
+        assert metadata["history"] == {}

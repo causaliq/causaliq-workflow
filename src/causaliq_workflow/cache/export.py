@@ -15,6 +15,8 @@ import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
+from causaliq_core.metadata import SCHEMA_VERSION, normalise_metadata
+
 from causaliq_workflow.cache.entry import CacheEntry
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -178,9 +180,10 @@ def write_entry_to_dir(
 
     # Write metadata file
     meta_data = {
+        "schema_version": SCHEMA_VERSION,
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
-        "metadata": metadata,
+        "metadata": normalise_metadata(metadata),
     }
     meta_path = full_dir / "_meta.json"
     meta_path.write_text(
@@ -215,9 +218,10 @@ def write_entry_to_zip(
 
     # Write metadata file
     meta_data = {
+        "schema_version": SCHEMA_VERSION,
         "matrix_values": entry_info["matrix_values"],
         "created_at": entry_info["created_at"],
-        "metadata": metadata,
+        "metadata": normalise_metadata(metadata),
     }
     meta_arc = str(entry_path / "_meta.json")
     zf.writestr(meta_arc, json.dumps(meta_data, indent=2, sort_keys=False))
@@ -368,13 +372,13 @@ def store_action_result(
     objects: list[dict[str, Any]],
     matrix_key_order: list[str] | None = None,
 ) -> str | None:
-    """Store action result to workflow cache (legacy interface).
+    """Store action result to workflow cache (framework interface).
 
     Args:
         cache: WorkflowCache instance to store into, or None.
         context: WorkflowContext with matrix_values for cache key.
         entry_type: Unused (kept for compatibility).
-        metadata: Action result metadata dictionary.
+        metadata: Version 2 metadata envelope built by the executor.
         objects: List of object dicts with type, name, content.
         matrix_key_order: Optional ordered list of matrix variable names
             for export directory structure. If provided and not already
@@ -414,8 +418,7 @@ def store_failure_result(
     Args:
         cache: WorkflowCache instance to store into, or None.
         context: WorkflowContext with matrix_values for the cache key.
-        metadata: Provenance metadata, namespaced as
-            provider -> action -> fields.
+        metadata: Version 2 metadata envelope recording the failure.
         matrix_key_order: Optional ordered list of matrix variable names
             for export directory structure.
 
@@ -429,7 +432,8 @@ def store_failure_result(
         cache.set_matrix_key_order(matrix_key_order)
 
     return cache.put(
-        context.matrix_values, CacheEntry(metadata=dict(metadata))
+        context.matrix_values,
+        CacheEntry(metadata=normalise_metadata(metadata)),
     )
 
 

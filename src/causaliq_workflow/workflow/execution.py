@@ -10,6 +10,11 @@ from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.matrix import _cache_entry_exists
+from causaliq_workflow.workflow.provenance import (
+    build_result_metadata,
+    collect_environment,
+    execute_with_provenance,
+)
 
 
 @dataclass
@@ -412,11 +417,17 @@ class ExecutionMixin(WorkflowExecutorBase):
     ) -> Dict[str, Any]:
         """Execute the action, then store, check and log its result."""
         try:
-            step_result = self.action_registry.execute_action(
-                action_name, resolved_inputs, state.context
+            step_result, provenance = execute_with_provenance(
+                self.action_registry,
+                action_name,
+                resolved_inputs,
+                state.context,
+                self._get_environment(),
             )
             self._store_step_result(
-                state, action_name, resolved_inputs, step_result
+                state,
+                step_result,
+                provenance,
             )
             _raise_unstored_objects(
                 state, step_name, resolved_inputs, step_result
@@ -430,12 +441,18 @@ class ExecutionMixin(WorkflowExecutorBase):
                 state.context.cache.close()
                 state.context.cache = None
 
+    def _get_environment(self) -> Optional[Dict[str, Any]]:
+        """Return the run environment, collecting it at most once."""
+        if not getattr(self, "_environment_ready", False):
+            self._environment = collect_environment()
+            self._environment_ready = True
+        return self._environment
+
     def _store_step_result(
         self,
         state: _JobState,
-        action_name: str,
-        resolved_inputs: Dict[str, Any],
         step_result: Dict[str, Any],
+        provenance: Dict[str, Any],
     ) -> None:
         """Store a step result to the open cache when appropriate.
 
@@ -448,9 +465,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             return
 
         if step_result.get("status") == "error":
-            self._store_failure(
-                state, action_name, resolved_inputs, step_result
-            )
+            self._store_failure(state, step_result, provenance)
             return
 
         successful = step_result.get(
@@ -459,28 +474,18 @@ class ExecutionMixin(WorkflowExecutorBase):
         if not successful:
             return
 
-        raw_metadata = step_result.get("_action_metadata", {})
-        self._store_action_result(
-            state, action_name, resolved_inputs, step_result, raw_metadata
-        )
+        self._store_action_result(state, step_result, provenance)
 
     def _store_failure(
         self,
         state: _JobState,
-        action_name: str,
-        resolved_inputs: Dict[str, Any],
         step_result: Dict[str, Any],
+        provenance: Dict[str, Any],
     ) -> None:
         """Record a failed step as provenance only."""
         from causaliq_workflow.cache import store_failure_result
 
-        action_method = resolved_inputs.get("action", "default")
-        provider_name = self._provider_name(action_name)
-        metadata = {
-            provider_name: {
-                action_method: dict(step_result.get("_action_metadata", {}))
-            }
-        }
+        metadata = build_result_metadata(provenance, step_result)
         store_failure_result(
             cache=state.context.cache,
             context=state.context,
@@ -489,30 +494,16 @@ class ExecutionMixin(WorkflowExecutorBase):
         )
         self._invalidate_scan_index(state.context.cache)
 
-    def _provider_name(self, action_name: str) -> str:
-        """Return the provider name that declares an action."""
-        action_class = self.action_registry.get_action_class(action_name)
-        return getattr(action_class, "name", action_name)
-
     def _store_action_result(
         self,
         state: _JobState,
-        action_name: str,
-        resolved_inputs: Dict[str, Any],
         step_result: Dict[str, Any],
-        raw_metadata: Dict[str, Any],
+        provenance: Dict[str, Any],
     ) -> None:
         """Write a step result (objects and metadata) to the open cache."""
         from causaliq_workflow.cache import store_action_result
 
-        provider_name = self._provider_name(action_name)
-        metadata = {
-            provider_name: {
-                resolved_inputs.get("action", "default"): raw_metadata
-            }
-        }
-
-        # Pass matrix key order for export directory structure
+        metadata = build_result_metadata(provenance, step_result)
         store_action_result(
             cache=state.context.cache,
             context=state.context,

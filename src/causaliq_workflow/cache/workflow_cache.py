@@ -16,6 +16,7 @@ from typing import Any
 
 from causaliq_core.cache import TokenCache
 from causaliq_core.cache.compressors import Compressor, JsonCompressor
+from causaliq_core.metadata import normalise_metadata, split_metadata
 
 from causaliq_workflow.cache.contract import (
     pin_cache_type,
@@ -438,17 +439,14 @@ class WorkflowCache:
     def put_failure(
         self,
         key_data: dict[str, Any],
-        provenance: dict[str, Any],
-        action: str,
+        metadata: dict[str, Any],
         cache_type: str | None = None,
     ) -> str:
-        """Store a failure: provenance plus an empty object of the type.
+        """Store a failure: version 2 metadata and no object.
 
         Args:
             key_data: Dictionary of matrix variable values (cache key).
-            provenance: Provenance metadata, typically including status
-                and error fields.
-            action: Action name that failed.
+            metadata: Version 2 metadata envelope recording the failure.
             cache_type: Object type to pin when the cache is unpinned.
 
         Returns:
@@ -457,9 +455,7 @@ class WorkflowCache:
         Raises:
             CacheTypeError: If the cache type is unknown.
         """
-        return store_failure_entry(
-            self, key_data, provenance, action, cache_type
-        )
+        return store_failure_entry(self, key_data, metadata, cache_type)
 
     def update_entry(
         self,
@@ -467,49 +463,25 @@ class WorkflowCache:
         metadata: dict[str, Any],
         objects: list[dict[str, Any]] | None = None,
     ) -> bool:
-        """Update existing cache entry with additional metadata and objects.
+        """Deprecated: an entry is written by one action.
 
-        Merges new metadata into the existing entry. Metadata is deep-merged
-        at the top level (provider keys are merged, not replaced). New
-        objects are added or replace existing objects with the same name.
+        The UPDATE action pattern has been removed, so entries are replaced
+        as a whole by the action that produced them. This method remains
+        only to raise a clear error for older callers.
 
         Args:
             key_data: Dictionary of matrix variable values (cache key).
-            metadata: Metadata to merge into existing entry. Typically
-                structured as {provider: {action: {results...}}}.
-            objects: Optional list of objects to add. Each object is a dict
-                with 'type' (semantic type), 'format' (serialisation format),
-                and 'content' keys.
+            metadata: Unused.
+            objects: Unused.
 
-        Returns:
-            True if entry was updated, False if entry doesn't exist.
-
-        Example:
-            >>> with WorkflowCache(":memory:") as cache:
-            ...     # Create initial entry
-            ...     entry = CacheEntry()
-            ...     entry.add_object("dag", "graphml", "<graphml>...", "learn")
-            ...     cache.put({"algo": "pc"}, entry)
-            ...
-            ...     # Update with evaluation results
-            ...     cache.update_entry(
-            ...         {"algo": "pc"},
-            ...         metadata={"causaliq-analysis": {"eval": {"f1": 0.9}}},
-            ...         objects=[{"type": "scores", "format": "json",
-            ...                   "action": "evaluate"}]
-            ...     )
+        Raises:
+            NotImplementedError: Always.
         """
-        # Get existing entry
-        entry = self.get(key_data)
-        if entry is None:
-            return False
-
-        _merge_entry_metadata(entry, metadata)
-        _add_entry_objects(entry, objects)
-
-        # Store updated entry
-        self.put(key_data, entry)
-        return True
+        _ = key_data, metadata, objects
+        raise NotImplementedError(
+            "update_entry is deprecated: an entry is written by one "
+            "action. Write a complete entry with put_typed() instead."
+        )
 
     def has_action_metadata(
         self,
@@ -543,11 +515,14 @@ class WorkflowCache:
         if entry is None:
             return False
 
-        provider_meta = entry.metadata.get(provider_name)
-        if not isinstance(provider_meta, dict):
-            return False
-
-        return action_name in provider_meta
+        parts = split_metadata(entry.metadata)
+        provenance = parts.provenance
+        if (
+            provenance.get("provider") == provider_name
+            and provenance.get("action") == action_name
+        ):
+            return True
+        return f"{provider_name}.{action_name}" in parts.history
 
     # ========================================================================
     # Statistics and listing
@@ -793,12 +768,10 @@ class WorkflowCache:
     ) -> str:
         """Store one action result, enforcing the one-object contract.
 
-        Convenience method for storing results from actions that still
-        return (status, metadata, objects) tuples.
-
         Args:
             key_data: Dictionary of matrix variable values (cache key).
-            metadata: Action metadata dictionary.
+            metadata: Version 2 metadata envelope. Legacy provider -> action
+                metadata is normalised for compatibility.
             objects: List holding exactly one object dict with 'type',
                 'format', 'action' and 'content'.
 
@@ -809,20 +782,9 @@ class WorkflowCache:
             CacheTypeError: If the result does not hold exactly one
                 object, or its type conflicts with the cache's pinned type.
         """
-        entry = CacheEntry.from_action_result(metadata, objects)
+        entry = CacheEntry(metadata=normalise_metadata(metadata))
+        _add_entry_objects(entry, objects)
         return self.put_typed(key_data, entry)
-
-
-def _merge_entry_metadata(entry: CacheEntry, metadata: dict[str, Any]) -> None:
-    """Deep-merge provider metadata into an existing entry."""
-    for provider_key, provider_data in metadata.items():
-        if provider_key not in entry.metadata:
-            entry.metadata[provider_key] = {}
-        current = entry.metadata[provider_key]
-        if isinstance(provider_data, dict) and isinstance(current, dict):
-            current.update(provider_data)
-        else:
-            entry.metadata[provider_key] = provider_data
 
 
 def _add_entry_objects(

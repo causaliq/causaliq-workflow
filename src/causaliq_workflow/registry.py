@@ -474,7 +474,11 @@ class ActionRegistry:
             # storage can record the full outcome.
             result: Dict[str, Any] = {
                 "status": status,
-                **{k: v for k, v in metadata.items() if k != "status"},
+                **{
+                    k: v
+                    for k, v in _result_fields(metadata).items()
+                    if k != "status"
+                },
                 "_action_metadata": metadata,
                 "objects": objects,
             }
@@ -595,3 +599,22 @@ class ActionRegistry:
             packages[package_name].append(action_name)
 
         return packages
+
+
+def _result_fields(metadata: Any) -> Dict[str, Any]:
+    """Return the result fields exposed for output chaining.
+
+    CausalIQ actions return ``{"inputs": ..., "result": ...}``. Legacy
+    flat metadata is returned unchanged so third-party providers keep
+    working during the transition.
+
+    Args:
+        metadata: Metadata returned by an action.
+
+    Returns:
+        Mapping of result fields exposed at the top level of the result.
+    """
+    if not isinstance(metadata, dict):
+        return {}
+    result = metadata.get("result")
+    return result if isinstance(result, dict) else metadata
