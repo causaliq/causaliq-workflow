@@ -1335,6 +1335,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2031,9 +2059,11 @@ for the full matching rules.</p>
     with:
       action: &quot;merge_graphs&quot;
       input: &quot;results/graphs.db&quot;
-      filter: &quot;edge_count &gt; 5 and sample_size &gt;= 100&quot;
+      filter: &quot;learn_graph.edge_count &gt; 5 and sample_size &gt;= 100&quot;
       output: &quot;results/merged.db&quot;
 </code></pre>
+<p>Matrix and result-object fields use bare names; metadata uses the producer
+qualifier (<code>learn_graph.edge_count</code>).</p>
 <p>Filter expressions support <strong>template variables</strong>, so you can parameterise
 the filter per matrix combination:</p>
 <pre><code class="language-yaml">matrix:

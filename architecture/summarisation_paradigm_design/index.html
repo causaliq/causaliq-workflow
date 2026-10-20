@@ -1263,10 +1263,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#metadata-flattening" class="md-nav__link">
+  <a href="#reporting-view" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Metadata Flattening
+        Reporting View
       
     </span>
   </a>
@@ -1570,6 +1570,34 @@
     
   
     Cache Type Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
   
 
     
@@ -2189,10 +2217,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#metadata-flattening" class="md-nav__link">
+  <a href="#reporting-view" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Metadata Flattening
+        Reporting View
       
     </span>
   </a>
@@ -2493,13 +2521,14 @@ steps:
       output: summaries.db
 </code></pre>
 <h3 id="with-filter-expression">With Filter Expression</h3>
-<p>Filter entries before aggregation using metadata fields:</p>
+<p>Filter entries before aggregation using matrix values, result-object fields
+and producer metadata:</p>
 <pre><code class="language-yaml">- name: Summarise Successful
   uses: causaliq/analysis
   with:
     action: model_average
     input: graphs.db
-    filter: &quot;status == 'completed' and edge_count &gt; 0&quot;
+    filter: &quot;learn_graph.status == 'ok' and learn_graph.edge_count &gt; 0&quot;
     output: summaries.db
 </code></pre>
 <h3 id="multiple-input-caches">Multiple Input Caches</h3>
@@ -2527,17 +2556,17 @@ steps:
 <tbody>
 <tr>
 <td><code>==</code></td>
-<td><code>status == 'completed'</code></td>
+<td><code>learn_graph.status == 'ok'</code></td>
 <td>Equality</td>
 </tr>
 <tr>
 <td><code>!=</code></td>
-<td><code>algo != 'pc'</code></td>
+<td><code>learn_graph.algorithm != 'pc'</code></td>
 <td>Inequality</td>
 </tr>
 <tr>
 <td><code>&gt;</code>, <code>&lt;</code></td>
-<td><code>edge_count &gt; 5</code></td>
+<td><code>learn_graph.edge_count &gt; 5</code></td>
 <td>Comparison</td>
 </tr>
 <tr>
@@ -2562,7 +2591,7 @@ steps:
 </tr>
 <tr>
 <td><code>in</code></td>
-<td><code>algo in ['pc', 'ges']</code></td>
+<td><code>learn_graph.algorithm in ['pc', 'ges']</code></td>
 <td>Membership</td>
 </tr>
 </tbody>
@@ -2571,44 +2600,42 @@ steps:
 <p>Filter expressions can access:</p>
 <ol>
 <li><strong>Matrix values</strong>: <code>network</code>, <code>sample_size</code>, etc.</li>
-<li><strong>Flattened metadata</strong>: <code>status</code>, <code>edge_count</code>, etc.</li>
-<li><strong>Qualified metadata</strong>: <code>provider.action.field</code></li>
+<li><strong>Result-object fields</strong>: bare names such as <code>f1</code> or <code>equiv.f1</code>.</li>
+<li><strong>Metadata</strong>: producer-qualified names such as <code>learn_graph.status</code>
+   or <code>learn_graph.hyperparameters.iss</code>.</li>
 </ol>
 <pre><code class="language-yaml"># Filter by matrix variable
 filter: &quot;sample_size &gt;= 500&quot;
 
+# Filter by result-object field
+filter: &quot;f1 &gt; 0.8&quot;
+
 # Filter by metadata field
-filter: &quot;status == 'completed'&quot;
+filter: &quot;learn_graph.status == 'ok'&quot;
 
 # Filter by qualified path
-filter: &quot;causaliq-research.generate_graph.node_count &gt; 5&quot;
+filter: &quot;causaliq_research.generate_graph.node_count &gt; 5&quot;
 </code></pre>
-<h2 id="metadata-flattening">Metadata Flattening</h2>
-<p>Nested metadata is flattened for filter evaluation:</p>
-<pre><code class="language-python"># Original metadata structure
-{
-    &quot;causaliq-research&quot;: {
-        &quot;generate_graph&quot;: {
-            &quot;node_count&quot;: 5,
-            &quot;edge_count&quot;: 8
-        }
-    }
-}
-
-# Flattened for filter access
-{
-    &quot;node_count&quot;: 5,
-    &quot;edge_count&quot;: 8,
-    &quot;causaliq-research.generate_graph.node_count&quot;: 5,
-    &quot;causaliq-research.generate_graph.edge_count&quot;: 8
-}
-</code></pre>
-<p>Simple keys are available directly; qualified keys handle conflicts.</p>
+<h2 id="reporting-view">Reporting View</h2>
+<p>Filters, <code>summarise</code> and <code>plot</code> evaluate one flat reporting view of each
+entry:</p>
+<ul>
+<li>matrix values and result-object fields by bare name (<code>sample_size</code>, <code>f1</code>);</li>
+<li>metadata by producer-qualified name (<code>generate_graph.node_count</code>,
+  <code>learn_graph.hyperparameters.iss</code>);</li>
+<li>explicit <code>generate_graph.inputs.*</code> / <code>generate_graph.result.*</code> forms and
+  provider-qualified <code>causaliq_research.generate_graph.node_count</code> forms
+  when needed.</li>
+</ul>
+<p>Version 1 <code>provider -&gt; action -&gt; fields</code> metadata is normalised before
+viewing. Provenance is recorded for reproducibility but is not exposed in
+filters by default. Bare metadata names are rejected: the reference must
+name the producer.</p>
 <h2 id="entry-structure">Entry Structure</h2>
 <p>Actions receive entries as dictionaries:</p>
 <pre><code class="language-python">{
     &quot;matrix_values&quot;: {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: 100},
-    &quot;metadata&quot;: {...},      # Original nested metadata
+    &quot;metadata&quot;: {...},      # Version 2 metadata envelope
     &quot;cache_path&quot;: &quot;graphs.db&quot;,
     &quot;entry_hash&quot;: &quot;abc123...&quot;,
     &quot;entry&quot;: CacheEntry(...)  # Full entry object

@@ -12,7 +12,7 @@
         <link rel="prev" href="../workflow_cache_design/">
       
       
-        <link rel="next" href="../../api/overview/">
+        <link rel="next" href="../metadata_structure/">
       
       
         
@@ -1387,6 +1387,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1986,30 +2014,38 @@ cache, which workflows already express with <code>input</code> and <code>output<
 <code>matrix_key_order</code>, so no schema change is required. The declaration is
 implicit: the first typed write pins it.</p>
 <h3 id="2-provenance-metadata-and-at-most-one-object">2. Provenance metadata and at most one object</h3>
-<p>Every entry holds provenance metadata and at most one object: exactly one for
-a successful run, none for a failed run. Provenance is the namespaced
-<code>provider -&gt; action -&gt; fields</code> structure already used, carrying the action
-name, timestamp, parameters, counts and outcome. Object results, including
-metrics, are the single typed object rather than metadata.</p>
+<p>Every entry holds version 2 metadata and at most one object: exactly one for
+a successful run, none for a failed run. Metadata has four blocks:</p>
+<ul>
+<li><code>provenance</code> — provider, provider and workflow versions, action, start
+  and finish times, duration, and runtime environment;</li>
+<li><code>inputs</code> — the effective parameters used by the action;</li>
+<li><code>result</code> — the status, error, action-measured timings and counts;</li>
+<li><code>history</code> — reserved for metadata inherited from earlier producers.</li>
+</ul>
+<p>Object results, including metrics, are the single typed object rather than
+metadata. See <a href="../metadata_structure/">Metadata Structure</a> for the full
+envelope.</p>
 <h3 id="3-metrics-are-objects">3. Metrics are objects</h3>
 <p>Results placed in workflow caches are typed objects, including metrics.
 <code>evaluate_graph</code> writes a <code>metrics</code> object to an output cache rather than
 mutating metadata on the input entry. The <code>UPDATE</code> pattern is therefore
-unnecessary. Metric values live only in that object: the entry metadata
-records provenance (<code>status</code>, <code>reference</code>, <code>evaluated_graph</code>) and never
-duplicates the values, so <code>summarise</code> and <code>plot</code> read the object.</p>
-<p>Exported <code>_meta.json</code> files hold <code>matrix_values</code>, <code>created_at</code> and
-<code>metadata</code> only. The object map is omitted because a cache holds a single
-type: the object file's name and extension (<code>dag.graphml</code>,
+unnecessary. Metric values live only in that object: the entry's
+<code>provenance</code> and <code>result</code> blocks record how the object was produced
+(<code>status</code>, <code>reference</code>, <code>evaluated_graph</code>) and never duplicate the values,
+so <code>summarise</code> and <code>plot</code> read the object.</p>
+<p>Exported <code>_meta.json</code> files hold <code>schema_version</code>, <code>matrix_values</code>,
+<code>created_at</code> and <code>metadata</code> only. The object map is omitted because a cache
+holds a single type: the object file's name and extension (<code>dag.graphml</code>,
 <code>metrics.json</code>) already identify it, and import reconstructs the format
 from the extension.</p>
 <h3 id="4-failure-entries">4. Failure entries</h3>
-<p>A failed run writes provenance (status and the failure reason) and <strong>no
-object</strong>. An object would be indistinguishable from the result of a
-successful run — a legitimate edgeless graph, for instance — and could be
-scored, so failures are recorded only in metadata. The entry replaces any
-prior entry for the key: the latest run wins, including when a failure
-replaces a previously successful result.</p>
+<p>A failed run writes <code>result.status</code> and <code>result.error</code> and <strong>no object</strong>. An
+object would be indistinguishable from the result of a successful run — a
+legitimate edgeless graph, for instance — and could be scored, so failures
+are recorded only in metadata. The entry replaces any prior entry for the
+key: the latest run wins, including when a failure replaces a previously
+successful result.</p>
 <p>Consumers propagate failures rather than hiding them: <code>evaluate_graph</code> does
 not compute metrics from a failed input, but writes a provenance-only entry
 to the metrics cache (<code>status: input_failed</code> with the upstream error), so
@@ -2064,44 +2100,66 @@ that cache; when it is omitted, no trace is produced. The graph is written
 to <code>output</code>.</p>
 <h2 id="cache-entry-structure">Cache Entry Structure</h2>
 <pre><code class="language-json">{
+  &quot;schema_version&quot;: 2,
   &quot;matrix_values&quot;: {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: &quot;1k&quot;},
+  &quot;created_at&quot;: &quot;2026-10-16T09:00:00+00:00&quot;,
   &quot;metadata&quot;: {
-    &quot;causaliq-analysis&quot;: {
-      &quot;evaluate_graph&quot;: {
-        &quot;action&quot;: &quot;evaluate_graph&quot;,
-        &quot;timestamp&quot;: &quot;2026-10-16T09:00:00Z&quot;,
-        &quot;status&quot;: &quot;success&quot;,
-        &quot;reference&quot;: &quot;networks/asia/asia.xdsl&quot;
+    &quot;provenance&quot;: {
+      &quot;provider&quot;: &quot;causaliq-analysis&quot;,
+      &quot;provider_version&quot;: &quot;0.8.0.dev4&quot;,
+      &quot;workflow_version&quot;: &quot;0.6.0.dev8&quot;,
+      &quot;action&quot;: &quot;evaluate_graph&quot;,
+      &quot;started_at&quot;: &quot;2026-10-16T08:59:58+00:00&quot;,
+      &quot;finished_at&quot;: &quot;2026-10-16T09:00:00+00:00&quot;,
+      &quot;duration_seconds&quot;: 2.1,
+      &quot;environment&quot;: {
+        &quot;os&quot;: &quot;Linux v6.8.0&quot;,
+        &quot;cpu&quot;: &quot;AMD EPYC 7763&quot;,
+        &quot;python&quot;: &quot;3.12.4&quot;,
+        &quot;ram&quot;: 64
       }
-    }
-  },
-  &quot;objects&quot;: {
-    &quot;metrics&quot;: {&quot;format&quot;: &quot;json&quot;, &quot;content&quot;: &quot;{\&quot;f1\&quot;: 0.91}&quot;}
+    },
+    &quot;inputs&quot;: {&quot;reference&quot;: &quot;networks/asia/asia.xdsl&quot;},
+    &quot;result&quot;: {
+      &quot;status&quot;: &quot;ok&quot;,
+      &quot;reference&quot;: &quot;networks/asia/asia.xdsl&quot;,
+      &quot;evaluated_graph&quot;: &quot;dag&quot;
+    },
+    &quot;history&quot;: {}
   }
 }
 </code></pre>
-<p>A failed entry uses the same shape with <code>status: "input_error"</code> and an
-<code>error</code> field, and no object at all:</p>
+<p>A failed entry uses the same shape with <code>result.status</code> and <code>result.error</code>,
+and no object at all:</p>
 <pre><code class="language-json">{
+  &quot;schema_version&quot;: 2,
   &quot;matrix_values&quot;: {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: 10},
+  &quot;created_at&quot;: &quot;2026-10-16T09:00:00+00:00&quot;,
   &quot;metadata&quot;: {
-    &quot;causaliq-discovery&quot;: {
-      &quot;learn_graph&quot;: {
-        &quot;status&quot;: &quot;input_error&quot;,
-        &quot;error&quot;: &quot;variable asia must have at least two levels&quot;
-      }
-    }
-  },
-  &quot;objects&quot;: {}
+    &quot;provenance&quot;: {
+      &quot;provider&quot;: &quot;causaliq-discovery&quot;,
+      &quot;action&quot;: &quot;learn_graph&quot;,
+      &quot;environment&quot;: {&quot;os&quot;: &quot;Linux v6.8.0&quot;, &quot;python&quot;: &quot;3.12.4&quot;}
+    },
+    &quot;inputs&quot;: {},
+    &quot;result&quot;: {
+      &quot;status&quot;: &quot;input_error&quot;,
+      &quot;error&quot;: &quot;variable asia must have at least two levels&quot;
+    },
+    &quot;history&quot;: {}
+  }
 }
 </code></pre>
+<p>In an exported <code>_meta.json</code> the object is a separate file (<code>metrics.json</code>,
+<code>dag.graphml</code>); the document itself has no <code>objects</code> map.</p>
 <h2 id="compatibility">Compatibility</h2>
-<p>Existing caches are treated as disposable until the Zenodo deposit, so no
-data migration tooling is provided. During the transition the legacy write
-path remains permissive; one-object and type enforcement applies to the
-typed write API first, then globally once all producers have migrated.</p>
+<p>Writes use schema version 2. Existing version 1 entries are normalised on
+read by <code>causaliq_core.metadata.normalise_metadata</code>, so no data migration
+tooling is provided. Caches remain disposable until the Zenodo deposit.</p>
 <h2 id="see-also">See Also</h2>
 <ul>
+<li><a href="../metadata_structure/">Metadata Structure</a> - schema version 2 envelope,
+  provenance, naming rules and phased plan</li>
 <li><a href="../workflow_cache_design/">Workflow Cache Design</a> - overall cache
   architecture</li>
 <li><a href="../cache_object_model/">Cache Object Model</a> - object types and lookup</li>
@@ -2162,13 +2220,13 @@ typed write API first, then globally once all producers have migrated.</p>
         
         
           
-          <a href="../../api/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
+          <a href="../metadata_structure/" class="md-footer__link md-footer__link--next" aria-label="Next: Metadata Structure">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Overview
+                Metadata Structure
               </div>
             </div>
             <div class="md-footer__button md-icon">

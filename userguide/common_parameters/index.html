@@ -1385,6 +1385,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2139,16 +2167,23 @@ filter: &quot;pdg_seed in random(3, 0) and sample_size in random(2, 1)&quot;
     least as large as the requested count. If fewer distinct values
     exist, an error is raised.</p>
 <h3 id="filter-variables">Filter Variables</h3>
-<p>Filter expressions can reference any metadata variable from cache entries:</p>
-<pre><code class="language-yaml"># Filter by algorithm and score
-filter: &quot;algorithm == 'pc' and f1_score &gt; 0.8&quot;
+<p>Filter expressions can reference matrix values, result-object fields and
+producer metadata:</p>
+<pre><code class="language-yaml"># Matrix and result-object fields use bare names
+filter: &quot;network in ['asia', 'cancer', 'alarm'] and f1 &gt; 0.8&quot;
 
-# Filter by multiple networks
-filter: &quot;network in ['asia', 'cancer', 'alarm']&quot;
+# Metadata uses the action qualifier
+filter: &quot;learn_graph.algorithm == 'pc' and learn_graph.status == 'ok'&quot;
 
-# Complex conditions
-filter: &quot;(sample_size &gt;= 1000 or seed == 0) and status == 'success'&quot;
+# Nested metadata uses the full path
+filter: &quot;learn_graph.hyperparameters.iss &gt; 10 and sample_size &lt; 10000&quot;
 </code></pre>
+<p>Bare metadata names such as <code>status</code> or <code>algorithm</code> are rejected: the
+reference must name the producer (<code>learn_graph.status</code>,
+<code>evaluate_graph.status</code>). Use the explicit
+<code>learn_graph.inputs.algorithm</code> and <code>learn_graph.result.status</code> forms when a
+name exists in both blocks, and the provider-qualified
+<code>causaliq_discovery.learn_graph.status</code> form when action names collide.</p>
 <h3 id="template-variables-in-filters">Template Variables in Filters</h3>
 <p>Filter expressions support <code>{{variable}}</code> template substitution, resolved
 from workflow properties and matrix values before evaluation. This enables

@@ -626,6 +626,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#metadata-names-in-filters-and-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Names in Filters and Plots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#entry-objects" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1363,6 +1374,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1791,6 +1830,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#metadata-names-in-filters-and-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Names in Filters and Plots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#entry-objects" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1958,23 +2008,62 @@ and enabling conservative execution.</p>
 </code></pre>
 <p>Each entry is identified by a unique <code>{network, sample_size}</code> combination.</p>
 <h3 id="entry-metadata">Entry Metadata</h3>
-<p>Metadata is a flat dictionary stored with each entry. Actions add their
-results here:</p>
-<pre><code class="language-python">{
-    &quot;network&quot;: &quot;asia&quot;,
-    &quot;sample_size&quot;: 1000,
+<p>Metadata uses schema version 2 and four blocks: <code>provenance</code>, <code>inputs</code>,
+<code>result</code> and <code>history</code>. The framework writes provenance, the action writes
+<code>result</code> (and <code>inputs</code> when it supplies them), and <code>history</code> is reserved for
+metadata inherited from earlier actions.</p>
+<pre><code class="language-json">{
+  &quot;provenance&quot;: {
+    &quot;provider&quot;: &quot;causaliq-discovery&quot;,
+    &quot;provider_version&quot;: &quot;0.8.0.dev4&quot;,
+    &quot;workflow_version&quot;: &quot;0.6.0.dev8&quot;,
+    &quot;action&quot;: &quot;learn_graph&quot;,
+    &quot;started_at&quot;: &quot;2026-03-15T10:20:00+00:00&quot;,
+    &quot;finished_at&quot;: &quot;2026-03-15T10:23:45+00:00&quot;,
+    &quot;duration_seconds&quot;: 225.0,
+    &quot;environment&quot;: {
+      &quot;os&quot;: &quot;Linux v6.8.0&quot;,
+      &quot;cpu&quot;: &quot;AMD EPYC 7763&quot;,
+      &quot;python&quot;: &quot;3.12.4&quot;,
+      &quot;ram&quot;: 64
+    }
+  },
+  &quot;inputs&quot;: {},
+  &quot;result&quot;: {
+    &quot;status&quot;: &quot;ok&quot;,
     &quot;algorithm&quot;: &quot;pc&quot;,
     &quot;node_count&quot;: 8,
-    &quot;edge_count&quot;: 8,
-    &quot;f1_score&quot;: 0.857,
-    &quot;evaluate_graph&quot;: {&quot;completed&quot;: &quot;2026-03-15T10:23:45&quot;}
+    &quot;edge_count&quot;: 8
+  },
+  &quot;history&quot;: {}
 }
 </code></pre>
-<p>The presence of action-specific metadata (e.g., <code>evaluate_graph</code>) indicates
-that action has been applied to the entry.</p>
+<p>During the structure phase, action fields live in <code>result</code>; the separate
+values audit moves input-like fields into <code>inputs</code>. See
+<a href="../../architecture/metadata_structure/">Metadata Structure</a> for the full
+schema.</p>
+<h3 id="metadata-names-in-filters-and-plots">Metadata Names in Filters and Plots</h3>
+<ul>
+<li>Bare names refer to matrix values and result-object fields: <code>sample_size</code>,
+  <code>f1</code>, <code>equiv.f1</code>.</li>
+<li>Metadata is producer-qualified: <code>learn_graph.status</code>,
+  <code>learn_graph.hyperparameters.iss</code>.</li>
+<li>Explicit forms (<code>learn_graph.inputs.algorithm</code>,
+  <code>learn_graph.result.status</code>) and provider-qualified forms
+  (<code>causaliq_discovery.learn_graph.status</code>) are available when needed.</li>
+<li>A bare metadata name such as <code>status</code> is rejected; the reference must name
+  the producer.</li>
+</ul>
+<pre><code class="language-yaml">with:
+  action: plot
+  input: results/metrics.db
+  filter: &quot;learn_graph.algorithm_seconds &lt; 3600&quot;
+  x: sample_size
+  y: f1
+</code></pre>
 <h3 id="entry-objects">Entry Objects</h3>
-<p>Each cache holds one object type, and every entry holds exactly one object
-of that type:</p>
+<p>Each cache holds one object type, and every successful entry holds exactly
+one object of that type:</p>
 <table>
 <thead>
 <tr>
@@ -2063,6 +2152,9 @@ cqflow import-cache -i ./exported -o results/restored.db
 <li><strong>GraphML</strong> for graph objects</li>
 <li><strong>JSON</strong> for other objects</li>
 </ul>
+<p>Each <code>_meta.json</code> records <code>schema_version: 2</code>, <code>matrix_values</code>, <code>created_at</code>
+and the metadata envelope. Version 1 exports remain readable: import
+normalises them to the current schema.</p>
 <p>This enables interoperability with external tools and long-term archival in
 open formats.</p>
 <h2 id="cache-schema-consistency">Cache Schema Consistency</h2>
@@ -2085,7 +2177,7 @@ with WorkflowCache(&quot;results/graphs.db&quot;) as cache:
     key = {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: 1000}
     if cache.exists(key):
         entry = cache.get(key)
-        print(entry.metadata[&quot;f1_score&quot;])
+        print(entry.metadata[&quot;result&quot;][&quot;status&quot;])
 </code></pre>
 
 

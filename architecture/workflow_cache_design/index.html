@@ -1610,6 +1610,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2404,6 +2432,14 @@
 
 
 <h1 id="workflow-cache-design">Workflow Cache Design</h1>
+<p>!!! note "Partially superseded"</p>
+<pre><code>The cache type model and metadata structure have changed since this
+document was written. One cache holds one object type, every entry
+holds at most one typed object, and metadata uses schema version 2.
+See [Cache Type Model](cache_type_model.md) and
+[Metadata Structure](metadata_structure.md) for the current design;
+the mutable-metadata and multi-object sections below are historical.
+</code></pre>
 <h2 id="overview">Overview</h2>
 <p>Workflow Caches provide persistent storage for workflow step results in a
 compact, fast SQLite database. This enables <em>conservative execution</em> (skipping
@@ -2445,23 +2481,42 @@ in causaliq-knowledge but will migrate to causaliq-core.</p>
 </table>
 <h2 id="architecture-decisions">Architecture Decisions</h2>
 <h3 id="cache-entry-structure">Cache Entry Structure</h3>
-<p>Each cache entry consists of a <strong>metadata blob</strong> and <strong>multiple data blobs</strong>:</p>
-<p>| Component | Storage | Purpose |
-|-----------|---------|---------||
-| <strong>Metadata blob</strong> | Tokenised JSON | Provenance, metrics, type-specific attributes |
-| <strong>Data blobs</strong> | Type-specific encoded objects | One or more result objects (e.g., graph, trace) |</p>
-<p>For example, a structure learning result might include:</p>
-<ul>
-<li>A <code>graph</code> data blob (the learned SDG)</li>
-<li>A <code>trace</code> data blob (iteration-by-iteration execution trace)</li>
-<li>Metadata (algorithm, timing, scores, hyperparameters)</li>
-</ul>
+<p>Each cache entry consists of a <strong>metadata envelope</strong> and at most <strong>one typed
+data blob</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Storage</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Metadata envelope</strong></td>
+<td>Tokenised JSON</td>
+<td>Provenance, inputs, result and the reserved history block</td>
+</tr>
+<tr>
+<td><strong>Data blob</strong></td>
+<td>Type-specific encoded object</td>
+<td>Exactly one result object for a successful run; none for a failure</td>
+</tr>
+</tbody>
+</table>
+<p>The envelope is schema version 2 (see
+<a href="../metadata_structure/">Metadata Structure</a>). A structure learning result
+writes a <code>dag</code> object to the graph cache and, when requested, a <code>trace</code>
+object to a separate trace cache. A failed run records <code>result.status</code> and
+<code>result.error</code> and writes no object.</p>
 <p>This design:</p>
 <ul>
-<li>Supports composite results with multiple artefacts</li>
-<li>Avoids schema changes when adding new result types</li>
-<li>Keeps object-level attributes (e.g., edge confidences) in metadata</li>
-<li>Allows flexible metadata structure per entry type</li>
+<li>keeps one object type per cache and one object per entry</li>
+<li>keeps metric values in the typed object rather than duplicating them in
+  metadata</li>
+<li>records provider versions, timestamps, duration and environment for
+  reproducibility</li>
+<li>supports adding object types and action fields without schema changes</li>
 </ul>
 <h3 id="cache-key-strategy">Cache Key Strategy</h3>
 <h4 id="schema-binding">Schema Binding</h4>
@@ -2541,27 +2596,16 @@ research intent rather than implementation details.</p>
 <p><strong>Deferred</strong>: Complex key strategies (action params, step names) can be
 added if the simple approach proves insufficient.</p>
 <h3 id="edge-confidences">Edge Confidences</h3>
-<p>Edge confidences from LLM graph generation are stored in <strong>metadata JSON</strong>,
-not as SDG edge attributes:</p>
-<pre><code class="language-json">{
-  &quot;provenance&quot;: {
-    &quot;generator&quot;: &quot;llm&quot;,
-    &quot;model&quot;: &quot;groq/llama-3.1-8b-instant&quot;,
-    &quot;timestamp&quot;: &quot;2026-02-04T10:30:00Z&quot;
-  },
-  &quot;edge_confidences&quot;: {
-    &quot;A-&gt;B&quot;: 0.95,
-    &quot;B-&gt;C&quot;: 0.72
-  },
-  &quot;evaluation&quot;: {
-    &quot;shd&quot;: 3,
-    &quot;precision&quot;: 0.85
-  }
-}
-</code></pre>
-<p><strong>Rationale</strong>: Edge confidences are method-specific (LLM output), not
-intrinsic graph properties. Keeping them in metadata maintains consistency
-across diverse result types (graphs, traces, junction trees, etc.).</p>
+<p>Edge confidences from LLM graph generation are stored in the <strong>PDG object's
+edge probability attributes</strong>, not in metadata:</p>
+<ul>
+<li>the PDG object carries the uncertainty over edge states;</li>
+<li>metadata records how the object was produced (<code>provenance</code>, <code>inputs</code> and
+  <code>result</code>).</li>
+</ul>
+<p><strong>Rationale</strong>: edge confidences are intrinsic to that graph result, so they
+belong to the typed object. Keeping metadata as provenance preserves one
+consistent shape across graph, trace and metrics objects.</p>
 <h3 id="sdg-changes-minimal">SDG Changes (Minimal)</h3>
 <p>The SDG class requires only:</p>
 <ul>
@@ -2950,9 +2994,9 @@ steps:
 <p>The <code>_scan_aggregation_inputs()</code> method scans a memoised per-cache index
 rather than re-reading the cache for every matrix job:</p>
 <ol>
-<li>Build or reuse an index of each entry's matrix values and flattened
-   metadata (<code>WorkflowCache.list_entry_summaries()</code>, which does not
-   decompress object payloads)</li>
+<li>Build or reuse an index of each entry's matrix values and reporting view
+   (<code>WorkflowCache.list_entry_summaries()</code>, which does not decompress object
+   payloads)</li>
 <li>Apply the filter expression (if present)</li>
 <li>Match entries against the current matrix values</li>
 <li>Load only matched entries in full and return them as entry dictionaries</li>
@@ -2964,19 +3008,25 @@ full-cache reads.</p>
 # &quot;Aggregation scan: scanned=100, filtered=20, matched=8&quot;
 </code></pre>
 <h3 id="filter-expressions">Filter Expressions</h3>
-<p>The <code>filter</code> parameter accepts expressions evaluated against flattened entry
-metadata:</p>
+<p>The <code>filter</code> parameter accepts expressions evaluated against the shared
+reporting view:</p>
 <pre><code class="language-yaml">with:
   action: merge_graphs
   input: results/graphs.db
-  filter: &quot;algorithm == 'pc' and sample_size &gt;= 1000&quot;
+  filter: &quot;learn_graph.algorithm == 'pc' and sample_size &gt;= 1000&quot;
 </code></pre>
-<p>Metadata flattening combines:</p>
+<p>The view exposes:</p>
 <ul>
-<li>Matrix variables (<code>model</code>, <code>algorithm</code>, etc.)</li>
-<li>Nested metadata using simple keys (if no conflict)</li>
-<li>Fully qualified keys (<code>provider.action.field</code>)</li>
+<li>matrix values and result-object fields by bare name (<code>sample_size</code>, <code>f1</code>);</li>
+<li>metadata by producer-qualified name (<code>learn_graph.status</code>,
+  <code>learn_graph.hyperparameters.iss</code>);</li>
+<li>explicit forms (<code>learn_graph.inputs.algorithm</code>,
+  <code>learn_graph.result.status</code>) and provider-qualified forms
+  (<code>causaliq_discovery.learn_graph.status</code>) when needed.</li>
 </ul>
+<p>Bare metadata names are rejected: the producer always has to be named.
+Qualified names are rewritten before evaluation because the underlying
+evaluator cannot address dotted keys directly.</p>
 <h3 id="action-integration">Action Integration</h3>
 <p>Matching entries are passed to actions via <code>_aggregation_entries</code>:</p>
 <pre><code class="language-python">def run(self, inputs, mode, context, logger):
@@ -3031,6 +3081,8 @@ metadata:</p>
 <ul>
 <li><a href="../cache_type_model/">Cache Type Model</a> - one object type per cache,
   provenance metadata and exactly one typed object per entry</li>
+<li><a href="../metadata_structure/">Metadata Structure</a> - schema version 2 metadata
+  envelope, provenance and naming rules</li>
 </ul>
 
 

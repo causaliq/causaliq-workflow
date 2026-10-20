@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#design-for-structure-and-propagation-of-_metajson" class="md-skip">
+        <a href="#metadata-structure-standardisation" class="md-skip">
           Skip to content
         </a>
       
@@ -731,6 +731,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Current task
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -747,6 +765,47 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#near-term-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Near-term task
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-on-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-on tasks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1176,6 +1235,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1552,6 +1639,36 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#near-term-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Near-term task
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-on-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-on tasks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1567,53 +1684,24 @@
 
 
 
-<h1 id="design-for-structure-and-propagation-of-_metajson">Design for structure and propagation of _meta.json</h1>
-<p>We have removed the UPDATE ActionPattern, which now means a workflow cache entry is always created by one action only. This provides an opportunity to simplify the current highly-nested metadata. However, we must consider this in the light of requirements to propagate metadata which are not yet fully realized. I wish to discuss the design options with you and agree a way forward.</p>
-<p>Here is an example of the current _meta.json structure:</p>
-<pre><code class="language-json">  &quot;metadata&quot;: {
-    &quot;causaliq-discovery&quot;: {
-      &quot;learn_graph&quot;: {
-        &quot;num_runs&quot;: 1,
-        &quot;algorithm&quot;: &quot;hc&quot;,
-        &quot;hyperparameters&quot;: {
-          &quot;score&quot;: &quot;bic&quot;,
-          &quot;iss&quot;: 1.0,
-          &quot;penalty_weight&quot;: 1.0
-        },
-
-</code></pre>
-<p>which we <strong>could</strong> flatten to something like:</p>
-<pre><code class="language-json">  &quot;package&quot;: &quot;causaliq-discovery&quot;,
-  &quot;action&quot;: &quot;learn_graph&quot;,
-  &quot;num_runs&quot;: 1,
-  &quot;algorithm&quot;: &quot;hc&quot;,
-  &quot;score&quot;: &quot;bic&quot;,
-  &quot;iss&quot;: 1.0,
-  &quot;penalty_weight&quot;: 1.0
-</code></pre>
-<p><strong>BUT</strong> we also want to be able to filter on, report on, and chart <strong>selected</strong> metadata values, some examples being:</p>
+<h1 id="metadata-structure-standardisation">Metadata Structure Standardisation</h1>
+<p>The design decision is recorded in
+<a href="../architecture/metadata_structure/">Metadata Structure</a>.</p>
+<h2 id="near-term-task">Near-term task</h2>
+<p>Standardise every action on schema version 2: framework provenance,
+<code>inputs</code> and <code>result</code> blocks, the reserved <code>history</code> block, and version 1
+read compatibility. Existing action metadata moves into <code>result</code>; the
+input/result classification is a separate values audit.</p>
+<h2 id="follow-on-tasks">Follow-on tasks</h2>
 <ul>
-<li>provide a bar chart of <code>learn_graph</code> statuses (ok, time out, invalid input etc.)</li>
-<li>provide a summary of <code>learn_graph</code> f1 values but only where the algorithm took less than 1 hour to run</li>
-<li>provide a chart of <code>learn_graph</code> f1 values, but only where iss &gt; 10, and sample_sise &lt; 10000&gt;</li>
+<li><strong>Values audit:</strong> classify fields into <code>inputs</code> and <code>result</code>, and check
+  each action's completeness and usefulness.</li>
+<li><strong>History population:</strong> the reserved <code>history</code> step parameter for
+  one-to-one aggregate steps.</li>
+<li><strong>Reporting:</strong> <code>plot</code> filtering and categorical summarisation.</li>
+<li><strong>Hat 2 clean-up:</strong> consolidate duplicate flatteners and remove dead
+  write paths.</li>
 </ul>
-<p>Thus, we need to be able to filter on, and report on metadata values; and note that this is metadata from <strong>previous actions</strong>, not the one doing the charting, for example.</p>
-<p>Thus we have two interelated design issues, firstly how do we propagate metadata from earlier actions e.g. learning graphs, to later actions where they are needed, e.g. plotting charts which may filter by or display these <strong>previous</strong> metadata options.</p>
-<p>Some propagation options are:</p>
-<ol>
-<li>
-<p>We keep the existing nested metadata structure, and metadata from previous actions (possibly from completely separate workflows) is always included in the current metadata. The metadata grows and grows as it has more
-previous provenances to incorporate. Documentation and selection of metadata fields is an issue.</p>
-</li>
-<li>
-<p>The metadata in an entry only relates to the current action. If we wish to use metadata from previous actions
-we must merge entries from different caches - e.g. graph caches carry graph learning status information and metrics from a metrics cache. This would be a nightmare for the user to comprehend I feel.</p>
-</li>
-<li>
-<p>We add action-specific metadata copying for relevant actions. For example, we could add a metric <code>status</code> to <code>evaluate_graph</code> which internally is coded to pick up the status metadata fields from the graph object's metadata and copy it into the metrics object (not NOT the metadata, which retains its purpose of just listing the provenance of the current action). It then becomes just another variable in the metrics object which we can filter by or display as with other metrics such as f1.</p>
-</li>
-</ol>
-<p>At the moment I favour the latter as the simplest and most understandable. This would also allow us to flatten the metadata if we wish.</p>
 
 
 

@@ -1163,6 +1163,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2502,11 +2530,12 @@ names so existing imports keep resolving:</p>
 <li><code>matrix</code> — matrix expansion, derivation and value matching;</li>
 <li><code>templates</code> — template variable extraction and resolution;</li>
 <li><code>patterns</code> — step pattern detection;</li>
-<li><code>filters</code> — metadata flattening and filter resolution;</li>
+<li><code>filters</code> — shared reporting view construction and filter resolution;</li>
 <li><code>aggregation</code> — AGGREGATE pattern configuration and input scanning;</li>
 <li><code>validation</code> / <code>validation_entries</code> — configuration and per-entry
   validation;</li>
 <li><code>execution</code> — parsing and job execution;</li>
+<li><code>provenance</code> — provenance collection for cache entries;</li>
 <li><code>executor</code> — the composed <code>WorkflowExecutor</code>.</li>
 </ul>
 <h2 id="core-classes">Core Classes</h2>
@@ -3282,7 +3311,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
     with:
       action: &quot;merge_graphs&quot;
       input: &quot;results/graphs.db&quot;
-      filter: &quot;algorithm == 'pc' and sample_size &gt;= 1000&quot;
+      filter: &quot;learn_graph.algorithm == 'pc' and sample_size &gt;= 1000&quot;
       output: &quot;results/merged.db&quot;
 </code></pre>
 <h2 id="error-handling">Error Handling</h2>

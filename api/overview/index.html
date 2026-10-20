@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../../architecture/cache_type_model/">
+        <link rel="prev" href="../../architecture/metadata_structure/">
       
       
         <link rel="next" href="../actions/">
@@ -1163,6 +1163,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/metadata_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1960,7 +1988,8 @@ expansion and templating.</p>
 TokenCache.</p>
 <ul>
 <li><strong>WorkflowCache</strong> - High-level cache for workflow results</li>
-<li><strong>CacheEntry</strong> - Entry model with metadata and named objects</li>
+<li><strong>CacheEntry</strong> - Entry model with the version 2 metadata envelope and at
+  most one typed object</li>
 <li><strong>MatrixSchemaError</strong> - Cache consistency exceptions</li>
 <li><strong>Export/Import</strong> - Convert cache entries to/from open formats</li>
 </ul>
@@ -2008,12 +2037,20 @@ workflow = executor.parse_workflow(&quot;my_workflow.yml&quot;)
 results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
 </code></pre>
 <h2 id="using-the-cache">Using the Cache</h2>
-<pre><code class="language-python">from causaliq_workflow.cache import WorkflowCache, CacheEntry
+<pre><code class="language-python">from causaliq_core.metadata import build_metadata
+
+from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
 # Store workflow results
 with WorkflowCache(&quot;results.db&quot;) as cache:
-    entry = CacheEntry()
-    entry.metadata[&quot;algorithm&quot;] = &quot;pc&quot;
+    entry = CacheEntry(
+        metadata=build_metadata(
+            &quot;causaliq-discovery&quot;,
+            &quot;learn_graph&quot;,
+            {},
+            {&quot;algorithm&quot;: &quot;pc&quot;},
+        )
+    )
     entry.add_object(&quot;graph&quot;, &quot;graphml&quot;, &quot;&lt;graphml&gt;...&lt;/graphml&gt;&quot;)
 
     key = {&quot;network&quot;: &quot;asia&quot;, &quot;algorithm&quot;: &quot;pc&quot;}
@@ -2066,7 +2103,7 @@ with WorkflowCache(&quot;results.db&quot;) as cache:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../architecture/cache_type_model/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cache Type Model">
+          <a href="../../architecture/metadata_structure/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Metadata Structure">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2076,7 +2113,7 @@ with WorkflowCache(&quot;results.db&quot;) as cache:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Cache Type Model
+                Metadata Structure
               </div>
             </div>
           </a>
