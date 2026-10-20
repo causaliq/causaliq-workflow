@@ -11,11 +11,12 @@ names so existing imports keep resolving:
 - `matrix` — matrix expansion, derivation and value matching;
 - `templates` — template variable extraction and resolution;
 - `patterns` — step pattern detection;
-- `filters` — metadata flattening and filter resolution;
+- `filters` — shared reporting view construction and filter resolution;
 - `aggregation` — AGGREGATE pattern configuration and input scanning;
 - `validation` / `validation_entries` — configuration and per-entry
   validation;
 - `execution` — parsing and job execution;
+- `provenance` — provenance collection for cache entries;
 - `executor` — the composed `WorkflowExecutor`.
 
 ## Core Classes
@@ -273,7 +274,7 @@ steps:
     with:
       action: "merge_graphs"
       input: "results/graphs.db"
-      filter: "algorithm == 'pc' and sample_size >= 1000"
+      filter: "learn_graph.algorithm == 'pc' and sample_size >= 1000"
       output: "results/merged.db"
 ```
 

@@ -180,7 +180,8 @@ steps:
 
 ### With Filter Expression
 
-Filter entries before aggregation using metadata fields:
+Filter entries before aggregation using matrix values, result-object fields
+and producer metadata:
 
 ```yaml
 - name: Summarise Successful
@@ -188,7 +189,7 @@ Filter entries before aggregation using metadata fields:
   with:
     action: model_average
     input: graphs.db
-    filter: "status == 'completed' and edge_count > 0"
+    filter: "learn_graph.status == 'ok' and learn_graph.edge_count > 0"
     output: summaries.db
 ```
 
@@ -215,59 +216,54 @@ Filter expressions use a safe subset of Python syntax via `simpleeval`:
 
 | Operator | Example | Description |
 |----------|---------|-------------|
-| `==` | `status == 'completed'` | Equality |
-| `!=` | `algo != 'pc'` | Inequality |
-| `>`, `<` | `edge_count > 5` | Comparison |
+| `==` | `learn_graph.status == 'ok'` | Equality |
+| `!=` | `learn_graph.algorithm != 'pc'` | Inequality |
+| `>`, `<` | `learn_graph.edge_count > 5` | Comparison |
 | `>=`, `<=` | `sample_size >= 100` | Comparison |
 | `and` | `a > 5 and b < 10` | Logical AND |
 | `or` | `a > 5 or b > 10` | Logical OR |
 | `not` | `not failed` | Logical NOT |
-| `in` | `algo in ['pc', 'ges']` | Membership |
+| `in` | `learn_graph.algorithm in ['pc', 'ges']` | Membership |
 
 ### Available Variables
 
 Filter expressions can access:
 
 1. **Matrix values**: `network`, `sample_size`, etc.
-2. **Flattened metadata**: `status`, `edge_count`, etc.
-3. **Qualified metadata**: `provider.action.field`
+2. **Result-object fields**: bare names such as `f1` or `equiv.f1`.
+3. **Metadata**: producer-qualified names such as `learn_graph.status`
+   or `learn_graph.hyperparameters.iss`.
 
 ```yaml
 # Filter by matrix variable
 filter: "sample_size >= 500"
 
+# Filter by result-object field
+filter: "f1 > 0.8"
+
 # Filter by metadata field
-filter: "status == 'completed'"
+filter: "learn_graph.status == 'ok'"
 
 # Filter by qualified path
-filter: "causaliq-research.generate_graph.node_count > 5"
+filter: "causaliq_research.generate_graph.node_count > 5"
 ```
 
-## Metadata Flattening
+## Reporting View
 
-Nested metadata is flattened for filter evaluation:
+Filters, `summarise` and `plot` evaluate one flat reporting view of each
+entry:
 
-```python
-# Original metadata structure
-{
-    "causaliq-research": {
-        "generate_graph": {
-            "node_count": 5,
-            "edge_count": 8
-        }
-    }
-}
+- matrix values and result-object fields by bare name (`sample_size`, `f1`);
+- metadata by producer-qualified name (`generate_graph.node_count`,
+  `learn_graph.hyperparameters.iss`);
+- explicit `generate_graph.inputs.*` / `generate_graph.result.*` forms and
+  provider-qualified `causaliq_research.generate_graph.node_count` forms
+  when needed.
 
-# Flattened for filter access
-{
-    "node_count": 5,
-    "edge_count": 8,
-    "causaliq-research.generate_graph.node_count": 5,
-    "causaliq-research.generate_graph.edge_count": 8
-}
-```
-
-Simple keys are available directly; qualified keys handle conflicts.
+Version 1 `provider -> action -> fields` metadata is normalised before
+viewing. Provenance is recorded for reproducibility but is not exposed in
+filters by default. Bare metadata names are rejected: the reference must
+name the producer.
 
 ## Entry Structure
 
@@ -276,7 +272,7 @@ Actions receive entries as dictionaries:
 ```python
 {
     "matrix_values": {"network": "asia", "sample_size": 100},
-    "metadata": {...},      # Original nested metadata
+    "metadata": {...},      # Version 2 metadata envelope
     "cache_path": "graphs.db",
     "entry_hash": "abc123...",
     "entry": CacheEntry(...)  # Full entry object

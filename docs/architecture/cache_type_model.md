@@ -35,35 +35,43 @@ implicit: the first typed write pins it.
 
 ### 2. Provenance metadata and at most one object
 
-Every entry holds provenance metadata and at most one object: exactly one for
-a successful run, none for a failed run. Provenance is the namespaced
-`provider -> action -> fields` structure already used, carrying the action
-name, timestamp, parameters, counts and outcome. Object results, including
-metrics, are the single typed object rather than metadata.
+Every entry holds version 2 metadata and at most one object: exactly one for
+a successful run, none for a failed run. Metadata has four blocks:
+
+- `provenance` — provider, provider and workflow versions, action, start
+  and finish times, duration, and runtime environment;
+- `inputs` — the effective parameters used by the action;
+- `result` — the status, error, action-measured timings and counts;
+- `history` — reserved for metadata inherited from earlier producers.
+
+Object results, including metrics, are the single typed object rather than
+metadata. See [Metadata Structure](metadata_structure.md) for the full
+envelope.
 
 ### 3. Metrics are objects
 
 Results placed in workflow caches are typed objects, including metrics.
 `evaluate_graph` writes a `metrics` object to an output cache rather than
 mutating metadata on the input entry. The `UPDATE` pattern is therefore
-unnecessary. Metric values live only in that object: the entry metadata
-records provenance (`status`, `reference`, `evaluated_graph`) and never
-duplicates the values, so `summarise` and `plot` read the object.
+unnecessary. Metric values live only in that object: the entry's
+`provenance` and `result` blocks record how the object was produced
+(`status`, `reference`, `evaluated_graph`) and never duplicate the values,
+so `summarise` and `plot` read the object.
 
-Exported `_meta.json` files hold `matrix_values`, `created_at` and
-`metadata` only. The object map is omitted because a cache holds a single
-type: the object file's name and extension (`dag.graphml`,
+Exported `_meta.json` files hold `schema_version`, `matrix_values`,
+`created_at` and `metadata` only. The object map is omitted because a cache
+holds a single type: the object file's name and extension (`dag.graphml`,
 `metrics.json`) already identify it, and import reconstructs the format
 from the extension.
 
 ### 4. Failure entries
 
-A failed run writes provenance (status and the failure reason) and **no
-object**. An object would be indistinguishable from the result of a
-successful run — a legitimate edgeless graph, for instance — and could be
-scored, so failures are recorded only in metadata. The entry replaces any
-prior entry for the key: the latest run wins, including when a failure
-replaces a previously successful result.
+A failed run writes `result.status` and `result.error` and **no object**. An
+object would be indistinguishable from the result of a successful run — a
+legitimate edgeless graph, for instance — and could be scored, so failures
+are recorded only in metadata. The entry replaces any prior entry for the
+key: the latest run wins, including when a failure replaces a previously
+successful result.
 
 Consumers propagate failures rather than hiding them: `evaluate_graph` does
 not compute metrics from a failed input, but writes a provenance-only entry
@@ -118,50 +126,73 @@ to `output`.
 
 ```json
 {
+  "schema_version": 2,
   "matrix_values": {"network": "asia", "sample_size": "1k"},
+  "created_at": "2026-10-16T09:00:00+00:00",
   "metadata": {
-    "causaliq-analysis": {
-      "evaluate_graph": {
-        "action": "evaluate_graph",
-        "timestamp": "2026-10-16T09:00:00Z",
-        "status": "success",
-        "reference": "networks/asia/asia.xdsl"
+    "provenance": {
+      "provider": "causaliq-analysis",
+      "provider_version": "0.8.0.dev4",
+      "workflow_version": "0.6.0.dev8",
+      "action": "evaluate_graph",
+      "started_at": "2026-10-16T08:59:58+00:00",
+      "finished_at": "2026-10-16T09:00:00+00:00",
+      "duration_seconds": 2.1,
+      "environment": {
+        "os": "Linux v6.8.0",
+        "cpu": "AMD EPYC 7763",
+        "python": "3.12.4",
+        "ram": 64
       }
-    }
-  },
-  "objects": {
-    "metrics": {"format": "json", "content": "{\"f1\": 0.91}"}
+    },
+    "inputs": {"reference": "networks/asia/asia.xdsl"},
+    "result": {
+      "status": "ok",
+      "reference": "networks/asia/asia.xdsl",
+      "evaluated_graph": "dag"
+    },
+    "history": {}
   }
 }
 ```
 
-A failed entry uses the same shape with `status: "input_error"` and an
-`error` field, and no object at all:
+A failed entry uses the same shape with `result.status` and `result.error`,
+and no object at all:
 
 ```json
 {
+  "schema_version": 2,
   "matrix_values": {"network": "asia", "sample_size": 10},
+  "created_at": "2026-10-16T09:00:00+00:00",
   "metadata": {
-    "causaliq-discovery": {
-      "learn_graph": {
-        "status": "input_error",
-        "error": "variable asia must have at least two levels"
-      }
-    }
-  },
-  "objects": {}
+    "provenance": {
+      "provider": "causaliq-discovery",
+      "action": "learn_graph",
+      "environment": {"os": "Linux v6.8.0", "python": "3.12.4"}
+    },
+    "inputs": {},
+    "result": {
+      "status": "input_error",
+      "error": "variable asia must have at least two levels"
+    },
+    "history": {}
+  }
 }
 ```
 
+In an exported `_meta.json` the object is a separate file (`metrics.json`,
+`dag.graphml`); the document itself has no `objects` map.
+
 ## Compatibility
 
-Existing caches are treated as disposable until the Zenodo deposit, so no
-data migration tooling is provided. During the transition the legacy write
-path remains permissive; one-object and type enforcement applies to the
-typed write API first, then globally once all producers have migrated.
+Writes use schema version 2. Existing version 1 entries are normalised on
+read by `causaliq_core.metadata.normalise_metadata`, so no data migration
+tooling is provided. Caches remain disposable until the Zenodo deposit.
 
 ## See Also
 
+- [Metadata Structure](metadata_structure.md) - schema version 2 envelope,
+  provenance, naming rules and phased plan
 - [Workflow Cache Design](workflow_cache_design.md) - overall cache
   architecture
 - [Cache Object Model](cache_object_model.md) - object types and lookup

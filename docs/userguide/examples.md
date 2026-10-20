@@ -182,7 +182,7 @@ steps:
     with:
       action: "evaluate_graph"
       input: "results/graphs.db"
-      filter: "edge_count > 5 and sample_size >= 100"
+      filter: "learn_graph.edge_count > 5 and sample_size >= 100"
       reference: "networks/{{network}}/true.graphml"
 ```
 

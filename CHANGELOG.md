@@ -9,11 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Version 2 metadata envelope** - cache entries now carry `provenance`,
+  `inputs`, `result` and the reserved `history` block, with
+  `schema_version: 2` in exported `_meta.json`
+- **Execution provenance** - provider and workflow versions, action start
+  and finish times, monotonic duration, and runtime environment for every
+  entry
+- **Shared reporting view** - one projection of matrix values, result-object
+  fields and producer metadata used by aggregation filters, `summarise` and
+  `plot`
+- **Qualified filter names** - metadata is addressed as
+  `<action>.<field>` (for example `learn_graph.status`), with explicit
+  `action.inputs.*` / `action.result.*` and provider-qualified forms
 - `WorkflowCache.list_entry_summaries()` - list each entry's matrix values
   and metadata without decompressing object payloads
 
 ### Changed
 
+- **Metadata standardisation** - actions may return a flat metadata mapping
+  during the transition; the executor places it in `result`, records
+  provenance, and constructs the envelope once
+- **Export/import** - exports write `schema_version: 2`; imports normalise
+  version 1 `provider -> action -> fields` metadata to the current schema
 - **Aggregation scan performance** - matrix jobs now reuse a memoised
   per-cache index (matrix values and metadata only) instead of re-reading
   and fully decompressing every cache entry for every job; the index is
@@ -24,19 +41,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- Nothing yet
+- `WorkflowCache.update_entry()` - the UPDATE action pattern has been
+  removed; write a complete entry with `put_typed()` instead
 
 ### Removed
 
-- Nothing yet
+- Empty placeholder objects for failed runs; failures are recorded as
+  metadata only
 
 ### Fixed
 
-- Nothing yet
+- `random()` filter resolution now accepts qualified variable names such as
+  `learn_graph.seed`
 
 ### Security
 
 - Nothing yet
+
+### Dependencies
+
+- Requires causaliq-core >= 0.8.0.dev7 (for the shared metadata envelope)
 
 ## [0.5.0] Multi-step Workflows - 2026-04-10
 

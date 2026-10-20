@@ -131,9 +131,12 @@ steps:
     with:
       action: "merge_graphs"
       input: "results/graphs.db"
-      filter: "edge_count > 5 and sample_size >= 100"
+      filter: "learn_graph.edge_count > 5 and sample_size >= 100"
       output: "results/merged.db"
 ```
+
+Matrix and result-object fields use bare names; metadata uses the producer
+qualifier (`learn_graph.edge_count`).
 
 Filter expressions support **template variables**, so you can parameterise
 the filter per matrix combination:

@@ -57,7 +57,8 @@ SQLite-based caching for workflow step results, built on causaliq-core's
 TokenCache.
 
 - **WorkflowCache** - High-level cache for workflow results
-- **CacheEntry** - Entry model with metadata and named objects
+- **CacheEntry** - Entry model with the version 2 metadata envelope and at
+  most one typed object
 - **MatrixSchemaError** - Cache consistency exceptions
 - **Export/Import** - Convert cache entries to/from open formats
 
@@ -115,12 +116,20 @@ results = executor.execute_workflow(workflow, mode="run")
 ## Using the Cache
 
 ```python
-from causaliq_workflow.cache import WorkflowCache, CacheEntry
+from causaliq_core.metadata import build_metadata
+
+from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
 # Store workflow results
 with WorkflowCache("results.db") as cache:
-    entry = CacheEntry()
-    entry.metadata["algorithm"] = "pc"
+    entry = CacheEntry(
+        metadata=build_metadata(
+            "causaliq-discovery",
+            "learn_graph",
+            {},
+            {"algorithm": "pc"},
+        )
+    )
     entry.add_object("graph", "graphml", "<graphml>...</graphml>")
 
     key = {"network": "asia", "algorithm": "pc"}

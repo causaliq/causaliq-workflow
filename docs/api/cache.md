@@ -25,6 +25,9 @@ The workflow cache imports the following from causaliq-core:
         - open
         - close
         - put
+        - put_typed
+        - put_failure
+        - put_from_action
         - get
         - exists
         - entry_count
@@ -61,20 +64,41 @@ The workflow cache imports the following from causaliq-core:
 
 ---
 
+## Metadata Envelope
+
+Every entry carries a schema version 2 metadata envelope with four blocks:
+
+- `provenance` — provider, provider and workflow versions, action, start and
+  finish times, duration and runtime environment;
+- `inputs` — the effective parameters used by the action;
+- `result` — status, error, action-measured timings and counts;
+- `history` — reserved for metadata inherited from earlier producers.
+
+Build it with `causaliq_core.metadata.build_metadata` rather than
+constructing the blocks by hand; the workflow executor does this for every
+step. See [Metadata Structure](../architecture/metadata_structure.md) for
+the full schema and naming rules.
+
 ## Usage Examples
 
 ### Basic Cache Operations
 
 ```python
-from causaliq_workflow.cache import WorkflowCache, CacheEntry
+from causaliq_core.metadata import build_metadata
+
+from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
 # Create and use cache with context manager
 with WorkflowCache("results/experiment.db") as cache:
-    # Create an entry with metadata
-    entry = CacheEntry()
-    entry.metadata["algorithm"] = "pc"
-    entry.metadata["alpha"] = 0.05
-    entry.metadata["node_count"] = 8
+    # Create an entry with version 2 metadata
+    entry = CacheEntry(
+        metadata=build_metadata(
+            "causaliq-discovery",
+            "learn_graph",
+            {},
+            {"algorithm": "pc", "alpha": 0.05, "node_count": 8},
+        )
+    )
 
     # Add a graph object
     graphml_content = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -96,7 +120,7 @@ with WorkflowCache("results/experiment.db") as cache:
 
     # Retrieve entry
     result = cache.get(key)
-    print(f"Algorithm: {result.metadata['algorithm']}")
+    print(f"Algorithm: {result.metadata['result']['algorithm']}")
 ```
 
 ### Matrix Key Hashing
@@ -162,12 +186,20 @@ with WorkflowCache("new_cache.db") as cache:
 Use `:memory:` for fast, non-persistent caching:
 
 ```python
-from causaliq_workflow.cache import WorkflowCache, CacheEntry
+from causaliq_core.metadata import build_metadata
+
+from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
 # In-memory cache for testing
 with WorkflowCache(":memory:") as cache:
-    entry = CacheEntry()
-    entry.metadata["test"] = True
+    entry = CacheEntry(
+        metadata=build_metadata(
+            "test-provider",
+            "test_action",
+            {},
+            {"test": True},
+        )
+    )
 
     cache.put({"key": "value"}, entry)
     assert cache.entry_count() == 1
@@ -182,9 +214,12 @@ functionality:
 - **Matrix key hashing** - SHA-256 hash of sorted matrix values (16 hex chars)
 - **Schema validation** - Ensures consistent matrix variable names across
   entries
-- **Entry model** - CacheEntry with metadata dict and named objects list
+- **Metadata envelope** - Schema version 2 provenance, inputs, result and
+  history blocks
+- **Entry model** - `CacheEntry` with the metadata envelope and at most one
+  typed object
 - **Export/Import** - Convert entries to/from open standard formats (GraphML,
-  JSON)
+  JSON) and normalise version 1 metadata on import
 
 The cache design focuses on:
 

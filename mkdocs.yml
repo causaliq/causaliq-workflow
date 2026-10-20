@@ -64,6 +64,7 @@ nav:
       - Logging Architecture: architecture/logging_architecture_design.md
       - Workflow Cache Design: architecture/workflow_cache_design.md
       - Cache Type Model: architecture/cache_type_model.md
+      - Metadata Structure: architecture/metadata_structure.md
   - API Reference:
     - Overview: api/overview.md
     - Action Framework: api/actions.md

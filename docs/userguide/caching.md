@@ -40,28 +40,69 @@ Each entry is identified by a unique `{network, sample_size}` combination.
 
 ### Entry Metadata
 
-Metadata is a flat dictionary stored with each entry. Actions add their
-results here:
+Metadata uses schema version 2 and four blocks: `provenance`, `inputs`,
+`result` and `history`. The framework writes provenance, the action writes
+`result` (and `inputs` when it supplies them), and `history` is reserved for
+metadata inherited from earlier actions.
 
-```python
+```json
 {
-    "network": "asia",
-    "sample_size": 1000,
+  "provenance": {
+    "provider": "causaliq-discovery",
+    "provider_version": "0.8.0.dev4",
+    "workflow_version": "0.6.0.dev8",
+    "action": "learn_graph",
+    "started_at": "2026-03-15T10:20:00+00:00",
+    "finished_at": "2026-03-15T10:23:45+00:00",
+    "duration_seconds": 225.0,
+    "environment": {
+      "os": "Linux v6.8.0",
+      "cpu": "AMD EPYC 7763",
+      "python": "3.12.4",
+      "ram": 64
+    }
+  },
+  "inputs": {},
+  "result": {
+    "status": "ok",
     "algorithm": "pc",
     "node_count": 8,
-    "edge_count": 8,
-    "f1_score": 0.857,
-    "evaluate_graph": {"completed": "2026-03-15T10:23:45"}
+    "edge_count": 8
+  },
+  "history": {}
 }
 ```
 
-The presence of action-specific metadata (e.g., `evaluate_graph`) indicates
-that action has been applied to the entry.
+During the structure phase, action fields live in `result`; the separate
+values audit moves input-like fields into `inputs`. See
+[Metadata Structure](../architecture/metadata_structure.md) for the full
+schema.
+
+### Metadata Names in Filters and Plots
+
+- Bare names refer to matrix values and result-object fields: `sample_size`,
+  `f1`, `equiv.f1`.
+- Metadata is producer-qualified: `learn_graph.status`,
+  `learn_graph.hyperparameters.iss`.
+- Explicit forms (`learn_graph.inputs.algorithm`,
+  `learn_graph.result.status`) and provider-qualified forms
+  (`causaliq_discovery.learn_graph.status`) are available when needed.
+- A bare metadata name such as `status` is rejected; the reference must name
+  the producer.
+
+```yaml
+with:
+  action: plot
+  input: results/metrics.db
+  filter: "learn_graph.algorithm_seconds < 3600"
+  x: sample_size
+  y: f1
+```
 
 ### Entry Objects
 
-Each cache holds one object type, and every entry holds exactly one object
-of that type:
+Each cache holds one object type, and every successful entry holds exactly
+one object of that type:
 
 | Name | Format | Description |
 |------|--------|-------------|
@@ -145,6 +186,10 @@ Exported format uses:
 - **GraphML** for graph objects
 - **JSON** for other objects
 
+Each `_meta.json` records `schema_version: 2`, `matrix_values`, `created_at`
+and the metadata envelope. Version 1 exports remain readable: import
+normalises them to the current schema.
+
 This enables interoperability with external tools and long-term archival in
 open formats.
 
@@ -173,5 +218,5 @@ with WorkflowCache("results/graphs.db") as cache:
     key = {"network": "asia", "sample_size": 1000}
     if cache.exists(key):
         entry = cache.get(key)
-        print(entry.metadata["f1_score"])
+        print(entry.metadata["result"]["status"])
 ```

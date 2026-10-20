@@ -1,5 +1,14 @@
 # Workflow Cache Design
 
+!!! note "Partially superseded"
+
+    The cache type model and metadata structure have changed since this
+    document was written. One cache holds one object type, every entry
+    holds at most one typed object, and metadata uses schema version 2.
+    See [Cache Type Model](cache_type_model.md) and
+    [Metadata Structure](metadata_structure.md) for the current design;
+    the mutable-metadata and multi-object sections below are historical.
+
 ## Overview
 
 Workflow Caches provide persistent storage for workflow step results in a
@@ -25,25 +34,28 @@ in causaliq-knowledge but will migrate to causaliq-core.
 
 ### Cache Entry Structure
 
-Each cache entry consists of a **metadata blob** and **multiple data blobs**:
+Each cache entry consists of a **metadata envelope** and at most **one typed
+data blob**:
 
 | Component | Storage | Purpose |
-|-----------|---------|---------||
-| **Metadata blob** | Tokenised JSON | Provenance, metrics, type-specific attributes |
-| **Data blobs** | Type-specific encoded objects | One or more result objects (e.g., graph, trace) |
+|-----------|---------|---------|
+| **Metadata envelope** | Tokenised JSON | Provenance, inputs, result and the reserved history block |
+| **Data blob** | Type-specific encoded object | Exactly one result object for a successful run; none for a failure |
 
-For example, a structure learning result might include:
-
-- A `graph` data blob (the learned SDG)
-- A `trace` data blob (iteration-by-iteration execution trace)
-- Metadata (algorithm, timing, scores, hyperparameters)
+The envelope is schema version 2 (see
+[Metadata Structure](metadata_structure.md)). A structure learning result
+writes a `dag` object to the graph cache and, when requested, a `trace`
+object to a separate trace cache. A failed run records `result.status` and
+`result.error` and writes no object.
 
 This design:
 
-- Supports composite results with multiple artefacts
-- Avoids schema changes when adding new result types
-- Keeps object-level attributes (e.g., edge confidences) in metadata
-- Allows flexible metadata structure per entry type
+- keeps one object type per cache and one object per entry
+- keeps metric values in the typed object rather than duplicating them in
+  metadata
+- records provider versions, timestamps, duration and environment for
+  reproducibility
+- supports adding object types and action fields without schema changes
 
 ### Cache Key Strategy
 
@@ -110,30 +122,16 @@ added if the simple approach proves insufficient.
 
 ### Edge Confidences
 
-Edge confidences from LLM graph generation are stored in **metadata JSON**,
-not as SDG edge attributes:
+Edge confidences from LLM graph generation are stored in the **PDG object's
+edge probability attributes**, not in metadata:
 
-```json
-{
-  "provenance": {
-    "generator": "llm",
-    "model": "groq/llama-3.1-8b-instant",
-    "timestamp": "2026-02-04T10:30:00Z"
-  },
-  "edge_confidences": {
-    "A->B": 0.95,
-    "B->C": 0.72
-  },
-  "evaluation": {
-    "shd": 3,
-    "precision": 0.85
-  }
-}
-```
+- the PDG object carries the uncertainty over edge states;
+- metadata records how the object was produced (`provenance`, `inputs` and
+  `result`).
 
-**Rationale**: Edge confidences are method-specific (LLM output), not
-intrinsic graph properties. Keeping them in metadata maintains consistency
-across diverse result types (graphs, traces, junction trees, etc.).
+**Rationale**: edge confidences are intrinsic to that graph result, so they
+belong to the typed object. Keeping metadata as provenance preserves one
+consistent shape across graph, trace and metrics objects.
 
 ### SDG Changes (Minimal)
 
@@ -542,9 +540,9 @@ steps:
 The `_scan_aggregation_inputs()` method scans a memoised per-cache index
 rather than re-reading the cache for every matrix job:
 
-1. Build or reuse an index of each entry's matrix values and flattened
-   metadata (`WorkflowCache.list_entry_summaries()`, which does not
-   decompress object payloads)
+1. Build or reuse an index of each entry's matrix values and reporting view
+   (`WorkflowCache.list_entry_summaries()`, which does not decompress object
+   payloads)
 2. Apply the filter expression (if present)
 3. Match entries against the current matrix values
 4. Load only matched entries in full and return them as entry dictionaries
@@ -560,21 +558,28 @@ full-cache reads.
 
 ### Filter Expressions
 
-The `filter` parameter accepts expressions evaluated against flattened entry
-metadata:
+The `filter` parameter accepts expressions evaluated against the shared
+reporting view:
 
 ```yaml
 with:
   action: merge_graphs
   input: results/graphs.db
-  filter: "algorithm == 'pc' and sample_size >= 1000"
+  filter: "learn_graph.algorithm == 'pc' and sample_size >= 1000"
 ```
 
-Metadata flattening combines:
+The view exposes:
 
-- Matrix variables (`model`, `algorithm`, etc.)
-- Nested metadata using simple keys (if no conflict)
-- Fully qualified keys (`provider.action.field`)
+- matrix values and result-object fields by bare name (`sample_size`, `f1`);
+- metadata by producer-qualified name (`learn_graph.status`,
+  `learn_graph.hyperparameters.iss`);
+- explicit forms (`learn_graph.inputs.algorithm`,
+  `learn_graph.result.status`) and provider-qualified forms
+  (`causaliq_discovery.learn_graph.status`) when needed.
+
+Bare metadata names are rejected: the producer always has to be named.
+Qualified names are rewritten before evaluation because the underlying
+evaluator cannot address dotted keys directly.
 
 ### Action Integration
 
@@ -618,3 +623,5 @@ Workflow Caches span three packages:
 
 - [Cache Type Model](cache_type_model.md) - one object type per cache,
   provenance metadata and exactly one typed object per entry
+- [Metadata Structure](metadata_structure.md) - schema version 2 metadata
+  envelope, provenance and naming rules

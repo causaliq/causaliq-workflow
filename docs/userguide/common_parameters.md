@@ -119,18 +119,26 @@ filter: "pdg_seed in random(3, 0) and sample_size in random(2, 1)"
 
 ### Filter Variables
 
-Filter expressions can reference any metadata variable from cache entries:
+Filter expressions can reference matrix values, result-object fields and
+producer metadata:
 
 ```yaml
-# Filter by algorithm and score
-filter: "algorithm == 'pc' and f1_score > 0.8"
+# Matrix and result-object fields use bare names
+filter: "network in ['asia', 'cancer', 'alarm'] and f1 > 0.8"
 
-# Filter by multiple networks
-filter: "network in ['asia', 'cancer', 'alarm']"
+# Metadata uses the action qualifier
+filter: "learn_graph.algorithm == 'pc' and learn_graph.status == 'ok'"
 
-# Complex conditions
-filter: "(sample_size >= 1000 or seed == 0) and status == 'success'"
+# Nested metadata uses the full path
+filter: "learn_graph.hyperparameters.iss > 10 and sample_size < 10000"
 ```
+
+Bare metadata names such as `status` or `algorithm` are rejected: the
+reference must name the producer (`learn_graph.status`,
+`evaluate_graph.status`). Use the explicit
+`learn_graph.inputs.algorithm` and `learn_graph.result.status` forms when a
+name exists in both blocks, and the provider-qualified
+`causaliq_discovery.learn_graph.status` form when action names collide.
 
 ### Template Variables in Filters
 
