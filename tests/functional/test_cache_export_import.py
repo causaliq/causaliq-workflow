@@ -32,7 +32,6 @@ def test_write_entry_to_dir_creates_directory(tmp_path: Path) -> None:
     entry_path = Path("asia/pc")
     entry_info = {
         "matrix_values": {"dataset": "asia", "method": "pc"},
-        "created_at": "2026-01-01T00:00:00Z",
     }
     objects = {
         "graph": {"type": "graphml", "content": "<graphml/>"},
@@ -51,7 +50,6 @@ def test_write_entry_to_dir_writes_objects(tmp_path: Path) -> None:
     entry_path = Path("test")
     entry_info = {
         "matrix_values": {"x": "1"},
-        "created_at": "2026-01-01T00:00:00Z",
     }
     objects = {
         "graph": {
@@ -84,7 +82,6 @@ def test_write_entry_to_dir_writes_metadata(tmp_path: Path) -> None:
     entry_path = Path("entry")
     entry_info = {
         "matrix_values": {"dataset": "asia"},
-        "created_at": "2026-02-17T10:00:00Z",
     }
     objects = {"result": {"type": "result", "format": "json", "content": "{}"}}
     metadata = {"status": "success", "elapsed": 1.5}
@@ -95,8 +92,12 @@ def test_write_entry_to_dir_writes_metadata(tmp_path: Path) -> None:
     assert meta_path.exists()
 
     meta_content = json.loads(meta_path.read_text())
+    assert set(meta_content) == {
+        "schema_version",
+        "matrix_values",
+        "metadata",
+    }
     assert meta_content["matrix_values"] == {"dataset": "asia"}
-    assert meta_content["created_at"] == "2026-02-17T10:00:00Z"
     assert meta_content["metadata"]["result"] == {
         "status": "success",
         "elapsed": 1.5,
@@ -115,7 +116,6 @@ def test_write_entry_to_zip_writes_files(tmp_path: Path) -> None:
     entry_path = Path("asia/pc")
     entry_info = {
         "matrix_values": {"dataset": "asia", "method": "pc"},
-        "created_at": "2026-01-01T00:00:00Z",
     }
     objects = {
         "graph": {
@@ -145,7 +145,6 @@ def test_write_entry_to_zip_writes_metadata(tmp_path: Path) -> None:
     entry_path = Path("test")
     entry_info = {
         "matrix_values": {"x": "1"},
-        "created_at": "2026-02-17T12:00:00Z",
     }
     objects = {"data": {"type": "data", "format": "json", "content": "{}"}}
     metadata = {"key": "value"}
@@ -155,6 +154,11 @@ def test_write_entry_to_zip_writes_metadata(tmp_path: Path) -> None:
 
     with zipfile.ZipFile(zip_path, "r") as zf:
         meta_content = json.loads(zf.read("test/_meta.json").decode("utf-8"))
+        assert set(meta_content) == {
+            "schema_version",
+            "matrix_values",
+            "metadata",
+        }
         assert meta_content["matrix_values"] == {"x": "1"}
         assert meta_content["metadata"]["result"] == {"key": "value"}
 
@@ -272,7 +276,6 @@ def test_import_entries_from_directory(tmp_path: Path) -> None:
         json.dumps(
             {
                 "matrix_values": {"key": "value"},
-                "created_at": "2026-01-01T00:00:00Z",
                 "metadata": {"imported": True},
             }
         )
@@ -304,7 +307,6 @@ def test_import_entries_from_zip(tmp_path: Path) -> None:
             json.dumps(
                 {
                     "matrix_values": {"source": "zip"},
-                    "created_at": "2026-02-17T00:00:00Z",
                     "metadata": {"from_zip": True},
                 }
             ),
@@ -362,7 +364,6 @@ def test_import_entries_skips_subdirectories(tmp_path: Path) -> None:
         json.dumps(
             {
                 "matrix_values": {"test": "subdir"},
-                "created_at": "2026-01-01T00:00:00Z",
                 "metadata": {},
             }
         )
@@ -399,7 +400,6 @@ def test_import_entries_zip_with_directory_entries(tmp_path: Path) -> None:
             json.dumps(
                 {
                     "matrix_values": {"zip": "dirs"},
-                    "created_at": "2026-01-01T00:00:00Z",
                     "metadata": {},
                 }
             ),
@@ -428,7 +428,6 @@ def test_import_entries_zip_deduplicates_entries(tmp_path: Path) -> None:
             json.dumps(
                 {
                     "matrix_values": {"dedup": "test"},
-                    "created_at": "2026-01-01T00:00:00Z",
                     "metadata": {},
                 }
             ),

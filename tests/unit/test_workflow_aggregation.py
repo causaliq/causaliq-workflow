@@ -228,7 +228,7 @@ def test_flatten_metadata_key_conflict(executor: WorkflowExecutor) -> None:
         {"network": "overridden"},
         history={
             "provider2.action2": {
-                "inputs": {},
+                "parameters": {},
                 "result": {"network": "also_overridden"},
             }
         },

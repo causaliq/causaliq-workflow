@@ -10,22 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Version 2 metadata envelope** - cache entries now carry `provenance`,
-  `inputs`, `result` and the reserved `history` block, with
+  `parameters`, `result` and the reserved `history` block, with
   `schema_version: 2` in exported `_meta.json`
-- **Execution provenance** - provider and workflow versions, action start
-  and finish times, monotonic duration, and runtime environment for every
-  entry
+- **Execution provenance** - provider and workflow versions, the local
+  action start time, monotonic elapsed seconds, and the runtime environment
+  for every entry
 - **Shared reporting view** - one projection of matrix values, result-object
   fields and producer metadata used by aggregation filters, `summarise` and
   `plot`
 - **Qualified filter names** - metadata is addressed as
   `<action>.<field>` (for example `learn_graph.status`), with explicit
-  `action.inputs.*` / `action.result.*` and provider-qualified forms
+  `action.parameters.*` / `action.result.*` and provider-qualified forms
 - `WorkflowCache.list_entry_summaries()` - list each entry's matrix values
   and metadata without decompressing object payloads
 
 ### Changed
 
+- **Metadata block rename** - the action metadata block `inputs` is now
+  `parameters`; explicit filter names use `action.parameters.field`
+- **Provenance fields** - `started` (local ISO 8601 time with an offset and
+  second precision) and `elapsed` (float seconds) replace `started_at`,
+  `finished_at` and `duration_seconds`
 - **Metadata standardisation** - actions may return a flat metadata mapping
   during the transition; the executor places it in `result`, records
   provenance, and constructs the envelope once
@@ -46,6 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `created_at` from exported `_meta.json` files and
+  `WorkflowCache.list_entries()`; the SQLite column remains internal cache
+  bookkeeping for workflow and LLM caches
+- `provenance.finished_at` from the metadata envelope
 - Empty placeholder objects for failed runs; failures are recorded as
   metadata only
 

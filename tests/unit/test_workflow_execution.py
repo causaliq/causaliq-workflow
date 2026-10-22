@@ -632,7 +632,7 @@ def test_execute_workflow_records_version_two_envelope(
         metadata = entry.metadata
         assert set(metadata) == {
             "provenance",
-            "inputs",
+            "parameters",
             "result",
             "history",
         }
@@ -641,9 +641,9 @@ def test_execute_workflow_records_version_two_envelope(
         assert provenance["provider_version"] == "1.2.3"
         assert provenance["action"] == "learn_graph"
         assert provenance["environment"]["python"] == "3.12.4"
-        assert provenance["started_at"] is not None
-        assert provenance["finished_at"] is not None
-        assert isinstance(provenance["duration_seconds"], float)
-        assert metadata["inputs"] == {}
+        assert provenance["started"] is not None
+        assert isinstance(provenance["elapsed"], float)
+        assert "finished_at" not in provenance
+        assert metadata["parameters"] == {}
         assert metadata["result"]["node_count"] == 5
         assert metadata["history"] == {}

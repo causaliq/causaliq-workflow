@@ -304,6 +304,11 @@ def test_export_entries_metadata_only(tmp_path: Path) -> None:
         meta_path = tmp_path / "asia" / "_meta.json"
         assert meta_path.exists()
         saved = json.loads(meta_path.read_text())
+        assert set(saved) == {
+            "schema_version",
+            "matrix_values",
+            "metadata",
+        }
         assert saved["schema_version"] == 2
         metadata = saved["metadata"]
         assert metadata["provenance"]["provider"] == "provider"

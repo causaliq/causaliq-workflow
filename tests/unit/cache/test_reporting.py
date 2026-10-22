@@ -24,8 +24,11 @@ def _metadata() -> dict:
         },
         history={
             "causaliq-discovery.learn_graph": {
-                "inputs": {"algorithm": "hc"},
-                "result": {"status": "ok", "elapsed_seconds": 3200.1},
+                "parameters": {"algorithm": "hc"},
+                "result": {
+                    "status": "ok",
+                    "elapsed_seconds": 3200.1,
+                },
             }
         },
     )
@@ -60,11 +63,11 @@ def test_build_entry_view_qualifies_metadata_names():
     assert view["learn_graph.elapsed_seconds"] == 3200.1
 
 
-# Test explicit input and result names are available.
+# Test explicit parameter and result names are available.
 def test_build_entry_view_exposes_explicit_blocks():
     view = build_entry_view({}, _metadata())
     assert view["evaluate_graph.result.status"] == "ok"
-    assert view["evaluate_graph.inputs.reference"] == "asia.xdsl"
+    assert view["evaluate_graph.parameters.reference"] == "asia.xdsl"
     assert view["learn_graph.result.status"] == "ok"
 
 
@@ -75,7 +78,7 @@ def test_build_entry_view_normalises_provider_names():
     assert view["causaliq_discovery.learn_graph.status"] == "ok"
 
 
-# Test a name present in inputs and result has no short form.
+# Test a name present in parameters and result has no short form.
 def test_build_entry_view_omits_ambiguous_short_name():
     metadata = build_metadata(
         "provider",
@@ -85,7 +88,7 @@ def test_build_entry_view_omits_ambiguous_short_name():
     )
     view = build_entry_view({}, metadata)
     assert "action.value" not in view
-    assert view["action.inputs.value"] == 1
+    assert view["action.parameters.value"] == 1
     assert view["action.result.value"] == 2
 
 

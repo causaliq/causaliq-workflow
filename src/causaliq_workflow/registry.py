@@ -604,7 +604,7 @@ class ActionRegistry:
 def _result_fields(metadata: Any) -> Dict[str, Any]:
     """Return the result fields exposed for output chaining.
 
-    CausalIQ actions return ``{"inputs": ..., "result": ...}``. Legacy
+    CausalIQ actions return ``{"parameters": ..., "result": ...}``. Legacy
     flat metadata is returned unchanged so third-party providers keep
     working during the transition.
 

@@ -163,7 +163,7 @@ def write_entry_to_dir(
     Args:
         output_dir: Root output directory.
         entry_path: Relative path for this entry.
-        entry_info: Entry details (matrix_values, created_at).
+        entry_info: Entry details (matrix_values).
         objects: Dict mapping name to {format, action, content}.
         metadata: Entry metadata dict.
     """
@@ -182,7 +182,6 @@ def write_entry_to_dir(
     meta_data = {
         "schema_version": SCHEMA_VERSION,
         "matrix_values": entry_info["matrix_values"],
-        "created_at": entry_info["created_at"],
         "metadata": normalise_metadata(metadata),
     }
     meta_path = full_dir / "_meta.json"
@@ -204,7 +203,7 @@ def write_entry_to_zip(
     Args:
         zf: Open ZipFile for writing.
         entry_path: Relative path for this entry.
-        entry_info: Entry details (matrix_values, created_at).
+        entry_info: Entry details (matrix_values).
         objects: Dict mapping name to {format, action, content}.
         metadata: Entry metadata dict.
     """
@@ -220,7 +219,6 @@ def write_entry_to_zip(
     meta_data = {
         "schema_version": SCHEMA_VERSION,
         "matrix_values": entry_info["matrix_values"],
-        "created_at": entry_info["created_at"],
         "metadata": normalise_metadata(metadata),
     }
     meta_arc = str(entry_path / "_meta.json")

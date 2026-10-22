@@ -543,12 +543,13 @@ class WorkflowCache:
     def list_entries(self) -> list[dict[str, Any]]:
         """List all cache entries with details (excluding internal config).
 
-        Returns entry details including matrix_values (parsed from key_json)
-        and created_at timestamp.
+        Returns entry details including matrix_values (parsed from
+        key_json). Entry record times are internal cache bookkeeping and
+        are not exposed.
 
         Returns:
-            List of entry dictionaries with keys: hash, matrix_values (dict),
-            created_at (str).
+            List of entry dictionaries with keys: hash and
+            matrix_values (dict).
         """
         raw_entries = self.token_cache.list_entries()
         entries = []
@@ -563,7 +564,6 @@ class WorkflowCache:
                 {
                     "hash": entry["hash"],
                     "matrix_values": matrix_values,
-                    "created_at": entry["created_at"],
                 }
             )
         return entries

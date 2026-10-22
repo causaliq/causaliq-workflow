@@ -344,10 +344,10 @@ def test_list_entries() -> None:
 
         entries = cache.list_entries()
         assert len(entries) == 2
-        # Entries have matrix_values, hash, created_at
+        # Entries expose matrix_values and hash only
         assert all("matrix_values" in e for e in entries)
         assert all("hash" in e for e in entries)
-        assert all("created_at" in e for e in entries)
+        assert all("created_at" not in e for e in entries)
 
 
 # Test list_entry_summaries returns matrix values and metadata only.
@@ -707,10 +707,9 @@ def test_import_entries_delegates(tmp_path) -> None:
             {
                 "schema_version": 2,
                 "matrix_values": {"test": "import"},
-                "created_at": "2026-01-01T00:00:00Z",
                 "metadata": {
                     "provenance": {"provider": "p", "action": "a"},
-                    "inputs": {},
+                    "parameters": {},
                     "result": {"imported": True},
                     "history": {},
                 },

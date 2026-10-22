@@ -8,7 +8,7 @@ execution mixin stays within the size limits.
 from __future__ import annotations
 
 import importlib.metadata
-from datetime import datetime, timezone
+from datetime import datetime
 from time import perf_counter
 from typing import Any, Dict, Optional, Tuple
 
@@ -23,21 +23,24 @@ __all__ = [
     "collect_environment",
     "collect_step_provenance",
     "execute_with_provenance",
+    "local_now",
     "resolve_action_name",
     "resolve_provider_version",
     "split_action_metadata",
-    "utc_now",
     "workflow_version",
 ]
 
 
-def utc_now() -> str:
-    """Return the current time as a timezone-aware ISO 8601 string.
+def local_now() -> str:
+    """Return the current local time as a timezone-aware ISO 8601 string.
+
+    Fractions of a second are not recorded, keeping timestamps compact and
+    stable across platforms.
 
     Returns:
-        UTC timestamp such as ``2026-10-19T10:42:11.123456+00:00``.
+        Local timestamp such as ``2026-10-22T06:06:16+01:00``.
     """
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now().astimezone().isoformat(timespec="seconds")
 
 
 def collect_environment() -> Optional[Dict[str, Any]]:
@@ -111,9 +114,9 @@ def resolve_action_name(
 def split_action_metadata(
     raw_metadata: Any,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Split action metadata into effective inputs and results.
+    """Split action metadata into effective parameters and results.
 
-    CausalIQ actions return ``{"inputs": {...}, "result": {...}}``. A
+    CausalIQ actions return ``{"parameters": {...}, "result": {...}}``. A
     legacy flat mapping is treated as the result so third-party providers
     keep working during the transition.
 
@@ -121,14 +124,14 @@ def split_action_metadata(
         raw_metadata: Metadata returned by an action.
 
     Returns:
-        Tuple of (inputs, result) dictionaries.
+        Tuple of (parameters, result) dictionaries.
     """
     if not isinstance(raw_metadata, dict):
         return {}, {}
-    inputs = raw_metadata.get("inputs")
+    parameters = raw_metadata.get("parameters")
     result = raw_metadata.get("result")
-    if isinstance(inputs, dict) and isinstance(result, dict):
-        return dict(inputs), dict(result)
+    if isinstance(parameters, dict) and isinstance(result, dict):
+        return dict(parameters), dict(result)
     return {}, dict(raw_metadata)
 
 
@@ -154,21 +157,20 @@ def execute_with_provenance(
     Raises:
         WorkflowExecutionError: If the action name cannot be resolved.
     """
-    started_at = utc_now()
+    started = local_now()
     start = perf_counter()
     step_result = registry.execute_action(
         action_name, resolved_inputs, context
     )
-    duration = round(perf_counter() - start, 6)
+    elapsed = round(perf_counter() - start, 6)
     action_class = registry.get_action_class(action_name)
     provider_name = getattr(action_class, "name", action_name)
     provenance = collect_step_provenance(
         action_class,
         provider_name,
         resolved_inputs,
-        started_at,
-        utc_now(),
-        duration,
+        started,
+        elapsed,
         environment,
     )
     if not provenance["action"]:
@@ -191,19 +193,18 @@ def build_result_metadata(
     Returns:
         Metadata envelope ready for storage.
     """
-    inputs, result = split_action_metadata(
+    parameters, result = split_action_metadata(
         step_result.get("_action_metadata", {})
     )
-    return build_step_metadata(provenance, inputs, result)
+    return build_step_metadata(provenance, parameters, result)
 
 
 def collect_step_provenance(
     action_class: Any,
     provider_name: str,
     resolved_inputs: Dict[str, Any],
-    started_at: str,
-    finished_at: str,
-    duration_seconds: float,
+    started: str,
+    elapsed: float,
     environment: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """Collect provenance for one executed action.
@@ -212,9 +213,8 @@ def collect_step_provenance(
         action_class: Provider class declaring the action.
         provider_name: Provider name that owns the action.
         resolved_inputs: Resolved step parameters.
-        started_at: ISO 8601 UTC time at which the action started.
-        finished_at: ISO 8601 UTC time at which the action finished.
-        duration_seconds: Monotonic wall-clock duration of the action.
+        started: Local ISO 8601 time at which the action started.
+        elapsed: Monotonic wall-clock duration of the action in seconds.
         environment: Runtime environment information, if available.
 
     Returns:
@@ -227,23 +227,22 @@ def collect_step_provenance(
             action_class, provider_name
         ),
         "workflow_version": workflow_version(),
-        "started_at": started_at,
-        "finished_at": finished_at,
-        "duration_seconds": duration_seconds,
+        "started": started,
+        "elapsed": elapsed,
         "environment": environment,
     }
 
 
 def build_step_metadata(
     provenance: Dict[str, Any],
-    inputs: Dict[str, Any],
+    parameters: Dict[str, Any],
     result: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Build a version 2 envelope from collected step provenance.
 
     Args:
         provenance: Provenance collected by the executor.
-        inputs: Effective parameters reported by the action.
+        parameters: Effective parameters reported by the action.
         result: Values reported by the action.
 
     Returns:
@@ -252,12 +251,11 @@ def build_step_metadata(
     return build_metadata(
         provider=provenance["provider"],
         action=provenance["action"],
-        inputs=inputs,
+        parameters=parameters,
         result=result,
         provider_version=provenance.get("provider_version"),
         workflow_version=provenance.get("workflow_version"),
-        started_at=provenance.get("started_at"),
-        finished_at=provenance.get("finished_at"),
-        duration_seconds=provenance.get("duration_seconds"),
+        started=provenance.get("started"),
+        elapsed=provenance.get("elapsed"),
         environment=provenance.get("environment"),
     )

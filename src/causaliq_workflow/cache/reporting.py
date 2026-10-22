@@ -5,7 +5,8 @@ plot columns:
 
 - bare names for matrix values and result-object fields;
 - ``action.field`` for metadata when the name is unique;
-- ``action.inputs.field`` and ``action.result.field`` for explicit access;
+- ``action.parameters.field`` and ``action.result.field`` for explicit
+  access;
 - ``provider.action.field`` and ``provider.action.block.field`` for
   provider-qualified access, with the provider name normalised to
   underscores.
@@ -29,7 +30,7 @@ __all__ = [
     "resolve_qualified_names",
 ]
 
-_BLOCKS = ("inputs", "result")
+_BLOCKS = ("parameters", "result")
 
 
 def flatten_block(
@@ -75,7 +76,7 @@ def build_entry_view(
         short,
         parts.provenance.get("provider"),
         parts.provenance.get("action"),
-        parts.inputs,
+        parts.parameters,
         parts.result,
     )
     _add_history(view, short, parts)
@@ -98,7 +99,7 @@ def _has_producer(parts: MetadataParts) -> bool:
 
 def _add_anonymous(view: Dict[str, Any], parts: MetadataParts) -> None:
     """Expose flat metadata fields when no producer is recorded."""
-    for block in (parts.inputs, parts.result):
+    for block in (parts.parameters, parts.result):
         for path, value in flatten_block(block):
             view.setdefault(path, value)
 
@@ -108,15 +109,15 @@ def _add_blocks(
     short: Dict[Tuple[str, str], List[Any]],
     provider: Any,
     action: Any,
-    inputs: Dict[str, Any],
+    parameters: Dict[str, Any],
     result: Dict[str, Any],
 ) -> None:
-    """Add one producer's input and result fields to the view."""
+    """Add one producer's parameter and result fields to the view."""
     if not isinstance(provider, str) or not isinstance(action, str):
         return
     provider_key = provider.replace("-", "_")
     for block_name in _BLOCKS:
-        block = inputs if block_name == "inputs" else result
+        block = parameters if block_name == "parameters" else result
         for path, value in flatten_block(block):
             view[f"{action}.{block_name}.{path}"] = value
             view[f"{provider_key}.{action}.{block_name}.{path}"] = value
@@ -139,7 +140,7 @@ def _add_history(
             short,
             provider,
             action,
-            _block(blocks, "inputs"),
+            _block(blocks, "parameters"),
             _block(blocks, "result"),
         )
 

@@ -12,10 +12,10 @@ from causaliq_workflow.workflow.provenance import (
     collect_environment,
     collect_step_provenance,
     execute_with_provenance,
+    local_now,
     resolve_action_name,
     resolve_provider_version,
     split_action_metadata,
-    utc_now,
     workflow_version,
 )
 
@@ -33,11 +33,15 @@ def _action_class(version: str = "1.0.0") -> type:
     )
 
 
-# Test utc_now returns a parseable ISO timestamp.
-def test_utc_now_returns_iso_timestamp() -> None:
-    value = utc_now()
-    assert value.endswith("+00:00")
+# Test local_now returns a parseable local ISO timestamp.
+def test_local_now_returns_iso_timestamp() -> None:
+    from datetime import datetime
+
+    value = local_now()
+    parsed = datetime.fromisoformat(value)
+    assert parsed.tzinfo is not None
     assert "T" in value
+    assert "." not in value
 
 
 # Test collect_environment returns a copy of the environment mapping.
@@ -136,17 +140,20 @@ def test_resolve_action_name_returns_empty_for_several_actions() -> None:
 
 # Test split_action_metadata returns structured blocks.
 def test_split_action_metadata_returns_blocks() -> None:
-    inputs, result = split_action_metadata(
-        {"inputs": {"algorithm": "hc"}, "result": {"status": "ok"}}
+    parameters, result = split_action_metadata(
+        {
+            "parameters": {"algorithm": "hc"},
+            "result": {"status": "ok"},
+        }
     )
-    assert inputs == {"algorithm": "hc"}
+    assert parameters == {"algorithm": "hc"}
     assert result == {"status": "ok"}
 
 
 # Test split_action_metadata places a flat mapping in result.
 def test_split_action_metadata_treats_flat_mapping_as_result() -> None:
-    inputs, result = split_action_metadata({"status": "ok"})
-    assert inputs == {}
+    parameters, result = split_action_metadata({"status": "ok"})
+    assert parameters == {}
     assert result == {"status": "ok"}
 
 
@@ -162,15 +169,16 @@ def test_collect_step_provenance_records_window() -> None:
         "test-provider",
         {"action": "test_action"},
         "2026-01-01T00:00:00+00:00",
-        "2026-01-01T00:00:01+00:00",
         1.0,
         {"python": "3.12.4"},
     )
     assert provenance["provider"] == "test-provider"
     assert provenance["action"] == "test_action"
     assert provenance["provider_version"] == "1.0.0"
-    assert provenance["duration_seconds"] == 1.0
+    assert provenance["started"] == "2026-01-01T00:00:00+00:00"
+    assert provenance["elapsed"] == 1.0
     assert provenance["environment"] == {"python": "3.12.4"}
+    assert "finished_at" not in provenance
 
 
 # Test build_step_metadata builds the version 2 envelope.
@@ -180,12 +188,12 @@ def test_build_step_metadata_builds_envelope() -> None:
         "test-provider",
         {"action": "test_action"},
         "start",
-        "finish",
         1.0,
         None,
     )
     metadata = build_step_metadata(provenance, {}, {"status": "ok"})
     assert metadata["result"] == {"status": "ok"}
+    assert metadata["parameters"] == {}
     assert metadata["provenance"]["provider"] == "test-provider"
 
 
@@ -196,18 +204,17 @@ def test_build_result_metadata_uses_action_metadata() -> None:
         "test-provider",
         {"action": "test_action"},
         "start",
-        "finish",
         1.0,
         None,
     )
     step_result = {
         "_action_metadata": {
-            "inputs": {"algorithm": "hc"},
+            "parameters": {"algorithm": "hc"},
             "result": {"status": "ok"},
         }
     }
     metadata = build_result_metadata(provenance, step_result)
-    assert metadata["inputs"] == {"algorithm": "hc"}
+    assert metadata["parameters"] == {"algorithm": "hc"}
     assert metadata["result"] == {"status": "ok"}
 
 
@@ -230,6 +237,8 @@ def test_execute_with_provenance_executes_action(
     )
     assert step_result["status"] == "success"
     assert provenance["action"] == "test_action"
+    assert provenance["started"] is not None
+    assert isinstance(provenance["elapsed"], float)
 
 
 # Test execute_with_provenance rejects an unresolved action name.
