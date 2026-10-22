@@ -53,7 +53,8 @@ This design:
 - keeps one object type per cache and one object per entry
 - keeps metric values in the typed object rather than duplicating them in
   metadata
-- records provider versions, timestamps, duration and environment for
+- records provider versions, the action start time, elapsed seconds and
+  environment for
   reproducibility
 - supports adding object types and action fields without schema changes
 
@@ -126,8 +127,8 @@ Edge confidences from LLM graph generation are stored in the **PDG object's
 edge probability attributes**, not in metadata:
 
 - the PDG object carries the uncertainty over edge states;
-- metadata records how the object was produced (`provenance`, `inputs` and
-  `result`).
+- metadata records how the object was produced (`provenance`, `parameters`
+  and `result`).
 
 **Rationale**: edge confidences are intrinsic to that graph result, so they
 belong to the typed object. Keeping metadata as provenance preserves one
@@ -573,7 +574,7 @@ The view exposes:
 - matrix values and result-object fields by bare name (`sample_size`, `f1`);
 - metadata by producer-qualified name (`learn_graph.status`,
   `learn_graph.hyperparameters.iss`);
-- explicit forms (`learn_graph.inputs.algorithm`,
+- explicit forms (`learn_graph.parameters.algorithm`,
   `learn_graph.result.status`) and provider-qualified forms
   (`causaliq_discovery.learn_graph.status`) when needed.
 

@@ -7,14 +7,14 @@ stored with workflow cache entries and exported as `_meta.json`. It
 separates four concerns that were previously mixed together:
 
 - **provenance** — who produced the entry, when, and in what environment;
-- **inputs** — the effective parameters used by the action;
+- **parameters** — the effective parameters used by the action;
 - **result** — what the action produced;
 - **history** — metadata inherited from earlier actions.
 
 The structure is established first. A later task audits each action's
-values (moving input-like keys into `inputs` and checking completeness),
-and a further task populates `history` through a reserved `history` step
-parameter.
+values (moving parameter-like keys into `parameters` and checking
+completeness), and a further task populates `history` through a reserved
+`history` step parameter.
 
 ## Problems Addressed
 
@@ -39,16 +39,14 @@ parameter.
     "network": "asia",
     "sample_size": 1000
   },
-  "created_at": "2026-10-19T10:42:11+00:00",
   "metadata": {
     "provenance": {
       "provider": "causaliq-discovery",
-      "provider_version": "0.8.0.dev4",
-      "workflow_version": "0.6.0.dev8",
+      "provider_version": "0.2.0.dev1",
+      "workflow_version": "0.6.0.dev9",
       "action": "learn_graph",
-      "started_at": "2026-10-19T10:35:07+00:00",
-      "finished_at": "2026-10-19T10:42:11+00:00",
-      "duration_seconds": 3204.4,
+      "started": "2026-10-22T06:06:16+01:00",
+      "elapsed": 3204.4,
       "environment": {
         "os": "Linux v6.8.0",
         "cpu": "AMD EPYC 7763",
@@ -56,7 +54,7 @@ parameter.
         "ram": 64
       }
     },
-    "inputs": {},
+    "parameters": {},
     "result": {
       "status": "ok",
       "algorithm": "hc",
@@ -72,41 +70,45 @@ parameter.
 }
 ```
 
-- `inputs` stays empty until the values-audit task.
+- `parameters` stays empty until the values-audit task.
 - `history` stays empty until the history-population task.
 - Failure entries use the same shape with `result.status` and
   `result.error`, and no object file.
 - `objects` remains omitted from cache exports because a cache holds one
   object type and the object filename identifies it.
+- `created_at` is not part of the metadata contract. The SQLite cache keeps
+  an internal record time column for ordering, but it is not exported or
+  listed.
 
 ## Block Ownership
 
 | Block | Written by | Contents |
 |-------|------------|----------|
-| `provenance` | Framework | Provider, versions, action, start and finish times, duration, environment |
-| `inputs` | Action | Effective parameters used by the action |
+| `provenance` | Framework | Provider, versions, action, start time, elapsed seconds, environment |
+| `parameters` | Action | Effective parameters used by the action |
 | `result` | Action | Status, error, action-measured timings, counts, derived values |
 | `history` | Framework (future) | Metadata inherited from earlier producers |
 | `matrix_values` | Cache | Experimental design key |
-| `created_at` | Cache | Entry record time |
 
 Actions never construct the envelope. During the structure phase they
 may return a flat metadata mapping, which the framework places in
 `result`; as each action is audited it adopts the explicit
-`ActionMetadata` mapping holding `inputs` and `result`. The framework
+`ActionMetadata` mapping holding `parameters` and `result`. The framework
 adds `provenance` and `history` exactly once.
 
 ## Provenance
 
 ### Timestamps and duration
 
-- `started_at` and `finished_at` are timezone-aware UTC ISO 8601 values
-  taken immediately before and after the action call.
-- `duration_seconds` is measured with a monotonic clock rather than by
-  subtracting the wall-clock timestamps, so a clock adjustment cannot
-  corrupt it.
-- `created_at` remains the entry record time. It is usually close to
-  `finished_at` but means something different, and both are retained.
+- `started` is the local time at which the action started, as an ISO 8601
+  value with an offset and second precision (for example
+  `2026-10-22T06:06:16+01:00`).
+- `elapsed` is measured with a monotonic clock rather than by subtracting
+  wall-clock timestamps, so a clock adjustment cannot corrupt it.
+- There is no finish timestamp: it would duplicate `started + elapsed`.
+- `created_at` (the cache record time) is not metadata and is not exported
+  or listed. The SQLite column remains internal to `TokenCache`, which is
+  shared with the long-lived LLM caches.
 
 ### Versions
 
@@ -125,23 +127,22 @@ wrapped so that a platform failure cannot fail a step. Recording it per
 entry keeps each exported `_meta.json` self-contained for long-term
 archival; repeated values are tokenised in the cache.
 
-## Inputs and Result
+## Parameters and Result
 
 The split is introduced in two phases:
 
 1. **Structure phase (this change).** Every action's existing metadata is
-   placed in `result`, and `inputs` starts empty. This establishes the
+   placed in `result`, and `parameters` starts empty. This establishes the
    contract without judging each field.
-2. **Values-audit phase (separate).** Input-like keys (`algorithm`,
+2. **Values-audit phase (separate).** Parameter-like keys (`algorithm`,
    `hyperparameters`, `sample_size`, paths, seeds, timeouts, LLM models)
-   move from `result` to `inputs`, and completeness is checked.
+   move from `result` to `parameters`, and completeness is checked.
 
 The split distinguishes two timing concepts:
 
 - `result.elapsed_seconds` and `result.algorithm_seconds` are measured by
   the action;
-- `provenance.duration_seconds` is measured by the framework for the
-  whole step.
+- `provenance.elapsed` is measured by the framework for the whole step.
 
 ## History
 
@@ -152,7 +153,7 @@ identified as an inherited input or an inherited result:
 ```json
 "history": {
   "causaliq-discovery.learn_graph": {
-    "inputs": {"algorithm": "hc"},
+    "parameters": {"algorithm": "hc"},
     "result": {"status": "ok", "algorithm_seconds": 3200.1}
   }
 }
@@ -176,8 +177,8 @@ metadata value belongs to some previous action.
 
 | Form | Example | Availability |
 |------|---------|--------------|
-| Short | `learn_graph.status` | When the name is unique across `inputs` and `result` |
-| Explicit | `learn_graph.result.status`, `learn_graph.inputs.algorithm` | Always |
+| Short | `learn_graph.status` | When the name is unique across `parameters` and `result` |
+| Explicit | `learn_graph.result.status`, `learn_graph.parameters.algorithm` | Always |
 | Provider-qualified | `causaliq_discovery.learn_graph.status` | When action names collide |
 
 Provider names are normalised to underscores in the provider-qualified
@@ -203,7 +204,8 @@ exposed as `learn_graph.provider_version` and
   provider/action block becomes the producer; earlier blocks move to
   `history` with their fields under `result`.
 - **No migration tooling:** caches remain disposable until the Zenodo
-  deposit, consistent with the cache type model.
+  deposit, consistent with the cache type model. Obsolete provenance keys
+  are dropped when metadata is normalised rather than migrated.
 
 ## Implementation
 
@@ -220,14 +222,14 @@ helpers, export and import. `causaliq-discovery` uses the same builder
 for its directory `_meta.json`. `causaliq-analysis` and
 `causaliq-knowledge` keep returning flat metadata during the structure
 phase; the framework places it in `result`, and the values audit moves
-each action to the explicit `inputs`/`result` contract and reads through
-the shared reporting view.
+each action to the explicit `parameters`/`result` contract and reads
+through the shared reporting view.
 
 ## Phased Plan
 
 1. **Structure (this change):** schema version 2, framework provenance,
    action contract, all write paths, readers, compatibility and tests.
-2. **Values audit (separate):** classify fields into `inputs` and
+2. **Values audit (separate):** classify fields into `parameters` and
    `result`, check each action's completeness, and document its contract.
 3. **History population (separate):** the `history` step parameter for
    one-to-one aggregate steps.

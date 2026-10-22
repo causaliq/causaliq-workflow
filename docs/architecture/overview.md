@@ -206,8 +206,8 @@ Workflow actions typically write their outputs as **entries** in workflow
 caches. Each entry consists of:
 
 - a schema version 2 metadata envelope: `provenance` (provider, provider and
-  workflow versions, action, start/finish times, duration and runtime
-  environment), `inputs` (effective parameters), `result` (status, error,
+  workflow versions, action, local start time, elapsed seconds and runtime
+  environment), `parameters` (effective parameters), `result` (status, error,
   action-measured timings and counts) and the reserved `history` block. The
   JSON is tokenised when stored in the cache for compactness.
 - at most one typed data object, for example a graph produced by structure

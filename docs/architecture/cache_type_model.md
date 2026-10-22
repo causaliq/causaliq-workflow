@@ -38,9 +38,9 @@ implicit: the first typed write pins it.
 Every entry holds version 2 metadata and at most one object: exactly one for
 a successful run, none for a failed run. Metadata has four blocks:
 
-- `provenance` — provider, provider and workflow versions, action, start
-  and finish times, duration, and runtime environment;
-- `inputs` — the effective parameters used by the action;
+- `provenance` — provider, provider and workflow versions, action, local
+  start time, elapsed seconds, and runtime environment;
+- `parameters` — the effective parameters used by the action;
 - `result` — the status, error, action-measured timings and counts;
 - `history` — reserved for metadata inherited from earlier producers.
 
@@ -58,9 +58,9 @@ unnecessary. Metric values live only in that object: the entry's
 (`status`, `reference`, `evaluated_graph`) and never duplicate the values,
 so `summarise` and `plot` read the object.
 
-Exported `_meta.json` files hold `schema_version`, `matrix_values`,
-`created_at` and `metadata` only. The object map is omitted because a cache
-holds a single type: the object file's name and extension (`dag.graphml`,
+Exported `_meta.json` files hold `schema_version`, `matrix_values` and
+`metadata` only. The object map is omitted because a cache holds a single
+type: the object file's name and extension (`dag.graphml`,
 `metrics.json`) already identify it, and import reconstructs the format
 from the extension.
 
@@ -128,16 +128,14 @@ to `output`.
 {
   "schema_version": 2,
   "matrix_values": {"network": "asia", "sample_size": "1k"},
-  "created_at": "2026-10-16T09:00:00+00:00",
   "metadata": {
     "provenance": {
       "provider": "causaliq-analysis",
-      "provider_version": "0.8.0.dev4",
-      "workflow_version": "0.6.0.dev8",
+      "provider_version": "0.5.0.dev1",
+      "workflow_version": "0.6.0.dev9",
       "action": "evaluate_graph",
-      "started_at": "2026-10-16T08:59:58+00:00",
-      "finished_at": "2026-10-16T09:00:00+00:00",
-      "duration_seconds": 2.1,
+      "started": "2026-10-22T06:06:16+01:00",
+      "elapsed": 2.1,
       "environment": {
         "os": "Linux v6.8.0",
         "cpu": "AMD EPYC 7763",
@@ -145,7 +143,7 @@ to `output`.
         "ram": 64
       }
     },
-    "inputs": {"reference": "networks/asia/asia.xdsl"},
+    "parameters": {"reference": "networks/asia/asia.xdsl"},
     "result": {
       "status": "ok",
       "reference": "networks/asia/asia.xdsl",
@@ -163,14 +161,13 @@ and no object at all:
 {
   "schema_version": 2,
   "matrix_values": {"network": "asia", "sample_size": 10},
-  "created_at": "2026-10-16T09:00:00+00:00",
   "metadata": {
     "provenance": {
       "provider": "causaliq-discovery",
       "action": "learn_graph",
       "environment": {"os": "Linux v6.8.0", "python": "3.12.4"}
     },
-    "inputs": {},
+    "parameters": {},
     "result": {
       "status": "input_error",
       "error": "variable asia must have at least two levels"

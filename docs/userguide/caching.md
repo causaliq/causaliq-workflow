@@ -40,21 +40,20 @@ Each entry is identified by a unique `{network, sample_size}` combination.
 
 ### Entry Metadata
 
-Metadata uses schema version 2 and four blocks: `provenance`, `inputs`,
+Metadata uses schema version 2 and four blocks: `provenance`, `parameters`,
 `result` and `history`. The framework writes provenance, the action writes
-`result` (and `inputs` when it supplies them), and `history` is reserved for
-metadata inherited from earlier actions.
+`result` (and `parameters` when it supplies them), and `history` is reserved
+for metadata inherited from earlier actions.
 
 ```json
 {
   "provenance": {
     "provider": "causaliq-discovery",
-    "provider_version": "0.8.0.dev4",
-    "workflow_version": "0.6.0.dev8",
+    "provider_version": "0.2.0.dev1",
+    "workflow_version": "0.6.0.dev9",
     "action": "learn_graph",
-    "started_at": "2026-03-15T10:20:00+00:00",
-    "finished_at": "2026-03-15T10:23:45+00:00",
-    "duration_seconds": 225.0,
+    "started": "2026-10-22T06:06:16+01:00",
+    "elapsed": 225.0,
     "environment": {
       "os": "Linux v6.8.0",
       "cpu": "AMD EPYC 7763",
@@ -62,7 +61,7 @@ metadata inherited from earlier actions.
       "ram": 64
     }
   },
-  "inputs": {},
+  "parameters": {},
   "result": {
     "status": "ok",
     "algorithm": "pc",
@@ -74,7 +73,7 @@ metadata inherited from earlier actions.
 ```
 
 During the structure phase, action fields live in `result`; the separate
-values audit moves input-like fields into `inputs`. See
+values audit moves parameter-like fields into `parameters`. See
 [Metadata Structure](../architecture/metadata_structure.md) for the full
 schema.
 
@@ -84,7 +83,7 @@ schema.
   `f1`, `equiv.f1`.
 - Metadata is producer-qualified: `learn_graph.status`,
   `learn_graph.hyperparameters.iss`.
-- Explicit forms (`learn_graph.inputs.algorithm`,
+- Explicit forms (`learn_graph.parameters.algorithm`,
   `learn_graph.result.status`) and provider-qualified forms
   (`causaliq_discovery.learn_graph.status`) are available when needed.
 - A bare metadata name such as `status` is rejected; the reference must name
@@ -186,9 +185,9 @@ Exported format uses:
 - **GraphML** for graph objects
 - **JSON** for other objects
 
-Each `_meta.json` records `schema_version: 2`, `matrix_values`, `created_at`
-and the metadata envelope. Version 1 exports remain readable: import
-normalises them to the current schema.
+Each `_meta.json` records `schema_version: 2`, `matrix_values` and the
+metadata envelope. Version 1 exports remain readable: import normalises
+them to the current schema.
 
 This enables interoperability with external tools and long-term archival in
 open formats.

@@ -68,9 +68,9 @@ The workflow cache imports the following from causaliq-core:
 
 Every entry carries a schema version 2 metadata envelope with four blocks:
 
-- `provenance` — provider, provider and workflow versions, action, start and
-  finish times, duration and runtime environment;
-- `inputs` — the effective parameters used by the action;
+- `provenance` — provider, provider and workflow versions, action, local
+  start time, elapsed seconds and runtime environment;
+- `parameters` — the effective parameters used by the action;
 - `result` — status, error, action-measured timings and counts;
 - `history` — reserved for metadata inherited from earlier producers.
 

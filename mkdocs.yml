@@ -51,7 +51,6 @@ nav:
   - Roadmap:
     - Roadmap: roadmap.md
     - Current task: current_task.md
-    - Metadata: metadata.md
   - Architecture: 
     - Architectural Overview: architecture/overview.md
     - Design Documents:

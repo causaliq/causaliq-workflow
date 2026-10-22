@@ -136,8 +136,8 @@ filter: "learn_graph.hyperparameters.iss > 10 and sample_size < 10000"
 Bare metadata names such as `status` or `algorithm` are rejected: the
 reference must name the producer (`learn_graph.status`,
 `evaluate_graph.status`). Use the explicit
-`learn_graph.inputs.algorithm` and `learn_graph.result.status` forms when a
-name exists in both blocks, and the provider-qualified
+`learn_graph.parameters.algorithm` and `learn_graph.result.status` forms
+when a name exists in both blocks, and the provider-qualified
 `causaliq_discovery.learn_graph.status` form when action names collide.
 
 ### Template Variables in Filters

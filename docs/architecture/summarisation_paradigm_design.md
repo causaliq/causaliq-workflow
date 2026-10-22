@@ -256,7 +256,7 @@ entry:
 - matrix values and result-object fields by bare name (`sample_size`, `f1`);
 - metadata by producer-qualified name (`generate_graph.node_count`,
   `learn_graph.hyperparameters.iss`);
-- explicit `generate_graph.inputs.*` / `generate_graph.result.*` forms and
+- explicit `generate_graph.parameters.*` / `generate_graph.result.*` forms and
   provider-qualified `causaliq_research.generate_graph.node_count` forms
   when needed.
 

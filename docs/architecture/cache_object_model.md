@@ -103,7 +103,6 @@ Objects are stored in a dictionary keyed by type:
 {
   "matrix_values": {"network": "asia", "sample_size": "1k"},
   "metadata": {
-    "created_at": "2026-03-15T09:00:00Z",
     "causaliq-analysis": {
       "merge_graphs": {
         "action": "merge_graphs",
