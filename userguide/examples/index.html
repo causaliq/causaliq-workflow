@@ -521,6 +521,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../caching/" class="md-nav__link">
         
   
@@ -775,6 +803,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#reusable-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reusable Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -909,34 +948,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1248,6 +1259,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -1866,6 +1905,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#reusable-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reusable Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2079,6 +2129,38 @@ selecting the matching LLM entry from one cache and the matching BNSL entry
 from the other. Each cache only contains dimensions relevant to its source;
 missing dimensions are treated as wildcards during matching (see
 <a href="../core_concepts/#null-values-and-dimension-matching">Null Values and Dimension Matching</a>).</p>
+<h2 id="reusable-workflow">Reusable Workflow</h2>
+<p>Call another workflow file in place of an action step:</p>
+<pre><code class="language-yaml"># parent.yml
+steps:
+  - name: Asia benchmark
+    uses: ./modules/benchmark.yml
+    with:
+      sample_size: 1000
+
+  - name: Summarise
+    uses: causaliq-analysis
+    with:
+      action: summarise
+      input: results/graphs.db
+      output: results/summary.csv
+</code></pre>
+<pre><code class="language-yaml"># modules/benchmark.yml
+matrix:
+  network: [asia, cancer]
+
+steps:
+  - name: Learn graphs
+    uses: causaliq-discovery
+    with:
+      action: learn_structure
+      network: &quot;{{network}}&quot;
+      sample_size: 1000
+      output: results/graphs.db
+</code></pre>
+<p>The call resolves <code>./modules/benchmark.yml</code> relative to <code>parent.yml</code> and
+runs the whole called workflow once. See
+<a href="../subworkflows/">Reusable Workflows</a>.</p>
 <h2 id="running-workflows">Running Workflows</h2>
 <pre><code class="language-bash"># Validate and preview (default)
 cqflow run workflow.yml

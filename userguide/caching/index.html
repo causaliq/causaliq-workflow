@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../action_patterns/">
+        <link rel="prev" href="../subworkflows/">
       
       
         <link rel="next" href="../common_parameters/">
@@ -518,6 +518,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -951,34 +979,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1277,6 +1277,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -2008,19 +2036,18 @@ and enabling conservative execution.</p>
 </code></pre>
 <p>Each entry is identified by a unique <code>{network, sample_size}</code> combination.</p>
 <h3 id="entry-metadata">Entry Metadata</h3>
-<p>Metadata uses schema version 2 and four blocks: <code>provenance</code>, <code>inputs</code>,
+<p>Metadata uses schema version 2 and four blocks: <code>provenance</code>, <code>parameters</code>,
 <code>result</code> and <code>history</code>. The framework writes provenance, the action writes
-<code>result</code> (and <code>inputs</code> when it supplies them), and <code>history</code> is reserved for
-metadata inherited from earlier actions.</p>
+<code>result</code> (and <code>parameters</code> when it supplies them), and <code>history</code> is reserved
+for metadata inherited from earlier actions.</p>
 <pre><code class="language-json">{
   &quot;provenance&quot;: {
     &quot;provider&quot;: &quot;causaliq-discovery&quot;,
-    &quot;provider_version&quot;: &quot;0.8.0.dev4&quot;,
-    &quot;workflow_version&quot;: &quot;0.6.0.dev8&quot;,
+    &quot;provider_version&quot;: &quot;0.2.0.dev1&quot;,
+    &quot;workflow_version&quot;: &quot;0.6.0.dev9&quot;,
     &quot;action&quot;: &quot;learn_graph&quot;,
-    &quot;started_at&quot;: &quot;2026-03-15T10:20:00+00:00&quot;,
-    &quot;finished_at&quot;: &quot;2026-03-15T10:23:45+00:00&quot;,
-    &quot;duration_seconds&quot;: 225.0,
+    &quot;started&quot;: &quot;2026-10-22T06:06:16+01:00&quot;,
+    &quot;elapsed&quot;: 225.0,
     &quot;environment&quot;: {
       &quot;os&quot;: &quot;Linux v6.8.0&quot;,
       &quot;cpu&quot;: &quot;AMD EPYC 7763&quot;,
@@ -2028,7 +2055,7 @@ metadata inherited from earlier actions.</p>
       &quot;ram&quot;: 64
     }
   },
-  &quot;inputs&quot;: {},
+  &quot;parameters&quot;: {},
   &quot;result&quot;: {
     &quot;status&quot;: &quot;ok&quot;,
     &quot;algorithm&quot;: &quot;pc&quot;,
@@ -2039,7 +2066,7 @@ metadata inherited from earlier actions.</p>
 }
 </code></pre>
 <p>During the structure phase, action fields live in <code>result</code>; the separate
-values audit moves input-like fields into <code>inputs</code>. See
+values audit moves parameter-like fields into <code>parameters</code>. See
 <a href="../../architecture/metadata_structure/">Metadata Structure</a> for the full
 schema.</p>
 <h3 id="metadata-names-in-filters-and-plots">Metadata Names in Filters and Plots</h3>
@@ -2048,7 +2075,7 @@ schema.</p>
   <code>f1</code>, <code>equiv.f1</code>.</li>
 <li>Metadata is producer-qualified: <code>learn_graph.status</code>,
   <code>learn_graph.hyperparameters.iss</code>.</li>
-<li>Explicit forms (<code>learn_graph.inputs.algorithm</code>,
+<li>Explicit forms (<code>learn_graph.parameters.algorithm</code>,
   <code>learn_graph.result.status</code>) and provider-qualified forms
   (<code>causaliq_discovery.learn_graph.status</code>) are available when needed.</li>
 <li>A bare metadata name such as <code>status</code> is rejected; the reference must name
@@ -2152,9 +2179,9 @@ cqflow import-cache -i ./exported -o results/restored.db
 <li><strong>GraphML</strong> for graph objects</li>
 <li><strong>JSON</strong> for other objects</li>
 </ul>
-<p>Each <code>_meta.json</code> records <code>schema_version: 2</code>, <code>matrix_values</code>, <code>created_at</code>
-and the metadata envelope. Version 1 exports remain readable: import
-normalises them to the current schema.</p>
+<p>Each <code>_meta.json</code> records <code>schema_version: 2</code>, <code>matrix_values</code> and the
+metadata envelope. Version 1 exports remain readable: import normalises
+them to the current schema.</p>
 <p>This enables interoperability with external tools and long-term archival in
 open formats.</p>
 <h2 id="cache-schema-consistency">Cache Schema Consistency</h2>
@@ -2216,7 +2243,7 @@ with WorkflowCache(&quot;results/graphs.db&quot;) as cache:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../action_patterns/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Patterns">
+          <a href="../subworkflows/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Reusable Workflows">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2226,7 +2253,7 @@ with WorkflowCache(&quot;results/graphs.db&quot;) as cache:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Action Patterns
+                Reusable Workflows
               </div>
             </div>
           </a>

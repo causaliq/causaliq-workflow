@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/caching/" class="md-nav__link">
         
   
@@ -727,34 +755,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1072,6 +1072,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -2017,9 +2045,9 @@ implicit: the first typed write pins it.</p>
 <p>Every entry holds version 2 metadata and at most one object: exactly one for
 a successful run, none for a failed run. Metadata has four blocks:</p>
 <ul>
-<li><code>provenance</code> — provider, provider and workflow versions, action, start
-  and finish times, duration, and runtime environment;</li>
-<li><code>inputs</code> — the effective parameters used by the action;</li>
+<li><code>provenance</code> — provider, provider and workflow versions, action, local
+  start time, elapsed seconds, and runtime environment;</li>
+<li><code>parameters</code> — the effective parameters used by the action;</li>
 <li><code>result</code> — the status, error, action-measured timings and counts;</li>
 <li><code>history</code> — reserved for metadata inherited from earlier producers.</li>
 </ul>
@@ -2034,9 +2062,9 @@ unnecessary. Metric values live only in that object: the entry's
 <code>provenance</code> and <code>result</code> blocks record how the object was produced
 (<code>status</code>, <code>reference</code>, <code>evaluated_graph</code>) and never duplicate the values,
 so <code>summarise</code> and <code>plot</code> read the object.</p>
-<p>Exported <code>_meta.json</code> files hold <code>schema_version</code>, <code>matrix_values</code>,
-<code>created_at</code> and <code>metadata</code> only. The object map is omitted because a cache
-holds a single type: the object file's name and extension (<code>dag.graphml</code>,
+<p>Exported <code>_meta.json</code> files hold <code>schema_version</code>, <code>matrix_values</code> and
+<code>metadata</code> only. The object map is omitted because a cache holds a single
+type: the object file's name and extension (<code>dag.graphml</code>,
 <code>metrics.json</code>) already identify it, and import reconstructs the format
 from the extension.</p>
 <h3 id="4-failure-entries">4. Failure entries</h3>
@@ -2102,16 +2130,14 @@ to <code>output</code>.</p>
 <pre><code class="language-json">{
   &quot;schema_version&quot;: 2,
   &quot;matrix_values&quot;: {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: &quot;1k&quot;},
-  &quot;created_at&quot;: &quot;2026-10-16T09:00:00+00:00&quot;,
   &quot;metadata&quot;: {
     &quot;provenance&quot;: {
       &quot;provider&quot;: &quot;causaliq-analysis&quot;,
-      &quot;provider_version&quot;: &quot;0.8.0.dev4&quot;,
-      &quot;workflow_version&quot;: &quot;0.6.0.dev8&quot;,
+      &quot;provider_version&quot;: &quot;0.5.0.dev1&quot;,
+      &quot;workflow_version&quot;: &quot;0.6.0.dev9&quot;,
       &quot;action&quot;: &quot;evaluate_graph&quot;,
-      &quot;started_at&quot;: &quot;2026-10-16T08:59:58+00:00&quot;,
-      &quot;finished_at&quot;: &quot;2026-10-16T09:00:00+00:00&quot;,
-      &quot;duration_seconds&quot;: 2.1,
+      &quot;started&quot;: &quot;2026-10-22T06:06:16+01:00&quot;,
+      &quot;elapsed&quot;: 2.1,
       &quot;environment&quot;: {
         &quot;os&quot;: &quot;Linux v6.8.0&quot;,
         &quot;cpu&quot;: &quot;AMD EPYC 7763&quot;,
@@ -2119,7 +2145,7 @@ to <code>output</code>.</p>
         &quot;ram&quot;: 64
       }
     },
-    &quot;inputs&quot;: {&quot;reference&quot;: &quot;networks/asia/asia.xdsl&quot;},
+    &quot;parameters&quot;: {&quot;reference&quot;: &quot;networks/asia/asia.xdsl&quot;},
     &quot;result&quot;: {
       &quot;status&quot;: &quot;ok&quot;,
       &quot;reference&quot;: &quot;networks/asia/asia.xdsl&quot;,
@@ -2134,14 +2160,13 @@ and no object at all:</p>
 <pre><code class="language-json">{
   &quot;schema_version&quot;: 2,
   &quot;matrix_values&quot;: {&quot;network&quot;: &quot;asia&quot;, &quot;sample_size&quot;: 10},
-  &quot;created_at&quot;: &quot;2026-10-16T09:00:00+00:00&quot;,
   &quot;metadata&quot;: {
     &quot;provenance&quot;: {
       &quot;provider&quot;: &quot;causaliq-discovery&quot;,
       &quot;action&quot;: &quot;learn_graph&quot;,
       &quot;environment&quot;: {&quot;os&quot;: &quot;Linux v6.8.0&quot;, &quot;python&quot;: &quot;3.12.4&quot;}
     },
-    &quot;inputs&quot;: {},
+    &quot;parameters&quot;: {},
     &quot;result&quot;: {
       &quot;status&quot;: &quot;input_error&quot;,
       &quot;error&quot;: &quot;variable asia must have at least two levels&quot;

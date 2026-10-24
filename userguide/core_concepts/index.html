@@ -713,6 +713,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../caching/" class="md-nav__link">
         
   
@@ -922,34 +950,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1261,6 +1261,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -2012,17 +2040,19 @@ variables in step parameters.</p>
 <tr>
 <td><code>uses</code></td>
 <td><strong>Yes</strong></td>
-<td>CausalIQ package providing the action</td>
+<td>Action provider, or a relative path to another workflow</td>
 </tr>
 <tr>
 <td><code>with</code></td>
 <td><strong>Yes</strong></td>
-<td>Action parameters</td>
+<td>Action parameters, or a called workflow's parameters</td>
 </tr>
 </tbody>
 </table>
 <p>The <code>uses</code> property specifies which CausalIQ package provides the action
-(e.g., <code>causaliq-analysis</code>, <code>causaliq-discovery</code>, <code>causaliq-knowledge</code>).</p>
+(e.g., <code>causaliq-analysis</code>, <code>causaliq-discovery</code>, <code>causaliq-knowledge</code>).
+A value that starts with <code>./</code> or <code>../</code> calls another workflow instead of
+an action; see <a href="../subworkflows/">Reusable Workflows</a>.</p>
 <h2 id="actions">Actions</h2>
 <p><strong>Actions</strong> are the reusable operations provided by CausalIQ packages. Each
 action has specific parameters documented in its package.</p>

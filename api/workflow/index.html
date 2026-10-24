@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/caching/" class="md-nav__link">
         
   
@@ -727,34 +755,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1066,6 +1066,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -1593,6 +1621,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        source_path
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1653,6 +1692,17 @@
     <span class="md-ellipsis">
       
         Basic Workflow Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Calls
       
     </span>
   </a>
@@ -2243,6 +2293,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        source_path
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2303,6 +2364,17 @@
     <span class="md-ellipsis">
       
         Basic Workflow Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Calls
       
     </span>
   </a>
@@ -2535,6 +2607,7 @@ names so existing imports keep resolving:</p>
 <li><code>validation</code> / <code>validation_entries</code> — configuration and per-entry
   validation;</li>
 <li><code>execution</code> — parsing and job execution;</li>
+<li><code>subworkflow</code> / <code>frames</code> — calling another workflow;</li>
 <li><code>provenance</code> — provenance collection for cache entries;</li>
 <li><code>executor</code> — the composed <code>WorkflowExecutor</code>.</li>
 </ul>
@@ -2763,6 +2836,7 @@ integer values [0, 1, 2, ..., 24].</p>
     <span class="n"><a class="autorefs autorefs-internal" title="cli_params (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)">cli_params</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="step_logger (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger)">step_logger</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Callable">Callable</span></span><span class="p">[[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="validate (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate)">validate</a></span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="source_path (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path)">source_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
 </code></pre></div>
 
@@ -2831,6 +2905,18 @@ in each step's 'with' block. Each step can write to its own cache.</p>
             <p>When True (default) run the validation pass first.
 Set False when the caller has already validated the same
 workflow to avoid a redundant pass.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path)" class="doc doc-heading doc-heading-parameter">              <b><code>source_path</code></b>
+</h5>              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Path of the workflow file used to resolve
+relative calls to other workflows. Defaults to the last
+workflow parsed by this executor.</p>
           </div>
         </li>
     </ul>
@@ -2928,6 +3014,22 @@ try:
 except WorkflowExecutionError as e:
     print(f&quot;Workflow execution failed: {e}&quot;)
 </code></pre>
+<h3 id="workflow-calls">Workflow Calls</h3>
+<p>A step can call another workflow by using a relative <code>uses</code> path.
+<code>parse_workflow</code> remembers the workflow's location, so relative calls
+resolve correctly:</p>
+<pre><code class="language-python">workflow = executor.parse_workflow(&quot;workflows/parent.yml&quot;)
+results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
+</code></pre>
+<p>Pass <code>source_path</code> when executing a workflow the executor did not parse:</p>
+<pre><code class="language-python">from causaliq_workflow.schema import load_workflow_file
+
+workflow = load_workflow_file(&quot;workflows/parent.yml&quot;)
+results = executor.execute_workflow(
+    workflow, mode=&quot;run&quot;, source_path=&quot;workflows/parent.yml&quot;
+)
+</code></pre>
+<p>See <a href="../../userguide/subworkflows/">Reusable Workflows</a> for the syntax.</p>
 <h3 id="matrix-expansion">Matrix Expansion</h3>
 <pre><code class="language-python">from causaliq_workflow import WorkflowExecutor
 

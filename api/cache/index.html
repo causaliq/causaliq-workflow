@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/caching/" class="md-nav__link">
         
   
@@ -727,34 +755,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1066,6 +1066,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -4315,8 +4343,9 @@ object, or its type conflicts with the cache's pinned type.</p>
     <div class="doc doc-contents ">
 
         <p>List all cache entries with details (excluding internal config).</p>
-<p>Returns entry details including matrix_values (parsed from key_json)
-and created_at timestamp.</p>
+<p>Returns entry details including matrix_values (parsed from
+key_json). Entry record times are internal cache bookkeeping and
+are not exposed.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
@@ -4325,14 +4354,14 @@ and created_at timestamp.</p>
               <code><span title="list">list</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
           –
           <div class="doc-md-description">
-            <p>List of entry dictionaries with keys: hash, matrix_values (dict),</p>
+            <p>List of entry dictionaries with keys: hash and</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
               <code><span title="list">list</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
           –
           <div class="doc-md-description">
-            <p>created_at (str).</p>
+            <p>matrix_values (dict).</p>
           </div>
         </li>
     </ul>
@@ -5577,9 +5606,9 @@ prevents accidental data corruption from mismatched workflows.</p>
 <h2 id="metadata-envelope">Metadata Envelope</h2>
 <p>Every entry carries a schema version 2 metadata envelope with four blocks:</p>
 <ul>
-<li><code>provenance</code> — provider, provider and workflow versions, action, start and
-  finish times, duration and runtime environment;</li>
-<li><code>inputs</code> — the effective parameters used by the action;</li>
+<li><code>provenance</code> — provider, provider and workflow versions, action, local
+  start time, elapsed seconds and runtime environment;</li>
+<li><code>parameters</code> — the effective parameters used by the action;</li>
 <li><code>result</code> — status, error, action-measured timings and counts;</li>
 <li><code>history</code> — reserved for metadata inherited from earlier producers.</li>
 </ul>

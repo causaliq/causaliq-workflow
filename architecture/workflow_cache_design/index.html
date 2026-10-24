@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/caching/" class="md-nav__link">
         
   
@@ -727,34 +755,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1072,6 +1072,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -2514,7 +2542,8 @@ object to a separate trace cache. A failed run records <code>result.status</code
 <li>keeps one object type per cache and one object per entry</li>
 <li>keeps metric values in the typed object rather than duplicating them in
   metadata</li>
-<li>records provider versions, timestamps, duration and environment for
+<li>records provider versions, the action start time, elapsed seconds and
+  environment for
   reproducibility</li>
 <li>supports adding object types and action fields without schema changes</li>
 </ul>
@@ -2600,8 +2629,8 @@ added if the simple approach proves insufficient.</p>
 edge probability attributes</strong>, not in metadata:</p>
 <ul>
 <li>the PDG object carries the uncertainty over edge states;</li>
-<li>metadata records how the object was produced (<code>provenance</code>, <code>inputs</code> and
-  <code>result</code>).</li>
+<li>metadata records how the object was produced (<code>provenance</code>, <code>parameters</code>
+  and <code>result</code>).</li>
 </ul>
 <p><strong>Rationale</strong>: edge confidences are intrinsic to that graph result, so they
 belong to the typed object. Keeping metadata as provenance preserves one
@@ -3020,7 +3049,7 @@ reporting view:</p>
 <li>matrix values and result-object fields by bare name (<code>sample_size</code>, <code>f1</code>);</li>
 <li>metadata by producer-qualified name (<code>learn_graph.status</code>,
   <code>learn_graph.hyperparameters.iss</code>);</li>
-<li>explicit forms (<code>learn_graph.inputs.algorithm</code>,
+<li>explicit forms (<code>learn_graph.parameters.algorithm</code>,
   <code>learn_graph.result.status</code>) and provider-qualified forms
   (<code>causaliq_discovery.learn_graph.status</code>) when needed.</li>
 </ul>

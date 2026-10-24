@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/caching/" class="md-nav__link">
         
   
@@ -727,34 +755,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1092,6 +1092,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../logging_architecture_design/" class="md-nav__link">
         
   
@@ -1330,10 +1358,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#inputs-and-result" class="md-nav__link">
+  <a href="#parameters-and-result" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inputs and Result
+        Parameters and Result
       
     </span>
   </a>
@@ -1892,10 +1920,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#inputs-and-result" class="md-nav__link">
+  <a href="#parameters-and-result" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inputs and Result
+        Parameters and Result
       
     </span>
   </a>
@@ -1992,14 +2020,14 @@ stored with workflow cache entries and exported as <code>_meta.json</code>. It
 separates four concerns that were previously mixed together:</p>
 <ul>
 <li><strong>provenance</strong> — who produced the entry, when, and in what environment;</li>
-<li><strong>inputs</strong> — the effective parameters used by the action;</li>
+<li><strong>parameters</strong> — the effective parameters used by the action;</li>
 <li><strong>result</strong> — what the action produced;</li>
 <li><strong>history</strong> — metadata inherited from earlier actions.</li>
 </ul>
 <p>The structure is established first. A later task audits each action's
-values (moving input-like keys into <code>inputs</code> and checking completeness),
-and a further task populates <code>history</code> through a reserved <code>history</code> step
-parameter.</p>
+values (moving parameter-like keys into <code>parameters</code> and checking
+completeness), and a further task populates <code>history</code> through a reserved
+<code>history</code> step parameter.</p>
 <h2 id="problems-addressed">Problems Addressed</h2>
 <ul>
 <li>A single metadata dictionary mixed input parameters (<code>algorithm</code>) with
@@ -2021,16 +2049,14 @@ parameter.</p>
     &quot;network&quot;: &quot;asia&quot;,
     &quot;sample_size&quot;: 1000
   },
-  &quot;created_at&quot;: &quot;2026-10-19T10:42:11+00:00&quot;,
   &quot;metadata&quot;: {
     &quot;provenance&quot;: {
       &quot;provider&quot;: &quot;causaliq-discovery&quot;,
-      &quot;provider_version&quot;: &quot;0.8.0.dev4&quot;,
-      &quot;workflow_version&quot;: &quot;0.6.0.dev8&quot;,
+      &quot;provider_version&quot;: &quot;0.2.0.dev1&quot;,
+      &quot;workflow_version&quot;: &quot;0.6.0.dev9&quot;,
       &quot;action&quot;: &quot;learn_graph&quot;,
-      &quot;started_at&quot;: &quot;2026-10-19T10:35:07+00:00&quot;,
-      &quot;finished_at&quot;: &quot;2026-10-19T10:42:11+00:00&quot;,
-      &quot;duration_seconds&quot;: 3204.4,
+      &quot;started&quot;: &quot;2026-10-22T06:06:16+01:00&quot;,
+      &quot;elapsed&quot;: 3204.4,
       &quot;environment&quot;: {
         &quot;os&quot;: &quot;Linux v6.8.0&quot;,
         &quot;cpu&quot;: &quot;AMD EPYC 7763&quot;,
@@ -2038,7 +2064,7 @@ parameter.</p>
         &quot;ram&quot;: 64
       }
     },
-    &quot;inputs&quot;: {},
+    &quot;parameters&quot;: {},
     &quot;result&quot;: {
       &quot;status&quot;: &quot;ok&quot;,
       &quot;algorithm&quot;: &quot;hc&quot;,
@@ -2054,12 +2080,15 @@ parameter.</p>
 }
 </code></pre>
 <ul>
-<li><code>inputs</code> stays empty until the values-audit task.</li>
+<li><code>parameters</code> stays empty until the values-audit task.</li>
 <li><code>history</code> stays empty until the history-population task.</li>
 <li>Failure entries use the same shape with <code>result.status</code> and
   <code>result.error</code>, and no object file.</li>
 <li><code>objects</code> remains omitted from cache exports because a cache holds one
   object type and the object filename identifies it.</li>
+<li><code>created_at</code> is not part of the metadata contract. The SQLite cache keeps
+  an internal record time column for ordering, but it is not exported or
+  listed.</li>
 </ul>
 <h2 id="block-ownership">Block Ownership</h2>
 <table>
@@ -2074,10 +2103,10 @@ parameter.</p>
 <tr>
 <td><code>provenance</code></td>
 <td>Framework</td>
-<td>Provider, versions, action, start and finish times, duration, environment</td>
+<td>Provider, versions, action, start time, elapsed seconds, environment</td>
 </tr>
 <tr>
-<td><code>inputs</code></td>
+<td><code>parameters</code></td>
 <td>Action</td>
 <td>Effective parameters used by the action</td>
 </tr>
@@ -2096,28 +2125,25 @@ parameter.</p>
 <td>Cache</td>
 <td>Experimental design key</td>
 </tr>
-<tr>
-<td><code>created_at</code></td>
-<td>Cache</td>
-<td>Entry record time</td>
-</tr>
 </tbody>
 </table>
 <p>Actions never construct the envelope. During the structure phase they
 may return a flat metadata mapping, which the framework places in
 <code>result</code>; as each action is audited it adopts the explicit
-<code>ActionMetadata</code> mapping holding <code>inputs</code> and <code>result</code>. The framework
+<code>ActionMetadata</code> mapping holding <code>parameters</code> and <code>result</code>. The framework
 adds <code>provenance</code> and <code>history</code> exactly once.</p>
 <h2 id="provenance">Provenance</h2>
 <h3 id="timestamps-and-duration">Timestamps and duration</h3>
 <ul>
-<li><code>started_at</code> and <code>finished_at</code> are timezone-aware UTC ISO 8601 values
-  taken immediately before and after the action call.</li>
-<li><code>duration_seconds</code> is measured with a monotonic clock rather than by
-  subtracting the wall-clock timestamps, so a clock adjustment cannot
-  corrupt it.</li>
-<li><code>created_at</code> remains the entry record time. It is usually close to
-  <code>finished_at</code> but means something different, and both are retained.</li>
+<li><code>started</code> is the local time at which the action started, as an ISO 8601
+  value with an offset and second precision (for example
+  <code>2026-10-22T06:06:16+01:00</code>).</li>
+<li><code>elapsed</code> is measured with a monotonic clock rather than by subtracting
+  wall-clock timestamps, so a clock adjustment cannot corrupt it.</li>
+<li>There is no finish timestamp: it would duplicate <code>started + elapsed</code>.</li>
+<li><code>created_at</code> (the cache record time) is not metadata and is not exported
+  or listed. The SQLite column remains internal to <code>TokenCache</code>, which is
+  shared with the long-lived LLM caches.</li>
 </ul>
 <h3 id="versions">Versions</h3>
 <ul>
@@ -2134,22 +2160,21 @@ is collected once per workflow run, cached by core for 24 hours, and
 wrapped so that a platform failure cannot fail a step. Recording it per
 entry keeps each exported <code>_meta.json</code> self-contained for long-term
 archival; repeated values are tokenised in the cache.</p>
-<h2 id="inputs-and-result">Inputs and Result</h2>
+<h2 id="parameters-and-result">Parameters and Result</h2>
 <p>The split is introduced in two phases:</p>
 <ol>
 <li><strong>Structure phase (this change).</strong> Every action's existing metadata is
-   placed in <code>result</code>, and <code>inputs</code> starts empty. This establishes the
+   placed in <code>result</code>, and <code>parameters</code> starts empty. This establishes the
    contract without judging each field.</li>
-<li><strong>Values-audit phase (separate).</strong> Input-like keys (<code>algorithm</code>,
+<li><strong>Values-audit phase (separate).</strong> Parameter-like keys (<code>algorithm</code>,
    <code>hyperparameters</code>, <code>sample_size</code>, paths, seeds, timeouts, LLM models)
-   move from <code>result</code> to <code>inputs</code>, and completeness is checked.</li>
+   move from <code>result</code> to <code>parameters</code>, and completeness is checked.</li>
 </ol>
 <p>The split distinguishes two timing concepts:</p>
 <ul>
 <li><code>result.elapsed_seconds</code> and <code>result.algorithm_seconds</code> are measured by
   the action;</li>
-<li><code>provenance.duration_seconds</code> is measured by the framework for the
-  whole step.</li>
+<li><code>provenance.elapsed</code> is measured by the framework for the whole step.</li>
 </ul>
 <h2 id="history">History</h2>
 <p><code>history</code> is reserved and written as <code>{}</code> in this change. When populated,
@@ -2157,7 +2182,7 @@ an entry mirrors the producer's blocks, so a carried field can be
 identified as an inherited input or an inherited result:</p>
 <pre><code class="language-json">&quot;history&quot;: {
   &quot;causaliq-discovery.learn_graph&quot;: {
-    &quot;inputs&quot;: {&quot;algorithm&quot;: &quot;hc&quot;},
+    &quot;parameters&quot;: {&quot;algorithm&quot;: &quot;hc&quot;},
     &quot;result&quot;: {&quot;status&quot;: &quot;ok&quot;, &quot;algorithm_seconds&quot;: 3200.1}
   }
 }
@@ -2187,11 +2212,11 @@ metadata value belongs to some previous action.</p>
 <tr>
 <td>Short</td>
 <td><code>learn_graph.status</code></td>
-<td>When the name is unique across <code>inputs</code> and <code>result</code></td>
+<td>When the name is unique across <code>parameters</code> and <code>result</code></td>
 </tr>
 <tr>
 <td>Explicit</td>
-<td><code>learn_graph.result.status</code>, <code>learn_graph.inputs.algorithm</code></td>
+<td><code>learn_graph.result.status</code>, <code>learn_graph.parameters.algorithm</code></td>
 <td>Always</td>
 </tr>
 <tr>
@@ -2221,7 +2246,8 @@ exposed as <code>learn_graph.provider_version</code> and
   provider/action block becomes the producer; earlier blocks move to
   <code>history</code> with their fields under <code>result</code>.</li>
 <li><strong>No migration tooling:</strong> caches remain disposable until the Zenodo
-  deposit, consistent with the cache type model.</li>
+  deposit, consistent with the cache type model. Obsolete provenance keys
+  are dropped when metadata is normalised rather than migrated.</li>
 </ul>
 <h2 id="implementation">Implementation</h2>
 <p>The shared envelope lives in <code>causaliq_core.metadata</code>:</p>
@@ -2237,13 +2263,13 @@ helpers, export and import. <code>causaliq-discovery</code> uses the same builde
 for its directory <code>_meta.json</code>. <code>causaliq-analysis</code> and
 <code>causaliq-knowledge</code> keep returning flat metadata during the structure
 phase; the framework places it in <code>result</code>, and the values audit moves
-each action to the explicit <code>inputs</code>/<code>result</code> contract and reads through
-the shared reporting view.</p>
+each action to the explicit <code>parameters</code>/<code>result</code> contract and reads
+through the shared reporting view.</p>
 <h2 id="phased-plan">Phased Plan</h2>
 <ol>
 <li><strong>Structure (this change):</strong> schema version 2, framework provenance,
    action contract, all write paths, readers, compatibility and tests.</li>
-<li><strong>Values audit (separate):</strong> classify fields into <code>inputs</code> and
+<li><strong>Values audit (separate):</strong> classify fields into <code>parameters</code> and
    <code>result</code>, check each action's completeness, and document its contract.</li>
 <li><strong>History population (separate):</strong> the <code>history</code> step parameter for
    one-to-one aggregate steps.</li>

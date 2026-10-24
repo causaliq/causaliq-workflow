@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../../metadata/">
+        <link rel="prev" href="../../current_task/">
       
       
         <link rel="next" href="../cache_object_model/">
@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/caching/" class="md-nav__link">
         
   
@@ -727,34 +755,6 @@
     
   
     Current task
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
   
 
     
@@ -1536,6 +1536,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -2648,8 +2676,8 @@ with JSON tokenisation via <code>JsonCompressor</code> for compact storage.</p>
 caches. Each entry consists of:</p>
 <ul>
 <li>a schema version 2 metadata envelope: <code>provenance</code> (provider, provider and
-  workflow versions, action, start/finish times, duration and runtime
-  environment), <code>inputs</code> (effective parameters), <code>result</code> (status, error,
+  workflow versions, action, local start time, elapsed seconds and runtime
+  environment), <code>parameters</code> (effective parameters), <code>result</code> (status, error,
   action-measured timings and counts) and the reserved <code>history</code> block. The
   JSON is tokenised when stored in the cache for compactness.</li>
 <li>at most one typed data object, for example a graph produced by structure
@@ -2879,7 +2907,7 @@ which continues to expose <code>cli</code>, <code>main</code> and <code>_report_
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../metadata/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Metadata">
+          <a href="../../current_task/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Current task">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2889,7 +2917,7 @@ which continues to expose <code>cli</code>, <code>main</code> and <code>_report_
                 Previous
               </span>
               <div class="md-ellipsis">
-                Metadata
+                Current task
               </div>
             </div>
           </a>

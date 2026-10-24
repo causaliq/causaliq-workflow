@@ -521,6 +521,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../caching/" class="md-nav__link">
         
   
@@ -962,34 +990,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1288,6 +1288,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -2181,8 +2209,8 @@ filter: &quot;learn_graph.hyperparameters.iss &gt; 10 and sample_size &lt; 10000
 <p>Bare metadata names such as <code>status</code> or <code>algorithm</code> are rejected: the
 reference must name the producer (<code>learn_graph.status</code>,
 <code>evaluate_graph.status</code>). Use the explicit
-<code>learn_graph.inputs.algorithm</code> and <code>learn_graph.result.status</code> forms when a
-name exists in both blocks, and the provider-qualified
+<code>learn_graph.parameters.algorithm</code> and <code>learn_graph.result.status</code> forms
+when a name exists in both blocks, and the provider-qualified
 <code>causaliq_discovery.learn_graph.status</code> form when action names collide.</p>
 <h3 id="template-variables-in-filters">Template Variables in Filters</h3>
 <p>Filter expressions support <code>{{variable}}</code> template substitution, resolved

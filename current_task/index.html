@@ -12,7 +12,7 @@
         <link rel="prev" href="../roadmap/">
       
       
-        <link rel="next" href="../metadata/">
+        <link rel="next" href="../architecture/overview/">
       
       
         
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#metadata-structure-standardisation" class="md-skip">
+        <a href="#workflows-can-call-other-workflows" class="md-skip">
           Skip to content
         </a>
       
@@ -518,6 +518,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../userguide/subworkflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../userguide/caching/" class="md-nav__link">
         
   
@@ -782,21 +810,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#near-term-task" class="md-nav__link">
+  <a href="#further-work-which-is-out-of-scope-for-this-task" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Near-term task
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#follow-on-tasks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Follow-on tasks
+        Further work which is out of scope for this task
       
     </span>
   </a>
@@ -807,34 +824,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../metadata/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1138,6 +1127,34 @@
     
   
     Workflow Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/subworkflow_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reusable Workflows
   
 
     
@@ -1646,21 +1663,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#near-term-task" class="md-nav__link">
+  <a href="#further-work-which-is-out-of-scope-for-this-task" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Near-term task
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#follow-on-tasks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Follow-on tasks
+        Further work which is out of scope for this task
       
     </span>
   </a>
@@ -1684,24 +1690,105 @@
 
 
 
-<h1 id="metadata-structure-standardisation">Metadata Structure Standardisation</h1>
-<p>The design decision is recorded in
-<a href="../architecture/metadata_structure/">Metadata Structure</a>.</p>
-<h2 id="near-term-task">Near-term task</h2>
-<p>Standardise every action on schema version 2: framework provenance,
-<code>inputs</code> and <code>result</code> blocks, the reserved <code>history</code> block, and version 1
-read compatibility. Existing action metadata moves into <code>result</code>; the
-input/result classification is a separate values audit.</p>
-<h2 id="follow-on-tasks">Follow-on tasks</h2>
-<ul>
-<li><strong>Values audit:</strong> classify fields into <code>inputs</code> and <code>result</code>, and check
-  each action's completeness and usefulness.</li>
-<li><strong>History population:</strong> the reserved <code>history</code> step parameter for
-  one-to-one aggregate steps.</li>
-<li><strong>Reporting:</strong> <code>plot</code> filtering and categorical summarisation.</li>
-<li><strong>Hat 2 clean-up:</strong> consolidate duplicate flatteners and remove dead
-  write paths.</li>
-</ul>
+<h1 id="workflows-can-call-other-workflows">Workflows can call other workflows</h1>
+<p>Please propose a syntax for one CausalIQ YAML workflow calling another YAML workflow (used in place of the
+uses-with-action structure employed to invoke a package action). The syntax should
+be modelled on/inspired by standard CI YAML syntax. The <code>with</code> keyword can be used
+to specify parameters for the called sub-workflow.</p>
+<p>At this stage, parameters are not (fully) supported for causaliq workflows - this
+will be tackled in a subsequent task. For this task it is sufficient if the
+invoked workflows ignores any parameters specified for it.</p>
+<p>Recursive calling of workflows is not allowed and should be checked for</p>
+<h2 id="further-work-which-is-out-of-scope-for-this-task">Further work which is out of scope for this task</h2>
+<p>These are deliberately outside this task:</p>
+<ol>
+<li>
+<p><strong>Workflow parameters</strong></p>
+</li>
+<li>
+<p>should we declare parameters in a workflow, or can we just adopt a 
+     <code>tolerant</code> paradigm that any parameters specified just overwrite valu
+     in the called workflow, and any irrelevant parameters are silently ignored?</p>
+</li>
+<li>workflow parameters overwrite those with the same name in matrix and
+     step parameters</li>
+<li>workflow paramaters can be defined in the called workflow - these effectively
+     act as defaults</li>
+<li>
+<p>should it be possible to specify parameters when a workflow is invoked from
+     the CLI? - it would complicate validation of command line parameters</p>
+</li>
+<li>
+<p><strong>Values audit</strong></p>
+</li>
+<li>
+<p>For discovery, knowledge and analysis actions, move input-like fields out of <code>result</code> into <code>parameters</code>.</p>
+</li>
+<li>Check completeness and usefulness of each action’s metadata.</li>
+<li>Update action contract tests and API metadata documentation.</li>
+<li>
+<p>This is the step that turns <code>inputs: {}</code> into the real effective-parameter record.</p>
+</li>
+<li>
+<p><strong>Metadata catalogue and generated documentation</strong></p>
+</li>
+<li>
+<p>Add a central catalogue of each action’s inputs, results and provenance expectations.</p>
+</li>
+<li>Generate API documentation and CLI discovery from it.</li>
+<li>
+<p>Add contract tests that every registered action is catalogued.</p>
+</li>
+<li>
+<p><strong><code>history</code> step parameter</strong></p>
+</li>
+<li>
+<p>Support <code>standard</code>, a list of field paths, or <code>all</code>.</p>
+</li>
+<li>Populate <code>history</code> for one-to-one aggregate steps.</li>
+<li>
+<p>Add workflow/cache tests and user-guide documentation.</p>
+</li>
+<li>
+<p><strong>Reporting capabilities</strong></p>
+</li>
+<li>
+<p>Add <code>filter</code> support to the analysis <code>plot</code> action.</p>
+</li>
+<li>Add categorical group-by support to <code>summarise</code>.</li>
+<li>
+<p>Reuse the shared reporting view and update analysis/workflow docs and tests.</p>
+</li>
+<li>
+<p><strong><code>merge_graphs</code> many-to-one metadata</strong></p>
+</li>
+<li>
+<p>Define action-specific reductions for n:1 merges.</p>
+</li>
+<li>Generic history copying is not sufficient for many-to-one actions.</li>
+<li>
+<p>Add tests and document the reduction rules.</p>
+</li>
+<li>
+<p><strong>Hat 2 clean-up</strong></p>
+</li>
+<li>
+<p>Remove the deprecated <code>WorkflowCache.update_entry()</code>.</p>
+</li>
+<li>Remove remaining UPDATE-pattern remnants and dead write paths.</li>
+<li>Consolidate duplicate metadata flatteners.</li>
+<li>
+<p>No behavioural change.</p>
+</li>
+<li>
+<p><strong>Smaller metadata backlog</strong></p>
+</li>
+<li>
+<p>Expand <code>{{series}}</code>-style placeholders in workflow step names.</p>
+</li>
+<li>Improve exported <code>evaluate_graph</code> metrics JSON readability with line feeds.</li>
+<li>Clarify metrics for failed/empty input graphs so they are not presented as evaluation failures.</li>
+</ol>
 
 
 
@@ -1756,13 +1843,13 @@ input/result classification is a separate values audit.</p>
         
         
           
-          <a href="../metadata/" class="md-footer__link md-footer__link--next" aria-label="Next: Metadata">
+          <a href="../architecture/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Architectural Overview">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Metadata
+                Architectural Overview
               </div>
             </div>
             <div class="md-footer__button md-icon">
