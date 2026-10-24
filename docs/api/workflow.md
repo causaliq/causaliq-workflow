@@ -16,6 +16,7 @@ names so existing imports keep resolving:
 - `validation` / `validation_entries` — configuration and per-entry
   validation;
 - `execution` — parsing and job execution;
+- `subworkflow` / `frames` — calling another workflow;
 - `provenance` — provenance collection for cache entries;
 - `executor` — the composed `WorkflowExecutor`.
 
@@ -67,6 +68,30 @@ try:
 except WorkflowExecutionError as e:
     print(f"Workflow execution failed: {e}")
 ```
+
+### Workflow Calls
+
+A step can call another workflow by using a relative `uses` path.
+`parse_workflow` remembers the workflow's location, so relative calls
+resolve correctly:
+
+```python
+workflow = executor.parse_workflow("workflows/parent.yml")
+results = executor.execute_workflow(workflow, mode="run")
+```
+
+Pass `source_path` when executing a workflow the executor did not parse:
+
+```python
+from causaliq_workflow.schema import load_workflow_file
+
+workflow = load_workflow_file("workflows/parent.yml")
+results = executor.execute_workflow(
+    workflow, mode="run", source_path="workflows/parent.yml"
+)
+```
+
+See [Reusable Workflows](../userguide/subworkflows.md) for the syntax.
 
 ### Matrix Expansion
 

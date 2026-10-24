@@ -44,6 +44,7 @@ nav:
     - Introduction: userguide/index.md
     - Core Concepts: userguide/core_concepts.md
     - Action Patterns: userguide/action_patterns.md
+    - Reusable Workflows: userguide/subworkflows.md
     - Workflow Caching: userguide/caching.md
     - Common Parameters: userguide/common_parameters.md
     - CLI Usage: userguide/cli.md
@@ -60,6 +61,7 @@ nav:
       - Action Architecture: architecture/action_architecture_design.md
       - Algorithm Registry: architecture/action_auto_discovery_design.md
       - Workflow Executor: architecture/workflow_executor_design.md
+      - Reusable Workflows: architecture/subworkflow_design.md
       - Logging Architecture: architecture/logging_architecture_design.md
       - Workflow Cache Design: architecture/workflow_cache_design.md
       - Cache Type Model: architecture/cache_type_model.md

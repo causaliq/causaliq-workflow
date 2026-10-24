@@ -218,6 +218,45 @@ from the other. Each cache only contains dimensions relevant to its source;
 missing dimensions are treated as wildcards during matching (see
 [Null Values and Dimension Matching](core_concepts.md#null-values-and-dimension-matching)).
 
+## Reusable Workflow
+
+Call another workflow file in place of an action step:
+
+```yaml
+# parent.yml
+steps:
+  - name: Asia benchmark
+    uses: ./modules/benchmark.yml
+    with:
+      sample_size: 1000
+
+  - name: Summarise
+    uses: causaliq-analysis
+    with:
+      action: summarise
+      input: results/graphs.db
+      output: results/summary.csv
+```
+
+```yaml
+# modules/benchmark.yml
+matrix:
+  network: [asia, cancer]
+
+steps:
+  - name: Learn graphs
+    uses: causaliq-discovery
+    with:
+      action: learn_structure
+      network: "{{network}}"
+      sample_size: 1000
+      output: results/graphs.db
+```
+
+The call resolves `./modules/benchmark.yml` relative to `parent.yml` and
+runs the whole called workflow once. See
+[Reusable Workflows](subworkflows.md).
+
 ## Running Workflows
 
 ```bash

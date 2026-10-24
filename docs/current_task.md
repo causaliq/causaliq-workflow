@@ -1,53 +1,31 @@
-# Continue standardisation of workflow metadata
+# Workflows can call other workflows
 
-Looking at the metadata produced by the `causaliq-discovery`/`learn_graph` 
-action and `causaliq-discovery`/`evaluate_graph` actions I see that there is
-redundant, misplaced and missing metadata.
+Please propose a syntax for one CausalIQ YAML workflow calling another YAML workflow (used in place of the
+uses-with-action structure employed to invoke a package action). The syntax should
+be modelled on/inspired by standard CI YAML syntax. The `with` keyword can be used
+to specify parameters for the called sub-workflow.
 
-In order to limit scope, I want to first tackle the issues which occur across 
-all actions and which require work in the core workflow engine.
+At this stage, parameters are not (fully) supported for causaliq workflows - this
+will be tackled in a subsequent task. For this task it is sufficient if the
+invoked workflows ignores any parameters specified for it.
 
-I would then look at remaining specific metadata issues for each action in separate tasks. Only then will I start to tackle the major roadmap items like metadata history.
-
-## Remove top-level `created_at` entry
-
-Unless it causes major design issues, please remove **`created_at`** which says when the entry is inserted into cache and is not of interest. The important metadata is `provenance>started_at`, when the action started.
-
-## Standardise `provenance` across all actions
-
-My belief is that the `provenance` information should be the **same across all
-actions**, and should consist only of:
-
-* `provider` - as now, the package name e.g. `causaliq-analysis`
-* `provider_version`, `workflow_version` - as now, e.g. "v0.6.0.dev1"
-* `action` - as now, e.g. `evaluate_graph`
-* `started_at` - as now but renamed as `started` and fractional seconds not required and should be local time , e.g. "2026-10-22T06:06:16.24+01:00" indicating a local BST time
-* `duration_seconds` should be renamed as `elapsed` but continue to be float seconds (6 d.p.) as now
-* `environment` structure should be as now
-
-Note:
-
-* `provenance` is not yet been filled for all actions - this can be tackled when
-  we go on to look at each action in turn unless changes are needed in the core workflow engine
-* `provenance>finished_at` is redundant and should be removed
-
-## Infrastructral work to split `results` into `results` and `parameters`
-
-Perform any work in `causaliq-workflow` and **minimal** work on other packages
- that is needed to support separate `parameters` and `results` metadata sections.
-
-**Note** most of this work may already have been done. However, we should
-rename `inputs` section to `parameters` as this is more in line with our user
-documentaton terminology.
-
-Any action-specific movement of values from `results` to `parameters` can
-be left to subsequent tasks.
-
+Recursive calling of workflows is not allowed and should be checked for
 
 ## Further work which is out of scope for this task
 
-These are deliberately outside the structural standardisation and remain in `causaliq-workflow` and its actions:
+These are deliberately outside this task:
 
+0. __Workflow parameters__
+
+   - should we declare parameters in a workflow, or can we just adopt a 
+     `tolerant` paradigm that any parameters specified just overwrite valu
+     in the called workflow, and any irrelevant parameters are silently ignored?
+   - workflow parameters overwrite those with the same name in matrix and
+     step parameters
+   - workflow paramaters can be defined in the called workflow - these effectively
+     act as defaults
+   - should it be possible to specify parameters when a workflow is invoked from
+     the CLI? - it would complicate validation of command line parameters
 
 1. __Values audit__
 

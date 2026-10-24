@@ -51,11 +51,13 @@ steps:
 | Property | Required | Description |
 |----------|----------|-------------|
 | `name` | **Yes** | Human-readable step name |
-| `uses` | **Yes** | CausalIQ package providing the action |
-| `with` | **Yes** | Action parameters |
+| `uses` | **Yes** | Action provider, or a relative path to another workflow |
+| `with` | **Yes** | Action parameters, or a called workflow's parameters |
 
 The `uses` property specifies which CausalIQ package provides the action
 (e.g., `causaliq-analysis`, `causaliq-discovery`, `causaliq-knowledge`).
+A value that starts with `./` or `../` calls another workflow instead of
+an action; see [Reusable Workflows](subworkflows.md).
 
 ## Actions
 

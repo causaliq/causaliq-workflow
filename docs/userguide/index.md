@@ -25,6 +25,7 @@ This user guide covers how to use CausalIQ Workflow effectively:
 |---------|---------|
 | [Core Concepts](core_concepts.md) | Workflows, steps, actions, and matrix expansion |
 | [Action Patterns](action_patterns.md) | Create, aggregate and run-once step patterns |
+| [Reusable Workflows](subworkflows.md) | Calling one workflow from another |
 | [Workflow Caching](caching.md) | Result storage and conservative execution |
 | [Common Parameters](common_parameters.md) | Parameters shared across all actions |
 | [CLI Usage](cli.md) | Command-line interface and execution modes |
