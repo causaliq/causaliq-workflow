@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.frames import is_workflow_call_step
 
 
 def _normalise_matrix_value(value: Any) -> Any:
@@ -221,6 +222,12 @@ def _runs_once(step: Dict[str, Any], has_matrix: bool) -> bool:
     step with no output at all is not a single-run step, so its missing
     ``output`` or ``input`` is still reported by pattern validation.
 
+    A workflow-call step also has no output dimensionality of its own, so
+    it runs a single time per workflow. Parameters are not yet forwarded
+    to a called workflow, so repeating the call per matrix job would
+    produce the same result; this rule is revisited when workflow
+    parameters land.
+
     Args:
         step: Step configuration dictionary.
         has_matrix: Whether the workflow declares a matrix.
@@ -228,6 +235,8 @@ def _runs_once(step: Dict[str, Any], has_matrix: bool) -> bool:
     Returns:
         True when the step runs once rather than per matrix combination.
     """
+    if is_workflow_call_step(step):
+        return True
     if has_matrix:
         return False
     return _has_file_output(step)

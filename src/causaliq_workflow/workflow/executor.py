@@ -1,5 +1,6 @@
 """Composition of the WorkflowExecutor from its functional mixins."""
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from causaliq_workflow.registry import ActionRegistry
@@ -8,6 +9,7 @@ from causaliq_workflow.workflow.execution import ExecutionMixin
 from causaliq_workflow.workflow.filters import FilterMixin
 from causaliq_workflow.workflow.matrix import MatrixMixin
 from causaliq_workflow.workflow.patterns import PatternMixin
+from causaliq_workflow.workflow.subworkflow import SubWorkflowMixin
 from causaliq_workflow.workflow.templates import TemplateMixin
 from causaliq_workflow.workflow.validation import ValidationMixin
 from causaliq_workflow.workflow.validation_entries import (
@@ -19,6 +21,7 @@ class WorkflowExecutor(
     MatrixMixin,
     TemplateMixin,
     PatternMixin,
+    SubWorkflowMixin,
     FilterMixin,
     AggregationMixin,
     ValidationMixin,
@@ -40,6 +43,7 @@ class WorkflowExecutor(
         self._scan_index: Dict[str, List[Dict[str, Any]]] = {}
         self._environment: Optional[Dict[str, Any]] = None
         self._environment_ready = False
+        self._source_path: Optional[Path] = None
 
     def _invalidate_scan_index(self, cache: Any) -> None:
         """Drop the memoised scan index for a cache that was written.

@@ -1,0 +1,9 @@
+matrix:
+  variant: ["one", "two"]
+
+steps:
+  - name: "Child record"
+    uses: "subworkflow-test"
+    with:
+      action: "record"
+      output: "child.db"

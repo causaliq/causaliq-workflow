@@ -1,0 +1,3 @@
+steps:
+  - name: "Call self"
+    uses: "./subworkflow_self_recursive.yml"

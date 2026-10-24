@@ -2,13 +2,18 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from causaliq_workflow.registry import WorkflowContext
 from causaliq_workflow.schema import WorkflowValidationError
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.frames import (
+    WorkflowFrame,
+    is_workflow_call_step,
+    root_frames,
+)
 from causaliq_workflow.workflow.matrix import _cache_entry_exists
 from causaliq_workflow.workflow.provenance import (
     build_result_metadata,
@@ -28,6 +33,7 @@ class _JobState:
     step_logger: Optional[Callable[[str, str, str, Dict[str, Any]], None]]
     variables: Dict[str, Any]
     step_results: Dict[str, Any] = field(default_factory=dict)
+    frames: Tuple[WorkflowFrame, ...] = ()
 
 
 class ExecutionMixin(WorkflowExecutorBase):
@@ -58,6 +64,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             # Validate all actions exist and can run
             self._validate_workflow_actions(workflow, mode)
 
+            self._source_path = Path(workflow_path)
             return workflow
 
         except WorkflowExecutionError:
@@ -79,6 +86,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             Callable[[str, str, str, Dict[str, Any]], None]
         ] = None,
         validate: bool = True,
+        source_path: Optional[Union[str, Path]] = None,
     ) -> List[Dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
 
@@ -101,6 +109,9 @@ class ExecutionMixin(WorkflowExecutorBase):
             validate: When True (default) run the validation pass first.
                 Set False when the caller has already validated the same
                 workflow to avoid a redundant pass.
+            source_path: Path of the workflow file used to resolve
+                relative calls to other workflows. Defaults to the last
+                workflow parsed by this executor.
 
         Returns:
             List of job results from matrix expansion
@@ -111,15 +122,19 @@ class ExecutionMixin(WorkflowExecutorBase):
         if cli_params is None:
             cli_params = {}
 
+        frames = root_frames(source_path or self._source_path)
+
         try:
             if validate:
-                self._validate_execution(workflow, cli_params)
+                self._validate_execution(workflow, cli_params, frames)
 
             # Validate-only mode: skip execution pass
             if mode == "validate":
                 return []
 
-            return self._execute_jobs(workflow, mode, cli_params, step_logger)
+            return self._execute_jobs(
+                workflow, mode, cli_params, step_logger, frames
+            )
 
         except WorkflowExecutionError:
             # Re-raise our own errors without wrapping
@@ -130,10 +145,15 @@ class ExecutionMixin(WorkflowExecutorBase):
             ) from e
 
     def _validate_execution(
-        self, workflow: Dict[str, Any], cli_params: Dict[str, Any]
+        self,
+        workflow: Dict[str, Any],
+        cli_params: Dict[str, Any],
+        frames: Tuple[WorkflowFrame, ...] = (),
     ) -> None:
         """Run the validation pass, raising on the first failure."""
-        validation_errors = self._validate_all_entries(workflow, cli_params)
+        validation_errors = self._validate_all_entries(
+            workflow, cli_params, frames
+        )
         if not validation_errors:
             return
         raise WorkflowExecutionError(
@@ -146,6 +166,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         mode: str,
         cli_params: Dict[str, Any],
         step_logger: Optional[Callable[[str, str, str, Dict[str, Any]], None]],
+        frames: Tuple[WorkflowFrame, ...] = (),
     ) -> List[Dict[str, Any]]:
         """Execute every matrix job and collect the results."""
         # Derive matrix from explicit definition or from input caches
@@ -166,7 +187,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             )
             results.append(
                 self._execute_job(
-                    workflow, job, context, cli_params, step_logger
+                    workflow, job, context, cli_params, step_logger, frames
                 )
             )
 
@@ -181,6 +202,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         step_logger: Optional[
             Callable[[str, str, str, Dict[str, Any]], None]
         ] = None,
+        frames: Tuple[WorkflowFrame, ...] = (),
     ) -> Dict[str, Any]:
         """Execute single job with resolved matrix variables.
 
@@ -190,6 +212,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             context: Workflow context
             cli_params: CLI parameters
             step_logger: Optional function to log step execution
+            frames: Call stack leading to this workflow
 
         Returns:
             Job execution results
@@ -206,6 +229,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             cli_params=cli_params,
             step_logger=step_logger,
             variables={**workflow, **job, **cli_params},
+            frames=frames,
         )
 
         for step in workflow.get("steps", []):
@@ -241,11 +265,14 @@ class ExecutionMixin(WorkflowExecutorBase):
     def _run_action_step(
         self, state: _JobState, step: Dict[str, Any], step_name: str
     ) -> bool:
-        """Execute an action ('uses') step.
+        """Execute an action ('uses') or workflow-call step.
 
         Returns True when the step reached normal execution (so the job's
         matrix values should be restored), False when it was skipped.
         """
+        if is_workflow_call_step(step):
+            return self._run_workflow_call_step(state, step, step_name)
+
         action_name = step["uses"]
         resolved_inputs = self._resolve_template_variables(
             step.get("with", {}), state.variables

@@ -1,10 +1,14 @@
 """Per-entry validation for the execution pass."""
 
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
+from causaliq_workflow.workflow.frames import (
+    WorkflowFrame,
+    is_workflow_call_step,
+)
 from causaliq_workflow.workflow.matrix import _runs_once
 
 
@@ -15,6 +19,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         self,
         workflow: Dict[str, Any],
         cli_params: Optional[Dict[str, Any]] = None,
+        frames: Tuple[WorkflowFrame, ...] = (),
     ) -> List[str]:
         """Validate all entries (matrix combos/cache entries) before execution.
 
@@ -36,6 +41,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         Args:
             workflow: Parsed workflow dictionary
             cli_params: Additional parameters from CLI
+            frames: Current workflow call stack
 
         Returns:
             List of validation error messages (empty if all valid)
@@ -50,7 +56,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         for step in workflow.get("steps", []):
             errors.extend(
                 self._validate_step_entries(
-                    step, jobs, matrix, workflow, cli_params
+                    step, jobs, matrix, workflow, cli_params, frames
                 )
             )
 
@@ -63,9 +69,12 @@ class EntryValidationMixin(WorkflowExecutorBase):
         matrix: Dict[str, Any],
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
+        frames: Tuple[WorkflowFrame, ...] = (),
     ) -> List[str]:
         """Dispatch per-entry validation for a single step by pattern."""
         step_name = step.get("name", "unnamed")
+        if is_workflow_call_step(step):
+            return self._validate_workflow_call_step(step, step_name, frames)
         if not step.get("uses"):
             return []
 

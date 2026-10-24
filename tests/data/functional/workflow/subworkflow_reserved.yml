@@ -1,0 +1,5 @@
+steps:
+  - name: "Call child"
+    uses: "./subworkflow_child.yml"
+    with:
+      action: "record"

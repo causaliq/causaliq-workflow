@@ -7,6 +7,10 @@ from causaliq_core import ActionPattern
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.frames import (
+    is_workflow_call_step,
+    looks_like_workflow_file,
+)
 from causaliq_workflow.workflow.matrix import _runs_once
 
 _SKIP_KEYS = {"id", "description", "matrix", "steps"}
@@ -113,6 +117,46 @@ _PATTERN_CHECKS = {
 }
 
 
+def _action_steps(workflow: Dict[str, Any]) -> Dict[str, Any]:
+    """Return the workflow's action steps, excluding workflow calls.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        A shallow copy whose ``steps`` omit workflow-call steps.
+    """
+    steps = [
+        step
+        for step in workflow.get("steps", [])
+        if not is_workflow_call_step(step)
+    ]
+    return {**workflow, "steps": steps}
+
+
+def _call_syntax_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return errors for workflow files without a relative prefix.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        One error per ``uses`` value that names a workflow file but is
+        not a ``./`` or ``../`` path.
+    """
+    errors: List[str] = []
+    for step in workflow.get("steps", []):
+        uses = step.get("uses")
+        if is_workflow_call_step(step) or not looks_like_workflow_file(uses):
+            continue
+        step_name = step.get("name", "unnamed")
+        errors.append(
+            f"Step '{step_name}': '{uses}' looks like a workflow file; "
+            f"workflow calls require a './' or '../' prefix"
+        )
+    return errors
+
+
 class ValidationMixin(WorkflowExecutorBase):
     """Configuration validation for WorkflowExecutor."""
 
@@ -156,9 +200,13 @@ class ValidationMixin(WorkflowExecutorBase):
         Raises:
             WorkflowExecutionError: If action validation fails
         """
+        call_errors = _call_syntax_errors(workflow)
+        if call_errors:
+            raise WorkflowExecutionError("; ".join(call_errors))
+
         # Get action validation errors
         action_errors = self.action_registry.validate_workflow_actions(
-            workflow
+            _action_steps(workflow)
         )
         if action_errors:
             raise WorkflowExecutionError("; ".join(action_errors))
@@ -247,6 +295,8 @@ class ValidationMixin(WorkflowExecutorBase):
         errors: List[str] = []
 
         for step in workflow.get("steps", []):
+            if is_workflow_call_step(step):
+                continue
             step_name = step.get("name", "unnamed")
             filter_expr = step.get("with", {}).get("filter")
 

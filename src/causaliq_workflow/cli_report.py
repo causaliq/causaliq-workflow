@@ -77,7 +77,34 @@ def _count_step(
     step_result: Dict[str, Any],
     mode: str,
 ) -> None:
-    """Fold a single step result into the aggregate counts."""
+    """Fold a single step result into the aggregate counts.
+
+    A workflow-call step reports the steps it ran, so those are counted
+    in place of the call step itself.
+    """
+    if step_result.get("workflow"):
+        _count_called_steps(counts, step_result, mode)
+        return
+    _count_by_status(counts, step_name, step_result, mode)
+
+
+def _count_called_steps(
+    counts: "_ResultCounts",
+    step_result: Dict[str, Any],
+    mode: str,
+) -> None:
+    """Count a called workflow's steps in place of the call step."""
+    for nested in step_result.get("steps", []):
+        _count_step(counts, str(nested.get("name", "")), nested, mode)
+
+
+def _count_by_status(
+    counts: "_ResultCounts",
+    step_name: str,
+    step_result: Dict[str, Any],
+    mode: str,
+) -> None:
+    """Fold one action step's status into the aggregate counts."""
     status = step_result.get("status", "unknown")
     if status == "success":
         _count_success(counts, step_result, mode)

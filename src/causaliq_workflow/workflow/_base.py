@@ -8,7 +8,17 @@ own. The declarations are never executed at runtime (the mixins override
 them all) and are excluded from coverage.
 """
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
+from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+)
 
 from causaliq_core import ActionPattern
 
@@ -16,6 +26,7 @@ from causaliq_workflow.registry import ActionRegistry
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.workflow.aggregation import AggregationConfig
+    from causaliq_workflow.workflow.frames import WorkflowFrame
 
 _StepLogger = Optional[Callable[[str, str, str, Dict[str, Any]], None]]
 
@@ -30,6 +41,8 @@ class WorkflowExecutorBase:  # pragma: no cover
     _environment: Optional[Dict[str, Any]]
 
     _environment_ready: bool
+
+    _source_path: Optional[Path]
 
     def _invalidate_scan_index(self, cache: Any) -> None:
         """Drop the memoised scan index for a cache that was written."""
@@ -154,8 +167,19 @@ class WorkflowExecutorBase:  # pragma: no cover
         self,
         workflow: Dict[str, Any],
         cli_params: Optional[Dict[str, Any]] = None,
+        frames: Tuple["WorkflowFrame", ...] = (),
     ) -> List[str]:
         """Validate all entries before the execution pass."""
+        raise NotImplementedError
+
+    def _skip_nocache_step(
+        self,
+        state: Any,
+        step: Dict[str, Any],
+        step_name: str,
+        resolved_inputs: Dict[str, Any],
+    ) -> bool:
+        """Return True when a single-run step is skipped for this job."""
         raise NotImplementedError
 
     def _validate_create_entries(
@@ -185,4 +209,30 @@ class WorkflowExecutorBase:  # pragma: no cover
         cli_params: Dict[str, Any],
     ) -> List[str]:
         """Validate AGGREGATE pattern entries per matrix combo."""
+        raise NotImplementedError
+
+    def _execute_jobs(
+        self,
+        workflow: Dict[str, Any],
+        mode: str,
+        cli_params: Dict[str, Any],
+        step_logger: _StepLogger,
+        frames: Tuple["WorkflowFrame", ...] = (),
+    ) -> List[Dict[str, Any]]:
+        """Execute every matrix job and collect the results."""
+        raise NotImplementedError
+
+    def _run_workflow_call_step(
+        self, state: Any, step: Dict[str, Any], step_name: str
+    ) -> bool:
+        """Execute a step that calls another workflow."""
+        raise NotImplementedError
+
+    def _validate_workflow_call_step(
+        self,
+        step: Dict[str, Any],
+        step_name: str,
+        frames: Tuple["WorkflowFrame", ...] = (),
+    ) -> List[str]:
+        """Validate a step that calls another workflow."""
         raise NotImplementedError
