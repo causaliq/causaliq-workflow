@@ -10,6 +10,7 @@ from causaliq_workflow.workflow.frames import (
     is_workflow_call_step,
 )
 from causaliq_workflow.workflow.matrix import _runs_once
+from causaliq_workflow.workflow.parameters import _parameter_errors
 
 
 class EntryValidationMixin(WorkflowExecutorBase):
@@ -51,7 +52,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
         matrix = workflow.get("matrix", {})
         jobs = self.expand_matrix(matrix)
-        errors: List[str] = []
+        errors: List[str] = _parameter_errors(workflow, cli_params)
 
         for step in workflow.get("steps", []):
             errors.extend(
@@ -86,7 +87,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
             return self._validate_aggregation_entries(
                 step, jobs, workflow, cli_params
             )
-        if _runs_once(step, bool(matrix)):
+        if _runs_once(step, matrix):
             return self._validate_single_run_entries(
                 step, workflow, cli_params
             )

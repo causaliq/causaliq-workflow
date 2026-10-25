@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.frames import is_workflow_call_step
+from causaliq_workflow.workflow.parameters import _call_parameters_vary
 
 
 def _normalise_matrix_value(value: Any) -> Any:
@@ -208,7 +209,52 @@ def _has_file_output(step: Dict[str, Any]) -> bool:
     return not str(output).lower().endswith(".db")
 
 
-def _runs_once(step: Dict[str, Any], has_matrix: bool) -> bool:
+def _dimension_values(value: Any) -> List[Any]:
+    """Return a matrix dimension's value list for a parameter value."""
+    if isinstance(value, list):
+        return list(value)
+    return [value]
+
+
+def _matrix_overrides(
+    parameters: Dict[str, Any], matrix: Dict[str, Any]
+) -> Dict[str, List[Any]]:
+    """Return the parameter values that replace matrix dimensions."""
+    return {
+        name: _dimension_values(value)
+        for name, value in parameters.items()
+        if name in matrix
+    }
+
+
+def _bind_parameters(
+    workflow: Dict[str, Any], parameters: Dict[str, Any]
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Bind parameters to a workflow's matrix and variables.
+
+    A parameter that names a matrix dimension replaces that dimension's
+    values; every other parameter binds as a template variable. Parameters
+    never add a dimension, so they are not part of a cache key.
+
+    Args:
+        workflow: Workflow dictionary to bind against.
+        parameters: Parameter values from a caller or the CLI.
+
+    Returns:
+        Tuple of (workflow with overridden matrix, variable parameters).
+        The input workflow is never modified.
+    """
+    matrix = workflow.get("matrix", {})
+    overrides = _matrix_overrides(parameters, matrix)
+    variables = {
+        name: value for name, value in parameters.items() if name not in matrix
+    }
+    if not overrides:
+        return workflow, variables
+    return {**workflow, "matrix": {**matrix, **overrides}}, variables
+
+
+def _runs_once(step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
     """Return True when a step runs once, outside matrix expansion.
 
     A step that writes a file rather than a workflow cache has no output
@@ -222,22 +268,21 @@ def _runs_once(step: Dict[str, Any], has_matrix: bool) -> bool:
     step with no output at all is not a single-run step, so its missing
     ``output`` or ``input`` is still reported by pattern validation.
 
-    A workflow-call step also has no output dimensionality of its own, so
-    it runs a single time per workflow. Parameters are not yet forwarded
-    to a called workflow, so repeating the call per matrix job would
-    produce the same result; this rule is revisited when workflow
-    parameters land.
+    A workflow-call step has no cache output of its own, so it runs once
+    per workflow unless its ``with`` values reference a matrix variable
+    of the calling workflow; such a call resolves to different parameters
+    per combination and must run once per combination.
 
     Args:
         step: Step configuration dictionary.
-        has_matrix: Whether the workflow declares a matrix.
+        matrix: The workflow's matrix definition (empty when absent).
 
     Returns:
         True when the step runs once rather than per matrix combination.
     """
     if is_workflow_call_step(step):
-        return True
-    if has_matrix:
+        return not _call_parameters_vary(step, matrix)
+    if matrix:
         return False
     return _has_file_output(step)
 

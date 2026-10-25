@@ -126,7 +126,9 @@ def test_validate_call_step_recurses_into_child(
     child = {"steps": [{"name": "inner"}]}
     captured: Dict[str, Any] = {}
 
-    def load_child(target: Any, step_name: str) -> Dict[str, Any]:
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
         return child
 
     def record_entries(
@@ -145,21 +147,54 @@ def test_validate_call_step_recurses_into_child(
     assert captured["frames"][-1].path == (tmp_path / "child.yml").resolve()
 
 
-# A called workflow must be self-contained while parameters are pending.
-def test_validate_call_step_reports_required_variables(
+# A required parameter must be provided by the caller.
+def test_validate_call_step_reports_required_parameters(
     executor: WorkflowExecutor,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     child: Dict[str, Any] = {"steps": [], "network": None}
-    monkeypatch.setattr(
-        executor, "_load_child_workflow", lambda target, name: child
-    )
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return child
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
     errors = executor._validate_workflow_call_step(
         {"uses": "./child.yml"}, "Call", _frames(tmp_path)
     )
     assert len(errors) == 1
-    assert "Required workflow variables not provided" in errors[0]
+    assert "Required workflow parameter(s) not provided: ['network']" in (
+        errors[0]
+    )
+
+
+# An unused parameter is reported with the names the child accepts.
+def test_validate_call_step_reports_unused_parameter(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    child: Dict[str, Any] = {
+        "matrix": {"variant": ["one"]},
+        "steps": [{"name": "inner", "with": {"output": "{{variant}}"}}],
+    }
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return child
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    errors = executor._validate_workflow_call_step(
+        {"uses": "./child.yml", "with": {"labl": "x"}},
+        "Call",
+        _frames(tmp_path),
+    )
+    assert len(errors) == 1
+    assert "Parameter 'labl' is not used by workflow 'child.yml'" in errors[0]
+    assert "Accepted: ['variant']" in errors[0]
 
 
 # A workflow call runs once per workflow, not once per matrix job.
@@ -171,7 +206,9 @@ def test_run_call_step_skips_later_jobs(
     state = _state(tmp_path, job_index=1)
     loaded: List[Any] = []
 
-    def load_child(target: Any, step_name: str) -> Dict[str, Any]:
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
         loaded.append(target)
         return {}
 
@@ -193,7 +230,9 @@ def test_run_call_step_executes_child(
     child = {"steps": [{"name": "inner"}]}
     captured: Dict[str, Any] = {}
 
-    def load_child(target: Any, step_name: str) -> Dict[str, Any]:
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
         return child
 
     def record_jobs(
@@ -221,11 +260,45 @@ def test_run_call_step_executes_child(
     summary = state.step_results["Call"]
     assert captured["workflow"] is child
     assert captured["mode"] == "run"
-    assert captured["cli_params"] == {}
+    assert captured["cli_params"] == {"x": 1}
     assert captured["frames"][-1].path == (tmp_path / "child.yml").resolve()
     assert summary["status"] == "success"
     assert summary["jobs"] == 1
+    assert summary["parameters"] == {"x": 1}
     assert summary["steps"] == [{"name": "inner", "status": "success"}]
+
+
+# A matrix parameter replaces the child's dimension.
+def test_run_call_step_overrides_child_matrix(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _state(tmp_path)
+    child = {"matrix": {"variant": ["one", "two"]}, "steps": []}
+    captured: Dict[str, Any] = {}
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return child
+
+    def record_jobs(
+        workflow: Dict[str, Any], *args: Any
+    ) -> List[Dict[str, Any]]:
+        captured.update(workflow=workflow, variables=args[1])
+        return []
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    monkeypatch.setattr(executor, "_execute_jobs", record_jobs)
+    executor._run_workflow_call_step(
+        state,
+        {"name": "Call", "uses": "./child.yml", "with": {"variant": "two"}},
+        "Call",
+    )
+    assert captured["workflow"]["matrix"] == {"variant": ["two"]}
+    assert captured["variables"] == {}
+    assert child["matrix"] == {"variant": ["one", "two"]}
 
 
 # Call summaries report the aggregate child status.
@@ -243,7 +316,7 @@ def test_summarise_call_status(
     tmp_path: Path, mode: str, child_status: str, expected: str
 ) -> None:
     results = [{"steps": {"inner": {"status": child_status}}}]
-    summary = _summarise_call(tmp_path / "child.yml", results, mode)
+    summary = _summarise_call(tmp_path / "child.yml", results, mode, {})
     assert summary["status"] == expected
 
 
@@ -260,7 +333,7 @@ def test_summarise_call_collects_errors(tmp_path: Path) -> None:
             }
         }
     ]
-    summary = _summarise_call(tmp_path / "child.yml", results, "run")
+    summary = _summarise_call(tmp_path / "child.yml", results, "run", {})
     assert summary["errors"] == ["inner: boom"]
     assert summary["steps"][0]["errors"] == ["boom detail"]
 
@@ -274,7 +347,9 @@ def test_run_call_step_announces_before_child(
     logged: List[Any] = []
     state = _state(tmp_path, logger=lambda *args: logged.append(args))
 
-    def load_child(target: Any, step_name: str) -> Dict[str, Any]:
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
         return {"steps": []}
 
     def run_jobs(*args: Any) -> List[Dict[str, Any]]:
@@ -339,9 +414,58 @@ def test_count_results_reports_called_failures() -> None:
     assert counts.errors == ["  Child record: boom"]
 
 
-# Workflow calls run once regardless of the calling matrix.
+# Workflow calls run once when their parameters are constant.
 def test_runs_once_for_workflow_call() -> None:
-    assert _runs_once({"uses": "./child.yml"}, True) is True
+    assert _runs_once({"uses": "./child.yml"}, {}) is True
+
+
+# A call whose parameters vary per combination runs per combination.
+def test_not_runs_once_for_matrix_parameter_call() -> None:
+    step = {"uses": "./child.yml", "with": {"variant": "{{variant}}"}}
+    assert _runs_once(step, {"variant": ["one", "two"]}) is False
+
+
+# A call with a literal parameter still runs once per workflow.
+def test_runs_once_for_literal_parameter_call() -> None:
+    step = {"uses": "./child.yml", "with": {"variant": "one"}}
+    assert _runs_once(step, {"variant": ["one", "two"]}) is True
+
+
+# Call parameters are resolved in the caller's context.
+def test_run_call_step_resolves_caller_variables(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _state(tmp_path)
+    state.variables.update({"variant": "two"})
+    captured: Dict[str, Any] = {}
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        captured["names"] = set(parameter_names)
+        return {"matrix": {"variant": ["one"]}, "steps": []}
+
+    def record_jobs(
+        workflow: Dict[str, Any], *args: Any
+    ) -> List[Dict[str, Any]]:
+        captured["matrix"] = workflow["matrix"]
+        return []
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    monkeypatch.setattr(executor, "_execute_jobs", record_jobs)
+    executor._run_workflow_call_step(
+        state,
+        {
+            "name": "Call",
+            "uses": "./child.yml",
+            "with": {"variant": "{{variant}}"},
+        },
+        "Call",
+    )
+    assert captured["names"] == {"variant"}
+    assert captured["matrix"] == {"variant": ["two"]}
 
 
 # A workflow file named without a dot prefix is reported clearly.

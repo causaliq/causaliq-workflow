@@ -12,17 +12,7 @@ from causaliq_workflow.workflow.frames import (
     looks_like_workflow_file,
 )
 from causaliq_workflow.workflow.matrix import _runs_once
-
-_SKIP_KEYS = {"id", "description", "matrix", "steps"}
-
-
-def _is_required_variable(
-    key: str, value: Any, cli_params: Dict[str, Any]
-) -> bool:
-    """Return True when a None workflow variable is missing from the CLI."""
-    if key in _SKIP_KEYS:
-        return False
-    return value is None and key not in cli_params
+from causaliq_workflow.workflow.parameters import _missing_required_errors
 
 
 def _check_filter_expression(
@@ -163,30 +153,21 @@ class ValidationMixin(WorkflowExecutorBase):
     def _validate_required_variables(
         self, workflow: Dict[str, Any], cli_params: Dict[str, Any]
     ) -> None:
-        """Validate that required workflow variables (None values) provided.
+        """Validate that required workflow parameters are provided.
+
+        A declared parameter with a ``None`` default is required and must
+        be supplied by the calling workflow or the command line.
 
         Args:
             workflow: Parsed workflow dictionary
-            cli_params: CLI parameters that can override workflow variables
+            cli_params: Parameters from the CLI or the calling workflow
 
         Raises:
-            WorkflowExecutionError: If required variables are not provided
+            WorkflowExecutionError: If required parameters are missing
         """
-        required_vars = [
-            key
-            for key, value in workflow.items()
-            if _is_required_variable(key, value, cli_params)
-        ]
-
-        if not required_vars:
-            return
-
-        sorted_vars = sorted(required_vars)
-        raise WorkflowExecutionError(
-            f"Required workflow variables not provided: {sorted_vars}. "
-            f"These variables have 'None' values and must be specified "
-            f"via CLI parameters or calling workflow."
-        )
+        errors = _missing_required_errors(workflow, cli_params)
+        if errors:
+            raise WorkflowExecutionError(" ".join(errors))
 
     def _validate_workflow_actions(
         self, workflow: Dict[str, Any], mode: str
@@ -238,20 +219,20 @@ class ValidationMixin(WorkflowExecutorBase):
             List of validation error messages (empty if valid)
         """
         errors: List[str] = []
-        has_matrix = bool(workflow.get("matrix", {}))
+        matrix = workflow.get("matrix", {})
 
         for step in workflow.get("steps", []):
-            errors.extend(self._validate_step_pattern(step, has_matrix))
+            errors.extend(self._validate_step_pattern(step, matrix))
 
         return errors
 
     def _validate_step_pattern(
-        self, step: Dict[str, Any], has_matrix: bool
+        self, step: Dict[str, Any], matrix: Dict[str, Any]
     ) -> List[str]:
         """Validate one step's configuration against its action pattern."""
         step_name = step.get("name", "unnamed")
         step_inputs = step.get("with", {})
-        if _runs_once(step, has_matrix):
+        if _runs_once(step, matrix):
             return []
         pattern = self._step_pattern(
             step.get("uses"), step_inputs.get("action")
@@ -265,7 +246,7 @@ class ValidationMixin(WorkflowExecutorBase):
         return checker(
             step_name,
             step_inputs,
-            has_matrix,
+            bool(matrix),
             self._has_cache_input(step_inputs),
         )
 

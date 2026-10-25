@@ -1,3 +1,5 @@
+sample_size: 100
+
 matrix:
   variant: ["one", "two"]
 
@@ -6,4 +8,5 @@ steps:
     uses: "subworkflow-test"
     with:
       action: "record"
+      sample_size: "{{sample_size}}"
       output: "child.db"

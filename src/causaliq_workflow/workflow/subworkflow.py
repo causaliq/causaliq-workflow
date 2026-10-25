@@ -1,13 +1,13 @@
 """Calling another CausalIQ workflow from a step.
 
 A step whose ``uses`` value is a relative path invokes the named YAML
-workflow instead of an action provider. Parameters are accepted in the
-caller's ``with`` block but are not yet forwarded to the called
-workflow; see ``docs/userguide/subworkflows.md``.
+workflow instead of an action provider. Values in the caller's ``with``
+block become parameters of the called workflow; see
+``docs/userguide/subworkflows.md``.
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
 from causaliq_workflow.schema import (
     WorkflowValidationError,
@@ -23,6 +23,12 @@ from causaliq_workflow.workflow.frames import (
     has_workflow_suffix,
     resolve_call_target,
     workflow_frame,
+)
+from causaliq_workflow.workflow.matrix import _bind_parameters
+from causaliq_workflow.workflow.parameters import (
+    _missing_required_errors,
+    _single_token,
+    _unknown_parameter_errors,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -40,9 +46,9 @@ class SubWorkflowMixin(WorkflowExecutorBase):
     ) -> bool:
         """Execute a called workflow and record its summary.
 
-        The step runs once per workflow: a call has no cache output of
-        its own, and parameters are not yet forwarded, so repeating it
-        for every matrix job would produce identical results.
+        The step runs once per workflow unless its parameters reference a
+        matrix variable of the calling workflow, in which case it runs
+        once per matrix combination.
 
         Args:
             state: Per-job execution state.
@@ -58,17 +64,54 @@ class SubWorkflowMixin(WorkflowExecutorBase):
             return False
         target = self._workflow_call_target(step, step_name, state.frames)
         _log_call_start(state, step, step_name)
-        child = self._load_child_workflow(target, step_name)
-        results = self._execute_child_workflow(child, target, state)
-        summary = _summarise_call(target, results, state.context.mode)
+        parameters = self._resolve_parameter_values(
+            step.get("with", {}), state.variables
+        )
+        child = self._load_child_workflow(target, step_name, set(parameters))
+        child, variables = _bind_parameters(child, parameters)
+        results = self._execute_child_workflow(child, target, state, variables)
+        summary = _summarise_call(
+            target, results, state.context.mode, parameters
+        )
         state.step_results[step_name] = summary
         return True
+
+    def _resolve_parameter_values(
+        self, values: Dict[str, Any], variables: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Resolve a call step's ``with`` values in the caller's context.
+
+        A value that is exactly one ``{{name}}`` token keeps the bound
+        value's native type, so a matrix override does not turn a number
+        into a string.
+
+        Args:
+            values: Raw parameter values from the call step.
+            variables: Caller variables used for substitution.
+
+        Returns:
+            Resolved parameter values.
+        """
+        return {
+            name: self._resolve_parameter_value(value, variables)
+            for name, value in values.items()
+        }
+
+    def _resolve_parameter_value(
+        self, value: Any, variables: Dict[str, Any]
+    ) -> Any:
+        """Resolve one parameter value in the caller's context."""
+        token = _single_token(value)
+        if token is not None and token in variables:
+            return variables[token]
+        return self._resolve_template_variables(value, variables)
 
     def _execute_child_workflow(
         self,
         child: Dict[str, Any],
         target: Path,
         state: "_JobState",
+        variables: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         """Execute a called workflow's jobs with an extended call stack.
 
@@ -76,13 +119,14 @@ class SubWorkflowMixin(WorkflowExecutorBase):
             child: Parsed and validated child workflow.
             target: Canonical path of the child workflow.
             state: Per-job execution state of the calling workflow.
+            variables: Bound parameters that are not matrix overrides.
 
         Returns:
             Job results produced by the child workflow.
         """
         frames = state.frames + (workflow_frame(target),)
         return self._execute_jobs(
-            child, state.context.mode, {}, state.step_logger, frames
+            child, state.context.mode, variables, state.step_logger, frames
         )
 
     def _workflow_call_target(
@@ -120,13 +164,18 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         return target
 
     def _load_child_workflow(
-        self, target: Path, step_name: str
+        self,
+        target: Path,
+        step_name: str,
+        parameter_names: Optional[Set[str]] = None,
     ) -> Dict[str, Any]:
         """Load and structurally validate a called workflow.
 
         Args:
             target: Canonical path of the called workflow.
             step_name: Step name used in error messages.
+            parameter_names: Parameter names the caller supplies, which
+                the child may reference in its templates.
 
         Returns:
             Parsed and validated child workflow.
@@ -138,7 +187,9 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         try:
             child = load_workflow_file(target)
             validate_workflow(child)
-            self._validate_template_variables(child)
+            self._validate_template_variables(
+                child, set(parameter_names or ())
+            )
             self._validate_workflow_actions(child, "validate")
         except (WorkflowValidationError, WorkflowExecutionError) as e:
             raise WorkflowExecutionError(
@@ -165,37 +216,46 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         errors = _reserved_parameter_errors(step, step_name)
         if errors:
             return errors
+        parameters = step.get("with", {})
         try:
             target = self._workflow_call_target(step, step_name, frames)
-            child = self._load_child_workflow(target, step_name)
+            child = self._load_child_workflow(
+                target, step_name, set(parameters)
+            )
         except WorkflowExecutionError as e:
             return [str(e)]
+        errors = _call_parameter_errors(
+            step_name, target.name, parameters, child
+        )
+        if errors:
+            return errors
+        child, variables = _bind_parameters(child, parameters)
         child_frames = frames + (workflow_frame(target),)
-        required_errors = self._required_variable_errors(child, step_name)
-        if required_errors:
-            return required_errors
-        return self._validate_all_entries(child, {}, child_frames)
+        return self._validate_all_entries(child, variables, child_frames)
 
-    def _required_variable_errors(
-        self, child: Dict[str, Any], step_name: str
-    ) -> List[str]:
-        """Return errors for child variables the caller must provide.
 
-        Parameters are not forwarded yet, so a called workflow cannot
-        satisfy a required (``None``) variable.
+def _call_parameter_errors(
+    step_name: str,
+    target_name: str,
+    parameters: Dict[str, Any],
+    child: Dict[str, Any],
+) -> List[str]:
+    """Return parameter binding errors for a call step.
 
-        Args:
-            child: Parsed child workflow.
-            step_name: Step name used in error messages.
+    Args:
+        step_name: Calling step name used in error messages.
+        target_name: Called workflow file name used in error messages.
+        parameters: Parameter values from the call step.
+        child: Parsed child workflow.
 
-        Returns:
-            Validation errors, empty when the child is self-contained.
-        """
-        try:
-            self._validate_required_variables(child, {})
-        except WorkflowExecutionError as e:
-            return [f"Step '{step_name}': {e}"]
-        return []
+    Returns:
+        Validation errors, empty when every parameter binds.
+    """
+    errors = _unknown_parameter_errors(
+        parameters, child, workflow_label=target_name
+    )
+    errors.extend(_missing_required_errors(child, parameters))
+    return [f"Step '{step_name}': {error}" for error in errors]
 
 
 def _reserved_parameter_errors(
@@ -263,9 +323,22 @@ def _call_status(
 
 
 def _summarise_call(
-    target: Path, results: List[Dict[str, Any]], mode: str
+    target: Path,
+    results: List[Dict[str, Any]],
+    mode: str,
+    parameters: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Build the step result recorded for a workflow call."""
+    """Build the step result recorded for a workflow call.
+
+    Args:
+        target: Canonical path of the called workflow.
+        results: Job results produced by the child workflow.
+        mode: Caller's execution mode.
+        parameters: Parameters bound for this call.
+
+    Returns:
+        Step result dictionary describing the call.
+    """
     steps = _collect_child_steps(results)
     errors = _call_errors(steps)
     summary: Dict[str, Any] = {
@@ -274,6 +347,8 @@ def _summarise_call(
         "jobs": len(results),
         "steps": steps,
     }
+    if parameters:
+        summary["parameters"] = parameters
     if errors:
         summary["errors"] = errors
     return summary

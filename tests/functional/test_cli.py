@@ -58,13 +58,51 @@ def test_cli_run_validation_error(cli_runner: CliRunner) -> None:
     assert "[causaliq-workflow] ERROR" in result.output
 
 
+# Test run forwards --param values to the workflow.
+def test_cli_run_accepts_param(cli_runner: CliRunner) -> None:
+    workflow_file = "tests/data/functional/cli_param_workflow.yml"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "run",
+            workflow_file,
+            "--param",
+            "sample_size=20",
+            "--log-level=summary",
+        ],
+    )
+    assert result.exit_code == 0
+    assert (
+        "[causaliq-workflow] VALIDATED workflow successfully" in result.output
+    )
+
+
+# Test run without --param uses the declared default.
+def test_cli_run_uses_parameter_default(cli_runner: CliRunner) -> None:
+    workflow_file = "tests/data/functional/cli_param_workflow.yml"
+    result = cli_runner.invoke(
+        cli, ["run", workflow_file, "--log-level=summary"]
+    )
+    assert result.exit_code == 0
+
+
+# Test run reports an unknown --param as a validation error.
+def test_cli_run_rejects_unknown_param(cli_runner: CliRunner) -> None:
+    workflow_file = "tests/data/functional/cli_param_workflow.yml"
+    result = cli_runner.invoke(
+        cli, ["run", workflow_file, "--param", "nope=1"]
+    )
+    assert result.exit_code == 1
+    assert "Parameter 'nope' is not used" in result.output
+
+
 # Test run successful execution with empty results.
 def test_cli_run_successful_execution_empty_results(
     cli_runner: CliRunner, monkeypatch
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -74,6 +112,7 @@ def test_cli_run_successful_execution_empty_results(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -109,7 +148,7 @@ def test_cli_run_passes_validate_false(
 
     calls: list = []
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def recording_execute(self, workflow, **kwargs):
@@ -137,7 +176,7 @@ def test_cli_run_successful_execution_log_none(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -147,6 +186,7 @@ def test_cli_run_successful_execution_log_none(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -173,7 +213,7 @@ def test_cli_run_keyboard_interrupt(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -183,6 +223,7 @@ def test_cli_run_keyboard_interrupt(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -232,7 +273,7 @@ def test_cli_run_successful_execution(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -242,6 +283,7 @@ def test_cli_run_successful_execution(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -289,7 +331,7 @@ def test_cli_run_successful_execution(
 def test_cli_run_execution_failure(cli_runner: CliRunner, monkeypatch) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -299,6 +341,7 @@ def test_cli_run_execution_failure(cli_runner: CliRunner, monkeypatch) -> None:
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -333,7 +376,7 @@ def test_cli_run_validation_failure(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -343,6 +386,7 @@ def test_cli_run_validation_failure(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             raise ValueError("Validation error: missing required field")
@@ -371,7 +415,7 @@ def test_cli_run_general_parsing_error(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         raise ValueError("Some general error message")
 
     monkeypatch.setattr(
@@ -395,7 +439,7 @@ def test_cli_run_file_not_found_direct_error(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         raise FileNotFoundError(f"No such file or directory: '{filepath}'")
 
     monkeypatch.setattr(
@@ -882,7 +926,7 @@ def test_cli_run_step_logger_with_matrix_values(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -892,6 +936,7 @@ def test_cli_run_step_logger_with_matrix_values(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -930,7 +975,7 @@ def test_cli_run_update_step_shows_entry_counts(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -940,6 +985,7 @@ def test_cli_run_update_step_shows_entry_counts(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -991,7 +1037,7 @@ def test_cli_run_update_step_entries_to_process_only(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -1001,6 +1047,7 @@ def test_cli_run_update_step_entries_to_process_only(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []
@@ -1048,7 +1095,7 @@ def test_cli_run_update_step_entries_to_skip_only(
 ) -> None:
     from causaliq_workflow.workflow import WorkflowExecutor
 
-    def mock_parse_workflow(self, filepath):
+    def mock_parse_workflow(self, filepath, **kwargs):
         return {"jobs": []}
 
     def mock_execute_workflow(
@@ -1058,6 +1105,7 @@ def test_cli_run_update_step_entries_to_skip_only(
         step_logger=None,
         cache=None,
         validate=True,
+        **kwargs,
     ):
         if mode == "validate":
             return []

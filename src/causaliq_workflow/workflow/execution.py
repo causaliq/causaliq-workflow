@@ -14,7 +14,10 @@ from causaliq_workflow.workflow.frames import (
     is_workflow_call_step,
     root_frames,
 )
-from causaliq_workflow.workflow.matrix import _cache_entry_exists
+from causaliq_workflow.workflow.matrix import (
+    _bind_parameters,
+    _cache_entry_exists,
+)
 from causaliq_workflow.workflow.provenance import (
     build_result_metadata,
     collect_environment,
@@ -40,13 +43,18 @@ class ExecutionMixin(WorkflowExecutorBase):
     """Parsing and execution for WorkflowExecutor."""
 
     def parse_workflow(
-        self, workflow_path: Union[str, Path], mode: str = "dry-run"
+        self,
+        workflow_path: Union[str, Path],
+        mode: str = "dry-run",
+        parameters: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Parse workflow YAML file with validation.
 
         Args:
             workflow_path: Path to workflow YAML file
             mode: Execution mode for action validation
+            parameters: Parameter names supplied by the CLI, so a workflow
+                may reference them in its templates before execution
 
         Returns:
             Parsed and validated workflow dictionary
@@ -59,7 +67,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         try:
             workflow = _workflow_module.load_workflow_file(workflow_path)
             _workflow_module.validate_workflow(workflow)
-            self._validate_template_variables(workflow)
+            self._validate_template_variables(workflow, set(parameters or ()))
 
             # Validate all actions exist and can run
             self._validate_workflow_actions(workflow, mode)
@@ -119,9 +127,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         Raises:
             WorkflowExecutionError: If validation or execution fails
         """
-        if cli_params is None:
-            cli_params = {}
-
+        workflow, cli_params = _bind_parameters(workflow, cli_params or {})
         frames = root_frames(source_path or self._source_path)
 
         try:
@@ -298,7 +304,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         so it runs once. It is skipped on later jobs.
         """
         if (
-            not self._runs_once(step, bool(state.workflow.get("matrix", {})))
+            not self._runs_once(step, state.workflow.get("matrix", {}))
             or state.context.job_index <= 0
         ):
             return False

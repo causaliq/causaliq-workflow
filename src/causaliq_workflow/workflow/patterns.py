@@ -12,20 +12,21 @@ if TYPE_CHECKING:  # pragma: no cover
 class PatternMixin(WorkflowExecutorBase):
     """Step pattern detection methods for WorkflowExecutor."""
 
-    def _runs_once(self, step: Dict[str, Any], has_matrix: bool) -> bool:
+    def _runs_once(self, step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
         """Return True when a step runs once rather than per matrix job.
 
         A step that writes a file rather than a workflow cache has no
-        output dimensionality, so it runs once.
+        output dimensionality, so it runs once. A workflow-call step runs
+        once unless its parameters vary across the calling matrix.
 
         Args:
             step: Step configuration dictionary.
-            has_matrix: Whether the workflow declares a matrix.
+            matrix: The workflow's matrix definition (empty when absent).
 
         Returns:
             True when the step runs once rather than per job.
         """
-        return _runs_once(step, has_matrix)
+        return _runs_once(step, matrix)
 
     def _is_aggregate_pattern_step(
         self,

@@ -10,6 +10,8 @@ from typing import Any, Dict, Optional, Union
 
 import yaml
 
+_RESERVED_KEYS = frozenset({"matrix", "steps"})
+
 
 class WorkflowValidationError(Exception):
     """Raised when workflow validation against JSON Schema fails."""
@@ -67,17 +69,19 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
     This runs before JSON Schema validation to provide clearer errors
     for common mistakes.
 
+    Any top-level key other than ``matrix`` and ``steps`` declares a
+    workflow parameter default, so it must be a scalar. A ``null``
+    default marks the parameter as required.
+
     Args:
         workflow: Workflow configuration dictionary
 
     Raises:
         WorkflowValidationError: If workflow has common structural issues
     """
-    # Check for unknown top-level keys
-    known_keys = {"matrix", "steps"}
-    for key in workflow:
-        if key not in known_keys:
-            raise WorkflowValidationError(f"Unknown key '{key}'")
+    for key, value in workflow.items():
+        if key not in _RESERVED_KEYS:
+            _check_parameter_default(key, value)
 
     steps = workflow.get("steps", [])
     if not isinstance(steps, list):
@@ -85,6 +89,16 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
 
     for step in steps:
         _pre_validate_step(step)
+
+
+def _check_parameter_default(key: str, value: Any) -> None:
+    """Reject a workflow key that cannot declare a parameter default."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return
+    raise WorkflowValidationError(
+        f"Unknown key '{key}': workflow parameters must be a scalar "
+        f"(string, number, boolean or null); use 'matrix' for lists"
+    )
 
 
 def _pre_validate_step(step: Any) -> None:
@@ -155,14 +169,47 @@ def load_workflow_file(file_path: Union[str, Path]) -> Dict[str, Any]:
         WorkflowValidationError: If file cannot be loaded
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-            if not isinstance(data, dict):
-                raise WorkflowValidationError(
-                    f"Workflow must be YAML object, got {type(data).__name__}"
-                )
-            return data
+        text = Path(file_path).read_text(encoding="utf-8")
     except FileNotFoundError:
         raise WorkflowValidationError(f"Workflow file not found: {file_path}")
+    try:
+        data = yaml.safe_load(text)
     except yaml.YAMLError as e:
-        raise WorkflowValidationError(f"Invalid YAML syntax: {e}")
+        raise WorkflowValidationError(_yaml_error_message(str(e), text))
+    if not isinstance(data, dict):
+        raise WorkflowValidationError(
+            f"Workflow must be YAML object, got {type(data).__name__}"
+        )
+    return data
+
+
+_YAML_HINT_TRIGGERS = (
+    "unhashable key",
+    "expected <block end>",
+    "found unexpected",
+)
+
+_QUOTING_HINT = (
+    "Hint: a template token used as a value must be quoted, for "
+    'example sample_size: "{{sample_size}}" (an unquoted token is '
+    "read as a nested YAML mapping)."
+)
+
+
+def _yaml_error_message(error: str, source: str) -> str:
+    """Return an invalid-YAML message, hinting at unquoted tokens.
+
+    Args:
+        error: The message from the YAML parser.
+        source: Workflow file text that failed to parse.
+
+    Returns:
+        Error message, with a quoting hint when a template token is the
+        likely cause.
+    """
+    message = f"Invalid YAML syntax: {error}"
+    if "{{" not in source:
+        return message
+    if not any(trigger in error for trigger in _YAML_HINT_TRIGGERS):
+        return message
+    return f"{message}\n{_QUOTING_HINT}"

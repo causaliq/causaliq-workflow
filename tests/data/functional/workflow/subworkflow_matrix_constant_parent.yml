@@ -1,0 +1,6 @@
+matrix:
+  label: ["alpha", "beta"]
+
+steps:
+  - name: "Call child"
+    uses: "./subworkflow_child.yml"

@@ -116,7 +116,7 @@ def test_pre_validate_skips_non_dict_step():
 
 # Test pre-validation catches unknown top-level keys.
 def test_pre_validate_catches_unknown_keys():
-    """Test pre-validation catches unknown top-level keys."""
+    """Test pre-validation catches non-scalar top-level keys."""
     invalid_workflow = {
         "matrixx": {"dataset": ["asia"]},
         "steps": [{"name": "Test", "uses": "test_action"}],
@@ -124,6 +124,19 @@ def test_pre_validate_catches_unknown_keys():
     with pytest.raises(WorkflowValidationError) as exc_info:
         validate_workflow(invalid_workflow)
     assert "Unknown key 'matrixx'" in str(exc_info.value)
+
+
+# Top-level scalar keys declare workflow parameters.
+def test_pre_validate_accepts_parameter_defaults():
+    """Test scalar top-level keys are accepted as parameter defaults."""
+    workflow = {
+        "id": "exp-001",
+        "description": "example",
+        "sample_size": 1000,
+        "required": None,
+        "steps": [{"name": "Test", "uses": "test_action"}],
+    }
+    assert validate_workflow(workflow) is True
 
 
 # Test workflow validation with matrix variables

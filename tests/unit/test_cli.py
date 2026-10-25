@@ -298,7 +298,7 @@ def test_cli_run_non_yaml_exception(runner: CliRunner, monkeypatch) -> None:
     # Patch at the module level where it's imported
     import causaliq_workflow.workflow as workflow_module
 
-    def mock_parse(self, filepath, mode="dry-run"):
+    def mock_parse(self, filepath, mode="dry-run", **kwargs):
         raise TypeError("Unexpected type during parsing")
 
     monkeypatch.setattr(
@@ -324,7 +324,7 @@ def test_cli_run_yaml_exception(runner: CliRunner, monkeypatch) -> None:
     """Test that YAML exceptions trigger 'Invalid YAML' error."""
     import causaliq_workflow.workflow as workflow_module
 
-    def mock_parse(self, filepath, mode="dry-run"):
+    def mock_parse(self, filepath, mode="dry-run", **kwargs):
         raise Exception("YAML parsing error: invalid syntax")
 
     monkeypatch.setattr(
@@ -348,3 +348,102 @@ def test_format_entry_counts_zero() -> None:
     from causaliq_workflow.cli import _format_entry_counts
 
     assert _format_entry_counts(0, 0) == ""
+
+
+# Test CLI parameters are parsed with YAML types.
+def test_parse_cli_parameters_types() -> None:
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    parameters = _parse_cli_parameters(
+        ("sample_size=1000", "alpha=0.05", "name=asia", "flag=true")
+    )
+    assert parameters == {
+        "sample_size": 1000,
+        "alpha": 0.05,
+        "name": "asia",
+        "flag": True,
+    }
+
+
+# Test a list value is parsed for a matrix override.
+def test_parse_cli_parameters_list_value() -> None:
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    parameters = _parse_cli_parameters(("algorithm=[pc, ges]",))
+    assert parameters == {"algorithm": ["pc", "ges"]}
+
+
+# Test an empty value is parsed as null.
+def test_parse_cli_parameters_empty_value() -> None:
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    assert _parse_cli_parameters(("seed=",)) == {"seed": None}
+
+
+# Test a parameter without a value is rejected.
+def test_parse_cli_parameters_requires_value() -> None:
+    import click
+    import pytest
+
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    with pytest.raises(click.BadParameter):
+        _parse_cli_parameters(("sample_size",))
+
+
+# Test an invalid parameter name is rejected.
+def test_parse_cli_parameters_rejects_bad_name() -> None:
+    import click
+    import pytest
+
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    with pytest.raises(click.BadParameter):
+        _parse_cli_parameters(("2bad=1",))
+
+
+# Test a duplicate parameter name is rejected.
+def test_parse_cli_parameters_rejects_duplicate() -> None:
+    import click
+    import pytest
+
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    with pytest.raises(click.BadParameter):
+        _parse_cli_parameters(("x=1", "x=2"))
+
+
+# Test a parameter value that is not valid YAML falls back to a string.
+def test_parse_cli_parameters_falls_back_to_string() -> None:
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    parameters = _parse_cli_parameters(("pattern=[unclosed",))
+    assert parameters == {"pattern": "[unclosed"}
+
+
+# Test a mapping value is rejected.
+def test_parse_cli_parameters_rejects_mapping() -> None:
+    import click
+    import pytest
+
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    with pytest.raises(click.BadParameter):
+        _parse_cli_parameters(("x={a: 1}",))
+
+
+# Test the run help lists the --param option.
+def test_cli_run_help_lists_param(runner: CliRunner) -> None:
+    result = runner.invoke(cli, ["run", "--help"])
+    assert result.exit_code == 0
+    assert "--param" in result.output
+
+
+# Test an invalid --param value exits with a usage error.
+def test_cli_run_rejects_invalid_param(runner: CliRunner) -> None:
+    result = runner.invoke(
+        cli,
+        ["run", "tests/data/functional/test_cli_workflow.yml", "-p", "x"],
+    )
+    assert result.exit_code == 2
+    assert "NAME=VALUE" in result.output

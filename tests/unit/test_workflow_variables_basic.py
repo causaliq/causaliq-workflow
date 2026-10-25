@@ -14,7 +14,7 @@ def executor():
 
 
 def test_workflow_variables_in_template_validation(executor):
-    """Test that workflow variables are included in template validation."""
+    """Test that declared parameters are included in template validation."""
     workflow = {
         "custom_var": "custom_value",
         "steps": [
@@ -22,13 +22,13 @@ def test_workflow_variables_in_template_validation(executor):
                 "name": "Test Step",
                 "uses": "dummy_action",
                 "with": {
-                    "output": "/results/{{custom_var}}/{{id}}.xml",
+                    "output": "/results/{{custom_var}}/out.xml",
                 },
             }
         ],
     }
 
-    # Should NOT raise an error since custom_var exists as workflow variable
+    # Should NOT raise an error since custom_var is a declared parameter
     try:
         executor._validate_template_variables(workflow)
     except Exception as e:
@@ -44,7 +44,7 @@ def test_workflow_variables_unknown_template_validation(executor):
                 "name": "Test Step",
                 "uses": "dummy_action",
                 "with": {
-                    "output": "/results/{{unknown_var}}/{{id}}.xml",
+                    "output": "/results/{{unknown_var}}/{{custom_var}}.xml",
                 },
             }
         ],
@@ -59,10 +59,10 @@ def test_workflow_variables_unknown_template_validation(executor):
 
 
 def test_validate_required_variables_none_values(executor):
-    """Test _validate_required_variables method with None values."""
+    """Test _validate_required_variables method with None defaults."""
     workflow = {
-        "required_var": None,  # Required variable
-        "optional_var": "default_value",  # Optional variable
+        "required_var": None,  # Required parameter
+        "optional_var": "default_value",  # Optional parameter
         "steps": [],
     }
 
@@ -72,7 +72,7 @@ def test_validate_required_variables_none_values(executor):
 
     error_msg = str(exc_info.value)
     assert "required_var" in error_msg
-    assert "Required workflow variables not provided" in error_msg
+    assert "Required workflow parameter(s) not provided" in error_msg
 
 
 def test_validate_required_variables_with_cli_params(executor):

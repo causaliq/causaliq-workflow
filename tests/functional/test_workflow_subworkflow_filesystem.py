@@ -104,8 +104,26 @@ def test_run_writes_child_cache(
     assert variants == {"one", "two"}
 
 
-# A calling matrix does not repeat the child and is not forwarded.
+# A caller matrix does not repeat a call with constant parameters.
 def test_parent_matrix_runs_child_once(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workflow = executor.parse_workflow(
+        _prepare(
+            tmp_path, monkeypatch, "subworkflow_matrix_constant_parent.yml"
+        )
+    )
+    results = executor.execute_workflow(workflow, mode="run")
+    statuses = [job["steps"]["Call child"]["status"] for job in results]
+    assert statuses == ["success", "skipped"]
+    with WorkflowCache(str(tmp_path / "child.db")) as cache:
+        assert cache.entry_count() == 2
+
+
+# A call whose parameters vary per combination runs for each combination.
+def test_matrix_parameter_runs_child_per_combination(
     executor: WorkflowExecutor,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -115,9 +133,25 @@ def test_parent_matrix_runs_child_once(
     )
     results = executor.execute_workflow(workflow, mode="run")
     statuses = [job["steps"]["Call child"]["status"] for job in results]
-    assert statuses == ["success", "skipped"]
+    assert statuses == ["success", "success"]
     with WorkflowCache(str(tmp_path / "child.db")) as cache:
-        assert cache.entry_count() == 2
+        entries = cache.list_entries()
+    variants = {entry["matrix_values"]["variant"] for entry in entries}
+    assert variants == {"alpha", "beta"}
+
+
+# Call parameters are reported in the call step's summary.
+def test_call_summary_reports_parameters(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workflow = executor.parse_workflow(
+        _prepare(tmp_path, monkeypatch, "subworkflow_parent.yml")
+    )
+    results = executor.execute_workflow(workflow, mode="dry-run")
+    summary = results[0]["steps"]["Call child"]
+    assert summary["parameters"] == {"sample_size": 1000}
 
 
 # Validation mode validates the child without executing it.

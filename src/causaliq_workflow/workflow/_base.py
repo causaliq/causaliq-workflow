@@ -72,7 +72,9 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Extract template variable names from a string."""
         raise NotImplementedError
 
-    def _validate_template_variables(self, workflow: Dict[str, Any]) -> None:
+    def _validate_template_variables(
+        self, workflow: Dict[str, Any], parameters: Any = None
+    ) -> None:
         """Validate template variables in a workflow."""
         raise NotImplementedError
 
@@ -88,7 +90,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Resolve template variables in a workflow object."""
         raise NotImplementedError
 
-    def _runs_once(self, step: Dict[str, Any], has_matrix: bool) -> bool:
+    def _runs_once(self, step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
         """Return True when a step runs once rather than per matrix job."""
         raise NotImplementedError
 

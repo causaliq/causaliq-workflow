@@ -3,9 +3,10 @@
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
 
 import click
+import yaml
 
 from causaliq_workflow.cli_report import _report_results
 
@@ -26,6 +27,47 @@ def _log_cli_error(message: str) -> None:
     """Log CLI error message with standardised format."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     click.echo(f"{timestamp} [causaliq-workflow] ERROR {message}", err=True)
+
+
+def _split_cli_parameter(item: str) -> Tuple[str, Any]:
+    """Split a ``NAME=VALUE`` CLI parameter into a name and typed value."""
+    from causaliq_workflow.workflow.parameters import _is_parameter_name
+
+    name, separator, text = item.partition("=")
+    if not separator or not _is_parameter_name(name):
+        raise click.BadParameter(
+            f"expected NAME=VALUE with a valid parameter name, "
+            f"got '{item}'",
+            param_hint="--param",
+        )
+    return name, _parse_cli_value(text)
+
+
+def _parse_cli_value(text: str) -> Any:
+    """Parse a CLI parameter value as YAML, falling back to the string."""
+    try:
+        value = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return text
+    if isinstance(value, dict):
+        raise click.BadParameter(
+            f"parameter values must be a scalar or a list, got '{text}'",
+            param_hint="--param",
+        )
+    return value
+
+
+def _parse_cli_parameters(raw_params: Tuple[str, ...]) -> Dict[str, Any]:
+    """Parse repeatable ``NAME=VALUE`` CLI parameters into a dictionary."""
+    parameters: Dict[str, Any] = {}
+    for item in raw_params:
+        name, value = _split_cli_parameter(item)
+        if name in parameters:
+            raise click.BadParameter(
+                f"duplicate parameter '{name}'", param_hint="--param"
+            )
+        parameters[name] = value
+    return parameters
 
 
 # ============================================================================
@@ -72,7 +114,22 @@ def cli(ctx: click.Context) -> None:
     type=click.Choice(["none", "summary", "all"]),
     help="Logging level for output",
 )
-def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
+@click.option(
+    "--param",
+    "-p",
+    "raw_params",
+    multiple=True,
+    metavar="NAME=VALUE",
+    help="Workflow parameter, repeatable (e.g. --param sample_size=1000). "
+    "Names matching a matrix entry replace that entry; other names "
+    "replace {{name}} placeholders.",
+)
+def run_workflow(
+    workflow_file: Path,
+    mode: str,
+    log_level: str,
+    raw_params: Tuple[str, ...],
+) -> None:
     """Execute a CausalIQ workflow file.
 
     WORKFLOW_FILE is the path to a YAML workflow file to execute.
@@ -84,16 +141,21 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
         causaliq-workflow run experiment.yml --mode=run
 
         causaliq-workflow run experiment.yml --mode=dry-run --log-level=all
+
+        causaliq-workflow run experiment.yml --param sample_size=1000
     """
     try:
         from causaliq_workflow.workflow import WorkflowExecutor
 
+        parameters = _parse_cli_parameters(raw_params)
         executor = WorkflowExecutor()
         _log_cli_message(log_level, f"LOADING workflow from: {workflow_file}")
 
-        workflow = _parse_workflow_file(executor, workflow_file, log_level)
-        _validate_workflow(executor, workflow, log_level)
-        results = _run_workflow_jobs(executor, workflow, mode, log_level)
+        workflow = _parse_workflow_file(executor, workflow_file, parameters)
+        _validate_workflow(executor, workflow, log_level, parameters)
+        results = _run_workflow_jobs(
+            executor, workflow, mode, log_level, parameters
+        )
         _report_results(results, workflow, mode, log_level)
 
     except KeyboardInterrupt:
@@ -105,13 +167,17 @@ def run_workflow(workflow_file: Path, mode: str, log_level: str) -> None:
 
 
 def _parse_workflow_file(
-    executor: "WorkflowExecutor", workflow_file: Path, log_level: str
+    executor: "WorkflowExecutor",
+    workflow_file: Path,
+    parameters: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Parse the workflow file, exiting with a message on failure."""
     from causaliq_workflow.workflow import WorkflowExecutionError
 
     try:
-        return executor.parse_workflow(str(workflow_file))
+        return executor.parse_workflow(
+            str(workflow_file), parameters=parameters
+        )
     except FileNotFoundError:
         _log_cli_error(f"Workflow file not found: {workflow_file}")
     except WorkflowExecutionError as e:
@@ -131,12 +197,17 @@ def _log_parse_error(error: Exception) -> None:
 
 
 def _validate_workflow(
-    executor: "WorkflowExecutor", workflow: Dict[str, Any], log_level: str
+    executor: "WorkflowExecutor",
+    workflow: Dict[str, Any],
+    log_level: str,
+    parameters: Dict[str, Any],
 ) -> None:
     """Validate the parsed workflow, exiting with a message on failure."""
     _log_cli_message(log_level, "VALIDATING workflow syntax and parameters...")
     try:
-        executor.execute_workflow(workflow, mode="validate")
+        executor.execute_workflow(
+            workflow, mode="validate", cli_params=parameters
+        )
         _log_cli_message(log_level, "VALIDATED workflow successfully")
     except Exception as e:
         _log_cli_error(str(e))
@@ -148,6 +219,7 @@ def _run_workflow_jobs(
     workflow: Dict[str, Any],
     mode: str,
     log_level: str,
+    parameters: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Execute the workflow in the requested mode, exiting on failure."""
     step_logger = _make_step_logger(log_level)
@@ -156,6 +228,7 @@ def _run_workflow_jobs(
         return executor.execute_workflow(
             workflow,
             mode=mode,
+            cli_params=parameters,
             step_logger=step_logger,
             validate=False,
         )

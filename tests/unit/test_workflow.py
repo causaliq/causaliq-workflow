@@ -276,6 +276,7 @@ def test_extract_template_variables():
 def test_parse_workflow_valid_templates(monkeypatch):
     """Test workflow parsing with valid template variables."""
     workflow_data = {
+        "id": "exp-001",
         "matrix": {"dataset": ["asia"], "algorithm": ["pc"]},
         "steps": [
             {
@@ -340,12 +341,14 @@ def test_parse_workflow_invalid_templates(monkeypatch):
         executor.parse_workflow("test.yml")
     error_msg = str(exc_info.value)
     assert "Unknown template variables: ['unknown_var']" in error_msg
-    assert "Available variables: ['dataset', 'description', 'id']" in error_msg
+    assert "Available variables: ['dataset']" in error_msg
 
 
 def test_parse_workflow_no_matrix_valid_templates(monkeypatch):
-    """Test workflow parsing with only workflow-level variables."""
+    """Test workflow parsing with declared parameters only."""
     workflow_data = {
+        "id": "exp-001",
+        "description": "example",
         "steps": [
             {
                 "uses": "test_action",

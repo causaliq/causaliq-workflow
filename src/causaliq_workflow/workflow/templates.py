@@ -1,6 +1,5 @@
 """Template variable extraction, resolution and validation."""
 
-import re
 from typing import Any, Dict, Set, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -8,6 +7,13 @@ from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.matrix import (
     _cache_input_paths,
     _derive_matrix_from_caches,
+)
+from causaliq_workflow.workflow.parameters import (
+    _declared_parameters,
+    _extract_tokens,
+    _parameter_matrix_clash_errors,
+    _single_token,
+    _token_names,
 )
 
 
@@ -25,24 +31,26 @@ class TemplateMixin(WorkflowExecutorBase):
         Returns:
             Set of variable names found in templates
         """
-        if not isinstance(text, str):
-            return set()
+        return _extract_tokens(text)
 
-        # Pattern matches {{variable_name}} with alphanumeric, _, -
-        pattern = r"\{\{([a-zA-Z_][a-zA-Z0-9_-]*)\}\}"
-        matches = re.findall(pattern, text)
-        return set(matches)
-
-    def _validate_template_variables(self, workflow: Dict[str, Any]) -> None:
+    def _validate_template_variables(
+        self,
+        workflow: Dict[str, Any],
+        parameters: Any = None,
+    ) -> None:
         """Validate template variables in workflow.
 
-        Performs two validations:
+        Performs three validations:
+
         1. All template variables must exist in the available context
-           (workflow variables, matrix variables, keys derived from an
-           AGGREGATE step's input cache, or built-ins).
+           (declared parameters, supplied parameter names, matrix
+           variables, or keys derived from an AGGREGATE step's input
+           cache).
         2. All matrix variables must be used in at least one CREATE step's
            template. AGGREGATE steps use matrix for grouping (not
            templating).
+        3. A name may not be declared as both a parameter and a matrix
+           variable.
 
         Variables used only by an AGGREGATE step whose input cache does not
         exist yet (it may be produced by an earlier step) are deferred to
@@ -50,18 +58,24 @@ class TemplateMixin(WorkflowExecutorBase):
 
         Args:
             workflow: Parsed workflow dictionary
+            parameters: Parameter names supplied by a caller or the CLI
 
         Raises:
-            WorkflowExecutionError: If unknown template variables found
-                or if matrix variables are not used in any CREATE step
+            WorkflowExecutionError: If unknown template variables found,
+                a name is declared twice, or matrix variables are not used
+                in any CREATE step
         """
+        parameters = set(parameters or ())
         matrix_vars = set(workflow.get("matrix", {}).keys())
         derived_vars, deferred_vars = self._aggregate_template_scope(workflow)
-        available = _collect_available_variables(workflow, matrix_vars)
+        available = _collect_available_variables(
+            workflow, matrix_vars, parameters
+        )
         available.update(derived_vars)
         all_vars, has_create_steps = self._scan_step_variables(workflow)
         create_vars = self._collect_create_variables(workflow)
 
+        _raise_parameter_errors(workflow)
         _raise_unknown_variables(all_vars - deferred_vars, available)
         if matrix_vars and has_create_steps:
             _raise_unused_matrix_variables(
@@ -147,16 +161,7 @@ class TemplateMixin(WorkflowExecutorBase):
             obj: Workflow object (dict, list, or string) to scan
             used_variables: Set to collect found variables into
         """
-        if isinstance(obj, dict):
-            for value in obj.values():
-                self._collect_template_variables(value, used_variables)
-            return
-        if isinstance(obj, list):
-            for item in obj:
-                self._collect_template_variables(item, used_variables)
-            return
-        if isinstance(obj, str):
-            used_variables.update(self._extract_template_variables(obj))
+        used_variables.update(_token_names(obj))
 
     def _resolve_template_variables(
         self, obj: Any, variables: Dict[str, Any]
@@ -186,8 +191,28 @@ class TemplateMixin(WorkflowExecutorBase):
 
     def _substitute_variables(
         self, text: str, variables: Dict[str, Any]
-    ) -> str:
-        """Substitute known ``{{variable}}`` tokens in a single string."""
+    ) -> Any:
+        """Substitute known ``{{variable}}`` tokens in a single string.
+
+        A string that is exactly one ``{{name}}`` token yields the
+        variable's native value when that value is not a string, so a
+        list, number, boolean or ``None`` parameter reaches the action
+        unchanged. Text containing a token plus other characters is
+        always substituted as text.
+
+        Args:
+            text: String that may contain ``{{variable}}`` tokens.
+            variables: Variable values to substitute.
+
+        Returns:
+            The native value for a whole-value token, otherwise the
+            substituted string.
+        """
+        token = _single_token(text)
+        if token is not None and token in variables:
+            value = variables[token]
+            if not isinstance(value, str):
+                return value
         result = text
         for var in self._extract_template_variables(text):
             if var in variables:
@@ -196,18 +221,27 @@ class TemplateMixin(WorkflowExecutorBase):
 
 
 def _collect_available_variables(
-    workflow: Dict[str, Any], matrix_vars: Set[str]
+    workflow: Dict[str, Any],
+    matrix_vars: Set[str],
+    parameters: Set[str],
 ) -> Set[str]:
-    """Return the set of template variables available to a workflow."""
-    available = {"id", "description"}
-    workflow_vars = {
-        key
-        for key in workflow
-        if key not in {"id", "description", "matrix", "steps"}
-    }
-    available.update(workflow_vars)
+    """Return the set of template variables available to a workflow.
+
+    Declared parameter defaults and supplied parameter names are
+    available alongside the workflow's matrix variables.
+    """
+    available = set(_declared_parameters(workflow))
     available.update(matrix_vars)
+    available.update(parameters)
     return available
+
+
+def _raise_parameter_errors(workflow: Dict[str, Any]) -> None:
+    """Raise when a parameter name is also a matrix variable."""
+    errors = _parameter_matrix_clash_errors(workflow)
+    if not errors:
+        return
+    raise WorkflowExecutionError("; ".join(errors))
 
 
 def _cached_matrix_keys(step: Dict[str, Any]) -> Set[str]:
@@ -228,7 +262,9 @@ def _raise_unknown_variables(used_vars: Set[str], available: Set[str]) -> None:
         return
     raise WorkflowExecutionError(
         f"Unknown template variables: {sorted(unknown)}. "
-        f"Available variables: {sorted(available)}"
+        f"Available variables: {sorted(available)}. "
+        f"Declare the name as a workflow parameter, or supply it with "
+        f"'with:' in the calling workflow or --param."
     )
 
 
