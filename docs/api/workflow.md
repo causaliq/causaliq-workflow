@@ -9,6 +9,7 @@ modules composed into `WorkflowExecutor`. The package re-exports the public
 names so existing imports keep resolving:
 
 - `matrix` — matrix expansion, derivation and value matching;
+- `parameters` — workflow parameter names, binding and validation;
 - `templates` — template variable extraction and resolution;
 - `patterns` — step pattern detection;
 - `filters` — shared reporting view construction and filter resolution;
@@ -58,16 +59,37 @@ executor = WorkflowExecutor()
 try:
     # Parse and validate workflow (includes template variable validation)
     workflow = executor.parse_workflow("experiment.yml")
-    print(f"Workflow ID: {workflow['id']}")
-    print(f"Description: {workflow['description']}")
-    
+    # Top-level scalar keys are workflow parameters, so they may be absent
+    print(f"Workflow ID: {workflow.get('id')}")
+    print(f"Description: {workflow.get('description')}")
+
     # Execute the complete workflow
     results = executor.execute_workflow(workflow, mode="run")
     print(f"Workflow completed successfully")
-    
+
 except WorkflowExecutionError as e:
     print(f"Workflow execution failed: {e}")
 ```
+
+### Workflow Parameters
+
+Declared parameters are overridden with `parameters` when parsing (so the
+parser knows the names a workflow expects) and with `cli_params` when
+executing:
+
+```python
+workflow = executor.parse_workflow(
+    "experiment.yml", parameters={"sample_size": 5000}
+)
+results = executor.execute_workflow(
+    workflow, mode="run", cli_params={"sample_size": 5000}
+)
+```
+
+A name that matches a matrix dimension replaces that dimension; other
+names override a declared default or fill a `{{name}}` placeholder. A
+call step's `with` block uses the same rules; see
+[Reusable Workflows](../userguide/subworkflows.md#calling-parameters).
 
 ### Workflow Calls
 
@@ -141,7 +163,8 @@ try:
 except WorkflowExecutionError as e:
     if "Unknown template variables" in str(e):
         print(f"Template validation failed: {e}")
-        # Example: "Unknown template variables: missing_var. Available context: id, dataset, algorithm"
+        # Example: "Unknown template variables: ['missing_var'].
+        # Available variables: ['algorithm', 'dataset', 'description', 'id']"
     else:
         print(f"Workflow execution failed: {e}")
 ```
@@ -194,18 +217,32 @@ if "matrix" in workflow:
 
 Template variables can reference:
 
-1. **Workflow properties**: `{{id}}`, `{{description}}`, `{{name}}`
-2. **Matrix variables**: Any variables defined in the `matrix` section
-3. **Step context**: Variables available during step execution
-4. **File paths**: Dynamic path generation using workflow context
+1. **Workflow parameters**: declared top-level keys such as `{{id}}`
+2. **Matrix variables**: any variables defined in the `matrix` section
+3. **Supplied parameters**: values from a caller's `with:` or `--param`
+
+Declared parameters have defaults and may be overridden:
+
+```yaml
+sample_size: 1000     # optional, default 1000
+seed: null            # required, supplied by a caller or --param
+```
 
 ### Available Template Variables
 
 | Context | Variables | Example |
 |---------|-----------|---------|
-| Workflow | `id`, `description`, `name` | `{{id}}` |
+| Parameters | Declared top-level keys | `{{id}}`, `{{output_root}}` |
 | Matrix | User-defined matrix vars | `{{dataset}}`, `{{algorithm}}` |
-| Paths | `data_root`, `output_root` | `{{output_root}}/results` |
+| AGGREGATE cache | Keys derived from input caches | `{{network}}` |
+
+Unknown variables are rejected when the workflow is parsed, unless a
+caller or the CLI supplies them:
+
+```
+Unknown template variables: ['sampl_size'].
+Available variables: ['algorithm', 'dataset']
+```
 
 ### Matrix Variable Usage Requirement
 

@@ -18,23 +18,28 @@ steps:
       reference: "networks/asia/true.graphml"
 ```
 
-## Workflow with Properties
+## Workflow with Parameters
 
-Add workflow-level properties for identification and path management:
+Declare workflow parameters for identification and path management, with
+optional defaults:
 
 ```yaml
-# with_properties.yml
+# with_parameters.yml
 id: "experiment-001"
 description: "Evaluate learned graphs"
-root_dir: "/experiments/project"
 
 steps:
   - name: "Evaluate Graphs"
     uses: "causaliq-analysis"
     with:
       action: "evaluate_graph"
-      input: "results/graphs.db"
+      input: "results/{{id}}/graphs.db"
       reference: "networks/asia/true.graphml"
+```
+
+```bash
+# Override a declared default, or supply a required (null) parameter
+cqflow run with_parameters.yml --param id=experiment-002
 ```
 
 ## Matrix Expansion

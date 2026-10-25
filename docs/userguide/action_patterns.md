@@ -65,6 +65,10 @@ cache and writes one image. A file-output step that also declares a matrix
 keeps per-combination granularity; `summarise` relies on this to write one
 row per combination.
 
+A step that calls another workflow follows its own rule: it runs once
+unless its `with` values vary across the matrix. See
+[Reusable Workflows](subworkflows.md#matrix-and-execution).
+
 ```yaml
 matrix:
   network: [asia, cancer]

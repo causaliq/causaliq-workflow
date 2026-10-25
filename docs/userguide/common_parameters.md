@@ -143,8 +143,9 @@ when a name exists in both blocks, and the provider-qualified
 ### Template Variables in Filters
 
 Filter expressions support `{{variable}}` template substitution, resolved
-from workflow properties and matrix values before evaluation. This enables
-parameterised filters that change per matrix combination:
+from workflow parameters, supplied parameters and matrix values before
+evaluation. This enables parameterised filters that change per matrix
+combination:
 
 ```yaml
 matrix:

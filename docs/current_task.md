@@ -1,31 +1,59 @@
-# Workflows can call other workflows
+# Workflows parameters
 
-Please propose a syntax for one CausalIQ YAML workflow calling another YAML workflow (used in place of the
-uses-with-action structure employed to invoke a package action). The syntax should
-be modelled on/inspired by standard CI YAML syntax. The `with` keyword can be used
-to specify parameters for the called sub-workflow.
+Status: implemented (24 October 2026). Verified with black, isort,
+flake8, mypy, `scripts/check_code_rules.py` (0 breaches) and the full
+pytest suite at 100% coverage.
 
-At this stage, parameters are not (fully) supported for causaliq workflows - this
-will be tackled in a subsequent task. For this task it is sufficient if the
-invoked workflows ignores any parameters specified for it.
+## Agreed behaviour
 
-Recursive calling of workflows is not allowed and should be checked for
+- Workflow parameters are specified in the `with:` clause of the calling
+  workflow, or with `--param NAME=VALUE` on the CLI.
+- A parameter name that matches a matrix dimension of the called workflow
+  replaces that dimension's values (a scalar becomes `[value]`, a list is
+  used as given). Parameters never *add* a dimension.
+- A parameter name that matches a declared parameter (a top-level scalar
+  key of the called workflow) overrides its default. A `null` default
+  declares a required parameter.
+- Any other parameter binds as a `{{name}}` template variable.
+- A parameter that the called workflow neither declares, nor lists as a
+  matrix dimension, nor uses in a step `with:` block is a validation
+  error listing the accepted names.
+- `with` values are resolved in the caller's context; a value that is a
+  single `{{name}}` token binds the native value so a matrix override
+  keeps its type. The same rule applies inside a called workflow, so a
+  list parameter reaches the action as a list rather than as text.
+- Parameters do not enter the cache key. Conservative execution still
+  skips existing entries; a parameter change needs `--mode=force`.
+- A call step runs once per workflow unless its `with` values reference a
+  caller matrix variable, in which case it runs once per combination.
+- `id`, `description` and `root_dir` are no longer hardwired. `id` and
+  `description` are ordinary declared parameters; `root_dir` was never
+  implemented and is removed from the documentation.
+- `matrix` and `steps` are reserved. Declaring a name as both a parameter
+  and a matrix dimension is a validation error. `action` and `output`
+  remain reserved in a call step's `with`.
+
+## Scope of this task
+
+Hat 1 only: caller/CLI parameters, parameter defaults, required
+parameters, per-combination call execution, removal of the hardwired
+`id`/`description`/`root_dir` names, tests and documentation.
+
+Follow-ups logged by this task:
+
+- Rename the `execute_workflow(..., cli_params=...)` keyword to
+  `parameters` (Hat 2, public API).
+- Optionally invalidate or key cache entries on parameter values.
+- Null/`None`/defaults semantics are deferred: whether `null` means
+  "not applicable" (a value) or "required" (absence), and whether a
+  parameter default may be a list. Daily use needs neither, because a
+  caller can supply a list or an empty list directly.
+
+
 
 ## Further work which is out of scope for this task
 
 These are deliberately outside this task:
-
-0. __Workflow parameters__
-
-   - should we declare parameters in a workflow, or can we just adopt a 
-     `tolerant` paradigm that any parameters specified just overwrite valu
-     in the called workflow, and any irrelevant parameters are silently ignored?
-   - workflow parameters overwrite those with the same name in matrix and
-     step parameters
-   - workflow paramaters can be defined in the called workflow - these effectively
-     act as defaults
-   - should it be possible to specify parameters when a workflow is invoked from
-     the CLI? - it would complicate validation of command line parameters
 
 1. __Values audit__
 

@@ -64,12 +64,10 @@ workflow_data = {
 try:
     result = validate_workflow(workflow_data)
     print("Workflow validation passed!")
-    print(f"Validated workflow: {result['id']}")
+    print(f"Validated workflow: {workflow_data['id']}")
 except WorkflowValidationError as e:
     print(f"Validation failed: {e}")
     print(f"Schema path: {e.schema_path}")
-    if hasattr(e, 'validator'):
-        print(f"Validation details: {e.validator}")
 ```
 
 ### Loading and Using Custom Schemas
@@ -84,7 +82,7 @@ schema = load_schema(schema_path)
 
 # Use custom schema with validation
 try:
-    validate_workflow(workflow_data, schema)
+    validate_workflow(workflow_data, schema_path)
     print("Custom schema validation passed!")
 except WorkflowValidationError as e:
     print(f"Custom validation failed: {e}")
@@ -160,27 +158,33 @@ for workflow_file in workflow_files:
 The default workflow schema validates:
 
 ### Required Fields
-- `id`: Unique workflow identifier
-- `steps`: Array of workflow steps
+
+- `steps`: array of workflow steps
 
 ### Optional Fields
-- `name`: Human-readable workflow name
-- `description`: Workflow description
-- `matrix`: Parameter matrix for expansion
-- `data_root`: Base path for data files
-- `output_root`: Base path for output files
+
+- `matrix`: parameter matrix for expansion
+- Any other top-level key declares a **workflow parameter** and its
+  default value. Values must be scalar (string, number, boolean or
+  `null`); `null` marks the parameter as required. See
+  [Core Concepts](../userguide/core_concepts.md#workflow-parameters).
 
 ### Step Schema
+
 Each step must include:
-- `uses`: Action identifier
-- `name` (optional): Human-readable step name
-- `with` (optional): Action parameters
+
+- `name`: human-readable step name
+- `uses` (an action provider or a relative workflow path) or `run`
+- `with` (optional): action parameters, or a called workflow's parameters
 
 ### Matrix Schema
+
 Matrix definitions support:
+
 - **Simple arrays**: `{"param": ["value1", "value2"]}`
-- **Nested structures**: Complex parameter combinations
-- **Type validation**: Ensures consistent parameter types
+- **Range strings**: `"0-24"` expands to individual integers
+- **Scalar values**: strings, numbers, booleans and `null`; a `null`
+  value is a wildcard when matching cache entries
 
 ## Error Reporting
 
@@ -192,11 +196,6 @@ try:
 except WorkflowValidationError as e:
     print(f"Validation error: {e}")
     print(f"Schema path: {e.schema_path}")
-    
-    # Access underlying jsonschema validation details
-    if hasattr(e, 'validator'):
-        print(f"Failed constraint: {e.validator}")
-        print(f"Schema context: {e.schema_path}")
 ```
 
 ## Custom Schema Development
@@ -242,7 +241,7 @@ with open("custom-workflow-schema.json", "w") as f:
     json.dump(custom_schema, f, indent=2)
 
 custom_schema_obj = load_schema("custom-workflow-schema.json")
-validate_workflow(workflow_data, custom_schema_obj)
+validate_workflow(workflow_data, "custom-workflow-schema.json")
 ```
 
 ---

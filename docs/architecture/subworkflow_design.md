@@ -45,20 +45,51 @@ working directory and the root workflow cannot be detected as a cycle.
 ## Execution Model
 
 A call step delegates to `_execute_jobs` with the child workflow, the
-caller's mode, an empty `cli_params` and the extended stack. The child
+caller's mode, the bound parameters and the extended stack. The child
 therefore expands its own matrix and writes its own caches.
 
-`_runs_once` treats a call step as single-run because it has no cache
-output and parameters are not forwarded, so a repeated call would be
-identical. When parameters land, a call whose resolved parameters differ
-per matrix combination must run per combination.
+### Parameter binding
+
+`with` values are resolved in the caller's context and then bound by
+`_bind_parameters` (`workflow/matrix.py`):
+
+- a name that matches a child matrix dimension replaces that dimension's
+  values (a scalar becomes `[value]`, a list is used as given);
+- every other name becomes a template variable of the child.
+
+A value that is exactly one `{{name}}` token is bound natively, so an
+integer matrix override stays an integer. Matrix overrides are removed
+from the variable map, so a list-valued override cannot leak into
+`{{name}}` substitution. Binding is pure: the parsed child is never
+mutated, which matters when the same parent job runs a call twice.
+
+Parameters never add a matrix dimension, so they are not part of a cache
+key. Conservative execution therefore still skips an entry when only a
+parameter value changed; `--mode=force` re-runs it. Authors who need a
+parameter to distinguish cache entries declare it as a matrix dimension
+(for example `alpha: [null]`) and let the caller override it.
+
+Top-level scalar keys are declared parameters with defaults; a `null`
+default marks the parameter as required and is checked by
+`_validate_required_variables`. Unknown names and missing required names
+are reported by `_call_parameter_errors` with the accepted names.
+
+### Run-once rule
+
+`_runs_once(step, matrix)` treats a call step as single-run unless its
+`with` values reference a matrix variable of the calling workflow. A
+constant call would do identical work on every job, so it runs once and
+is skipped later; a call whose parameters vary resolves to different
+parameters per combination, so it runs once per combination.
 
 ## Validation
 
 `_load_child_workflow` loads and validates each called workflow:
-`validate_workflow`, `_validate_template_variables` and
-`_validate_workflow_actions`. The validation pass then recurses through
-`_validate_all_entries`, so `--mode=validate` covers the whole tree.
+`validate_workflow`, `_validate_template_variables` (with the caller's
+parameter names available), and `_validate_workflow_actions`. The
+validation pass then binds the caller's parameters and recurses through
+`_validate_all_entries`, so `execute_workflow(mode="validate")` covers the
+whole tree.
 
 Call steps are excluded from action-provider, action-pattern and filter
 validation. `with.action` and `with.output` are rejected because the
@@ -73,6 +104,7 @@ The call step records a summary:
     "status": "success",       # error / would_execute / would_skip
     "workflow": "<canonical path>",
     "jobs": 2,
+    "parameters": {"variant": "two"},   # omitted when none
     "steps": [
         {"name": "Child record", "status": "success"},
         {"name": "Child record", "status": "success"},
@@ -94,10 +126,7 @@ by its work.
 
 ## Deferred
 
-- Workflow parameters, defaults and precedence over matrix and step
-  parameters.
+- Parameter values invalidating or keying cache entries.
 - Step output chaining from a called workflow to its caller.
 - Rolling child step counts into the CLI summary.
 - Memoising loaded child workflows across parent jobs.
-- Relative `root_dir` semantics, which the user guide describes but the
-  executor does not yet implement.

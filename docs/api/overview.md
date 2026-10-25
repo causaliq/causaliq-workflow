@@ -49,6 +49,7 @@ expansion and templating.
 
 - **WorkflowExecutor** - Main workflow processing engine
 - **WorkflowExecutionError** - Workflow execution exceptions
+- **Workflow parameters** - Declared defaults, matrix overrides and call-step bindings
 - **Template system** - Variable substitution and validation
 
 ### [Workflow Cache](cache.md)

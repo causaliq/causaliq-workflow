@@ -38,6 +38,9 @@ cqflow run experiment.yml
 # Execute a workflow in run mode (actually execute actions)
 cqflow run experiment.yml --mode=run
 
+# Override a workflow parameter
+cqflow run experiment.yml --mode=run --param sample_size=5000
+
 # Set logging level
 cqflow run experiment.yml --mode=run --log-level=all
 ```
@@ -46,6 +49,11 @@ Options:
 
 - `--mode` - Execution mode: `dry-run` (default), `run`, or `force`
 - `--log-level` - Logging level: `none`, `summary` (default), or `all`
+- `--param NAME=VALUE` / `-p` - Workflow parameter, repeatable. A name
+  matching a matrix entry replaces that entry; other names override a
+  declared parameter or fill a `{{name}}` placeholder. Values are parsed
+  as YAML, so `--param alpha=0.05` and `--param algorithm='[pc, ges]'`
+  keep their types. A repeated name is rejected
 
 #### Log Output Status Messages
 

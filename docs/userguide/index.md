@@ -11,8 +11,10 @@ executing causal discovery and analysis pipelines. It is part of the
 | Feature | Description |
 |---------|-------------|
 | **Declarative YAML syntax** | Define workflows in familiar GitHub Actions-style YAML |
+| **Workflow parameters** | Declare defaults and override them from a caller's `with` or `--param` |
 | **Matrix expansion** | Run steps across multiple parameter combinations |
-| **Template variables** | Reference workflow and matrix values in step parameters |
+| **Template variables** | Reference workflow parameters and matrix values in step parameters |
+| **Reusable workflows** | Call one workflow from another, passing parameters |
 | **Workflow caching** | SQLite-based result storage with conservative execution |
 | **Action patterns** | Create and aggregate patterns, plus run-once steps |
 | **CLI and programmatic access** | Execute workflows from command line or Python code |

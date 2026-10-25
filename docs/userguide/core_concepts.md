@@ -19,18 +19,33 @@ steps:
       output: "results/merged.db"
 ```
 
-### Workflow-Level Properties
+### Workflow Structure
 
 | Property | Required | Description |
 |----------|----------|-------------|
-| `id` | No | Unique identifier for the workflow |
-| `description` | No | Human-readable description |
-| `root_dir` | No | Base directory for relative paths (default: current directory) |
 | `steps` | **Yes** | List of steps to execute |
 | `matrix` | No | Parameter matrix for expansion (see below) |
 
-Custom properties defined at the workflow level become available as template
-variables in step parameters.
+### Workflow Parameters
+
+Any other top-level scalar key declares a workflow parameter and its
+default value. Declared parameters are available as template variables in
+step parameters, and a caller or the CLI can override them:
+
+```yaml
+# workflow.yml
+sample_size: 1000      # optional parameter, default 1000
+seed: null             # required parameter, no default
+```
+
+```bash
+cqflow run workflow.yml --param sample_size=5000 --param seed=42
+```
+
+`matrix` and `steps` are reserved. A name may not be declared as both a
+parameter and a matrix variable. See
+[Reusable Workflows](subworkflows.md#calling-parameters) for parameters
+passed to a called workflow.
 
 ## Steps
 
@@ -148,7 +163,7 @@ matrix:
 ## Template Variables
 
 **Template variables** use `{{variable}}` syntax to reference workflow
-properties and matrix values within step parameters.
+parameters and matrix values within step parameters.
 
 ```yaml
 matrix:
@@ -164,22 +179,53 @@ steps:
       output: "results/graphs.db"
 ```
 
+### Types
+
+A value that is exactly one `{{name}}` token keeps the variable's native
+type: a matrix number stays a number, and a list parameter stays a list.
+Text with extra characters is substituted as text.
+
+```yaml
+with:
+  randomise: "{{randomise}}"      # a list parameter, passed through
+  dataset: "data/{{network}}.csv" # text: "data/asia.csv"
+```
+
+### Quoting
+
+A token must be quoted when it is the whole value:
+
+```yaml
+sample_size: "{{sample_size}}"   # correct
+sample_size: {{sample_size}}     # invalid YAML: a nested mapping
+```
+
+An unquoted token is reported as `Invalid YAML syntax: ... found
+unhashable key`, with a hint to quote it.
+
 ### Variable Resolution Order
 
-Variables are resolved in this order:
+Variables are resolved in this order, with later entries winning:
 
-1. **Workflow properties**: `id`, `description`, custom workflow-level values
-2. **Matrix variables**: Values from the current matrix combination
+1. **Workflow parameters**: declared defaults
+2. **Matrix variables**: values from the current matrix combination
+3. **Supplied parameters**: values from the caller's `with` or `--param`
 
 ### Validation
 
 Template variables are validated at parse time. Unknown variables cause a
-validation error:
+validation error, which is also how a missing required parameter is
+reported:
 
 ```
-WorkflowExecutionError: Unknown template variables: unknown_var
-Available context: id, description, network
+Unknown template variables: ['seed']. Available variables: ['dataset',
+'network']. Declare the name as a workflow parameter, or supply it with
+'with:' in the calling workflow or --param.
 ```
+
+A workflow that is called from another workflow also sees the caller's
+parameter names, and the CLI passes `--param` names to the parser, so a
+template may reference a value that is supplied at run time.
 
 AGGREGATE steps also see the matrix keys derived from their input caches, so
 `{{network}}` resolves from a learned graph cache even when the workflow

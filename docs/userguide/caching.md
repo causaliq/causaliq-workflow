@@ -151,17 +151,33 @@ results/
 
 ### Cache Location
 
-Specify cache paths relative to the workflow's `root_dir`:
+Cache paths in `input:` and `output:` resolve against the working
+directory:
 
 ```yaml
-root_dir: "/experiments/project-001"
+steps:
+  - name: "Learn"
+    uses: "causaliq-discovery"
+    with:
+      action: "learn_structure"
+      output: "results/graphs.db"
+```
+
+Use a workflow parameter when the location must change between runs:
+
+```yaml
+output_root: "results"
 
 steps:
   - name: "Learn"
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      output: "results/graphs.db"  # → /experiments/project-001/results/graphs.db
+      output: "{{output_root}}/graphs.db"
+```
+
+```bash
+cqflow run workflow.yml --param output_root=/experiments/project-001/results
 ```
 
 ## Exporting and Importing
