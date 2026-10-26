@@ -18,6 +18,7 @@ from causaliq_core import (
     ActionPattern,
     ActionValidationError,
     CausalIQActionProvider,
+    resolve_action_parameters,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -447,14 +448,12 @@ class ActionRegistry:
             action_instance = action_class()
 
             # Extract action name from inputs, remaining are parameters.
-            # Strip None-valued parameters: these represent matrix
-            # dimensions that are not applicable to this action.
+            # Effective parameters include declared defaults and exclude
+            # None-valued matrix dimensions that do not apply here.
             action_name = inputs.get("action", "")
-            parameters = {
-                k: v
-                for k, v in inputs.items()
-                if k != "action" and v is not None
-            }
+            parameters = _effective_parameters(
+                action_instance, action_name, inputs
+            )
 
             logger.info(
                 f"Executing action '{action_name}' from provider '{name}' "
@@ -522,14 +521,12 @@ class ActionRegistry:
                 return
 
             # Extract action name from inputs, remaining are parameters.
-            # Strip None-valued parameters: these represent matrix
-            # dimensions that are not applicable to this action.
+            # Effective parameters include declared defaults and exclude
+            # None-valued matrix dimensions that do not apply here.
             action_name = inputs.get("action", "")
-            parameters = {
-                k: v
-                for k, v in inputs.items()
-                if k != "action" and v is not None
-            }
+            parameters = _effective_parameters(
+                action_instance, action_name, inputs
+            )
 
             # Validate parameters (raises ActionValidationError on failure)
             action_instance.validate_parameters(action_name, parameters)
@@ -599,6 +596,29 @@ class ActionRegistry:
             packages[package_name].append(action_name)
 
         return packages
+
+
+def _effective_parameters(
+    action_instance: Any,
+    action_name: str,
+    inputs: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Return effective parameters for one action, without the action name.
+
+    Supplied values win. Declared defaults fill parameters that were not
+    supplied and apply to the action. ``None`` values are dropped because
+    they mark a matrix dimension that is not applicable.
+
+    Args:
+        action_instance: Provider instance that owns the action.
+        action_name: Action name being executed or validated.
+        inputs: Step parameters, including the 'action' key.
+
+    Returns:
+        Effective parameters passed to the provider.
+    """
+    supplied = {k: v for k, v in inputs.items() if k != "action"}
+    return resolve_action_parameters(action_instance, action_name, supplied)
 
 
 def _result_fields(metadata: Any) -> Dict[str, Any]:

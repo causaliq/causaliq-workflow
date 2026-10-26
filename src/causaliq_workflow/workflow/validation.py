@@ -147,6 +147,37 @@ def _call_syntax_errors(workflow: Dict[str, Any]) -> List[str]:
     return errors
 
 
+def _null_parameter_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return errors for parameters declared with a literal null value.
+
+    A literal ``null`` in a step's ``with`` block is ambiguous: omitting
+    the parameter already means "use the default", and omitting it is
+    also how a parameter that does not apply is expressed. A
+    ``{{template}}`` value is exempt because a matrix wildcard resolves
+    to null at run time.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        One error per literal null parameter value.
+    """
+    errors: List[str] = []
+    for step in workflow.get("steps", []):
+        step_name = step.get("name", "unnamed")
+        values = step.get("with")
+        if not isinstance(values, dict):
+            continue
+        for name, value in values.items():
+            if value is not None:
+                continue
+            errors.append(
+                f"Step '{step_name}': parameter '{name}' is null; "
+                f"omit the parameter instead of writing null"
+            )
+    return errors
+
+
 class ValidationMixin(WorkflowExecutorBase):
     """Configuration validation for WorkflowExecutor."""
 
@@ -184,6 +215,10 @@ class ValidationMixin(WorkflowExecutorBase):
         call_errors = _call_syntax_errors(workflow)
         if call_errors:
             raise WorkflowExecutionError("; ".join(call_errors))
+
+        null_errors = _null_parameter_errors(workflow)
+        if null_errors:
+            raise WorkflowExecutionError("; ".join(null_errors))
 
         # Get action validation errors
         action_errors = self.action_registry.validate_workflow_actions(

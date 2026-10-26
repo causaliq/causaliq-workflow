@@ -6,6 +6,7 @@ Tests the base Action class, ActionInput dataclass, and exceptions.
 
 import pytest
 from causaliq_core import (
+    NO_DEFAULT,
     ActionExecutionError,
     ActionInput,
     ActionValidationError,
@@ -20,14 +21,14 @@ def test_action_input_creation():
     action_input = ActionInput(
         name="test_param",
         description="A test parameter",
-        required=True,
+        required=False,
         default="default_value",
         type_hint="str",
     )
 
     assert action_input.name == "test_param"
     assert action_input.description == "A test parameter"
-    assert action_input.required is True
+    assert action_input.required is False
     assert action_input.default == "default_value"
     assert action_input.type_hint == "str"
 
@@ -42,8 +43,9 @@ def test_action_input_defaults():
     assert action_input.name == "minimal_param"
     assert action_input.description == "Minimal parameter"
     assert action_input.required is False
-    assert action_input.default is None
+    assert action_input.default is NO_DEFAULT
     assert action_input.type_hint == "Any"
+    assert action_input.choices is None
 
 
 # Test backward compatibility without logger parameter
