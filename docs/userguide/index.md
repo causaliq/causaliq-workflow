@@ -26,6 +26,7 @@ This user guide covers how to use CausalIQ Workflow effectively:
 | Section | Content |
 |---------|---------|
 | [Core Concepts](core_concepts.md) | Workflows, steps, actions, and matrix expansion |
+| [Values and Quoting](values_and_types.md) | Text, numbers, nulls, template tokens and filter values |
 | [Action Patterns](action_patterns.md) | Create, aggregate and run-once step patterns |
 | [Reusable Workflows](subworkflows.md) | Calling one workflow from another |
 | [Workflow Caching](caching.md) | Result storage and conservative execution |

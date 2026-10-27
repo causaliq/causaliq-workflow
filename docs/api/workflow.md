@@ -185,7 +185,7 @@ steps:
     with:
       data_path: "/experiments/data/{{dataset}}.csv"
       output_dir: "/experiments/results/{{id}}/{{algorithm}}/"
-      alpha: "{{alpha}}"
+      alpha: {{alpha}}
       max_iter: 1000
       
   - name: "Validation"
@@ -248,6 +248,12 @@ Three rules apply to declarations:
 | Matrix | User-defined matrix vars | `{{dataset}}`, `{{algorithm}}` |
 | AGGREGATE cache | Keys derived from input caches | `{{network}}` |
 
+A whole-value token may be written without quotes:
+`sample_size: {{sample_size}}` is valid. A value that is exactly one
+token keeps its native type. An action parameter declared as `int`,
+`float` or `bool` also accepts its text spelling, because the value is
+converted just before the action runs.
+
 Unknown variables are rejected when the workflow is parsed, unless a
 caller or the CLI supplies them:
 
@@ -274,7 +280,7 @@ steps:
   - uses: causaliq-discovery
     with:
       action: run_pc
-      network: "{{network}}"
+      network: {{network}}
 ```
 
 A null-default parameter is also restricted to whole-value use:
@@ -285,7 +291,7 @@ steps:
   - uses: causaliq-analysis
     with:
       action: evaluate_graph
-      reference: "{{reference}}"             # valid: whole value
+      reference: {{reference}}             # valid: whole value
       dataset: "data/{{reference}}.csv"      # invalid: no value to embed
 ```
 
@@ -305,8 +311,8 @@ steps:
   - uses: causaliq-discovery
     with:
       action: run_pc
-      network: "{{network}}"
-      seed: "{{seed}}"
+      network: {{network}}
+      seed: {{seed}}
       output: results.db
 ```
 
@@ -319,7 +325,7 @@ steps:
   - uses: causaliq-discovery
     with:
       action: run_pc
-      network: "{{network}}"
+      network: {{network}}
       output: results.db
 ```
 
@@ -380,7 +386,7 @@ steps:
     with:
       action: "merge_graphs"
       input: "results/graphs.db"
-      filter: "learn_graph.algorithm == 'pc' and sample_size >= 1000"
+      filter: learn_graph.algorithm == 'pc' and sample_size >= 1000
       output: "results/merged.db"
 ```
 

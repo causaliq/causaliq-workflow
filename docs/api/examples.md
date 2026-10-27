@@ -80,8 +80,8 @@ steps:
     with:
       data_path: "{{data_root}}/{{dataset}}.csv"
       output_path: "{{output_root}}/{{id}}/{{dataset}}_{{algorithm}}_{{alpha}}.graphml"
-      algorithm: "{{algorithm}}"
-      alpha: "{{alpha}}"
+      algorithm: {{algorithm}}
+      alpha: {{alpha}}
       
   - name: "Validate Structure"
     uses: "structure-validator"
@@ -135,11 +135,15 @@ steps:
     uses: "adaptive-learner"
     with:
       data_path: "/data/{{dataset}}.csv"
-      algorithm: "{{algorithm}}"
-      alpha: "{{alpha|default(0.05)}}"
-      max_iter: "{{max_iter|default(1000)}}"
-      regularization: "{{regularization|default(0.0)}}"
+      algorithm: {{algorithm}}
+      alpha: {{alpha}}
+      max_iter: {{max_iter}}
+      regularization: {{regularization}}
 ```
+
+Optional values use a declared workflow default, such as
+`alpha: 0.05` above `matrix:`. The `default(...)` filter syntax shown in
+older examples is not supported.
 
 ## Multi-Step Workflows
 
@@ -159,7 +163,7 @@ steps:
     with:
       input_path: "/raw_data/{{dataset}}.csv"
       output_path: "/processed_data/{{dataset}}_{{preprocessing}}.csv"
-      method: "{{preprocessing}}"
+      method: {{preprocessing}}
       remove_outliers: true
       normalize: true
       
@@ -322,7 +326,7 @@ steps:
     with:
       data_path: "/data/{{dataset}}.csv"
       output_path: "/results/{{dataset}}_{{alpha}}_structure.graphml"
-      alpha: "{{alpha}}"
+      alpha: {{alpha}}
       max_depth: 3
       
   - name: "Network Analysis"

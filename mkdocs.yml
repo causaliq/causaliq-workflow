@@ -43,6 +43,7 @@ nav:
   - User Guide:
     - Introduction: userguide/index.md
     - Core Concepts: userguide/core_concepts.md
+    - Values and Quoting: userguide/values_and_types.md
     - Action Patterns: userguide/action_patterns.md
     - Reusable Workflows: userguide/subworkflows.md
     - Workflow Caching: userguide/caching.md
@@ -59,6 +60,7 @@ nav:
       - Matrix Strategy Design: architecture/matrix_expansion_design.md
       - Summarisation Paradigm: architecture/summarisation_paradigm_design.md
       - Action Architecture: architecture/action_architecture_design.md
+      - Action Parameter Contract: architecture/action_parameter_contract.md
       - Algorithm Registry: architecture/action_auto_discovery_design.md
       - Workflow Executor: architecture/workflow_executor_design.md
       - Reusable Workflows: architecture/subworkflow_design.md

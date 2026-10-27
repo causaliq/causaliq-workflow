@@ -27,7 +27,7 @@ steps:
     uses: causaliq-discovery
     with:
       action: learn_structure
-      algorithm: "{{algorithm}}"
+      algorithm: {{algorithm}}
       output: results/graphs.db
 ```
 
@@ -82,12 +82,12 @@ steps:
   - name: Call child
     uses: ./modules/learn-graphs.yml
     with:
-      algorithm: "{{label}}"     # child matrix becomes [alpha] then [beta]
+      algorithm: {{label}}     # child matrix becomes [alpha] then [beta]
 ```
 
 A parameter value that is exactly one `{{name}}` token keeps the value's
 native type, so a numeric matrix override stays a number and a list stays
-a list. That applies inside the child too: `randomise: "{{randomise}}"`
+a list. That applies inside the child too: `randomise: {{randomise}}`
 delivers the caller's list to the action unchanged, so a caller can pass
 `randomise: ["var_best"]`.
 
@@ -103,7 +103,7 @@ steps:
   - name: Learn
     uses: ./modules/learn-graphs.yml
     with:
-      randomise: "{{randomise}}"
+      randomise: {{randomise}}
 ```
 
 `no-randomise` is the default of `randomise`, so the first combination runs
@@ -138,7 +138,7 @@ steps:
 ```
 
 A null-default parameter may only be used as the whole value of a step
-parameter (`reference: "{{reference}}"`), because there is no text to
+parameter (`reference: {{reference}}`), because there is no text to
 substitute when no value is supplied. A declared parameter must also be
 used as a placeholder in at least one step; an unused declaration is a
 validation error.
@@ -168,7 +168,7 @@ steps:
   - name: Learn graphs
     uses: ./learn-graphs.yml
     with:
-      reference: "{{reference}}"
+      reference: {{reference}}
 ```
 
 If the caller of `base.yml` omits `reference`, the inner call omits it
@@ -192,8 +192,9 @@ A token the child uses but the caller does not supply is reported the
 same way, so a required parameter is never silently left blank (see
 above).
 
-Tokens must be quoted in YAML (`randomise: "{{randomise}}"`); an
-unquoted token is invalid YAML and is reported with a quoting hint.
+Tokens may be written without quotes, for example
+`randomise: {{randomise}}`. See
+[Values and Quoting](values_and_types.md) for the quoting rules.
 
 ### Parameters and cache keys
 
@@ -226,7 +227,7 @@ steps:
   - name: Learn by label    # varies per combination: runs twice
     uses: ./modules/learn-graphs.yml
     with:
-      algorithm: "{{network}}"
+      algorithm: {{network}}
 ```
 
 ## Execution Modes

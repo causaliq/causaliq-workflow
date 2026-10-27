@@ -44,8 +44,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      sample_size: "{{sample_size}}"
-      reference: "{{reference}}"
+      sample_size: {{sample_size}}
+      reference: {{reference}}
 ```
 
 ```bash
@@ -181,8 +181,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
-      sample_size: "{{sample_size}}"
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: "results/graphs.db"
 ```
 
@@ -248,9 +248,9 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
-      dataset: "data/{{network}}_10k.csv"
-      output: "results/graphs.db"
+      network: {{network}}
+      dataset: data/{{network}}_10k.csv
+      output: results/graphs.db
 ```
 
 ### Types
@@ -261,21 +261,28 @@ Text with extra characters is substituted as text.
 
 ```yaml
 with:
-  randomise: "{{randomise}}"      # a list parameter, passed through
-  dataset: "data/{{network}}.csv" # text: "data/asia.csv"
+  randomise: {{randomise}}       # a list parameter, passed through
+  dataset: data/{{network}}.csv  # text: "data/asia.csv"
 ```
+
+An action parameter declared as `int`, `float` or `bool` also accepts its
+text spelling. The value is converted just before the action runs, so
+`seed: "42"` and `seed: 42` are equivalent. A `str` parameter keeps the
+text you wrote.
 
 ### Quoting
 
-A token must be quoted when it is the whole value:
+Ordinary values need no quotes. A whole-value template token is written
+without quotes:
 
 ```yaml
-sample_size: "{{sample_size}}"   # correct
-sample_size: {{sample_size}}     # invalid YAML: a nested mapping
+sample_size: {{sample_size}}   # valid: a template token
 ```
 
-An unquoted token is reported as `Invalid YAML syntax: ... found
-unhashable key`, with a hint to quote it.
+Quote a value only when YAML would otherwise read it as syntax or as a
+different type. For example, `version: "1.10"` keeps the trailing zero,
+and a value containing `: ` must be quoted. See
+[Values and Quoting](values_and_types.md) for the complete rules.
 
 ### Variable Resolution Order
 

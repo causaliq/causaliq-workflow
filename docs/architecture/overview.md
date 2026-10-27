@@ -70,7 +70,7 @@ steps:
   - name: "Structure Learning"
     uses: "causaliq-discovery"
     with:
-      algorithm: "{{algorithm}}"
+      algorithm: {{algorithm}}
       model: "models/{{model}}/{{model}}.json"
       # No output path needed - results written to workflow_cache
       # Cache key derived from matrix: {network: "asia", algorithm: "pc"}

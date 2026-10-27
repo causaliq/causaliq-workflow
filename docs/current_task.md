@@ -1,41 +1,18 @@
-# Default workflow parameter values
+# Reducing and standardising quotes usage in workflows
 
-Provide default values for **action** parameter values at the workflow level using the following syntax:
+Please could you consider these suggestions and suggest a viable plan for reducing and standardising quote usage.
 
-```yaml
-   param-name: default-value
-```
+Even as the author of CausalIQ I find it confusing when and where
+quotes are needed in workflow matrix and parameter values. My aim is to reduce friction for users, whilst being absolutely clear how the system works.
 
-These default values should be defined before the matrix and steps sections of the workflow. `param-name` must be used as a placeholder in some of the steps of the workflow i.e. `{{param-name}}`. Having specified a default value in this way, workflows calling this workflow do not have to specify a value for `param-name` - the `default-value` will be used. However, if the calling workflow does specify a value for `param-name` this will override the `default-value`. Note that workflows which include default parameter values can still be run standalone - in that case, default parameter values provide a convenient way of defining
-values for a parameter that is used in multiple steps.
+I think some of the issues may be because we are using off-the-shelf YAML and expression parsers. I think we should continue to use off-the-shelf capablities, but maybe we need to preprocess input to them to shield the end-user from their
+pecuilarities.
 
-A special value of `null` is allowed for the `default-value` in the default value declaration, that is:
-
-```yaml
-    param-name: null
-```
-
-In that case, the effect would be as if the parameter had been omitted as a parameter in the actions. For example, a default declaration of:
-
-```yaml
-   reference: null
-```
-
-would result in the refernce parameter being **omitted** in an action step which had a parameter specification of 
-
-```yaml
-   reference: {{reference}}
-```
-  
-This is useful in the case where actions in called sub-workflows have parameters which need to be omitted in some calls, and specified in others. 
-
-Could you commnt on this, and agree an approach with me
+For example, can we dispense with requiring quotes for parameter values - for most of their lifetime they could be handled as strings, but coerced to int or float 'near' the action. Workflow code would attempt to understand strings as parameters first, before assuming they are values.  One remaining need for quotes would be to differentiate a parameter name from a value of the same name i.e. description == "description"
 
 ## Further work which is out of scope for this task
 
 These are deliberately outside this task:
-
-0. __Simplify and standardise quote usage for parameter values__
 
 1. __Values audit__
 

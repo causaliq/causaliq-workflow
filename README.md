@@ -75,8 +75,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      algorithm: "{{algorithm}}"
-      sample_size: "{{sample_size}}"
+      algorithm: {{algorithm}}
+      sample_size: {{sample_size}}
       dataset: "data/{{network}}"
       output: "results/{{id}}/graphs.db"
       # Results cached with key: {network, algorithm, sample_size}

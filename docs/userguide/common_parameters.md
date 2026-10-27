@@ -86,7 +86,7 @@ Restricts which entries are processed by the action.
 ```yaml
 with:
   input: "results/graphs.db"
-  filter: "sample_size >= 100 and network in ['asia', 'cancer']"
+  filter: sample_size >= 100 and network in ['asia', 'cancer']
 ```
 
 ### Filter Syntax
@@ -99,6 +99,28 @@ Filter expressions use Python syntax with supported operators:
 | Boolean | `and`, `or`, `not` |
 | Membership | `in` |
 | Grouping | `()` |
+
+### Bare Values in Filters
+
+A bare word on the right of a comparison is a literal value unless it is
+a declared parameter or a matrix variable used as a reference:
+
+```yaml
+filter: network == asia and f1 > 0.8
+```
+
+The expression above is equivalent to
+`network == 'asia' and f1 > 0.8`, and both forms are accepted. Quote a
+value only when its text collides with a workflow parameter or with a
+field name used on the left of a comparison:
+
+```
+filter: description == 'description'   # literal text
+filter: description == description     # declared parameter or left-hand field
+```
+
+The left side of a comparison is always a field reference. See
+[Values and Quoting](values_and_types.md) for the full rules.
 
 ### Supported Functions
 
@@ -119,7 +141,7 @@ The `random(count, seed)` function selects a reproducible random subset
 of values for a variable. Use it with the `in` operator:
 
 ```yaml
-filter: "pdg_seed in random(5, 42)"
+filter: pdg_seed in random(5, 42)
 ```
 
 This collects all distinct values of `pdg_seed` across the entries,
@@ -131,7 +153,7 @@ same subset, ensuring reproducibility across runs.
 
 ```yaml
 # Select 3 random seeds and 2 random sample sizes
-filter: "pdg_seed in random(3, 0) and sample_size in random(2, 1)"
+filter: pdg_seed in random(3, 0) and sample_size in random(2, 1)
 ```
 
 !!! note
@@ -146,13 +168,13 @@ producer metadata:
 
 ```yaml
 # Matrix and result-object fields use bare names
-filter: "network in ['asia', 'cancer', 'alarm'] and f1 > 0.8"
+filter: network in ['asia', 'cancer', 'alarm'] and f1 > 0.8
 
 # Metadata uses the action qualifier
-filter: "learn_graph.algorithm == 'pc' and learn_graph.status == 'ok'"
+filter: learn_graph.algorithm == 'pc' and learn_graph.status == 'ok'
 
 # Nested metadata uses the full path
-filter: "learn_graph.hyperparameters.iss > 10 and sample_size < 10000"
+filter: learn_graph.hyperparameters.iss > 10 and sample_size < 10000
 ```
 
 Bare metadata names such as `status` or `algorithm` are rejected: the
@@ -180,7 +202,7 @@ steps:
     with:
       action: "merge_graphs"
       input: "results/pdgs.db"
-      filter: "llm_model == '{{llm_model}}' or sample_size == '1K'"
+      filter: llm_model == '{{llm_model}}' or sample_size == '1K'
       output: "results/merged.db"
 ```
 

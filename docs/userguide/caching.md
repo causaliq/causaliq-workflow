@@ -93,7 +93,7 @@ schema.
 with:
   action: plot
   input: results/metrics.db
-  filter: "learn_graph.algorithm_seconds < 3600"
+  filter: learn_graph.algorithm_seconds < 3600
   x: sample_size
   y: f1
 ```

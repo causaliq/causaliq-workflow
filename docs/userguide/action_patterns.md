@@ -36,8 +36,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
-      sample_size: "{{sample_size}}"
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: "results/graphs.db"
 ```
 
@@ -135,7 +135,7 @@ steps:
     with:
       action: "merge_graphs"
       input: "results/graphs.db"
-      filter: "learn_graph.edge_count > 5 and sample_size >= 100"
+      filter: learn_graph.edge_count > 5 and sample_size >= 100
       output: "results/merged.db"
 ```
 
@@ -159,7 +159,7 @@ steps:
       input:
         - "results/bnsl-pdgs.db"
         - "results/llm-pdgs.db"
-      filter: "llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'"
+      filter: llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'
       output: "results/fused.db"
 ```
 

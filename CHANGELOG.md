@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Predictable workflow values** - workflow YAML now uses a restricted
+  scalar schema: `no`, `yes`, `on`, `off`, `01`, `0x10`, `1_000`,
+  `10:30` and `2020-01-01` are text, while `true`, `false`, `null`,
+  integers and decimal numbers keep their usual meaning
+- **Unquoted template tokens** - a whole-value `{{name}}` token no
+  longer needs quotes; tokens are protected before YAML parsing
+- **Action-typed coercion** - a value quoted or written as text is
+  converted to `int`, `float` or `bool` when the action declares that
+  parameter type, just before the action runs
+- **Bare filter literals** - `status == ok` and
+  `network in [asia, cancer]` are accepted; a bare value is quoted only
+  when it collides with a workflow parameter or field name
 - **Version 2 metadata envelope** - cache entries now carry `provenance`,
   `parameters`, `result` and the reserved `history` block, with
   `schema_version: 2` in exported `_meta.json`
@@ -26,6 +38,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Workflow value typing** - YAML 1.1 spellings are no longer
+  interpreted as booleans, octal integers, sexagesimal numbers or dates.
+  A value that changed type (for example a matrix value of `010`) gets a
+  new cache key; delete or regenerate obsolete caches
+- **CLI `--param` values** - the CLI now follows the same rules as a
+  workflow file: `--param name=no` is text, `--param id=001` keeps its
+  leading zero, and dates are text
+- **Matrix matching** - a number and its text spelling compare equal
+  when an input cache is matched, so derived and explicit matrix values
+  agree
+- **Dependency** - requires `causaliq-core>=0.8.0.dev10` for
+  `relax_filter_literals()`
 - **Metadata block rename** - the action metadata block `inputs` is now
   `parameters`; explicit filter names use `action.parameters.field`
 - **Provenance fields** - `started` (local ISO 8601 time with an offset and

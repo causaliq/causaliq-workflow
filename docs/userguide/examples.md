@@ -34,7 +34,7 @@ steps:
     with:
       action: "evaluate_graph"
       input: "results/{{id}}/graphs.db"
-      reference: "{{reference}}"
+      reference: {{reference}}
 ```
 
 ```bash
@@ -57,8 +57,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
-      sample_size: "{{sample_size}}"
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: "results/graphs.db"
 ```
 
@@ -80,7 +80,7 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
+      network: {{network}}
       dataset: "data/{{network}}_10k.csv"
       output: "results/{{id}}/graphs.db"
 ```
@@ -100,8 +100,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
-      sample_size: "{{sample_size}}"
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: "results/graphs.db"
 ```
 
@@ -159,8 +159,8 @@ steps:
     uses: "causaliq-discovery"
     with:
       action: "learn_structure"
-      network: "{{network}}"
-      sample_size: "{{sample_size}}"
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: "results/graphs.db"
 
   - name: "Evaluate Graphs"
@@ -186,7 +186,7 @@ steps:
     with:
       action: "evaluate_graph"
       input: "results/graphs.db"
-      filter: "learn_graph.edge_count > 5 and sample_size >= 100"
+      filter: learn_graph.edge_count > 5 and sample_size >= 100
       reference: "networks/{{network}}/true.graphml"
 ```
 
@@ -211,7 +211,7 @@ steps:
       input:
         - "results/bnsl-pdgs.db"
         - "results/llm-pdgs.db"
-      filter: "llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'"
+      filter: llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'
       output: "results/fused.db"
 ```
 
@@ -254,8 +254,8 @@ steps:
     uses: causaliq-discovery
     with:
       action: learn_structure
-      network: "{{network}}"
-      sample_size: "{{sample_size}}"
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: results/graphs.db
 ```
 

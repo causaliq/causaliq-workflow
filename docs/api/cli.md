@@ -51,9 +51,10 @@ Options:
 - `--log-level` - Logging level: `none`, `summary` (default), or `all`
 - `--param NAME=VALUE` / `-p` - Workflow parameter, repeatable. A name
   matching a matrix entry replaces that entry; other names override a
-  declared parameter or fill a `{{name}}` placeholder. Values are parsed
-  as YAML, so `--param alpha=0.05` and `--param algorithm='[pc, ges]'`
-  keep their types. A repeated name is rejected
+  declared parameter or fill a `{{name}}` placeholder. Values follow the
+  workflow value rules, so `--param alpha=0.05` is a number,
+  `--param algorithm='[pc, ges]'` is a list and `--param name=no` is
+  text. A repeated name is rejected
 
 #### Log Output Status Messages
 
