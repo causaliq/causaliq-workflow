@@ -47,6 +47,43 @@ parameter and a matrix variable. See
 [Reusable Workflows](subworkflows.md#calling-parameters) for parameters
 passed to a called workflow.
 
+## Parameters and Defaults
+
+Omitting an action parameter means that its default applies. Omitting it is
+also how a parameter that does not apply to the action is expressed — for
+example, a score type for a constraint-based structure learning algorithm.
+The two cases are deliberately indistinguishable, so a workflow never needs
+a null or "none" value:
+
+```yaml
+with:
+  action: "learn_graph"
+  input: "data/asia.csv"
+  algorithm: "pc"
+  # randomise, sample_size and variable_types omitted: their defaults apply
+```
+
+Every default is a value the action could have been given explicitly. The
+`learn_graph` action, for instance, accepts `randomise: no-randomise`,
+`sample_size: all` and `variable_types: impute` as explicit spellings of
+its defaults. That makes a default expressible in a matrix, comparable in a
+filter, and passable to a called workflow:
+
+```yaml
+matrix:
+  randomise: [no-randomise, var_best]
+```
+
+A literal `null` in a `with` block is rejected with a message asking you to
+omit the parameter instead. A `{{placeholder}}` that resolves to null at run
+time is still allowed: that is how a matrix wildcard marks a dimension as
+not applicable (see
+[Null Values and Dimension Matching](#null-values-and-dimension-matching)).
+
+The metadata recorded for a step follows the same rule: parameters that
+were supplied or defaulted are listed, parameters that did not apply are
+absent, and no recorded value is null.
+
 ## Steps
 
 Each **step** performs a single unit of work. Steps execute sequentially.

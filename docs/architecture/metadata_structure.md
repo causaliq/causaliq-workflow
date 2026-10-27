@@ -70,7 +70,10 @@ completeness), and a further task populates `history` through a reserved
 }
 ```
 
-- `parameters` stays empty until the values-audit task.
+- `parameters` holds the effective parameters used by the action: values the
+  user supplied plus the declared defaults that applied. Parameters that
+  do not apply to the action in that configuration are absent, never
+  `null`; see `causaliq-core/docs/architecture/action_parameter_contract.md`.
 - `history` stays empty until the history-population task.
 - Failure entries use the same shape with `result.status` and
   `result.error`, and no object file.

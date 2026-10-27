@@ -1,59 +1,35 @@
-# Workflows parameters
+# Default action parameter values
 
-Status: implemented (24 October 2026). Verified with black, isort,
-flake8, mypy, `scripts/check_code_rules.py` (0 breaches) and the full
-pytest suite at 100% coverage.
+I would like to standardise and simplify how default action parameter values work including deciding whether it is necessary/desirable to expose a "null/none" type value to users.
 
-## Agreed behaviour
+The key aim
+is **clarity and simplicity** for the end user, and a secondary aim is workflows continue to work as before as parameters or defaults ar changed as the code evolves.
 
-- Workflow parameters are specified in the `with:` clause of the calling
-  workflow, or with `--param NAME=VALUE` on the CLI.
-- A parameter name that matches a matrix dimension of the called workflow
-  replaces that dimension's values (a scalar becomes `[value]`, a list is
-  used as given). Parameters never *add* a dimension.
-- A parameter name that matches a declared parameter (a top-level scalar
-  key of the called workflow) overrides its default. A `null` default
-  declares a required parameter.
-- Any other parameter binds as a `{{name}}` template variable.
-- A parameter that the called workflow neither declares, nor lists as a
-  matrix dimension, nor uses in a step `with:` block is a validation
-  error listing the accepted names.
-- `with` values are resolved in the caller's context; a value that is a
-  single `{{name}}` token binds the native value so a matrix override
-  keeps its type. The same rule applies inside a called workflow, so a
-  list parameter reaches the action as a list rather than as text.
-- Parameters do not enter the cache key. Conservative execution still
-  skips existing entries; a parameter change needs `--mode=force`.
-- A call step runs once per workflow unless its `with` values reference a
-  caller matrix variable, in which case it runs once per combination.
-- `id`, `description` and `root_dir` are no longer hardwired. `id` and
-  `description` are ordinary declared parameters; `root_dir` was never
-  implemented and is removed from the documentation.
-- `matrix` and `steps` are reserved. Declaring a name as both a parameter
-  and a matrix dimension is a validation error. `action` and `output`
-  remain reserved in a call step's `with`.
+My preferred approach is, if it is logically coherent:
 
-## Scope of this task
+- we do not expose the end-user to any distinction between leaving out a
+  parameter to indicate a default value should be used or because the
+  parameter is not applicable given other parameter values (for example,
+  specifying a score type for a constraint-based BNSL algorithm);
+- therefore, the end-user does not need to use a "null/none" type in
+  workflows - the user just omits parameters where the default is required
+  or the parameter is not relevant
+- where an action parameter does have a default value, then that default
+  value must be exposed as a possible value. For example, we would modify
+  the `learn_graph` `randomise` action to have an explicit `no-randomise` value which would be the default. This approach hopefully solves the problem of passing default values from calling workflows to sub-workflows. Is it possible to mandate this in the code infrastructure somehow?
+- the parameter section of the metadata should list the values of all
+  parameters that were explicitly specified **and** those given default values, **but not** those which were not relevant
+- if necessary, we can define an explicit "NotRelevant" type (clearer than null or none?) to be used **internally** in the code.
 
-Hat 1 only: caller/CLI parameters, parameter defaults, required
-parameters, per-combination call execution, removal of the hardwired
-`id`/`description`/`root_dir` names, tests and documentation.
-
-Follow-ups logged by this task:
-
-- Rename the `execute_workflow(..., cli_params=...)` keyword to
-  `parameters` (Hat 2, public API).
-- Optionally invalidate or key cache entries on parameter values.
-- Null/`None`/defaults semantics are deferred: whether `null` means
-  "not applicable" (a value) or "required" (absence), and whether a
-  parameter default may be a list. Daily use needs neither, because a
-  caller can supply a list or an empty list directly.
-
-
+Could you commnt on this, and agree an approach with me
 
 ## Further work which is out of scope for this task
 
 These are deliberately outside this task:
+
+0. __Simplify and standardise quote usage for parameter values__
+
+0. __Declaration of default values in workflows__
 
 1. __Values audit__
 

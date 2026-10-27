@@ -89,7 +89,27 @@ A parameter value that is exactly one `{{name}}` token keeps the value's
 native type, so a numeric matrix override stays a number and a list stays
 a list. That applies inside the child too: `randomise: "{{randomise}}"`
 delivers the caller's list to the action unchanged, so a caller can pass
-`randomise: ["var_best"]` or `randomise: []`.
+`randomise: ["var_best"]`.
+
+To pass the child's *default* through a placeholder, use the value that
+means the default. A parameter whose default has an explicit spelling can
+therefore be driven by a caller matrix:
+
+```yaml
+matrix:
+  randomise: [no-randomise, var_best]
+
+steps:
+  - name: Learn
+    uses: ./modules/learn-graphs.yml
+    with:
+      randomise: "{{randomise}}"
+```
+
+`no-randomise` is the default of `randomise`, so the first combination runs
+exactly as if the caller had omitted the parameter. Forwarding a parameter
+only when the caller sets it is not supported yet; see
+[Limitations](#limitations).
 
 ### Declaring parameters
 
@@ -243,4 +263,7 @@ reported as validation errors.
 - Parameters do not invalidate cache entries; use `--mode=force` after a
   parameter change.
 - `{{...}}` placeholders in step names are not expanded.
+- A call cannot forward a parameter only when the caller sets it; pass the
+  parameter's explicit default value instead (for example
+  `randomise: no-randomise`).
 - Called step outputs are not yet available to the caller.

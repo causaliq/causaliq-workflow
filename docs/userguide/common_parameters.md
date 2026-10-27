@@ -4,6 +4,28 @@ These parameters are shared across many CausalIQ workflow actions. Individual
 action documentation specifies which parameters apply and any action-specific
 behaviour.
 
+## Defaults and Omission
+
+Omitting a parameter applies the action's declared default, and it is also
+how a parameter that does not apply is expressed. There is no "none" or
+"null" value to learn: write neither, and the action evaluates only what
+applies.
+
+Where a default has a natural explicit spelling, the action exposes it as a
+value so the default can be pinned, compared in a filter, or passed to a
+called workflow:
+
+| Parameter | Default value | Meaning |
+|-----------|---------------|---------|
+| `randomise` | `no-randomise` | apply no randomisation |
+| `sample_size` | `all` | use every row |
+| `variable_types` | `impute` | infer types from the data |
+| `timeout` | `60` | sixty minutes |
+
+A literal `null` in a `with` block is rejected; use omission instead. See
+[Core Concepts](core_concepts.md#parameters-and-defaults) for the full
+rule and the matrix wildcard exception.
+
 ## `input` Parameter
 
 Specifies the source of data for the action.
