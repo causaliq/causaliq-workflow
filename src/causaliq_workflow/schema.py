@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 import yaml
 
+from causaliq_workflow.yaml_frontend import load_workflow_text
+
 _RESERVED_KEYS = frozenset({"matrix", "steps"})
 
 
@@ -212,7 +214,7 @@ def load_workflow_file(file_path: Union[str, Path]) -> Dict[str, Any]:
     except FileNotFoundError:
         raise WorkflowValidationError(f"Workflow file not found: {file_path}")
     try:
-        data = yaml.safe_load(text)
+        data = load_workflow_text(text)
     except yaml.YAMLError as e:
         raise WorkflowValidationError(_yaml_error_message(str(e), text))
     if not isinstance(data, dict):
@@ -228,22 +230,22 @@ _YAML_HINT_TRIGGERS = (
     "found unexpected",
 )
 
-_QUOTING_HINT = (
-    "Hint: a template token used as a value must be quoted, for "
-    'example sample_size: "{{sample_size}}" (an unquoted token is '
-    "read as a nested YAML mapping)."
+_TOKEN_HINT = (
+    "Hint: template tokens use {{name}}, where name contains letters, "
+    "digits, '_' or '-'. Nested tokens and default(...) filters are "
+    "not supported."
 )
 
 
 def _yaml_error_message(error: str, source: str) -> str:
-    """Return an invalid-YAML message, hinting at unquoted tokens.
+    """Return an invalid-YAML message, hinting at malformed tokens.
 
     Args:
         error: The message from the YAML parser.
         source: Workflow file text that failed to parse.
 
     Returns:
-        Error message, with a quoting hint when a template token is the
+        Error message, with a token hint when a template token is the
         likely cause.
     """
     message = f"Invalid YAML syntax: {error}"
@@ -251,4 +253,4 @@ def _yaml_error_message(error: str, source: str) -> str:
         return message
     if not any(trigger in error for trigger in _YAML_HINT_TRIGGERS):
         return message
-    return f"{message}\n{_QUOTING_HINT}"
+    return f"{message}\n{_TOKEN_HINT}"

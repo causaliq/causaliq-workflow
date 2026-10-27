@@ -32,6 +32,25 @@ def _normalise_matrix_value(value: Any) -> Any:
     return value
 
 
+def _canonical_scalar(value: Any) -> str:
+    """Return a canonical comparison key for a matrix scalar value.
+
+    YAML parsing, a cache written by an earlier run, or a CLI override
+    may represent the same dimension value as a number or as text. Both
+    forms compare equal, so aggregation matches across those sources.
+
+    Args:
+        value: Matrix value to canonicalise.
+
+    Returns:
+        Canonical text for the value.
+    """
+    normalised = _normalise_matrix_value(value)
+    if isinstance(normalised, bool):
+        return "true" if normalised else "false"
+    return str(normalised)
+
+
 def _matrix_values_match(
     entry_values: Dict[str, Any],
     target_values: Dict[str, Any],
@@ -40,6 +59,8 @@ def _matrix_values_match(
     """Check if entry matrix values match target values.
 
     Comparison is case-insensitive for numeric suffixes (k, M, etc).
+    A number and its text spelling also compare equal, so a value
+    derived from a cache and one written in the workflow match.
 
     A ``None`` value on either side (target or entry) means the
     dimension is not applicable and is treated as a wildcard
@@ -66,9 +87,7 @@ def _matrix_values_match(
         # None on either side — N/A dimension, wildcard
         if target_val is None or entry_val is None:
             continue
-        entry_val = _normalise_matrix_value(entry_val)
-        target_val = _normalise_matrix_value(target_val)
-        if entry_val != target_val:
+        if _canonical_scalar(entry_val) != _canonical_scalar(target_val):
             return False
     return True
 

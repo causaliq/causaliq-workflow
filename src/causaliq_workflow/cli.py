@@ -9,6 +9,7 @@ import click
 import yaml
 
 from causaliq_workflow.cli_report import _report_results
+from causaliq_workflow.yaml_frontend import parse_scalar_text
 
 from . import __version__
 
@@ -44,9 +45,9 @@ def _split_cli_parameter(item: str) -> Tuple[str, Any]:
 
 
 def _parse_cli_value(text: str) -> Any:
-    """Parse a CLI parameter value as YAML, falling back to the string."""
+    """Parse a CLI parameter value with workflow value rules."""
     try:
-        value = yaml.safe_load(text)
+        value = parse_scalar_text(text)
     except yaml.YAMLError:
         return text
     if isinstance(value, dict):

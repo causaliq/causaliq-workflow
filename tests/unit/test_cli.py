@@ -365,6 +365,20 @@ def test_parse_cli_parameters_types() -> None:
     }
 
 
+# Test YAML 1.1 type spellings are kept as text.
+def test_parse_cli_parameters_keeps_yaml11_text() -> None:
+    from causaliq_workflow.cli import _parse_cli_parameters
+
+    parameters = _parse_cli_parameters(
+        ("name=no", "identifier=01", "day=2020-01-01")
+    )
+    assert parameters == {
+        "name": "no",
+        "identifier": "01",
+        "day": "2020-01-01",
+    }
+
+
 # Test a list value is parsed for a matrix override.
 def test_parse_cli_parameters_list_value() -> None:
     from causaliq_workflow.cli import _parse_cli_parameters

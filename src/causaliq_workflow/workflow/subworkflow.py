@@ -16,6 +16,7 @@ from causaliq_workflow.schema import (
 )
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.filters import relax_step_filter_literals
 from causaliq_workflow.workflow.frames import (
     WorkflowFrame,
     find_recursive_frame,
@@ -185,6 +186,7 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         """
         try:
             child = load_workflow_file(target)
+            child = relax_step_filter_literals(child, parameter_names or ())
             validate_workflow(child)
             self._validate_template_variables(
                 child, set(parameter_names or ())

@@ -9,6 +9,7 @@ from causaliq_workflow.schema import WorkflowValidationError
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
+from causaliq_workflow.workflow.filters import relax_step_filter_literals
 from causaliq_workflow.workflow.frames import (
     WorkflowFrame,
     is_workflow_call_step,
@@ -65,7 +66,10 @@ class ExecutionMixin(WorkflowExecutorBase):
         from causaliq_workflow import workflow as _workflow_module
 
         try:
-            workflow = _workflow_module.load_workflow_file(workflow_path)
+            workflow = relax_step_filter_literals(
+                _workflow_module.load_workflow_file(workflow_path),
+                parameters or (),
+            )
             _workflow_module.validate_workflow(workflow)
             self._validate_template_variables(workflow, set(parameters or ()))
 
@@ -128,6 +132,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             WorkflowExecutionError: If validation or execution fails
         """
         workflow, cli_params = _bind_parameters(workflow, cli_params or {})
+        workflow = relax_step_filter_literals(workflow, cli_params or {})
         frames = root_frames(source_path or self._source_path)
 
         try:

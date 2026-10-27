@@ -140,9 +140,9 @@ def test_non_object_yaml_workflow():
         invalid_workflow.unlink()  # Clean up test file
 
 
-# Test unquoted template tokens are reported with a quoting hint.
-def test_unquoted_template_token_reports_hint():
-    """An unquoted {{token}} is invalid YAML and carries a hint."""
+# Test unquoted template tokens load without quoting.
+def test_unquoted_template_token_loads():
+    """An unquoted {{token}} is read as a template string."""
     workflow_path = TEST_DATA_DIR / "unquoted-token.yml"
     workflow_path.write_text(
         "steps:\n"
@@ -154,18 +154,38 @@ def test_unquoted_template_token_reports_hint():
     )
 
     try:
+        workflow = load_workflow_file(str(workflow_path))
+        assert workflow["steps"][0]["with"]["randomise"] == "{{randomise}}"
+    finally:
+        workflow_path.unlink()
+
+
+# Test a malformed template token carries a token-format hint.
+def test_malformed_template_token_reports_hint():
+    """An unsupported token shape is reported with a format hint."""
+    workflow_path = TEST_DATA_DIR / "malformed-token.yml"
+    workflow_path.write_text(
+        "steps:\n"
+        "  - name: Test\n"
+        "    uses: some-action\n"
+        "    with:\n"
+        "      alpha: {{alpha|default(0.05)}}\n",
+        encoding="utf-8",
+    )
+
+    try:
         with pytest.raises(WorkflowValidationError) as exc_info:
             load_workflow_file(str(workflow_path))
         message = str(exc_info.value)
         assert "Invalid YAML syntax" in message
-        assert "must be quoted" in message
+        assert "template tokens use" in message
     finally:
         workflow_path.unlink()
 
 
 # Test the hint is omitted when no template token is involved.
 def test_invalid_yaml_without_token_has_no_hint():
-    """Plain YAML errors are reported without the quoting hint."""
+    """Plain YAML errors are reported without the token hint."""
     workflow_path = TEST_DATA_DIR / "bad-indent.yml"
     workflow_path.write_text(
         "steps:\n  - name: Test\n      uses: some-action\n",
@@ -175,14 +195,14 @@ def test_invalid_yaml_without_token_has_no_hint():
     try:
         with pytest.raises(WorkflowValidationError) as exc_info:
             load_workflow_file(str(workflow_path))
-        assert "must be quoted" not in str(exc_info.value)
+        assert "template tokens use" not in str(exc_info.value)
     finally:
         workflow_path.unlink()
 
 
 # Test an unrelated YAML error in a file that also uses a token.
 def test_token_present_unrelated_yaml_error_has_no_hint():
-    """An unrelated YAML error is not hinted as a quoting problem."""
+    """An unrelated YAML error is not hinted as a token problem."""
     workflow_path = TEST_DATA_DIR / "tab-indent.yml"
     workflow_path.write_text(
         "steps:\n"
@@ -198,6 +218,6 @@ def test_token_present_unrelated_yaml_error_has_no_hint():
             load_workflow_file(str(workflow_path))
         message = str(exc_info.value)
         assert "Invalid YAML syntax" in message
-        assert "must be quoted" not in message
+        assert "template tokens use" not in message
     finally:
         workflow_path.unlink()

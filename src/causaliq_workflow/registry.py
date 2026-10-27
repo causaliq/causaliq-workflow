@@ -21,6 +21,8 @@ from causaliq_core import (
     resolve_action_parameters,
 )
 
+from causaliq_workflow.value_coercion import coerce_action_parameters
+
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.cache import WorkflowCache
 
@@ -618,7 +620,10 @@ def _effective_parameters(
         Effective parameters passed to the provider.
     """
     supplied = {k: v for k, v in inputs.items() if k != "action"}
-    return resolve_action_parameters(action_instance, action_name, supplied)
+    parameters = resolve_action_parameters(
+        action_instance, action_name, supplied
+    )
+    return coerce_action_parameters(action_instance, parameters)
 
 
 def _result_fields(metadata: Any) -> Dict[str, Any]:
