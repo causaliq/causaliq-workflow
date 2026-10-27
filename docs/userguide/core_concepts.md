@@ -29,18 +29,53 @@ steps:
 ### Workflow Parameters
 
 Any other top-level scalar key declares a workflow parameter and its
-default value. Declared parameters are available as template variables in
-step parameters, and a caller or the CLI can override them:
+default value. Declare parameters before `matrix` and `steps` so the
+intent is clear; the parser itself is order-independent. Declared
+parameters are available as template variables in step parameters, and a
+caller or the CLI can override them:
 
 ```yaml
 # workflow.yml
-sample_size: 1000      # optional parameter, default 1000
-seed: null             # required parameter, no default
+sample_size: 1000      # default 1000
+reference: null        # no value: omitted from the action
+
+steps:
+  - name: "Learn"
+    uses: "causaliq-discovery"
+    with:
+      action: "learn_structure"
+      sample_size: "{{sample_size}}"
+      reference: "{{reference}}"
 ```
 
 ```bash
-cqflow run workflow.yml --param sample_size=5000 --param seed=42
+cqflow run workflow.yml --param sample_size=5000 \
+  --param reference=networks/asia.graphml
 ```
+
+A declaration binds as follows:
+
+| Declaration | Value used when nothing supplies it |
+|-------------|-------------------------------------|
+| `sample_size: 1000` | `1000` |
+| `reference: null` | none — the parameter is omitted from the action, so the action's own default applies |
+
+Defaults are convenient when several steps need the same value, and they
+let a workflow be run standalone without supplying anything.
+
+Three rules keep declarations honest:
+
+- A declared parameter must be used as a `{{placeholder}}` in at least one
+  step's `with` block. An unused declaration is a validation error.
+- A `null` parameter may only be the **whole value** of a step parameter.
+  `"data/{{reference}}.csv"` would substitute `None` and is rejected.
+- A placeholder that is not declared is a **required parameter**: a
+  caller or the CLI must supply it, otherwise validation reports the
+  name as an unknown template variable.
+
+A declaration never adds a matrix dimension, and no parameter value is
+part of a cache key, so a changed default does not invalidate existing
+entries.
 
 `matrix` and `steps` are reserved. A name may not be declared as both a
 parameter and a matrix variable. See
@@ -78,7 +113,9 @@ A literal `null` in a `with` block is rejected with a message asking you to
 omit the parameter instead. A `{{placeholder}}` that resolves to null at run
 time is still allowed: that is how a matrix wildcard marks a dimension as
 not applicable (see
-[Null Values and Dimension Matching](#null-values-and-dimension-matching)).
+[Null Values and Dimension Matching](#null-values-and-dimension-matching)),
+and how a workflow parameter declared with a `null` default reaches an
+action as an omitted parameter.
 
 The metadata recorded for a step follows the same rule: parameters that
 were supplied or defaulted are listed, parameters that did not apply are
@@ -102,7 +139,7 @@ steps:
 
 | Property | Required | Description |
 |----------|----------|-------------|
-| `name` | **Yes** | Human-readable step name |
+| `name` | **Yes** | Human-readable step name, unique within the workflow |
 | `uses` | **Yes** | Action provider, or a relative path to another workflow |
 | `with` | **Yes** | Action parameters, or a called workflow's parameters |
 
@@ -256,8 +293,9 @@ reported:
 
 ```
 Unknown template variables: ['seed']. Available variables: ['dataset',
-'network']. Declare the name as a workflow parameter, or supply it with
-'with:' in the calling workflow or --param.
+'network']. Declare a default value for each missing name as a top-level
+workflow key, or supply it with 'with:' in the calling workflow or
+--param.
 ```
 
 A workflow that is called from another workflow also sees the caller's

@@ -43,6 +43,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Single validation pass** - `cqflow run` now validates once: the CLI's
   execution call passes `validate=False` (the new default-`True`
   `execute_workflow` flag) so the entry-validation pass is not repeated
+- **Workflow parameter defaults** - top-level scalar keys declare default
+  values for step parameters; a `null` default now declares a parameter
+  with no value, so it is omitted from the action when neither the caller
+  nor `--param` supplies one (previously `null` meant required)
+- **Parameter declaration validation** - a declared parameter must be used
+  as a `{{placeholder}}` in a step, a null-default parameter may only be a
+  whole-value placeholder, and an undeclared placeholder is a required
+  parameter
 
 ### Deprecated
 
@@ -60,6 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Duplicate step names** - a repeated step name is now rejected at
+  validation; step results are recorded by name, so a duplicate silently
+  overwrote the earlier step's result and made the completion summary
+  under-count the steps that ran
 - `random()` filter resolution now accepts qualified variable names such as
   `learn_graph.seed`
 

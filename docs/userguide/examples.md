@@ -26,7 +26,7 @@ optional defaults:
 ```yaml
 # with_parameters.yml
 id: "experiment-001"
-description: "Evaluate learned graphs"
+reference: "networks/asia/true.graphml"
 
 steps:
   - name: "Evaluate Graphs"
@@ -34,11 +34,11 @@ steps:
     with:
       action: "evaluate_graph"
       input: "results/{{id}}/graphs.db"
-      reference: "networks/asia/true.graphml"
+      reference: "{{reference}}"
 ```
 
 ```bash
-# Override a declared default, or supply a required (null) parameter
+# Override a declared default
 cqflow run with_parameters.yml --param id=experiment-002
 ```
 
@@ -48,8 +48,6 @@ Run steps across multiple parameter combinations:
 
 ```yaml
 # matrix_example.yml
-id: "comparison"
-
 matrix:
   network: [asia, cancer, alarm]
   sample_size: [100, 1000]
@@ -152,8 +150,6 @@ Chain multiple steps sequentially:
 
 ```yaml
 # multi_step.yml
-id: "full-pipeline"
-
 matrix:
   network: [asia, cancer]
   sample_size: [100, 1000]
@@ -181,6 +177,9 @@ Restrict which entries are processed:
 
 ```yaml
 # with_filter.yml
+matrix:
+  network: [asia]
+
 steps:
   - name: "Evaluate High-Quality"
     uses: "causaliq-analysis"
@@ -245,6 +244,8 @@ steps:
 
 ```yaml
 # modules/benchmark.yml
+sample_size: 1000
+
 matrix:
   network: [asia, cancer]
 
@@ -254,7 +255,7 @@ steps:
     with:
       action: learn_structure
       network: "{{network}}"
-      sample_size: 1000
+      sample_size: "{{sample_size}}"
       output: results/graphs.db
 ```
 

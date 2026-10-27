@@ -18,7 +18,8 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 1. ✅ Standardise and reduce metadata fields
 1. ✅ Workflows can invoke other workflows
 1. ✅ Workflows accept input parameters
-1. 🛣️ [Default parameter values](current_task.md)
+1. ✅ Default parameter values
+1. ✅ Default workflow parameter values
 1. 🛣️ Simplify and standardise quoting and typing rules
 1. 🛣️ Metadata propagation, values audit and reporting capabilities
 1. 🛣️ Action metadata catalogue with generated documentation and CLI discovery

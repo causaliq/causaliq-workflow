@@ -323,10 +323,8 @@ This architecture ensures:
 The architecture is built on GitHub Actions workflow patterns, adapted for causal discovery:
 
 ```yaml
-name: "Causal Discovery Experiment"
 id: "asia-comparison-001"
 data_root: "data"
-workflow_cache: "results/{{id}}_cache.db"  # All results stored here
 
 matrix:
   dataset: ["asia", "cancer"]  
@@ -336,8 +334,10 @@ steps:
   - name: "Structure Learning"
     uses: "dummy-structure-learner"
     with:
+      dataset_path: "{{data_root}}/{{dataset}}.csv"
       alpha: 0.05
       max_iter: 1000
+      output: "results/{{id}}/graphs.db"
       # Results cached with key: {dataset, algorithm}
 ```
 

@@ -61,7 +61,7 @@ try:
     workflow = executor.parse_workflow("experiment.yml")
     # Top-level scalar keys are workflow parameters, so they may be absent
     print(f"Workflow ID: {workflow.get('id')}")
-    print(f"Description: {workflow.get('description')}")
+    print(f"Sample size: {workflow.get('sample_size')}")
 
     # Execute the complete workflow
     results = executor.execute_workflow(workflow, mode="run")
@@ -146,7 +146,6 @@ for i, job in enumerate(jobs):
 # Example: Valid template usage
 valid_workflow = {
     "id": "test-001",
-    "description": "Template validation example", 
     "matrix": {"dataset": ["asia"], "algorithm": ["pc"]},
     "steps": [{
         "uses": "my-custom-action",
@@ -164,7 +163,7 @@ except WorkflowExecutionError as e:
     if "Unknown template variables" in str(e):
         print(f"Template validation failed: {e}")
         # Example: "Unknown template variables: ['missing_var'].
-        # Available variables: ['algorithm', 'dataset', 'description', 'id']"
+        # Available variables: ['algorithm', 'dataset', 'id']"
     else:
         print(f"Workflow execution failed: {e}")
 ```
@@ -175,7 +174,6 @@ except WorkflowExecutionError as e:
 # Example workflow YAML showing flexible action parameters
 workflow_yaml = \"\"\"
 id: "experiment-001"
-description: "Flexible causal discovery experiment"
 matrix:
   dataset: ["asia", "cancer"]
   algorithm: ["pc", "ges"]
@@ -224,9 +222,23 @@ Template variables can reference:
 Declared parameters have defaults and may be overridden:
 
 ```yaml
-sample_size: 1000     # optional, default 1000
-seed: null            # required, supplied by a caller or --param
+sample_size: 1000     # default 1000
+reference: null       # no value: the parameter is omitted from the action
 ```
+
+A declaration with a `null` default supplies no value. Unless a caller or
+`--param` supplies one, the parameter is omitted from every action that
+would otherwise receive it, so the action's own default applies.
+
+Three rules apply to declarations:
+
+- A declared parameter must be used as a `{{placeholder}}` in at least one
+  step's `with` block; an unused declaration is a validation error.
+- A null-default parameter may only be the **whole value** of a step
+  parameter. `"data/{{reference}}.csv"` would substitute `None` and is
+  rejected.
+- A placeholder that is not declared is effectively required, so a caller
+  or `--param` must supply it.
 
 ### Available Template Variables
 
@@ -242,6 +254,39 @@ caller or the CLI supplies them:
 ```
 Unknown template variables: ['sampl_size'].
 Available variables: ['algorithm', 'dataset']
+```
+
+The same error reports a required parameter whose value was not supplied,
+because an undeclared placeholder has no default.
+
+### Parameter Usage Requirement
+
+A declared parameter must be used as a `{{name}}` placeholder in at least
+one step's `with` block. A declaration that no step references is reported
+as a validation error, because it cannot affect any action:
+
+```yaml
+# Invalid: 'sample_size' is declared but never used
+sample_size: 1000
+matrix:
+  network: [asia]
+steps:
+  - uses: causaliq-discovery
+    with:
+      action: run_pc
+      network: "{{network}}"
+```
+
+A null-default parameter is also restricted to whole-value use:
+
+```yaml
+reference: null
+steps:
+  - uses: causaliq-analysis
+    with:
+      action: evaluate_graph
+      reference: "{{reference}}"             # valid: whole value
+      dataset: "data/{{reference}}.csv"      # invalid: no value to embed
 ```
 
 ### Matrix Variable Usage Requirement
@@ -303,7 +348,6 @@ aggregate statistics across parameter sweeps.
 # Example workflow with aggregation
 workflow_yaml = \"\"\"
 id: "merge_experiment"
-description: "Merge LLM-generated graphs"
 matrix:
   model: ["asia", "cancer"]
 
@@ -312,8 +356,8 @@ steps:
     uses: "causaliq-analysis"
     with:
       action: "merge_graphs"
-      input: "results/llm_graphs.db"  # .db triggers aggregation
-      output: "results/merged.db"
+      input: "results/{{id}}/llm_graphs.db"  # .db triggers aggregation
+      output: "results/{{id}}/merged.db"
 \"\"\"
 
 # Execute with aggregation mode

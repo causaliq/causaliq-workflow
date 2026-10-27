@@ -68,7 +68,7 @@ workflow. A parameter binds to the child by name:
 |----------------|-----------|
 | a matrix dimension (`algorithm`) | replaces that dimension's values (a scalar becomes `[value]`, a list is used as given) |
 | a parameter default (`sample_size: 1000`) | overrides the default |
-| a required parameter (`seed: null`) | satisfies the requirement |
+| a `null` parameter (`reference: null`) | supplies the value; omitting it leaves the parameter out of the action |
 | a `{{name}}` placeholder in a step | substitutes the value |
 
 Values are resolved in the caller's context, so they may reference the
@@ -107,9 +107,10 @@ steps:
 ```
 
 `no-randomise` is the default of `randomise`, so the first combination runs
-exactly as if the caller had omitted the parameter. Forwarding a parameter
-only when the caller sets it is not supported yet; see
-[Limitations](#limitations).
+exactly as if the caller had omitted the parameter. To forward a value
+only when the caller's own caller set it, declare the forwarding
+parameter with a `null` default; see
+[Declaring parameters](#declaring-parameters).
 
 ### Declaring parameters
 
@@ -118,19 +119,60 @@ available as `{{name}}` placeholders and may be overridden by a caller:
 
 ```yaml
 # modules/learn-graphs.yml
-sample_size: 1000     # optional, default 1000
-seed: null            # required, the caller must supply it
+sample_size: 1000     # default 1000
+reference: null       # no value: omitted from the action
+```
+
+A caller that supplies neither value runs the child exactly as its
+declarations describe: `sample_size` is `1000`, and `reference` is left
+out of every action that would otherwise receive it. A caller that
+supplies either value overrides the declaration:
+
+```yaml
+steps:
+  - name: Learn graphs
+    uses: ./modules/learn-graphs.yml
+    with:
+      sample_size: 5000
+      reference: networks/asia/true.graphml
+```
+
+A null-default parameter may only be used as the whole value of a step
+parameter (`reference: "{{reference}}"`), because there is no text to
+substitute when no value is supplied. A declared parameter must also be
+used as a placeholder in at least one step; an unused declaration is a
+validation error.
+
+A placeholder the child uses but does not declare is a **required
+parameter**. The caller must supply it, and validation reports it when it
+is missing:
+
+```
+Step 'Call child' (workflow 'hc_bad.yml'): Unknown template variables:
+['randomise']. Available variables: ['network', 'sample_size', 'series'].
+Declare a default value for each missing name as a top-level workflow
+key, or supply it with 'with:' in the calling workflow or --param.
 ```
 
 A list default is not supported yet, so a list value is supplied by the
 caller (for example `randomise: ["var_best"]`).
 
-A required parameter that is not supplied is a validation error:
+Because a null default forwards an omission, a module can pass a value on
+only when its own caller set it:
 
+```yaml
+# modules/base.yml
+reference: null
+
+steps:
+  - name: Learn graphs
+    uses: ./learn-graphs.yml
+    with:
+      reference: "{{reference}}"
 ```
-Step 'Learn graphs': Required workflow parameter(s) not provided: ['seed'].
-Provide them with 'with:' in the calling workflow or --param.
-```
+
+If the caller of `base.yml` omits `reference`, the inner call omits it
+too. If the caller supplies it, the value flows through both calls.
 
 ### Unknown parameters
 
@@ -139,7 +181,7 @@ dimension, nor uses in a step is rejected with the accepted names:
 
 ```
 Step 'Call child': Parameter 'sampl_size' is not used by workflow
-'learn-graphs.yml'. Accepted: ['algorithm', 'sample_size', 'seed']
+'learn-graphs.yml'. Accepted: ['algorithm', 'reference', 'sample_size']
 ```
 
 `action` and `output` are reserved by the executor and are rejected in a
@@ -147,14 +189,8 @@ call step's `with` block. A name may not be declared as both a parameter
 and a matrix dimension.
 
 A token the child uses but the caller does not supply is reported the
-same way, so a required parameter is never silently left blank:
-
-```
-Step 'Call child' (workflow 'hc_bad.yml'): Unknown template variables:
-['randomise']. Available variables: ['network', 'sample_size', 'series'].
-Declare the name as a workflow parameter, or supply it with 'with:' in
-the calling workflow or --param.
-```
+same way, so a required parameter is never silently left blank (see
+above).
 
 Tokens must be quoted in YAML (`randomise: "{{randomise}}"`); an
 unquoted token is invalid YAML and is reported with a quoting hint.
@@ -251,19 +287,23 @@ The same parameters can be supplied to a top-level workflow on the
 command line:
 
 ```bash
-cqflow run benchmark.yml --mode=run --param sample_size=5000 --param seed=42
+cqflow run benchmark.yml --mode=run --param sample_size=5000 \
+  --param reference=networks/asia/true.graphml
 ```
 
 A name that matches a top-level matrix dimension replaces it, so
-`--param network=asia` runs a single combination. Unknown names are
-reported as validation errors.
+`--param network=asia` runs a single combination. A name that matches a
+declared parameter overrides its default; the value replaces a `null`
+default, so a null-default parameter is no longer omitted. Unknown names
+are reported as validation errors.
 
 ## Limitations
 
 - Parameters do not invalidate cache entries; use `--mode=force` after a
   parameter change.
 - `{{...}}` placeholders in step names are not expanded.
-- A call cannot forward a parameter only when the caller sets it; pass the
-  parameter's explicit default value instead (for example
-  `randomise: no-randomise`).
+- A parameter with a concrete default cannot be forwarded only when the
+  caller sets it. Declare the forwarding parameter with a `null` default
+  so that an omission stays an omission (see
+  [Declaring parameters](#declaring-parameters)).
 - Called step outputs are not yet available to the caller.

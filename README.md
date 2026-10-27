@@ -63,9 +63,7 @@ infrastructure:
 **Example Workflow Definition**, experiment.yml:
 
 ```yaml
-description: "Causal Discovery Experiment"
 id: "experiment-001"
-workflow_cache: "results/{{id}}_cache.db"  # All results stored here
 
 matrix:
   network: ["asia", "cancer"]
@@ -76,9 +74,11 @@ steps:
   - name: "Structure Learning"
     uses: "causaliq-discovery"
     with:
+      action: "learn_structure"
       algorithm: "{{algorithm}}"
       sample_size: "{{sample_size}}"
       dataset: "data/{{network}}"
+      output: "results/{{id}}/graphs.db"
       # Results cached with key: {network, algorithm, sample_size}
 ```
 

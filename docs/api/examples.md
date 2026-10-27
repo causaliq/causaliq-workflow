@@ -40,7 +40,6 @@ print(f"Workflow completed: {results}")
 ```yaml
 # experiments/basic-experiment.yml
 id: "basic-experiment"
-description: "Structure learning with PC algorithm"
 data_root: "/experiments/data"
 output_root: "/experiments/results"
 
@@ -67,7 +66,6 @@ results = executor.execute_workflow(workflow, mode="run")
 ```yaml
 # experiments/parameter-sweep.yml
 id: "parameter-sweep"
-description: "Multi-algorithm parameter sweep"
 data_root: "/experiments/data"
 output_root: "/experiments/results"
 
@@ -114,7 +112,6 @@ results = executor.execute_workflow(workflow, mode="run")
 ```yaml
 # experiments/conditional-matrix.yml
 id: "conditional-matrix"
-description: "Matrix with conditional parameters"
 
 matrix:
   dataset: ["small_data", "medium_data", "large_data"]
@@ -151,7 +148,6 @@ steps:
 ```yaml
 # experiments/data-pipeline.yml
 id: "data-processing-pipeline"
-description: "Complete data processing and analysis pipeline"
 
 matrix:
   dataset: ["healthcare", "finance", "biology"]
@@ -315,7 +311,6 @@ class NetworkAnalysisAction(BaseActionProvider):
 ```yaml
 # experiments/custom-workflow.yml
 id: "custom-causal-discovery"
-description: "Workflow using custom actions"
 
 matrix:
   dataset: ["asia", "cancer"]

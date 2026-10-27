@@ -48,8 +48,8 @@ Supply or override workflow parameters with `--param NAME=VALUE`
 (repeatable):
 
 ```bash
-# Override a declared default and satisfy a required parameter
-cqflow run workflow.yml --mode=run --param sample_size=5000 --param seed=42
+# Override a declared default
+cqflow run workflow.yml --mode=run --param sample_size=5000
 
 # Replace a matrix dimension with a single value
 cqflow run workflow.yml --mode=run --param network=asia
@@ -60,10 +60,11 @@ cqflow run workflow.yml --mode=run --param algorithm='[pc, ges]'
 
 Values are parsed as YAML, so numbers, booleans and lists keep their
 types. A name that matches a matrix dimension replaces that dimension; any
-other name overrides a declared parameter or fills a `{{name}}`
-placeholder. Names the workflow does not use are reported as validation
-errors, and repeating a name is rejected. A parameter change does not
-invalidate cached entries — use `--mode=force` to re-run.
+other name overrides a declared parameter or supplies a required
+`{{name}}` placeholder. A value supplied for a null-default parameter
+replaces the omission. Names the workflow does not use are reported as
+validation errors, and repeating a name is rejected. A parameter change
+does not invalidate cached entries — use `--mode=force` to re-run.
 
 ### Logging Levels
 

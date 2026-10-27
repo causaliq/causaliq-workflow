@@ -166,14 +166,15 @@ The default workflow schema validates:
 - `matrix`: parameter matrix for expansion
 - Any other top-level key declares a **workflow parameter** and its
   default value. Values must be scalar (string, number, boolean or
-  `null`); `null` marks the parameter as required. See
+  `null`); a `null` value means the parameter is omitted from an action
+  when nothing supplies it. See
   [Core Concepts](../userguide/core_concepts.md#workflow-parameters).
 
 ### Step Schema
 
 Each step must include:
 
-- `name`: human-readable step name
+- `name`: human-readable step name, unique within the workflow
 - `uses` (an action provider or a relative workflow path) or `run`
 - `with` (optional): action parameters, or a called workflow's parameters
 

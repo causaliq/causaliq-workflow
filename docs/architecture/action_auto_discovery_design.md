@@ -180,9 +180,6 @@ causaliq-workflow my-experiment.yml
 
 **File: my-experiment.yml**
 ```yaml
-description: "PC Algorithm Test"
-id: pc-test
-
 steps:
   - name: "Learn Structure"
     uses: "causaliq-pc-algorithm"  # Automatically discovered via entry point
@@ -378,9 +375,6 @@ class ActionProvider(BaseActionProvider):
 
 **Usage in workflow.yaml:**
 ```yaml
-description: "Test my action"
-id: test-my-action
-
 steps:
   - name: "Run my action"
     uses: "my-causaliq-action"

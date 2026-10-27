@@ -1,25 +1,33 @@
-# Default action parameter values
+# Default workflow parameter values
 
-I would like to standardise and simplify how default action parameter values work including deciding whether it is necessary/desirable to expose a "null/none" type value to users.
+Provide default values for **action** parameter values at the workflow level using the following syntax:
 
-The key aim
-is **clarity and simplicity** for the end user, and a secondary aim is workflows continue to work as before as parameters or defaults ar changed as the code evolves.
+```yaml
+   param-name: default-value
+```
 
-My preferred approach is, if it is logically coherent:
+These default values should be defined before the matrix and steps sections of the workflow. `param-name` must be used as a placeholder in some of the steps of the workflow i.e. `{{param-name}}`. Having specified a default value in this way, workflows calling this workflow do not have to specify a value for `param-name` - the `default-value` will be used. However, if the calling workflow does specify a value for `param-name` this will override the `default-value`. Note that workflows which include default parameter values can still be run standalone - in that case, default parameter values provide a convenient way of defining
+values for a parameter that is used in multiple steps.
 
-- we do not expose the end-user to any distinction between leaving out a
-  parameter to indicate a default value should be used or because the
-  parameter is not applicable given other parameter values (for example,
-  specifying a score type for a constraint-based BNSL algorithm);
-- therefore, the end-user does not need to use a "null/none" type in
-  workflows - the user just omits parameters where the default is required
-  or the parameter is not relevant
-- where an action parameter does have a default value, then that default
-  value must be exposed as a possible value. For example, we would modify
-  the `learn_graph` `randomise` action to have an explicit `no-randomise` value which would be the default. This approach hopefully solves the problem of passing default values from calling workflows to sub-workflows. Is it possible to mandate this in the code infrastructure somehow?
-- the parameter section of the metadata should list the values of all
-  parameters that were explicitly specified **and** those given default values, **but not** those which were not relevant
-- if necessary, we can define an explicit "NotRelevant" type (clearer than null or none?) to be used **internally** in the code.
+A special value of `null` is allowed for the `default-value` in the default value declaration, that is:
+
+```yaml
+    param-name: null
+```
+
+In that case, the effect would be as if the parameter had been omitted as a parameter in the actions. For example, a default declaration of:
+
+```yaml
+   reference: null
+```
+
+would result in the refernce parameter being **omitted** in an action step which had a parameter specification of 
+
+```yaml
+   reference: {{reference}}
+```
+  
+This is useful in the case where actions in called sub-workflows have parameters which need to be omitted in some calls, and specified in others. 
 
 Could you commnt on this, and agree an approach with me
 
@@ -28,8 +36,6 @@ Could you commnt on this, and agree an approach with me
 These are deliberately outside this task:
 
 0. __Simplify and standardise quote usage for parameter values__
-
-0. __Declaration of default values in workflows__
 
 1. __Values audit__
 
