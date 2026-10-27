@@ -101,6 +101,6 @@
       "boolean",
       "null"
     ],
-    "description": "Workflow variable (use null for required variables that must be provided via CLI)"
+    "description": "Workflow parameter default value; a parameter declared null is omitted from an action when no value is supplied"
   }
 }

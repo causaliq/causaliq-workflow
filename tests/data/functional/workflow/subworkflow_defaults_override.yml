@@ -1,0 +1,5 @@
+steps:
+  - name: "Call child"
+    uses: "./subworkflow_defaults_child.yml"
+    with:
+      reference: "networks/asia.graphml"

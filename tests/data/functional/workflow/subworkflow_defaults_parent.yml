@@ -1,0 +1,3 @@
+steps:
+  - name: "Call child"
+    uses: "./subworkflow_defaults_child.yml"

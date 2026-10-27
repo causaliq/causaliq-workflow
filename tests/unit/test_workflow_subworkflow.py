@@ -147,13 +147,42 @@ def test_validate_call_step_recurses_into_child(
     assert captured["frames"][-1].path == (tmp_path / "child.yml").resolve()
 
 
-# A required parameter must be provided by the caller.
-def test_validate_call_step_reports_required_parameters(
+# A null default in the child is optional and needs no caller value.
+def test_validate_call_step_accepts_null_default(
     executor: WorkflowExecutor,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    child: Dict[str, Any] = {"steps": [], "network": None}
+    child: Dict[str, Any] = {
+        "network": None,
+        "steps": [
+            {"name": "inner", "with": {"output": "{{network}}"}},
+        ],
+    }
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return child
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    errors = executor._validate_workflow_call_step(
+        {"uses": "./child.yml"}, "Call", _frames(tmp_path)
+    )
+    assert errors == []
+
+
+# An undeclared child placeholder still requires a caller value.
+def test_validate_call_step_reports_required_placeholder(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    child: Dict[str, Any] = {
+        "steps": [
+            {"name": "inner", "with": {"output": "{{network}}.db"}},
+        ],
+    }
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
@@ -165,9 +194,7 @@ def test_validate_call_step_reports_required_parameters(
         {"uses": "./child.yml"}, "Call", _frames(tmp_path)
     )
     assert len(errors) == 1
-    assert "Required workflow parameter(s) not provided: ['network']" in (
-        errors[0]
-    )
+    assert "Unknown template variables: ['network']" in errors[0]
 
 
 # An unused parameter is reported with the names the child accepts.
@@ -388,6 +415,35 @@ def test_count_results_counts_called_steps() -> None:
     counts = _count_results(results, "dry-run")
     assert counts.would_skip == 2
     assert counts.total == 2
+
+
+# Every call step's nested steps are counted across the whole run.
+def test_count_results_counts_all_call_steps() -> None:
+    def call_step(status: str) -> Dict[str, Any]:
+        return {
+            "status": status,
+            "workflow": "child.yml",
+            "jobs": 2,
+            "steps": [
+                {"name": "Child record", "status": status},
+                {"name": "Child record", "status": status},
+            ],
+        }
+
+    results = [
+        {
+            "steps": {
+                "Call one": call_step("would_skip"),
+                "Call two": call_step("would_execute"),
+                "Call three": call_step("would_execute"),
+            }
+        }
+    ]
+    counts = _count_results(results, "dry-run")
+    assert counts.would_skip == 2
+    assert counts.would_execute == 4
+    assert counts.new_entries == 4
+    assert counts.total == 6
 
 
 # The CLI summary reports failures from a called workflow.

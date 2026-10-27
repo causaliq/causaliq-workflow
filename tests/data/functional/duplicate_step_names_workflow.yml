@@ -1,0 +1,14 @@
+steps:
+  - name: "Same step"
+    uses: "test_action"
+    with:
+      action: "run"
+      data_path: "tests/data/functional/dummy_data.csv"
+      output_dir: "tests/data/functional/output"
+
+  - name: "Same step"
+    uses: "test_action"
+    with:
+      action: "run"
+      data_path: "tests/data/functional/dummy_data.csv"
+      output_dir: "tests/data/functional/output"

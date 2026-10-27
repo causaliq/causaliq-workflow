@@ -3,6 +3,7 @@
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
+from causaliq_workflow.schema import _duplicate_step_name_errors
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.frames import (
@@ -31,7 +32,8 @@ class EntryValidationMixin(WorkflowExecutorBase):
         - Semantic filter errors (e.g., `network == asia` where 'asia'
           is undefined)
         - Invalid action parameters
-        - Missing required parameters
+        - Missing template variable values and ineffective parameter
+          declarations
 
         Pattern-specific validation:
 
@@ -52,7 +54,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
         matrix = workflow.get("matrix", {})
         jobs = self.expand_matrix(matrix)
-        errors: List[str] = _parameter_errors(workflow, cli_params)
+        errors: List[str] = _duplicate_step_name_errors(workflow)
+        errors.extend(_parameter_errors(workflow, cli_params))
+        errors.extend(self._missing_variable_errors(workflow, cli_params))
 
         for step in workflow.get("steps", []):
             errors.extend(

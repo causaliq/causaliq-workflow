@@ -1,6 +1,6 @@
 """Template variable extraction, resolution and validation."""
 
-from typing import Any, Dict, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
@@ -11,7 +11,7 @@ from causaliq_workflow.workflow.matrix import (
 from causaliq_workflow.workflow.parameters import (
     _declared_parameters,
     _extract_tokens,
-    _parameter_matrix_clash_errors,
+    _parameter_declaration_errors,
     _single_token,
     _token_names,
 )
@@ -40,17 +40,20 @@ class TemplateMixin(WorkflowExecutorBase):
     ) -> None:
         """Validate template variables in workflow.
 
-        Performs three validations:
+        Performs four validations:
 
         1. All template variables must exist in the available context
            (declared parameters, supplied parameter names, matrix
            variables, or keys derived from an AGGREGATE step's input
-           cache).
+           cache). A variable with no value is a required parameter.
         2. All matrix variables must be used in at least one CREATE step's
            template. AGGREGATE steps use matrix for grouping (not
            templating).
         3. A name may not be declared as both a parameter and a matrix
            variable.
+        4. A declared parameter must be used as a ``{{placeholder}}``, and
+           a null-default parameter may only be a whole-value
+           placeholder.
 
         Variables used only by an AGGREGATE step whose input cache does not
         exist yet (it may be produced by an earlier step) are deferred to
@@ -62,8 +65,8 @@ class TemplateMixin(WorkflowExecutorBase):
 
         Raises:
             WorkflowExecutionError: If unknown template variables found,
-                a name is declared twice, or matrix variables are not used
-                in any CREATE step
+                a parameter declaration is ineffective, or matrix
+                variables are not used in any CREATE step
         """
         parameters = set(parameters or ())
         matrix_vars = set(workflow.get("matrix", {}).keys())
@@ -81,6 +84,37 @@ class TemplateMixin(WorkflowExecutorBase):
             _raise_unused_matrix_variables(
                 matrix_vars, create_vars, workflow.get("matrix", {})
             )
+
+    def _missing_variable_errors(
+        self, workflow: Dict[str, Any], parameters: Any = None
+    ) -> List[str]:
+        """Return errors for template variables that have no value.
+
+        A ``{{name}}`` token that is not a declared parameter, matrix
+        variable, supplied parameter or cache-derived name has no value,
+        so an undeclared placeholder is effectively a required
+        parameter. Variables of an AGGREGATE step whose input cache does
+        not exist yet are resolved at run time and are not reported.
+
+        Args:
+            workflow: Parsed workflow dictionary.
+            parameters: Parameter names supplied by a caller or the CLI.
+
+        Returns:
+            One error listing every unresolved variable, or an empty
+            list.
+        """
+        matrix_vars = set(workflow.get("matrix", {}).keys())
+        derived, deferred = self._aggregate_template_scope(workflow)
+        available = _collect_available_variables(
+            workflow, matrix_vars, set(parameters or ())
+        )
+        available.update(derived)
+        all_vars, _ = self._scan_step_variables(workflow)
+        missing = (all_vars - deferred) - available
+        if not missing:
+            return []
+        return [_missing_variables_message(missing, available)]
 
     def _aggregate_template_scope(
         self, workflow: Dict[str, Any]
@@ -237,8 +271,8 @@ def _collect_available_variables(
 
 
 def _raise_parameter_errors(workflow: Dict[str, Any]) -> None:
-    """Raise when a parameter name is also a matrix variable."""
-    errors = _parameter_matrix_clash_errors(workflow)
+    """Raise when a parameter declaration is invalid or ineffective."""
+    errors = _parameter_declaration_errors(workflow)
     if not errors:
         return
     raise WorkflowExecutionError("; ".join(errors))
@@ -255,16 +289,25 @@ def _cached_matrix_keys(step: Dict[str, Any]) -> Set[str]:
     return set(matrix_keys)
 
 
+def _missing_variables_message(
+    used_vars: Set[str], available: Set[str]
+) -> str:
+    """Return the message for template variables that have no value."""
+    return (
+        f"Unknown template variables: {sorted(used_vars - available)}. "
+        f"Available variables: {sorted(available)}. "
+        f"Declare a default value for each missing name as a top-level "
+        f"workflow key, or supply it with 'with:' in the calling "
+        f"workflow or --param."
+    )
+
+
 def _raise_unknown_variables(used_vars: Set[str], available: Set[str]) -> None:
     """Raise when template variables are not in the available context."""
-    unknown = used_vars - available
-    if not unknown:
+    if not used_vars - available:
         return
     raise WorkflowExecutionError(
-        f"Unknown template variables: {sorted(unknown)}. "
-        f"Available variables: {sorted(available)}. "
-        f"Declare the name as a workflow parameter, or supply it with "
-        f"'with:' in the calling workflow or --param."
+        _missing_variables_message(used_vars, available)
     )
 
 

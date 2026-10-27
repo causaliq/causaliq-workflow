@@ -224,9 +224,6 @@ class ExecutionMixin(WorkflowExecutorBase):
             Job execution results
 
         """
-        # Validate required workflow variables (None values must be provided)
-        self._validate_required_variables(workflow, cli_params)
-
         # Combine all variable sources for template resolution
         state = _JobState(
             workflow=workflow,

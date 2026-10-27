@@ -10,11 +10,12 @@ from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
 from causaliq_workflow.workflow.matrix import _bind_parameters
 from causaliq_workflow.workflow.parameters import (
     _call_parameters_vary,
-    _missing_required_errors,
+    _null_parameter_usage_errors,
     _parameter_matrix_clash_errors,
     _parameter_names,
     _single_token,
     _unknown_parameter_errors,
+    _unused_parameter_errors,
 )
 
 _CHILD: Dict[str, Any] = {
@@ -79,18 +80,77 @@ def test_unknown_parameter_errors_uses_workflow_label() -> None:
     assert "not used by workflow 'child.yml'" in errors[0]
 
 
-# A null default declares a required parameter.
-def test_missing_required_errors_reports_null_default() -> None:
-    errors = _missing_required_errors(_CHILD, {})
-    assert errors == [
-        "Required workflow parameter(s) not provided: ['seed']. "
-        "Provide them with 'with:' in the calling workflow or --param."
+# A declared null parameter is optional, not required.
+def test_null_parameter_usage_accepts_null_default() -> None:
+    assert _null_parameter_usage_errors(_CHILD) == []
+
+
+# A null default may be the whole value of a step parameter.
+def test_null_parameter_usage_accepts_whole_value() -> None:
+    workflow = {
+        "reference": None,
+        "steps": [
+            {"name": "Evaluate", "with": {"reference": "{{reference}}"}}
+        ],
+    }
+    assert _null_parameter_usage_errors(workflow) == []
+
+
+# A null default embedded in text has no value to substitute.
+def test_null_parameter_usage_reports_partial_value() -> None:
+    workflow = {
+        "reference": None,
+        "steps": [
+            {
+                "name": "Evaluate",
+                "with": {"reference": "networks/{{reference}}.graphml"},
+            }
+        ],
+    }
+    assert _null_parameter_usage_errors(workflow) == [
+        "Step 'Evaluate': parameter 'reference' is declared null, so "
+        "'{{reference}}' may only be the whole value of a step parameter"
     ]
 
 
-# Supplying a required parameter clears the error.
-def test_missing_required_errors_accepts_supplied() -> None:
-    assert _missing_required_errors(_CHILD, {"seed": 1}) == []
+# A null default inside a list has no whole-value meaning.
+def test_null_parameter_usage_reports_list_element() -> None:
+    workflow = {
+        "reference": None,
+        "steps": [
+            {
+                "name": "Evaluate",
+                "with": {"input": ["{{reference}}", "x"]},
+            }
+        ],
+    }
+    assert len(_null_parameter_usage_errors(workflow)) == 1
+
+
+# A non-text, non-list value cannot use a null parameter.
+def test_null_parameter_usage_ignores_scalar_values() -> None:
+    workflow = {
+        "reference": None,
+        "steps": [{"name": "Evaluate", "with": {"sample_size": 10}}],
+    }
+    assert _null_parameter_usage_errors(workflow) == []
+
+
+# A declared parameter must be used as a placeholder.
+def test_unused_parameter_errors_reports_declaration() -> None:
+    assert _unused_parameter_errors(_CHILD) == [
+        "Workflow parameter 'seed' is declared but never used as a "
+        "'{{seed}}' placeholder in a step"
+    ]
+
+
+# A declaration that a step references is accepted.
+def test_unused_parameter_errors_accepts_used_declaration() -> None:
+    workflow = {
+        "sample_size": 1000,
+        "steps": [{"name": "s", "with": {"input": "{{sample_size}}.csv"}}],
+    }
+    assert _unused_parameter_errors(workflow) == []
 
 
 # A name may not be both a parameter and a matrix variable.
@@ -121,6 +181,21 @@ def test_validate_template_variables_rejects_clash(
     with pytest.raises(WorkflowExecutionError) as exc_info:
         executor._validate_template_variables(workflow)
     assert "declared as both a parameter and a matrix variable" in str(
+        exc_info.value
+    )
+
+
+# Template validation rejects an unused declaration.
+def test_validate_template_variables_rejects_unused_declaration(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "sample_size": 1000,
+        "steps": [{"name": "Test Step", "with": {"action": "test"}}],
+    }
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor._validate_template_variables(workflow)
+    assert "never used as a '{{sample_size}}' placeholder" in str(
         exc_info.value
     )
 
@@ -366,12 +441,51 @@ def test_execute_workflow_rejects_unknown_parameter(
     assert "Parameter 'nope' is not used" in str(exc_info.value)
 
 
-# A required parameter with no value fails validation.
-def test_execute_workflow_rejects_missing_required(
+# A null default is omitted from the action when nothing supplies it.
+def test_execute_workflow_omits_null_default(
     executor: WorkflowExecutor,
 ) -> None:
     workflow = {
-        "seed": None,
+        "reference": None,
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "reference": "{{reference}}"},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run")
+    parameters = results[0]["steps"]["Test Step"]["parameters"]
+    assert "reference" not in parameters
+
+
+# A supplied value overrides a null default.
+def test_execute_workflow_overrides_null_default(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "reference": None,
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "reference": "{{reference}}"},
+            }
+        ],
+    }
+    results = executor.execute_workflow(
+        workflow, mode="run", cli_params={"reference": "true.graphml"}
+    )
+    parameters = results[0]["steps"]["Test Step"]["parameters"]
+    assert parameters["reference"] == "true.graphml"
+
+
+# An undeclared placeholder with no value fails validation.
+def test_execute_workflow_rejects_missing_value(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
         "steps": [
             {
                 "name": "Test Step",
@@ -382,9 +496,7 @@ def test_execute_workflow_rejects_missing_required(
     }
     with pytest.raises(WorkflowExecutionError) as exc_info:
         executor.execute_workflow(workflow, mode="validate")
-    assert "Required workflow parameter(s) not provided: ['seed']" in (
-        str(exc_info.value)
-    )
+    assert "Unknown template variables: ['seed']" in str(exc_info.value)
 
 
 # Parsing accepts parameter names supplied by the CLI.

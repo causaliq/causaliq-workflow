@@ -58,6 +58,14 @@ def test_cli_run_validation_error(cli_runner: CliRunner) -> None:
     assert "[causaliq-workflow] ERROR" in result.output
 
 
+# Test run reports duplicate step names instead of miscounting them.
+def test_cli_run_rejects_duplicate_step_names(cli_runner: CliRunner) -> None:
+    workflow_file = "tests/data/functional/duplicate_step_names_workflow.yml"
+    result = cli_runner.invoke(cli, ["run", workflow_file])
+    assert result.exit_code == 1
+    assert "Duplicate step name 'Same step'" in result.output
+
+
 # Test run forwards --param values to the workflow.
 def test_cli_run_accepts_param(cli_runner: CliRunner) -> None:
     workflow_file = "tests/data/functional/cli_param_workflow.yml"
@@ -82,6 +90,31 @@ def test_cli_run_uses_parameter_default(cli_runner: CliRunner) -> None:
     workflow_file = "tests/data/functional/cli_param_workflow.yml"
     result = cli_runner.invoke(
         cli, ["run", workflow_file, "--log-level=summary"]
+    )
+    assert result.exit_code == 0
+
+
+# Test run omits a null-default parameter when no value is supplied.
+def test_cli_run_omits_null_default(cli_runner: CliRunner) -> None:
+    workflow_file = "tests/data/functional/cli_null_param_workflow.yml"
+    result = cli_runner.invoke(
+        cli, ["run", workflow_file, "--log-level=summary"]
+    )
+    assert result.exit_code == 0
+
+
+# Test --param supplies a value for a null-default parameter.
+def test_cli_run_overrides_null_default(cli_runner: CliRunner) -> None:
+    workflow_file = "tests/data/functional/cli_null_param_workflow.yml"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "run",
+            workflow_file,
+            "--param",
+            "message=hello",
+            "--log-level=summary",
+        ],
     )
     assert result.exit_code == 0
 

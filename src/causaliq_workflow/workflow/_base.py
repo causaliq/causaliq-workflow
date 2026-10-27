@@ -141,10 +141,10 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Scan input caches for entries matching matrix values."""
         raise NotImplementedError
 
-    def _validate_required_variables(
-        self, workflow: Dict[str, Any], cli_params: Dict[str, Any]
-    ) -> None:
-        """Validate that required workflow variables are provided."""
+    def _missing_variable_errors(
+        self, workflow: Dict[str, Any], parameters: Any = None
+    ) -> List[str]:
+        """Return errors for template variables that have no value."""
         raise NotImplementedError
 
     def _validate_workflow_actions(

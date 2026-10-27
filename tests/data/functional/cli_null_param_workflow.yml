@@ -1,0 +1,10 @@
+message: null
+
+steps:
+  - name: "Test Step"
+    uses: "test_action"
+    with:
+      action: "run"
+      data_path: "tests/data/functional/dummy_data.csv"
+      output_dir: "tests/data/functional/output"
+      message: "{{message}}"

@@ -58,37 +58,54 @@ def test_workflow_variables_unknown_template_validation(executor):
     assert "unknown_var" in error_msg
 
 
-def test_validate_required_variables_none_values(executor):
-    """Test _validate_required_variables method with None defaults."""
+# A null default is optional: nothing must be supplied for it.
+def test_null_default_is_optional(executor):
+    """Test that a null default no longer declares a required parameter."""
     workflow = {
-        "required_var": None,  # Required parameter
-        "optional_var": "default_value",  # Optional parameter
-        "steps": [],
+        "reference": None,
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "reference": "{{reference}}"},
+            }
+        ],
     }
 
-    # Should fail without CLI params
-    with pytest.raises(Exception) as exc_info:
-        executor._validate_required_variables(workflow, {})
-
-    error_msg = str(exc_info.value)
-    assert "required_var" in error_msg
-    assert "Required workflow parameter(s) not provided" in error_msg
+    assert executor._missing_variable_errors(workflow, {}) == []
 
 
-def test_validate_required_variables_with_cli_params(executor):
-    """Test _validate_required_variables passes when CLI params provided."""
+# A supplied value resolves a null default without changing the template.
+def test_null_default_accepts_supplied_value(executor):
+    """Test that a supplied value fills a null-default parameter."""
     workflow = {
-        "required_var": None,  # Required variable
-        "steps": [],
+        "reference": None,
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "reference": "{{reference}}"},
+            }
+        ],
     }
 
-    cli_params = {"required_var": "provided_value"}
+    supplied = {"reference": "true.graphml"}
 
-    # Should NOT raise error
-    try:
-        executor._validate_required_variables(workflow, cli_params)
-    except Exception as e:
-        pytest.fail(f"Validation should pass when CLI params provided: {e}")
+    assert executor._missing_variable_errors(workflow, supplied) == []
+
+
+# An undeclared placeholder without a value is reported.
+def test_missing_variable_errors_reports_placeholder(executor):
+    """Test that an undeclared placeholder is effectively required."""
+    workflow = {
+        "steps": [
+            {"name": "Test Step", "with": {"input": "{{seed}}.csv"}},
+        ],
+    }
+
+    errors = executor._missing_variable_errors(workflow, {})
+
+    assert "Unknown template variables: ['seed']" in errors[0]
 
 
 # Test unknown template variables are rejected.

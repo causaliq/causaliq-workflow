@@ -17,7 +17,6 @@ def test_parse_workflow_success(monkeypatch):
     """Test successful workflow parsing with valid YAML."""
     # Setup mocks
     workflow_data = {
-        "name": "Test",
         "steps": [{"name": "Test", "run": "echo hello"}],
     }
 

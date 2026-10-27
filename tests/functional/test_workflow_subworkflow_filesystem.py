@@ -48,11 +48,44 @@ class _RecordProvider(CausalIQActionProvider):
         return ("success", {"recorded": True}, objects)
 
 
+class _ParamRecordProvider(CausalIQActionProvider):
+    """Provider recording the effective action parameters."""
+
+    __test__ = False
+
+    name = "subworkflow-param-test"
+    version = "1.0.0"
+    description = "Provider recording effective parameters"
+    author = "CausalIQ"
+
+    supported_actions = {"record"}
+
+    def _dry_run_result(self, action: str, parameters: Dict[str, Any]) -> Any:
+        """Return a dry-run placeholder result."""
+        return ("skipped", {"dry_run": True}, [])
+
+    def _execute(
+        self,
+        action: str,
+        parameters: Dict[str, Any],
+        mode: str,
+        context: Optional[Any],
+        logger: Optional[Any],
+    ) -> Any:
+        """Return metadata recording the parameters the action received."""
+        metadata = {"parameters": parameters, "result": {"mode": mode}}
+        objects = [{"type": "json", "name": "record", "content": "{}"}]
+        return ("success", metadata, objects)
+
+
 @pytest.fixture
 def executor() -> WorkflowExecutor:
-    """Return an executor with the record provider registered."""
+    """Return an executor with the record providers registered."""
     executor = WorkflowExecutor()
     executor.action_registry._actions["subworkflow-test"] = _RecordProvider
+    executor.action_registry._actions["subworkflow-param-test"] = (
+        _ParamRecordProvider
+    )
     return executor
 
 
@@ -240,3 +273,40 @@ def test_source_path_resolves_calls(
         workflow, mode="dry-run", source_path=path
     )
     assert results[0]["steps"]["Call child"]["status"] == "would_execute"
+
+
+# A null default is omitted from the child action when not supplied.
+def test_null_default_is_omitted(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workflow = executor.parse_workflow(
+        _prepare(tmp_path, monkeypatch, "subworkflow_defaults_parent.yml")
+    )
+    results = executor.execute_workflow(workflow, mode="run")
+    assert results[0]["steps"]["Call child"]["status"] == "success"
+    parameters = _entry_parameters(tmp_path, "child_defaults.db")
+    assert "reference" not in parameters
+
+
+# A caller value overrides a null default in the child workflow.
+def test_null_default_is_overridden(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workflow = executor.parse_workflow(
+        _prepare(tmp_path, monkeypatch, "subworkflow_defaults_override.yml")
+    )
+    results = executor.execute_workflow(workflow, mode="run")
+    assert results[0]["steps"]["Call child"]["status"] == "success"
+    parameters = _entry_parameters(tmp_path, "child_defaults.db")
+    assert parameters["reference"] == "networks/asia.graphml"
+
+
+def _entry_parameters(tmp_path: Path, cache_name: str) -> Dict[str, Any]:
+    """Return the recorded action parameters of a cache's first entry."""
+    with WorkflowCache(str(tmp_path / cache_name)) as cache:
+        summaries = cache.list_entry_summaries()
+    return summaries[0]["metadata"]["parameters"]

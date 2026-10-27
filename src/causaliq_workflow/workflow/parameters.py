@@ -8,7 +8,11 @@ by the ``--param`` CLI option. It binds to the called workflow by name:
 - any other name binds as a ``{{name}}`` template variable.
 
 Declared parameters are the workflow's top-level scalar keys. A ``null``
-default marks a parameter as required. Parameters never add a matrix
+default declares a parameter with no value: when neither the caller nor
+the CLI supplies one, the parameter is omitted from every action that
+would otherwise receive it, so the action's own default applies. A
+placeholder that is not declared is effectively required and must be
+supplied by the caller or the CLI. Parameters never add a matrix
 dimension, so they are not part of a cache key: changing a parameter
 value does not invalidate existing entries.
 """
@@ -63,6 +67,24 @@ def _declared_parameters(workflow: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _used_parameter_names(workflow: Dict[str, Any]) -> Set[str]:
+    """Return the names used as ``{{name}}`` tokens by step ``with`` blocks.
+
+    A nested workflow call's ``with`` block counts, so a parameter that
+    is only forwarded to a called workflow is still used.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        Set of names referenced by a step parameter value.
+    """
+    used: Set[str] = set()
+    for step in workflow.get("steps", []):
+        used.update(_token_names(step.get("with", {})))
+    return used
+
+
 def _parameter_names(workflow: Dict[str, Any]) -> Set[str]:
     """Return the parameter names a caller may bind for a workflow.
 
@@ -78,8 +100,7 @@ def _parameter_names(workflow: Dict[str, Any]) -> Set[str]:
     """
     names = set(_declared_parameters(workflow))
     names.update(workflow.get("matrix", {}))
-    for step in workflow.get("steps", []):
-        names.update(_token_names(step.get("with", {})))
+    names.update(_used_parameter_names(workflow))
     return names
 
 
@@ -110,29 +131,107 @@ def _unknown_parameter_errors(
     ]
 
 
-def _missing_required_errors(
-    workflow: Dict[str, Any], parameters: Dict[str, Any]
-) -> List[str]:
-    """Return an error when a required parameter has no value."""
-    required = sorted(
+def _null_default_names(workflow: Dict[str, Any]) -> Set[str]:
+    """Return the names of parameters declared with a null default."""
+    return {
         name
         for name, value in _declared_parameters(workflow).items()
-        if value is None and name not in parameters
+        if value is None
+    }
+
+
+def _null_parameter_names(
+    value: Any, null_names: Set[str], whole: bool = True
+) -> Set[str]:
+    """Return null-default parameters used where no value exists.
+
+    A null-default parameter may only be the whole value of a step
+    parameter. Text such as ``"data/{{name}}.csv"`` would otherwise
+    become ``data/None.csv``, and a list element has no whole-value
+    meaning either.
+
+    Args:
+        value: Step parameter value to inspect.
+        null_names: Names of parameters declared with a null default.
+        whole: True when the value may be a whole-value token.
+
+    Returns:
+        Names used in a position that cannot accept a missing value.
+    """
+    if isinstance(value, str):
+        tokens = _extract_tokens(value) & null_names
+        if whole and _single_token(value) in tokens:
+            return set()
+        return tokens
+    if isinstance(value, list):
+        return set().union(
+            *(
+                _null_parameter_names(item, null_names, whole=False)
+                for item in value
+            )
+        )
+    return set()
+
+
+def _unused_parameter_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return errors for declared parameters no step references.
+
+    A default only affects a step that uses the name as a
+    ``{{placeholder}}``, so an unused declaration is dead configuration.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        One error per declared parameter that is never used.
+    """
+    unused = set(_declared_parameters(workflow)) - _used_parameter_names(
+        workflow
     )
-    if not required:
-        return []
     return [
-        f"Required workflow parameter(s) not provided: {required}. "
-        f"Provide them with 'with:' in the calling workflow or --param."
+        f"Workflow parameter '{name}' is declared but never used as a "
+        f"'{{{{{name}}}}}' placeholder in a step"
+        for name in sorted(unused)
     ]
+
+
+def _null_usage_step_errors(
+    step_name: str,
+    values: Dict[str, Any],
+    null_names: Set[str],
+) -> List[str]:
+    """Return errors for null-default parameters misused by one step."""
+    errors: List[str] = []
+    for value in values.values():
+        for name in sorted(_null_parameter_names(value, null_names)):
+            errors.append(
+                f"Step '{step_name}': parameter '{name}' is declared "
+                f"null, so '{{{{{name}}}}}' may only be the whole value "
+                f"of a step parameter"
+            )
+    return errors
+
+
+def _null_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return errors for null-default parameters used as partial values."""
+    null_names = _null_default_names(workflow)
+    errors: List[str] = []
+    for step in workflow.get("steps", []):
+        step_name = step.get("name", "unnamed")
+        errors.extend(
+            _null_usage_step_errors(
+                step_name, step.get("with", {}), null_names
+            )
+        )
+    return errors
 
 
 def _parameter_errors(
     workflow: Dict[str, Any], parameters: Dict[str, Any]
 ) -> List[str]:
-    """Return unknown-name and missing-required parameter errors."""
-    errors = _unknown_parameter_errors(parameters, workflow)
-    errors.extend(_missing_required_errors(workflow, parameters))
+    """Return declaration and unknown-name parameter errors."""
+    errors = _parameter_declaration_errors(workflow)
+    errors.extend(_unknown_parameter_errors(parameters, workflow))
     return errors
 
 
@@ -145,6 +244,21 @@ def _parameter_matrix_clash_errors(workflow: Dict[str, Any]) -> List[str]:
         f"matrix variable"
         for name in sorted(clash)
     ]
+
+
+def _parameter_declaration_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return clash, unused-declaration and null-usage errors.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        Errors describing invalid or ineffective parameter declarations.
+    """
+    errors = _parameter_matrix_clash_errors(workflow)
+    errors.extend(_unused_parameter_errors(workflow))
+    errors.extend(_null_parameter_usage_errors(workflow))
+    return errors
 
 
 def _call_parameters_vary(

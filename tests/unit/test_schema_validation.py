@@ -4,7 +4,11 @@ import sys
 
 import pytest
 
-from causaliq_workflow.schema import WorkflowValidationError, validate_workflow
+from causaliq_workflow.schema import (
+    WorkflowValidationError,
+    _duplicate_step_name_errors,
+    validate_workflow,
+)
 
 
 # Test WorkflowValidationError exception creation
@@ -30,8 +34,8 @@ def test_valid_workflow():
     """Test validating a properly structured workflow."""
     valid_workflow = {
         "steps": [
-            {"name": "Test", "run": "echo hello"},
-            {"name": "Test", "uses": "action@v1"},
+            {"name": "Test run", "run": "echo hello"},
+            {"name": "Test uses", "uses": "action@v1"},
         ],
     }
     result = validate_workflow(valid_workflow)
@@ -124,6 +128,57 @@ def test_pre_validate_catches_unknown_keys():
     with pytest.raises(WorkflowValidationError) as exc_info:
         validate_workflow(invalid_workflow)
     assert "Unknown key 'matrixx'" in str(exc_info.value)
+
+
+# Step results are recorded by name, so duplicate names are rejected.
+def test_pre_validate_rejects_duplicate_step_names():
+    """Test pre-validation rejects repeated step names."""
+    invalid_workflow = {
+        "steps": [
+            {"name": "Learn", "uses": "test_action"},
+            {"name": "Learn", "uses": "test_action"},
+        ],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    assert "Duplicate step name 'Learn'" in str(exc_info.value)
+    assert "results are recorded by name" in str(exc_info.value)
+
+
+# Every repeated name is reported once, in sorted order.
+def test_pre_validate_reports_each_duplicate_name():
+    """Test pre-validation reports each duplicated name once."""
+    invalid_workflow = {
+        "steps": [
+            {"name": "Beta", "uses": "test_action"},
+            {"name": "Alpha", "uses": "test_action"},
+            {"name": "Beta", "uses": "test_action"},
+            {"name": "Alpha", "uses": "test_action"},
+            {"name": "Gamma", "uses": "test_action"},
+        ],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    message = str(exc_info.value)
+    assert message.count("Duplicate step name") == 2
+    assert message.index("'Alpha'") < message.index("'Beta'")
+
+
+# A non-string step name is left to JSON Schema validation.
+def test_pre_validate_skips_non_string_step_names():
+    """Test pre-validation defers a non-string name to jsonschema."""
+    invalid_workflow = {
+        "steps": [{"name": 1, "uses": "test_action"}],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(invalid_workflow)
+    assert "validation failed" in str(exc_info.value).lower()
+
+
+# Non-list steps are left to JSON Schema validation.
+def test_duplicate_step_name_check_skips_non_list_steps():
+    """Test the duplicate-name check defers non-list steps to jsonschema."""
+    assert _duplicate_step_name_errors({"steps": "not-a-list"}) == []
 
 
 # Top-level scalar keys declare workflow parameters.

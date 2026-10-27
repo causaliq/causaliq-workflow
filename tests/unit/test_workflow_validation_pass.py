@@ -117,6 +117,32 @@ def test_validate_all_entries_valid_workflow() -> None:
     assert errors == []
 
 
+# Duplicate step names are rejected before their results can collapse.
+def test_execute_workflow_rejects_duplicate_step_names() -> None:
+    """Duplicate step names fail the validation pass."""
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["mock-provider"] = MockActionProvider
+
+    workflow = {
+        "steps": [
+            {
+                "name": "same",
+                "uses": "mock-provider",
+                "with": {"action": "test_action"},
+            },
+            {
+                "name": "same",
+                "uses": "mock-provider",
+                "with": {"action": "test_action"},
+            },
+        ],
+    }
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.execute_workflow(workflow, mode="validate")
+    assert "Duplicate step name 'same'" in str(exc_info.value)
+
+
 # Test _validate_all_entries detects missing required params.
 def test_validate_all_entries_missing_params() -> None:
     """Missing required params detected in validation pass."""

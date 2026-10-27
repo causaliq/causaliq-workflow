@@ -26,7 +26,6 @@ from causaliq_workflow.workflow.frames import (
 )
 from causaliq_workflow.workflow.matrix import _bind_parameters
 from causaliq_workflow.workflow.parameters import (
-    _missing_required_errors,
     _single_token,
     _unknown_parameter_errors,
 )
@@ -242,6 +241,10 @@ def _call_parameter_errors(
 ) -> List[str]:
     """Return parameter binding errors for a call step.
 
+    A child placeholder that the caller does not satisfy is reported
+    when the child workflow is loaded, because an undeclared placeholder
+    is a required parameter.
+
     Args:
         step_name: Calling step name used in error messages.
         target_name: Called workflow file name used in error messages.
@@ -254,7 +257,6 @@ def _call_parameter_errors(
     errors = _unknown_parameter_errors(
         parameters, child, workflow_label=target_name
     )
-    errors.extend(_missing_required_errors(child, parameters))
     return [f"Step '{step_name}': {error}" for error in errors]
 
 

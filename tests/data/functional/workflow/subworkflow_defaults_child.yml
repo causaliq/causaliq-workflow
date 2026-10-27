@@ -1,0 +1,9 @@
+reference: null
+
+steps:
+  - name: "Child record"
+    uses: "subworkflow-param-test"
+    with:
+      action: "record"
+      reference: "{{reference}}"
+      output: "child_defaults.db"

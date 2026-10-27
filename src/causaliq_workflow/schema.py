@@ -6,7 +6,7 @@ Uses standard JSON Schema validation with the jsonschema library.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 import yaml
 
@@ -71,7 +71,8 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
 
     Any top-level key other than ``matrix`` and ``steps`` declares a
     workflow parameter default, so it must be a scalar. A ``null``
-    default marks the parameter as required.
+    default declares a parameter with no value: the parameter is omitted
+    from an action when nothing supplies it.
 
     Args:
         workflow: Workflow configuration dictionary
@@ -87,8 +88,46 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
     if not isinstance(steps, list):
         return  # Let jsonschema handle this
 
+    duplicate_errors = _duplicate_step_name_errors(workflow)
+    if duplicate_errors:
+        raise WorkflowValidationError("; ".join(duplicate_errors))
+
     for step in steps:
         _pre_validate_step(step)
+
+
+def _duplicate_step_name_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return one error per repeated step name.
+
+    Step results are recorded by name, so a repeated name silently
+    overwrites the earlier step's result and makes the completion
+    summary under-count the steps that ran.
+
+    Args:
+        workflow: Workflow configuration dictionary.
+
+    Returns:
+        One error per step name that occurs more than once.
+    """
+    steps = workflow.get("steps", [])
+    if not isinstance(steps, list):
+        return []
+    seen: Set[str] = set()
+    repeated: Set[str] = set()
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        name = step.get("name")
+        if not isinstance(name, str):
+            continue
+        if name in seen:
+            repeated.add(name)
+        seen.add(name)
+    return [
+        f"Duplicate step name '{name}': step names must be unique "
+        f"because results are recorded by name"
+        for name in sorted(repeated)
+    ]
 
 
 def _check_parameter_default(key: str, value: Any) -> None:
