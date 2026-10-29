@@ -72,9 +72,11 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
     for common mistakes.
 
     Any top-level key other than ``matrix`` and ``steps`` declares a
-    workflow parameter default, so it must be a scalar. A ``null``
-    default declares a parameter with no value: the parameter is omitted
-    from an action when nothing supplies it.
+    workflow parameter default, so it must be a scalar or a list of
+    scalars. A ``null`` default declares a parameter with no value: the
+    parameter is omitted from an action when nothing supplies it. A list
+    default is delivered as a single value and never adds a matrix
+    dimension.
 
     Args:
         workflow: Workflow configuration dictionary
@@ -132,13 +134,55 @@ def _duplicate_step_name_errors(workflow: Dict[str, Any]) -> List[str]:
     ]
 
 
+_SCALAR_DEFAULT_TYPES = (str, int, float, bool)
+
+
+def _check_list_default(key: str, values: List[Any]) -> None:
+    """Reject a list parameter default whose items are not scalars.
+
+    A list default is a single value that a workflow may pass on, so it
+    accepts the same item types as a step parameter list. A null item has
+    no meaning: the null default already expresses 'no value'.
+
+    Args:
+        key: Top-level workflow key that declares the default.
+        values: The declared list value.
+
+    Raises:
+        WorkflowValidationError: If an item is null, a list or a mapping.
+    """
+    for value in values:
+        if value is None:
+            raise WorkflowValidationError(
+                f"Unknown key '{key}': a list parameter must not contain "
+                f"null; declare the parameter null to mean 'no value'"
+            )
+        if not isinstance(value, _SCALAR_DEFAULT_TYPES):
+            raise WorkflowValidationError(
+                f"Unknown key '{key}': a list parameter must contain only "
+                f"strings, numbers or booleans"
+            )
+
+
 def _check_parameter_default(key: str, value: Any) -> None:
-    """Reject a workflow key that cannot declare a parameter default."""
-    if value is None or isinstance(value, (str, int, float, bool)):
+    """Reject a workflow key that cannot declare a parameter default.
+
+    Args:
+        key: Top-level workflow key.
+        value: Declared default value for the key.
+
+    Raises:
+        WorkflowValidationError: If the value is neither a scalar, null,
+            nor a list of scalars.
+    """
+    if isinstance(value, list):
+        _check_list_default(key, value)
+        return
+    if value is None or isinstance(value, _SCALAR_DEFAULT_TYPES):
         return
     raise WorkflowValidationError(
         f"Unknown key '{key}': workflow parameters must be a scalar "
-        f"(string, number, boolean or null); use 'matrix' for lists"
+        f"(string, number, boolean or null) or a list of scalars"
     )
 
 

@@ -328,6 +328,43 @@ def test_run_call_step_overrides_child_matrix(
     assert child["matrix"] == {"variant": ["one", "two"]}
 
 
+# A caller's list parameter fans out the called workflow's matrix.
+def test_run_call_step_forwards_list_parameter(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _state(tmp_path)
+    state.variables = {"network": ["asia", "sports"]}
+    child = {"matrix": {"network": ["asia"]}, "steps": []}
+    captured: Dict[str, Any] = {}
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return child
+
+    def record_jobs(
+        workflow: Dict[str, Any], *args: Any
+    ) -> List[Dict[str, Any]]:
+        captured.update(workflow=workflow, variables=args[1])
+        return []
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    monkeypatch.setattr(executor, "_execute_jobs", record_jobs)
+    executor._run_workflow_call_step(
+        state,
+        {
+            "name": "Call",
+            "uses": "./child.yml",
+            "with": {"network": "{{network}}"},
+        },
+        "Call",
+    )
+    assert captured["workflow"]["matrix"] == {"network": ["asia", "sports"]}
+    assert captured["variables"] == {}
+
+
 # Call summaries report the aggregate child status.
 @pytest.mark.parametrize(
     ("mode", "child_status", "expected"),

@@ -9,6 +9,7 @@ from causaliq_workflow.schema import (
     _duplicate_step_name_errors,
     validate_workflow,
 )
+from causaliq_workflow.yaml_frontend import load_workflow_text
 
 
 # Test WorkflowValidationError exception creation
@@ -192,6 +193,63 @@ def test_pre_validate_accepts_parameter_defaults():
         "steps": [{"name": "Test", "uses": "test_action"}],
     }
     assert validate_workflow(workflow) is True
+
+
+# A list default is accepted in both YAML spellings.
+@pytest.mark.parametrize(
+    "text",
+    [
+        "network: [asia, sports]\n"
+        "steps:\n"
+        "  - name: Test\n"
+        "    uses: test_action\n",
+        "network:\n"
+        "  - asia\n"
+        "  - sports\n"
+        "steps:\n"
+        "  - name: Test\n"
+        "    uses: test_action\n",
+    ],
+)
+def test_pre_validate_accepts_list_parameter_default(text: str):
+    """Test inline and block list defaults are accepted."""
+    workflow = load_workflow_text(text)
+    assert workflow["network"] == ["asia", "sports"]
+    assert validate_workflow(workflow) is True
+
+
+# An empty list default is accepted: it never expands the matrix.
+def test_pre_validate_accepts_empty_list_default():
+    """Test an empty list default is accepted."""
+    workflow = {
+        "metric": [],
+        "steps": [{"name": "Test", "uses": "test_action"}],
+    }
+    assert validate_workflow(workflow) is True
+
+
+# A null item has no meaning in a list default.
+def test_pre_validate_rejects_null_list_item():
+    """Test a null list item is rejected."""
+    workflow = {
+        "metric": ["f1", None],
+        "steps": [{"name": "Test", "uses": "test_action"}],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(workflow)
+    assert "a list parameter must not contain null" in str(exc_info.value)
+
+
+# A nested list is not a list of scalars.
+def test_pre_validate_rejects_nested_list_default():
+    """Test a nested list default is rejected."""
+    workflow = {
+        "metric": [["f1"]],
+        "steps": [{"name": "Test", "uses": "test_action"}],
+    }
+    with pytest.raises(WorkflowValidationError) as exc_info:
+        validate_workflow(workflow)
+    assert "a list parameter must contain only strings" in str(exc_info.value)
 
 
 # Test workflow validation with matrix variables

@@ -10,6 +10,7 @@ from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
 from causaliq_workflow.workflow.matrix import _bind_parameters
 from causaliq_workflow.workflow.parameters import (
     _call_parameters_vary,
+    _list_parameter_usage_errors,
     _null_parameter_usage_errors,
     _parameter_matrix_clash_errors,
     _parameter_names,
@@ -134,6 +135,64 @@ def test_null_parameter_usage_ignores_scalar_values() -> None:
         "steps": [{"name": "Evaluate", "with": {"sample_size": 10}}],
     }
     assert _null_parameter_usage_errors(workflow) == []
+
+
+# A list default may be the whole value of a step parameter.
+def test_list_parameter_usage_accepts_whole_value() -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [{"name": "Call", "with": {"network": "{{network}}"}}],
+    }
+    assert _list_parameter_usage_errors(workflow) == []
+
+
+# A list default has no text form to substitute into longer text.
+def test_list_parameter_usage_reports_partial_value() -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [{"name": "Learn", "with": {"input": "{{network}}.csv"}}],
+    }
+    assert _list_parameter_usage_errors(workflow) == [
+        "Step 'Learn': parameter 'network' is declared as a list, so "
+        "'{{network}}' may only be the whole value of a step parameter"
+    ]
+
+
+# A list default inside a list element would produce a nested list.
+def test_list_parameter_usage_reports_list_element() -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [{"name": "Learn", "with": {"series": ["{{network}}"]}}],
+    }
+    assert len(_list_parameter_usage_errors(workflow)) == 1
+
+
+# A scalar default keeps its existing text-substitution behaviour.
+def test_list_parameter_usage_ignores_scalar_default() -> None:
+    workflow = {
+        "network": "asia",
+        "steps": [{"name": "Learn", "with": {"input": "{{network}}.csv"}}],
+    }
+    assert _list_parameter_usage_errors(workflow) == []
+
+
+# A list default is also reported through template validation.
+def test_validate_template_variables_rejects_partial_list_default(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "input": "{{network}}.csv"},
+            }
+        ],
+    }
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor._validate_template_variables(workflow)
+    assert "parameter 'network' is declared as a list" in str(exc_info.value)
 
 
 # A declared parameter must be used as a placeholder.
@@ -518,3 +577,58 @@ def test_parse_workflow_accepts_supplied_parameters(
     assert "sample_size" in str(exc_info.value)
     parsed = executor.parse_workflow(str(path), parameters={"sample_size": 10})
     assert parsed["steps"][0]["with"]["input"] == "{{sample_size}}.csv"
+
+
+# A list default reaches the action as a list.
+def test_execute_workflow_passes_list_default(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "network": "{{network}}"},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run")
+    parameters = results[0]["steps"]["Test Step"]["parameters"]
+    assert parameters["network"] == ["asia", "sports"]
+
+
+# A list default is one value, so it never expands the matrix.
+def test_execute_workflow_list_default_runs_one_job(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "network": "{{network}}"},
+            }
+        ],
+    }
+    assert len(executor.execute_workflow(workflow, mode="run")) == 1
+
+
+# A list default may not be interpolated into longer text.
+def test_execute_workflow_rejects_partial_list_default(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "network": ["asia", "sports"],
+        "steps": [
+            {
+                "name": "Test Step",
+                "uses": "mock_workflow_action",
+                "with": {"action": "test", "input": "{{network}}.csv"},
+            }
+        ],
+    }
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor.execute_workflow(workflow, mode="validate")
+    assert "declared as a list" in str(exc_info.value)

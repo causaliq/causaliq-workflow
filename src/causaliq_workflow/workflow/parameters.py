@@ -7,13 +7,15 @@ by the ``--param`` CLI option. It binds to the called workflow by name:
 - a name that matches a declared parameter overrides its default;
 - any other name binds as a ``{{name}}`` template variable.
 
-Declared parameters are the workflow's top-level scalar keys. A ``null``
-default declares a parameter with no value: when neither the caller nor
-the CLI supplies one, the parameter is omitted from every action that
-would otherwise receive it, so the action's own default applies. A
-placeholder that is not declared is effectively required and must be
-supplied by the caller or the CLI. Parameters never add a matrix
-dimension, so they are not part of a cache key: changing a parameter
+Declared parameters are the workflow's top-level keys other than
+``matrix`` and ``steps``. A default is a scalar, a list of scalars or
+``null``. A ``null`` default declares a parameter with no value: when
+neither the caller nor the CLI supplies one, the parameter is omitted
+from every action that would otherwise receive it, so the action's own
+default applies. A list default is one value, so ``{{name}}`` delivers
+the list itself; it never adds a matrix dimension. A placeholder that is
+not declared is effectively required and must be supplied by the caller
+or the CLI. Parameters are not part of a cache key: changing a parameter
 value does not invalidate existing entries.
 """
 
@@ -140,23 +142,34 @@ def _null_default_names(workflow: Dict[str, Any]) -> Set[str]:
     }
 
 
+def _list_default_names(workflow: Dict[str, Any]) -> Set[str]:
+    """Return the names of parameters declared with a list default."""
+    return {
+        name
+        for name, value in _declared_parameters(workflow).items()
+        if isinstance(value, list)
+    }
+
+
 def _null_parameter_names(
     value: Any, null_names: Set[str], whole: bool = True
 ) -> Set[str]:
-    """Return null-default parameters used where no value exists.
+    """Return whole-value-only parameters used where no whole value exists.
 
     A null-default parameter may only be the whole value of a step
     parameter. Text such as ``"data/{{name}}.csv"`` would otherwise
     become ``data/None.csv``, and a list element has no whole-value
-    meaning either.
+    meaning either. A list-default parameter follows the same rule: it
+    has no text form, so it may only be an entire step parameter value.
 
     Args:
         value: Step parameter value to inspect.
-        null_names: Names of parameters declared with a null default.
+        null_names: Names of parameters that may only be whole values.
         whole: True when the value may be a whole-value token.
 
     Returns:
-        Names used in a position that cannot accept a missing value.
+        Names used in a position that cannot accept a missing value or a
+        list.
     """
     if isinstance(value, str):
         tokens = _extract_tokens(value) & null_names
@@ -226,6 +239,47 @@ def _null_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
     return errors
 
 
+def _list_usage_step_errors(
+    step_name: str, values: Dict[str, Any], list_names: Set[str]
+) -> List[str]:
+    """Return errors for list-default parameters used as partial values."""
+    errors: List[str] = []
+    for value in values.values():
+        for name in sorted(_null_parameter_names(value, list_names)):
+            errors.append(
+                f"Step '{step_name}': parameter '{name}' is declared as "
+                f"a list, so '{{{{{name}}}}}' may only be the whole value "
+                f"of a step parameter"
+            )
+    return errors
+
+
+def _list_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
+    """Return errors for list-default parameters used as partial values.
+
+    A list default has no text form, so interpolating it into a longer
+    string or into a list element would substitute a list representation
+    rather than the intended value.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+
+    Returns:
+        One error per list-default parameter used where only a whole
+        value is meaningful.
+    """
+    list_names = _list_default_names(workflow)
+    errors: List[str] = []
+    for step in workflow.get("steps", []):
+        step_name = step.get("name", "unnamed")
+        errors.extend(
+            _list_usage_step_errors(
+                step_name, step.get("with", {}), list_names
+            )
+        )
+    return errors
+
+
 def _parameter_errors(
     workflow: Dict[str, Any], parameters: Dict[str, Any]
 ) -> List[str]:
@@ -247,7 +301,7 @@ def _parameter_matrix_clash_errors(workflow: Dict[str, Any]) -> List[str]:
 
 
 def _parameter_declaration_errors(workflow: Dict[str, Any]) -> List[str]:
-    """Return clash, unused-declaration and null-usage errors.
+    """Return clash, unused-declaration and usage errors.
 
     Args:
         workflow: Parsed workflow dictionary.
@@ -258,6 +312,7 @@ def _parameter_declaration_errors(workflow: Dict[str, Any]) -> List[str]:
     errors = _parameter_matrix_clash_errors(workflow)
     errors.extend(_unused_parameter_errors(workflow))
     errors.extend(_null_parameter_usage_errors(workflow))
+    errors.extend(_list_parameter_usage_errors(workflow))
     return errors
 
 

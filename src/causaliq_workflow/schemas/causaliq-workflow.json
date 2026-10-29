@@ -95,12 +95,26 @@
     }
   },
   "additionalProperties": {
-    "type": [
-      "string",
-      "number",
-      "boolean",
-      "null"
-    ],
-    "description": "Workflow parameter default value; a parameter declared null is omitted from an action when no value is supplied"
+    "description": "Workflow parameter default value: a scalar, a list of scalars, or null; a parameter declared null is omitted from an action when no value is supplied",
+    "oneOf": [
+      {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "type": "array",
+        "items": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        }
+      }
+    ]
   }
 }

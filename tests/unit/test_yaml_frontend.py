@@ -36,6 +36,13 @@ def test_token_in_list_is_preserved() -> None:
     assert data["with"]["x"] == ["{{a}}", "plain"]
 
 
+# Both list spellings declare the same list default.
+def test_list_parameter_default_syntaxes_match() -> None:
+    inline = load_workflow_text("network: [asia, sports]\n")
+    block = load_workflow_text("network:\n  - asia\n  - sports\n")
+    assert inline == block == {"network": ["asia", "sports"]}
+
+
 # A token inside a block scalar is preserved.
 def test_token_in_block_scalar_is_preserved() -> None:
     data = load_workflow_text("with:\n  x: |\n    {{a}}\n")
