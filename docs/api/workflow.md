@@ -10,7 +10,8 @@ names so existing imports keep resolving:
 
 - `matrix` — matrix expansion, derivation and value matching;
 - `parameters` — workflow parameter names, binding and validation;
-- `templates` — template variable extraction and resolution;
+- `templates` — template variable extraction, resolution and step-name
+  expansion;
 - `patterns` — step pattern detection;
 - `filters` — shared reporting view construction and filter resolution;
 - `aggregation` — AGGREGATE pattern configuration and input scanning;
@@ -59,7 +60,7 @@ executor = WorkflowExecutor()
 try:
     # Parse and validate workflow (includes template variable validation)
     workflow = executor.parse_workflow("experiment.yml")
-    # Top-level scalar keys are workflow parameters, so they may be absent
+    # Keys other than matrix and steps are workflow parameters
     print(f"Workflow ID: {workflow.get('id')}")
     print(f"Sample size: {workflow.get('sample_size')}")
 

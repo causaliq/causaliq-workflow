@@ -114,13 +114,15 @@ parameter with a `null` default; see
 
 ### Declaring parameters
 
-Top-level scalar keys of a workflow declare its parameters. They are
-available as `{{name}}` placeholders and may be overridden by a caller:
+Top-level keys of a workflow declare its parameters. A default may be a
+scalar, a list of scalars, or `null`. They are available as `{{name}}`
+placeholders and may be overridden by a caller:
 
 ```yaml
 # modules/learn-graphs.yml
-sample_size: 1000     # default 1000
-reference: null       # no value: omitted from the action
+sample_size: 1000            # default 1000
+reference: null              # no value: omitted from the action
+randomise: ["var_best"]      # a list default
 ```
 
 A caller that supplies neither value runs the child exactly as its
@@ -143,6 +145,37 @@ substitute when no value is supplied. A declared parameter must also be
 used as a placeholder in at least one step; an unused declaration is a
 validation error.
 
+A list default is a single value that a caller forwards whole, which is
+how a caller-level list fans out inside a called workflow's matrix:
+
+```yaml
+# workflows/bnsl.yml
+network: [asia, sports]
+
+steps:
+  - name: Run bnlearn hc
+    uses: ./modules/learn-graphs.yml
+    with:
+      algorithm: hc
+      network: {{network}}    # child matrix becomes [asia, sports]
+```
+
+The call step runs once, because its parameters do not reference a matrix
+variable of the calling workflow. The called workflow expands `network`
+into two jobs. A list default may also be overridden by the caller, and
+either YAML spelling is accepted:
+
+```yaml
+network:
+  - asia
+  - sports
+```
+
+A list default may only be the whole value of a step parameter, for the
+same reason as a null default: a list has no text form. `input:
+"data/{{network}}.csv"` and a list element such as `series:
+["{{network}}"]` are therefore rejected rather than substituted as text.
+
 A placeholder the child uses but does not declare is a **required
 parameter**. The caller must supply it, and validation reports it when it
 is missing:
@@ -153,9 +186,6 @@ Step 'Call child' (workflow 'hc_bad.yml'): Unknown template variables:
 Declare a default value for each missing name as a top-level workflow
 key, or supply it with 'with:' in the calling workflow or --param.
 ```
-
-A list default is not supported yet, so a list value is supplied by the
-caller (for example `randomise: ["var_best"]`).
 
 Because a null default forwards an omission, a module can pass a value on
 only when its own caller set it:

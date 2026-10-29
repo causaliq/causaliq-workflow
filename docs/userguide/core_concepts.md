@@ -28,8 +28,9 @@ steps:
 
 ### Workflow Parameters
 
-Any other top-level scalar key declares a workflow parameter and its
-default value. Declare parameters before `matrix` and `steps` so the
+Any top-level key other than `matrix` and `steps` declares a workflow
+parameter and its default value. A default may be a scalar, a list of
+scalars, or `null`. Declare parameters before `matrix` and `steps` so the
 intent is clear; the parser itself is order-independent. Declared
 parameters are available as template variables in step parameters, and a
 caller or the CLI can override them:
@@ -38,6 +39,7 @@ caller or the CLI can override them:
 # workflow.yml
 sample_size: 1000      # default 1000
 reference: null        # no value: omitted from the action
+network: [asia, sports]  # a list value, passed on as one value
 
 steps:
   - name: "Learn"
@@ -59,23 +61,42 @@ A declaration binds as follows:
 |-------------|-------------------------------------|
 | `sample_size: 1000` | `1000` |
 | `reference: null` | none — the parameter is omitted from the action, so the action's own default applies |
+| `network: [asia, sports]` | the list `[asia, sports]` |
+
+A list may be written inline (`[asia, sports]`) or as a block list:
+
+```yaml
+network:
+  - asia
+  - sports
+```
+
+The two spellings are equivalent. A list item must be text, a number or a
+boolean, so a nested list and a `null` item are rejected. A list default
+is **one value**: it never adds a matrix dimension, and `{{network}}`
+delivers the list itself rather than one element per job.
 
 Defaults are convenient when several steps need the same value, and they
 let a workflow be run standalone without supplying anything.
 
-Three rules keep declarations honest:
+Four rules keep declarations honest:
 
 - A declared parameter must be used as a `{{placeholder}}` in at least one
-  step's `with` block. An unused declaration is a validation error.
+  step's `with` block or `name`. An unused declaration is a validation
+  error.
 - A `null` parameter may only be the **whole value** of a step parameter.
   `"data/{{reference}}.csv"` would substitute `None` and is rejected.
+- A list parameter may also only be the **whole value** of a step
+  parameter. Interpolating a list has no text form, so
+  `"data/{{network}}.csv"` and a list element such as `["{{network}}"]`
+  are rejected rather than substituted as text.
 - A placeholder that is not declared is a **required parameter**: a
   caller or the CLI must supply it, otherwise validation reports the
   name as an unknown template variable.
 
 A declaration never adds a matrix dimension, and no parameter value is
 part of a cache key, so a changed default does not invalidate existing
-entries.
+entries. Use `matrix` when each value must be a separate job.
 
 `matrix` and `steps` are reserved. A name may not be declared as both a
 parameter and a matrix variable. See
@@ -147,6 +168,10 @@ The `uses` property specifies which CausalIQ package provides the action
 (e.g., `causaliq-analysis`, `causaliq-discovery`, `causaliq-knowledge`).
 A value that starts with `./` or `../` calls another workflow instead of
 an action; see [Reusable Workflows](subworkflows.md).
+
+A `name` may contain `{{placeholder}}` tokens. They are expanded for each
+job, so a name can identify the matrix combination a step ran for; see
+[Step Names](#step-names).
 
 ## Actions
 
@@ -291,6 +316,46 @@ Variables are resolved in this order, with later entries winning:
 1. **Workflow parameters**: declared defaults
 2. **Matrix variables**: values from the current matrix combination
 3. **Supplied parameters**: values from the caller's `with` or `--param`
+
+### Step Names
+
+A step's `name` may contain `{{placeholder}}` tokens. They are expanded
+for each job before the step runs:
+
+```yaml
+matrix:
+  series: [asia, cancer]
+
+steps:
+  - name: "Learn graph using bnlearn for {{series}}"
+    uses: "causaliq-discovery"
+    with:
+      action: "learn_bn"
+      series: {{series}}
+      output: "results/graphs.db"
+```
+
+Each matrix combination logs and records its own name, so
+`cqflow run workflow.yml --mode=run --log-level=all` prints
+`Learn graph using bnlearn for asia` and
+`Learn graph using bnlearn for cancer`. The expanded name is also what
+the completion summary and a called workflow's step list report.
+
+A name is always text, so every value is expanded with its text form: a
+number renders as `1000`, a boolean as `True`, and a list as
+`['asia', 'sports']`. A `null` value renders as `None`, so give a name
+placeholder a scalar value and avoid a null-default parameter or a null
+matrix wildcard in a name.
+
+Naming rules:
+
+- A placeholder in a name counts as a use of a declared parameter, so a
+  caller or `--param` may supply it.
+- Validation runs before the matrix is expanded, so a validation message
+  shows the name as written.
+- Names must stay unique after expansion. Two steps that expand to the
+  same name in one job are rejected, because results are recorded by
+  name.
 
 ### Validation
 

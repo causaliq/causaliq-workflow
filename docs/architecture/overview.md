@@ -421,7 +421,8 @@ Workflow engine sub-package:
   one another, so each mixin type-checks independently.
 - `workflow/errors.py` — `WorkflowExecutionError`.
 - `workflow/matrix.py` — matrix expansion, derivation and value matching.
-- `workflow/templates.py` — template variable extraction and resolution.
+- `workflow/templates.py` — template variable extraction, resolution and
+  step-name expansion.
 - `workflow/patterns.py` — step pattern (CREATE and AGGREGATE) detection.
 - `workflow/filters.py` — shared reporting view construction for filter
   evaluation.

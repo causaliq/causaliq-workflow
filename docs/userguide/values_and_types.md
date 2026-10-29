@@ -12,7 +12,7 @@ the same as a quote in another:
 | Layer | What it controls |
 |-------|------------------|
 | YAML structure | `matrix`, `steps`, `with`, lists, indentation and commas |
-| CausalIQ values | How a scalar is read: text, number, boolean or null |
+| CausalIQ values | How a value is read: text, number, boolean, null or a list |
 | Action types | How an action parameter is validated and used |
 
 ## Writing Values
@@ -38,6 +38,40 @@ A number written with a decimal point keeps its numeric value, so
 ```yaml
 version: "1.10"    # the text 1.10
 ```
+
+## Lists
+
+A list is a sequence of scalars and may be written inline or as a block
+list. Both forms are equivalent:
+
+```yaml
+metric: [f1, precision]
+```
+
+```yaml
+metric:
+  - f1
+  - precision
+```
+
+Use a list as a step parameter value, or as a workflow parameter default:
+
+```yaml
+network: [asia, sports]    # a list-valued workflow parameter
+
+steps:
+  - name: Call child
+    uses: ./modules/learn-graphs.yml
+    with:
+      network: {{network}} # the whole list, delivered as one value
+```
+
+A top-level list key declares **one** list-valued parameter; it is not a
+matrix and creates no jobs. Use `matrix` when each value must be a
+separate job. A list item must be text, a number or a boolean, so a nested
+list and a `null` item are rejected. Because a list has no text form, a
+list parameter may only be a whole step parameter value — see
+[Core Concepts](core_concepts.md#workflow-parameters).
 
 ## When to Quote
 

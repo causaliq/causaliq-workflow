@@ -1,14 +1,36 @@
-# Reducing and standardising quotes usage in workflows
+# Workflow parameter support list type
 
-Please could you consider these suggestions and suggest a viable plan for reducing and standardising quote usage.
+Please develop a plan (or pushback if you don't think it is a good idea
+or it is very difficult) to declare default workflow parameters with list values
+with either of the following two syntaxes:
 
-Even as the author of CausalIQ I find it confusing when and where
-quotes are needed in workflow matrix and parameter values. My aim is to reduce friction for users, whilst being absolutely clear how the system works.
+```yaml
+network: [asia, sports]
+```
 
-I think some of the issues may be because we are using off-the-shelf YAML and expression parsers. I think we should continue to use off-the-shelf capablities, but maybe we need to preprocess input to them to shield the end-user from their
-pecuilarities.
+or 
+```yaml
+network:
+  - asia
+  - sport
+```
 
-For example, can we dispense with requiring quotes for parameter values - for most of their lifetime they could be handled as strings, but coerced to int or float 'near' the action. Workflow code would attempt to understand strings as parameters first, before assuming they are values.  One remaining need for quotes would be to differentiate a parameter name from a value of the same name i.e. description == "description"
+The ```{{network}}``` placeholder can then be used to pass these lists to sub-workflows
+- please see @causaliq-research/papers/variable-ordering/workflows/bnsl.yml
+as an example.
+
+## Substitute placeholders in step names
+
+Currently placeholders such as `{{series}}` in the example below are not being 
+substituted when they appear in the `name` element of a workflow step.
+
+Please devise a plan for fixing this.
+
+```yaml
+steps:
+  - name: "Learn graph using bnlearn for {{series}}"
+```
+
 
 ## Further work which is out of scope for this task
 

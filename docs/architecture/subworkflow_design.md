@@ -69,16 +69,33 @@ parameter value changed; `--mode=force` re-runs it. Authors who need a
 parameter to distinguish cache entries declare it as a matrix dimension
 (for example `alpha: [null]`) and let the caller override it.
 
-Top-level scalar keys are declared parameters with defaults. A `null`
-default declares a parameter with no value: binding it to a step template
-yields `None`, which the action boundary drops, so the parameter reaches
-the action as omitted. A placeholder that is not declared is required, so
-a caller or the CLI must supply it; `_validate_template_variables` (and
-`_missing_variable_errors` for dict-based execution) reports it when it is
-missing. Unknown names are reported by `_call_parameter_errors` with the
-accepted names. Ineffective declarations — an unused parameter or a
-null-default parameter used as part of a value — are reported by
-`_parameter_declaration_errors`.
+Top-level keys other than `matrix` and `steps` are declared parameters
+with defaults. A default is a scalar, a list of scalars or `null`. A list
+default is a single value: `_resolve_template_variables` returns the list
+itself for a whole-value `{{name}}` token, and `_bind_parameters` uses it
+as the override values when the called workflow declares the same name as
+a matrix dimension. That is how a caller-level list fans out inside a
+callee's matrix while the call step itself still runs once.
+
+A `null` default declares a parameter with no value: binding it to a step
+template yields `None`, which the action boundary drops, so the parameter
+reaches the action as omitted. A placeholder that is not declared is
+required, so a caller or the CLI must supply it;
+`_validate_template_variables` (and `_missing_variable_errors` for
+dict-based execution) reports it when it is missing. Unknown names are
+reported by `_call_parameter_errors` with the accepted names. Ineffective
+declarations — an unused parameter, a null-default parameter used as part
+of a value, or a list-default parameter used anywhere other than as a
+whole step parameter value — are reported by
+`_parameter_declaration_errors`. A step's `name` counts as a use, because
+the executor expands its `{{placeholder}}` tokens for each job.
+
+Validation resolves a call step's `with` values in the caller's context
+before binding them to the called workflow, so a forwarded matrix value
+or declared parameter reaches the child as a value. Without that step the
+child would receive the literal `{{placeholder}}` text and reject it as
+an invalid action parameter. A call whose parameters vary across the
+caller's matrix is validated once, for the caller's first job.
 
 ### Run-once rule
 

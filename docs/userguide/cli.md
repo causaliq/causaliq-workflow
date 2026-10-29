@@ -99,6 +99,10 @@ Example output:
 2026-03-15 14:23:02 [evaluate] SKIPPED   eval-step [network=alarm]
 ```
 
+The step name shown is the name expanded for that job, so a
+`{{placeholder}}` in a step's `name` appears with its value (see
+[Step Names](core_concepts.md#step-names)).
+
 ## Cache Management
 
 ### Export Cache
