@@ -203,13 +203,23 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         step: Dict[str, Any],
         step_name: str,
         frames: Tuple[WorkflowFrame, ...] = (),
+        jobs: Optional[List[Dict[str, Any]]] = None,
+        workflow: Optional[Dict[str, Any]] = None,
+        cli_params: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
         """Validate a call step, recursing into the called workflow.
+
+        The call's ``with`` values are resolved in the caller's context
+        first, so a forwarded matrix value or declared parameter reaches
+        the child as a value rather than as a ``{{placeholder}}``.
 
         Args:
             step: Step configuration declaring the call.
             step_name: Step name used in error messages.
             frames: Current call stack.
+            jobs: Expanded matrix combinations of the calling workflow.
+            workflow: Calling workflow dictionary.
+            cli_params: Parameters supplied by the CLI.
 
         Returns:
             Validation errors, empty when the call is valid.
@@ -217,22 +227,55 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         errors = _reserved_parameter_errors(step, step_name)
         if errors:
             return errors
-        parameters = step.get("with", {})
+        raw = step.get("with", {})
         try:
             target = self._workflow_call_target(step, step_name, frames)
-            child = self._load_child_workflow(
-                target, step_name, set(parameters)
-            )
-        except WorkflowExecutionError as e:
-            return [str(e)]
+            child = self._load_child_workflow(target, step_name, set(raw))
+        except WorkflowExecutionError as exc:
+            return [str(exc)]
+        parameters = self._resolve_call_parameters(
+            raw, jobs, workflow, cli_params
+        )
         errors = _call_parameter_errors(
             step_name, target.name, parameters, child
         )
         if errors:
             return errors
-        child, variables = _bind_parameters(child, parameters)
+        return self._validate_bound_child(child, parameters, target, frames)
+
+    def _resolve_call_parameters(
+        self,
+        raw: Dict[str, Any],
+        jobs: Optional[List[Dict[str, Any]]],
+        workflow: Optional[Dict[str, Any]],
+        cli_params: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Resolve a call's parameters as the first job will pass them.
+
+        Args:
+            raw: Unresolved ``with`` values from the call step.
+            jobs: Expanded matrix combinations of the calling workflow.
+            workflow: Calling workflow dictionary.
+            cli_params: Parameters supplied by the CLI.
+
+        Returns:
+            Resolved parameter values, one mapping per validation pass.
+        """
+        job = jobs[0] if jobs else {}
+        variables = {**(workflow or {}), **job, **(cli_params or {})}
+        return self._resolve_parameter_values(raw, variables)
+
+    def _validate_bound_child(
+        self,
+        child: Dict[str, Any],
+        parameters: Dict[str, Any],
+        target: Path,
+        frames: Tuple[WorkflowFrame, ...],
+    ) -> List[str]:
+        """Validate a called workflow as the call will bind it."""
+        bound, variables = _bind_parameters(child, parameters)
         child_frames = frames + (workflow_frame(target),)
-        return self._validate_all_entries(child, variables, child_frames)
+        return self._validate_all_entries(bound, variables, child_frames)
 
 
 def _call_parameter_errors(

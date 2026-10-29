@@ -90,6 +90,16 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Resolve template variables in a workflow object."""
         raise NotImplementedError
 
+    def _resolve_step_name(
+        self,
+        step: Dict[str, Any],
+        variables: Dict[str, Any],
+        index: int,
+        recorded: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Return a step's name with its tokens expanded for the job."""
+        raise NotImplementedError
+
     def _runs_once(self, step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
         """Return True when a step runs once rather than per matrix job."""
         raise NotImplementedError
@@ -235,6 +245,9 @@ class WorkflowExecutorBase:  # pragma: no cover
         step: Dict[str, Any],
         step_name: str,
         frames: Tuple["WorkflowFrame", ...] = (),
+        jobs: Optional[List[Dict[str, Any]]] = None,
+        workflow: Optional[Dict[str, Any]] = None,
+        cli_params: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
         """Validate a step that calls another workflow."""
         raise NotImplementedError

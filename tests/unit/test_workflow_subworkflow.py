@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
+from causaliq_core import ActionValidationError, CausalIQActionProvider
 
 from causaliq_workflow.cli_report import _count_results
 from causaliq_workflow.registry import WorkflowContext
@@ -591,7 +592,14 @@ def test_call_step_filter_is_not_validated(
 def test_validate_step_entries_dispatches_calls(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def validate_call(step: Any, step_name: str, frames: Any) -> List[str]:
+    def validate_call(
+        step: Any,
+        step_name: str,
+        frames: Any,
+        jobs: Any,
+        workflow: Any,
+        cli_params: Any,
+    ) -> List[str]:
         return ["call error"]
 
     monkeypatch.setattr(
@@ -601,3 +609,102 @@ def test_validate_step_entries_dispatches_calls(
         {"name": "Call", "uses": "./child.yml"}, [{}], {}, {}, {}
     )
     assert errors == ["call error"]
+
+
+# A call's forwarded placeholder is resolved before child validation.
+def test_validate_call_step_resolves_forwarded_values(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    child = {"matrix": {"sample_size": [1]}, "steps": []}
+    captured: Dict[str, Any] = {}
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return child
+
+    def record_entries(
+        workflow: Dict[str, Any], cli_params: Dict[str, Any], frames: Any
+    ) -> List[str]:
+        captured["matrix"] = workflow["matrix"]
+        return []
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    monkeypatch.setattr(executor, "_validate_all_entries", record_entries)
+    errors = executor._validate_workflow_call_step(
+        {"uses": "./child.yml", "with": {"sample_size": "{{sample_size}}"}},
+        "Call",
+        _frames(tmp_path),
+        [{}],
+        {"sample_size": [10, 20]},
+    )
+    assert errors == []
+    assert captured["matrix"]["sample_size"] == [10, 20]
+
+
+_CHILD_WORKFLOW = """\
+matrix:
+  sample_size: [1]
+
+steps:
+  - name: "Learn graph using typed data for {{sample_size}}"
+    uses: "typed-sample-size"
+    with:
+      action: "learn"
+      sample_size: "{{sample_size}}"
+      output: "results/validation-check.db"
+"""
+
+
+class _TypedSampleSizeProvider(CausalIQActionProvider):
+    """Provider that accepts only integer sample sizes."""
+
+    name = "typed-sample-size"
+    version = "1.0.0"
+    supported_actions = {"learn"}
+
+    def validate_parameters(self, action: str, parameters: Dict[str, Any]):
+        """Reject a sample size that is not an integer."""
+        super().validate_parameters(action, parameters)
+        size = parameters.get("sample_size")
+        if not isinstance(size, int):
+            raise ActionValidationError(
+                f"'sample_size' must be an int or list of ints; {size!r}"
+            )
+
+    def _execute(self, action, parameters, mode, context, logger):
+        """Return a successful result."""
+        return ("success", {}, [])
+
+
+# A caller's list parameter reaches a child matrix as integers.
+def test_call_forwards_list_parameter_to_child_matrix(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    executor.action_registry._actions["typed-sample-size"] = (
+        _TypedSampleSizeProvider
+    )
+    (tmp_path / "child.yml").write_text(_CHILD_WORKFLOW, encoding="utf-8")
+    parent = {
+        "sample_size": [10, 20],
+        "steps": [
+            {
+                "name": "Run child",
+                "uses": "./child.yml",
+                "with": {"sample_size": "{{sample_size}}"},
+            }
+        ],
+    }
+
+    results = executor.execute_workflow(
+        parent, mode="dry-run", source_path=tmp_path / "parent.yml"
+    )
+
+    summary = results[0]["steps"]["Run child"]
+    names = [step["name"] for step in summary["steps"]]
+    assert names == [
+        "Learn graph using typed data for 10",
+        "Learn graph using typed data for 20",
+    ]

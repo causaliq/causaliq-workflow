@@ -60,6 +60,27 @@ def _single_token(text: Any) -> Optional[str]:
     return match.group(1) if match else None
 
 
+def _substitute_text(text: str, variables: Dict[str, Any]) -> str:
+    """Return text with every known ``{{name}}`` token expanded as text.
+
+    The value's text form is used, so a step name always stays a string
+    whatever type the bound value has. A token with no value is left as
+    written, so an unresolved name stays visible.
+
+    Args:
+        text: String that may contain ``{{name}}`` tokens.
+        variables: Variable values to substitute.
+
+    Returns:
+        The substituted text.
+    """
+    result = text
+    for name in _extract_tokens(text):
+        if name in variables:
+            result = result.replace(f"{{{{{name}}}}}", str(variables[name]))
+    return result
+
+
 def _declared_parameters(workflow: Dict[str, Any]) -> Dict[str, Any]:
     """Return a workflow's declared parameter defaults."""
     return {
@@ -70,20 +91,23 @@ def _declared_parameters(workflow: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _used_parameter_names(workflow: Dict[str, Any]) -> Set[str]:
-    """Return the names used as ``{{name}}`` tokens by step ``with`` blocks.
+    """Return the names a step uses as ``{{name}}`` tokens.
 
-    A nested workflow call's ``with`` block counts, so a parameter that
-    is only forwarded to a called workflow is still used.
+    A token counts wherever a step can show it: in the ``with`` block or
+    in the step's ``name``. A nested workflow call's ``with`` block
+    counts too, so a parameter that is only forwarded to a called
+    workflow is still used.
 
     Args:
         workflow: Parsed workflow dictionary.
 
     Returns:
-        Set of names referenced by a step parameter value.
+        Set of names referenced by a step parameter or step name.
     """
     used: Set[str] = set()
     for step in workflow.get("steps", []):
         used.update(_token_names(step.get("with", {})))
+        used.update(_token_names(step.get("name")))
     return used
 
 

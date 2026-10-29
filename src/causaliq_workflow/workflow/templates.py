@@ -1,6 +1,6 @@
 """Template variable extraction, resolution and validation."""
 
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
@@ -13,6 +13,7 @@ from causaliq_workflow.workflow.parameters import (
     _extract_tokens,
     _parameter_declaration_errors,
     _single_token,
+    _substitute_text,
     _token_names,
 )
 
@@ -247,11 +248,48 @@ class TemplateMixin(WorkflowExecutorBase):
             value = variables[token]
             if not isinstance(value, str):
                 return value
-        result = text
-        for var in self._extract_template_variables(text):
-            if var in variables:
-                result = result.replace(f"{{{{{var}}}}}", str(variables[var]))
-        return result
+        return _substitute_text(text, variables)
+
+    def _resolve_step_name(
+        self,
+        step: Dict[str, Any],
+        variables: Dict[str, Any],
+        index: int,
+        recorded: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Return a step's name with its template tokens expanded as text.
+
+        A name is always text, so a ``{{name}}`` token in it is replaced
+        by the value's text form rather than by its native value.
+        Resolution happens per job, so a matrix variable yields a
+        different name for each combination.
+
+        Step results are recorded by name, so an expanded name that
+        already holds a result would overwrite it.
+
+        Args:
+            step: Step configuration dictionary.
+            variables: Variable values for the current job.
+            index: Position of the step, used when the step has no name.
+            recorded: Results already recorded for this job.
+
+        Returns:
+            The expanded step name.
+
+        Raises:
+            WorkflowExecutionError: If the expanded name is already
+                recorded for this job.
+        """
+        name = step.get("name")
+        text = f"step-{index}" if not isinstance(name, str) else name
+        resolved = _substitute_text(text, variables)
+        if resolved in (recorded or {}):
+            raise WorkflowExecutionError(
+                f"Step name '{resolved}' is already used by an earlier "
+                f"step in this job; step names must stay unique after "
+                f"template expansion"
+            )
+        return resolved
 
 
 def _collect_available_variables(

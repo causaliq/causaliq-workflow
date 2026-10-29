@@ -250,8 +250,14 @@ class ExecutionMixin(WorkflowExecutorBase):
         }
 
     def _run_step(self, state: _JobState, step: Dict[str, Any]) -> None:
-        """Execute a single step, then restore the job's matrix values."""
-        step_name = step.get("name", f"step-{len(state.step_results)}")
+        """Execute a single step, then restore the job's matrix values.
+
+        The step name is expanded for the current job, so a matrix value
+        in the name yields a distinct name for each combination.
+        """
+        step_name = self._resolve_step_name(
+            step, state.variables, len(state.step_results), state.step_results
+        )
 
         if "uses" in step:
             if self._run_action_step(state, step, step_name):

@@ -79,7 +79,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
         """Dispatch per-entry validation for a single step by pattern."""
         step_name = step.get("name", "unnamed")
         if is_workflow_call_step(step):
-            return self._validate_workflow_call_step(step, step_name, frames)
+            return self._validate_workflow_call_step(
+                step, step_name, frames, jobs, workflow, cli_params
+            )
         if not step.get("uses"):
             return []
 
