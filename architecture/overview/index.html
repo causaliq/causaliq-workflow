@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1480,6 +1508,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -2565,7 +2621,7 @@ steps:
   - name: &quot;Structure Learning&quot;
     uses: &quot;causaliq-discovery&quot;
     with:
-      algorithm: &quot;{{algorithm}}&quot;
+      algorithm: {{algorithm}}
       model: &quot;models/{{model}}/{{model}}.json&quot;
       # No output path needed - results written to workflow_cache
       # Cache key derived from matrix: {network: &quot;asia&quot;, algorithm: &quot;pc&quot;}
@@ -2763,10 +2819,8 @@ consumer_provider.run(
 <h2 id="core-architectural-decisions">Core Architectural Decisions</h2>
 <h3 id="github-actions-foundation">GitHub Actions Foundation</h3>
 <p>The architecture is built on GitHub Actions workflow patterns, adapted for causal discovery:</p>
-<pre><code class="language-yaml">name: &quot;Causal Discovery Experiment&quot;
-id: &quot;asia-comparison-001&quot;
+<pre><code class="language-yaml">id: &quot;asia-comparison-001&quot;
 data_root: &quot;data&quot;
-workflow_cache: &quot;results/{{id}}_cache.db&quot;  # All results stored here
 
 matrix:
   dataset: [&quot;asia&quot;, &quot;cancer&quot;]  
@@ -2776,8 +2830,10 @@ steps:
   - name: &quot;Structure Learning&quot;
     uses: &quot;dummy-structure-learner&quot;
     with:
+      dataset_path: &quot;{{data_root}}/{{dataset}}.csv&quot;
       alpha: 0.05
       max_iter: 1000
+      output: &quot;results/{{id}}/graphs.db&quot;
       # Results cached with key: {dataset, algorithm}
 </code></pre>
 <h3 id="action-based-components">Action-Based Components</h3>
@@ -2854,7 +2910,8 @@ public API and import paths unchanged.</p>
   one another, so each mixin type-checks independently.</li>
 <li><code>workflow/errors.py</code> — <code>WorkflowExecutionError</code>.</li>
 <li><code>workflow/matrix.py</code> — matrix expansion, derivation and value matching.</li>
-<li><code>workflow/templates.py</code> — template variable extraction and resolution.</li>
+<li><code>workflow/templates.py</code> — template variable extraction, resolution and
+  step-name expansion.</li>
 <li><code>workflow/patterns.py</code> — step pattern (CREATE and AGGREGATE) detection.</li>
 <li><code>workflow/filters.py</code> — shared reporting view construction for filter
   evaluation.</li>

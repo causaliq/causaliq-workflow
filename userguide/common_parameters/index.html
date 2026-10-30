@@ -493,6 +493,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_patterns/" class="md-nav__link">
         
   
@@ -637,6 +665,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#defaults-and-omission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defaults and Omission
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#input-parameter" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -709,6 +748,17 @@
     <span class="md-ellipsis">
       
         Filter Syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bare-values-in-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bare Values in Filters
       
     </span>
   </a>
@@ -1232,6 +1282,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -1824,6 +1902,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#defaults-and-omission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defaults and Omission
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#input-parameter" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1896,6 +1985,17 @@
     <span class="md-ellipsis">
       
         Filter Syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bare-values-in-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bare Values in Filters
       
     </span>
   </a>
@@ -2016,6 +2116,48 @@
 <p>These parameters are shared across many CausalIQ workflow actions. Individual
 action documentation specifies which parameters apply and any action-specific
 behaviour.</p>
+<h2 id="defaults-and-omission">Defaults and Omission</h2>
+<p>Omitting a parameter applies the action's declared default, and it is also
+how a parameter that does not apply is expressed. There is no "none" or
+"null" value to learn: write neither, and the action evaluates only what
+applies.</p>
+<p>Where a default has a natural explicit spelling, the action exposes it as a
+value so the default can be pinned, compared in a filter, or passed to a
+called workflow:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>randomise</code></td>
+<td><code>no-randomise</code></td>
+<td>apply no randomisation</td>
+</tr>
+<tr>
+<td><code>sample_size</code></td>
+<td><code>all</code></td>
+<td>use every row</td>
+</tr>
+<tr>
+<td><code>variable_types</code></td>
+<td><code>impute</code></td>
+<td>infer types from the data</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>60</code></td>
+<td>sixty minutes</td>
+</tr>
+</tbody>
+</table>
+<p>A literal <code>null</code> in a <code>with</code> block is rejected; use omission instead. See
+<a href="../core_concepts/#parameters-and-defaults">Core Concepts</a> for the full
+rule and the matrix wildcard exception.</p>
 <h2 id="input-parameter"><code>input</code> Parameter</h2>
 <p>Specifies the source of data for the action.</p>
 <table>
@@ -2104,7 +2246,7 @@ steps, it may point to data files.</p>
 <p>Restricts which entries are processed by the action.</p>
 <pre><code class="language-yaml">with:
   input: &quot;results/graphs.db&quot;
-  filter: &quot;sample_size &gt;= 100 and network in ['asia', 'cancer']&quot;
+  filter: sample_size &gt;= 100 and network in ['asia', 'cancer']
 </code></pre>
 <h3 id="filter-syntax">Filter Syntax</h3>
 <p>Filter expressions use Python syntax with supported operators:</p>
@@ -2134,6 +2276,20 @@ steps, it may point to data files.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="bare-values-in-filters">Bare Values in Filters</h3>
+<p>A bare word on the right of a comparison is a literal value unless it is
+a declared parameter or a matrix variable used as a reference:</p>
+<pre><code class="language-yaml">filter: network == asia and f1 &gt; 0.8
+</code></pre>
+<p>The expression above is equivalent to
+<code>network == 'asia' and f1 &gt; 0.8</code>, and both forms are accepted. Quote a
+value only when its text collides with a workflow parameter or with a
+field name used on the left of a comparison:</p>
+<pre><code>filter: description == 'description'   # literal text
+filter: description == description     # declared parameter or left-hand field
+</code></pre>
+<p>The left side of a comparison is always a field reference. See
+<a href="../values_and_types/">Values and Quoting</a> for the full rules.</p>
 <h3 id="supported-functions">Supported Functions</h3>
 <table>
 <thead>
@@ -2180,7 +2336,7 @@ steps, it may point to data files.</p>
 <h3 id="random-sampling-in-filters">Random Sampling in Filters</h3>
 <p>The <code>random(count, seed)</code> function selects a reproducible random subset
 of values for a variable. Use it with the <code>in</code> operator:</p>
-<pre><code class="language-yaml">filter: &quot;pdg_seed in random(5, 42)&quot;
+<pre><code class="language-yaml">filter: pdg_seed in random(5, 42)
 </code></pre>
 <p>This collects all distinct values of <code>pdg_seed</code> across the entries,
 then deterministically selects 5 of them using the given seed. Only
@@ -2188,7 +2344,7 @@ entries whose <code>pdg_seed</code> is in the selected set pass the filter.</p>
 <p>The selection is <strong>deterministic</strong> — the same seed always produces the
 same subset, ensuring reproducibility across runs.</p>
 <pre><code class="language-yaml"># Select 3 random seeds and 2 random sample sizes
-filter: &quot;pdg_seed in random(3, 0) and sample_size in random(2, 1)&quot;
+filter: pdg_seed in random(3, 0) and sample_size in random(2, 1)
 </code></pre>
 <p>!!! note
     The total number of distinct values for the variable must be at
@@ -2198,13 +2354,13 @@ filter: &quot;pdg_seed in random(3, 0) and sample_size in random(2, 1)&quot;
 <p>Filter expressions can reference matrix values, result-object fields and
 producer metadata:</p>
 <pre><code class="language-yaml"># Matrix and result-object fields use bare names
-filter: &quot;network in ['asia', 'cancer', 'alarm'] and f1 &gt; 0.8&quot;
+filter: network in ['asia', 'cancer', 'alarm'] and f1 &gt; 0.8
 
 # Metadata uses the action qualifier
-filter: &quot;learn_graph.algorithm == 'pc' and learn_graph.status == 'ok'&quot;
+filter: learn_graph.algorithm == 'pc' and learn_graph.status == 'ok'
 
 # Nested metadata uses the full path
-filter: &quot;learn_graph.hyperparameters.iss &gt; 10 and sample_size &lt; 10000&quot;
+filter: learn_graph.hyperparameters.iss &gt; 10 and sample_size &lt; 10000
 </code></pre>
 <p>Bare metadata names such as <code>status</code> or <code>algorithm</code> are rejected: the
 reference must name the producer (<code>learn_graph.status</code>,
@@ -2214,8 +2370,9 @@ when a name exists in both blocks, and the provider-qualified
 <code>causaliq_discovery.learn_graph.status</code> form when action names collide.</p>
 <h3 id="template-variables-in-filters">Template Variables in Filters</h3>
 <p>Filter expressions support <code>{{variable}}</code> template substitution, resolved
-from workflow properties and matrix values before evaluation. This enables
-parameterised filters that change per matrix combination:</p>
+from workflow parameters, supplied parameters and matrix values before
+evaluation. This enables parameterised filters that change per matrix
+combination:</p>
 <pre><code class="language-yaml">matrix:
   network: [asia, cancer]
   llm_model: [anthropic_claude, gemini_flash]
@@ -2226,7 +2383,7 @@ steps:
     with:
       action: &quot;merge_graphs&quot;
       input: &quot;results/pdgs.db&quot;
-      filter: &quot;llm_model == '{{llm_model}}' or sample_size == '1K'&quot;
+      filter: llm_model == '{{llm_model}}' or sample_size == '1K'
       output: &quot;results/merged.db&quot;
 </code></pre>
 <p>For the <code>{network: asia, llm_model: anthropic_claude}</code> combination, the

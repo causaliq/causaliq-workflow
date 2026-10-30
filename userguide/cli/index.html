@@ -493,6 +493,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_patterns/" class="md-nav__link">
         
   
@@ -710,10 +738,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#logging-levels" class="md-nav__link">
+  <a href="#workflow-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Logging Levels
+        Workflow Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Depth
       
     </span>
   </a>
@@ -1215,6 +1254,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -1852,10 +1919,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#logging-levels" class="md-nav__link">
+  <a href="#workflow-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Logging Levels
+        Workflow Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Depth
       
     </span>
   </a>
@@ -2044,34 +2122,63 @@ cqflow run workflow.yml --mode=run
 # Force re-execution of all steps
 cqflow run workflow.yml --mode=force
 </code></pre>
-<h3 id="logging-levels">Logging Levels</h3>
+<h3 id="workflow-parameters">Workflow Parameters</h3>
+<p>Supply or override workflow parameters with <code>--param NAME=VALUE</code>
+(repeatable):</p>
+<pre><code class="language-bash"># Override a declared default
+cqflow run workflow.yml --mode=run --param sample_size=5000
+
+# Replace a matrix dimension with a single value
+cqflow run workflow.yml --mode=run --param network=asia
+
+# Provide a list of values for a matrix dimension
+cqflow run workflow.yml --mode=run --param algorithm='[pc, ges]'
+</code></pre>
+<p>Values are parsed as YAML, so numbers, booleans and lists keep their
+types. A name that matches a matrix dimension replaces that dimension; any
+other name overrides a declared parameter or supplies a required
+<code>{{name}}</code> placeholder. A value supplied for a null-default parameter
+replaces the omission. Names the workflow does not use are reported as
+validation errors, and repeating a name is rejected. A parameter change
+does not invalidate cached entries — use <code>--mode=force</code> to re-run.</p>
+<h3 id="logging-depth">Logging Depth</h3>
+<p><code>--log-depth</code> sets the deepest workflow nesting level that prints
+messages. Each level above the default adds one layer:</p>
 <table>
 <thead>
 <tr>
-<th>Level</th>
+<th>Depth</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>none</code></td>
+<td><code>0</code></td>
 <td>No output</td>
 </tr>
 <tr>
-<td><code>summary</code></td>
-<td>Summary of execution (default)</td>
+<td><code>1</code></td>
+<td>Top-level summary only (default)</td>
 </tr>
 <tr>
-<td><code>all</code></td>
-<td>Detailed per-entry status messages</td>
+<td><code>2</code></td>
+<td>Adds the top-level steps and their <code>CALLING</code>/<code>COMPLETED</code> call boundaries</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Adds first-level sub-workflow steps, indented by two spaces</td>
+</tr>
+<tr>
+<td><code>3+</code></td>
+<td>Each further level adds the next level of sub-workflow messages</td>
 </tr>
 </tbody>
 </table>
-<pre><code class="language-bash"># Detailed output showing each entry
-cqflow run workflow.yml --mode=run --log-level=all
+<pre><code class="language-bash"># Show the top-level steps and the workflows they call
+cqflow run workflow.yml --mode=run --log-depth=2
 </code></pre>
 <h3 id="status-messages">Status Messages</h3>
-<p>With <code>--log-level=all</code>, each entry displays a status:</p>
+<p>With <code>--log-depth=2</code> or higher, each entry displays a status:</p>
 <table>
 <thead>
 <tr>
@@ -2106,13 +2213,30 @@ cqflow run workflow.yml --mode=run --log-level=all
 <td>—</td>
 <td>Action raised an exception</td>
 </tr>
+<tr>
+<td>CALLING</td>
+<td>—</td>
+<td>A step calls another workflow</td>
+</tr>
+<tr>
+<td>COMPLETED</td>
+<td>—</td>
+<td>A called workflow returned, with its cumulative step counts</td>
+</tr>
 </tbody>
 </table>
 <p>Example output:</p>
-<pre><code>2026-03-15 14:23:01 [evaluate] EXECUTED  eval-step [network=asia]
-2026-03-15 14:23:02 [evaluate] EXECUTED  eval-step [network=cancer]
-2026-03-15 14:23:02 [evaluate] SKIPPED   eval-step [network=alarm]
+<pre><code>2026-03-15 14:23:01 [./hc_std.yml] CALLING Run bnlearn hc with standard ordering
+2026-03-15 14:23:01   [evaluate] EXECUTED eval-step [network=asia]
+2026-03-15 14:23:02 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
 </code></pre>
+<p>Messages from a sub-workflow are indented by two spaces per call level.
+A failed run finishes with an <code>ERRORS:</code> list that names each failing step
+with the matrix values that identify it, capped at ten entries followed
+by <code>... and N more errors</code>.</p>
+<p>The step name shown is the name expanded for that job, so a
+<code>{{placeholder}}</code> in a step's <code>name</code> appears with its value (see
+<a href="../core_concepts/#step-names">Step Names</a>).</p>
 <h2 id="cache-management">Cache Management</h2>
 <h3 id="export-cache">Export Cache</h3>
 <p>Export cache entries to a directory or zip file for sharing or archival:</p>
@@ -2152,8 +2276,8 @@ cqflow import-cache -i results.zip -o results/restored.db
 <td>Default root directory for workflows</td>
 </tr>
 <tr>
-<td><code>CAUSALIQ_LOG_LEVEL</code></td>
-<td>Default logging level</td>
+<td><code>CAUSALIQ_LOG_DEPTH</code></td>
+<td>Default logging depth</td>
 </tr>
 </tbody>
 </table>

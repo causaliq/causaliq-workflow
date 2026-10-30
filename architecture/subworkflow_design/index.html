@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1036,6 +1064,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_auto_discovery_design/" class="md-nav__link">
         
   
@@ -1203,6 +1259,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Execution Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameter-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-once-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run-once rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1795,6 +1879,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Execution Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameter-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-once-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run-once rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1917,17 +2029,64 @@ stack.</p>
 working directory and the root workflow cannot be detected as a cycle.</p>
 <h2 id="execution-model">Execution Model</h2>
 <p>A call step delegates to <code>_execute_jobs</code> with the child workflow, the
-caller's mode, an empty <code>cli_params</code> and the extended stack. The child
+caller's mode, the bound parameters and the extended stack. The child
 therefore expands its own matrix and writes its own caches.</p>
-<p><code>_runs_once</code> treats a call step as single-run because it has no cache
-output and parameters are not forwarded, so a repeated call would be
-identical. When parameters land, a call whose resolved parameters differ
-per matrix combination must run per combination.</p>
+<h3 id="parameter-binding">Parameter binding</h3>
+<p><code>with</code> values are resolved in the caller's context and then bound by
+<code>_bind_parameters</code> (<code>workflow/matrix.py</code>):</p>
+<ul>
+<li>a name that matches a child matrix dimension replaces that dimension's
+  values (a scalar becomes <code>[value]</code>, a list is used as given);</li>
+<li>every other name becomes a template variable of the child.</li>
+</ul>
+<p>A value that is exactly one <code>{{name}}</code> token is bound natively, so an
+integer matrix override stays an integer. Matrix overrides are removed
+from the variable map, so a list-valued override cannot leak into
+<code>{{name}}</code> substitution. Binding is pure: the parsed child is never
+mutated, which matters when the same parent job runs a call twice.</p>
+<p>Parameters never add a matrix dimension, so they are not part of a cache
+key. Conservative execution therefore still skips an entry when only a
+parameter value changed; <code>--mode=force</code> re-runs it. Authors who need a
+parameter to distinguish cache entries declare it as a matrix dimension
+(for example <code>alpha: [null]</code>) and let the caller override it.</p>
+<p>Top-level keys other than <code>matrix</code> and <code>steps</code> are declared parameters
+with defaults. A default is a scalar, a list of scalars or <code>null</code>. A list
+default is a single value: <code>_resolve_template_variables</code> returns the list
+itself for a whole-value <code>{{name}}</code> token, and <code>_bind_parameters</code> uses it
+as the override values when the called workflow declares the same name as
+a matrix dimension. That is how a caller-level list fans out inside a
+callee's matrix while the call step itself still runs once.</p>
+<p>A <code>null</code> default declares a parameter with no value: binding it to a step
+template yields <code>None</code>, which the action boundary drops, so the parameter
+reaches the action as omitted. A placeholder that is not declared is
+required, so a caller or the CLI must supply it;
+<code>_validate_template_variables</code> (and <code>_missing_variable_errors</code> for
+dict-based execution) reports it when it is missing. Unknown names are
+reported by <code>_call_parameter_errors</code> with the accepted names. Ineffective
+declarations — an unused parameter, a null-default parameter used as part
+of a value, or a list-default parameter used anywhere other than as a
+whole step parameter value — are reported by
+<code>_parameter_declaration_errors</code>. A step's <code>name</code> counts as a use, because
+the executor expands its <code>{{placeholder}}</code> tokens for each job.</p>
+<p>Validation resolves a call step's <code>with</code> values in the caller's context
+before binding them to the called workflow, so a forwarded matrix value
+or declared parameter reaches the child as a value. Without that step the
+child would receive the literal <code>{{placeholder}}</code> text and reject it as
+an invalid action parameter. A call whose parameters vary across the
+caller's matrix is validated once, for the caller's first job.</p>
+<h3 id="run-once-rule">Run-once rule</h3>
+<p><code>_runs_once(step, matrix)</code> treats a call step as single-run unless its
+<code>with</code> values reference a matrix variable of the calling workflow. A
+constant call would do identical work on every job, so it runs once and
+is skipped later; a call whose parameters vary resolves to different
+parameters per combination, so it runs once per combination.</p>
 <h2 id="validation">Validation</h2>
 <p><code>_load_child_workflow</code> loads and validates each called workflow:
-<code>validate_workflow</code>, <code>_validate_template_variables</code> and
-<code>_validate_workflow_actions</code>. The validation pass then recurses through
-<code>_validate_all_entries</code>, so <code>--mode=validate</code> covers the whole tree.</p>
+<code>validate_workflow</code>, <code>_validate_template_variables</code> (with the caller's
+parameter names available), and <code>_validate_workflow_actions</code>. The
+validation pass then binds the caller's parameters and recurses through
+<code>_validate_all_entries</code>, so <code>execute_workflow(mode="validate")</code> covers the
+whole tree.</p>
 <p>Call steps are excluded from action-provider, action-pattern and filter
 validation. <code>with.action</code> and <code>with.output</code> are rejected because the
 executor owns those keys.</p>
@@ -1937,6 +2096,7 @@ executor owns those keys.</p>
     &quot;status&quot;: &quot;success&quot;,       # error / would_execute / would_skip
     &quot;workflow&quot;: &quot;&lt;canonical path&gt;&quot;,
     &quot;jobs&quot;: 2,
+    &quot;parameters&quot;: {&quot;variant&quot;: &quot;two&quot;},   # omitted when none
     &quot;steps&quot;: [
         {&quot;name&quot;: &quot;Child record&quot;, &quot;status&quot;: &quot;success&quot;},
         {&quot;name&quot;: &quot;Child record&quot;, &quot;status&quot;: &quot;success&quot;},
@@ -1946,21 +2106,24 @@ executor owns those keys.</p>
 <p>Called step failures are folded into <code>status: error</code> plus an <code>errors</code>
 list, so the CLI report treats a failing call like an ordinary failing
 step.</p>
+<p>Each nested step summary also carries the fields needed to report the
+run consistently at any depth: a nested call keeps its <code>workflow</code> marker
+and its own <code>steps</code>, and a job with matrix values contributes
+<code>matrix_values</code>. That lets the final summary count leaf steps at every
+level and name the failing matrix combination in the error list.</p>
 <p>The CLI report counts a call step's nested step results in place of the
 call itself, so a parent that calls one twelve-step workflow reports
 twelve steps, not one.</p>
 <p>Call steps are announced through the step logger (<code>CALLING</code>) before the
-called workflow's own step messages, so the log reads as a call followed
-by its work.</p>
+called workflow's own step messages, and a <code>COMPLETED</code> message carrying
+the call's cumulative step counts is emitted when the child returns.
+Every event carries its call depth, so the CLI indents deeper levels and
+<code>--log-depth</code> can stop reporting below a chosen level.</p>
 <h2 id="deferred">Deferred</h2>
 <ul>
-<li>Workflow parameters, defaults and precedence over matrix and step
-  parameters.</li>
+<li>Parameter values invalidating or keying cache entries.</li>
 <li>Step output chaining from a called workflow to its caller.</li>
-<li>Rolling child step counts into the CLI summary.</li>
 <li>Memoising loaded child workflows across parent jobs.</li>
-<li>Relative <code>root_dir</code> semantics, which the user guide describes but the
-  executor does not yet implement.</li>
 </ul>
 
 

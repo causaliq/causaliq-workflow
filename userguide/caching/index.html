@@ -493,6 +493,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_patterns/" class="md-nav__link">
         
   
@@ -1221,6 +1249,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -2084,7 +2140,7 @@ schema.</p>
 <pre><code class="language-yaml">with:
   action: plot
   input: results/metrics.db
-  filter: &quot;learn_graph.algorithm_seconds &lt; 3600&quot;
+  filter: learn_graph.algorithm_seconds &lt; 3600
   x: sample_size
   y: f1
 </code></pre>
@@ -2152,15 +2208,26 @@ already been completed:</p>
 └── merged.db       # Aggregated results
 </code></pre>
 <h3 id="cache-location">Cache Location</h3>
-<p>Specify cache paths relative to the workflow's <code>root_dir</code>:</p>
-<pre><code class="language-yaml">root_dir: &quot;/experiments/project-001&quot;
+<p>Cache paths in <code>input:</code> and <code>output:</code> resolve against the working
+directory:</p>
+<pre><code class="language-yaml">steps:
+  - name: &quot;Learn&quot;
+    uses: &quot;causaliq-discovery&quot;
+    with:
+      action: &quot;learn_structure&quot;
+      output: &quot;results/graphs.db&quot;
+</code></pre>
+<p>Use a workflow parameter when the location must change between runs:</p>
+<pre><code class="language-yaml">output_root: &quot;results&quot;
 
 steps:
   - name: &quot;Learn&quot;
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      output: &quot;results/graphs.db&quot;  # → /experiments/project-001/results/graphs.db
+      output: &quot;{{output_root}}/graphs.db&quot;
+</code></pre>
+<pre><code class="language-bash">cqflow run workflow.yml --param output_root=/experiments/project-001/results
 </code></pre>
 <h2 id="exporting-and-importing">Exporting and Importing</h2>
 <p>Caches can be exported to open formats for sharing and archival:</p>

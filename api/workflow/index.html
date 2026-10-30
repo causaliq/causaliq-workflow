@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1030,6 +1058,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/action_auto_discovery_design/" class="md-nav__link">
         
   
@@ -1521,6 +1577,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(parameters)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1699,6 +1766,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#workflow-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#workflow-calls" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1764,6 +1842,17 @@
     <span class="md-ellipsis">
       
         Available Template Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-usage-requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter Usage Requirement
       
     </span>
   </a>
@@ -2193,6 +2282,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(parameters)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2371,6 +2471,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#workflow-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#workflow-calls" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2436,6 +2547,17 @@
     <span class="md-ellipsis">
       
         Available Template Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-usage-requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter Usage Requirement
       
     </span>
   </a>
@@ -2600,7 +2722,9 @@ modules composed into <code>WorkflowExecutor</code>. The package re-exports the 
 names so existing imports keep resolving:</p>
 <ul>
 <li><code>matrix</code> — matrix expansion, derivation and value matching;</li>
-<li><code>templates</code> — template variable extraction and resolution;</li>
+<li><code>parameters</code> — workflow parameter names, binding and validation;</li>
+<li><code>templates</code> — template variable extraction, resolution and step-name
+  expansion;</li>
 <li><code>patterns</code> — step pattern detection;</li>
 <li><code>filters</code> — shared reporting view construction and filter resolution;</li>
 <li><code>aggregation</code> — AGGREGATE pattern configuration and input scanning;</li>
@@ -2699,7 +2823,9 @@ templating.</p>
 
 </h4>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">parse_workflow</span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="workflow_path (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)">workflow_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="workflow_path (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(workflow_path)">workflow_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="parameters (causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(parameters))" href="#causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(parameters)">parameters</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2726,6 +2852,17 @@ templating.</p>
           –
           <div class="doc-md-description">
             <p>Execution mode for action validation</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h5 id="causaliq_workflow.workflow.WorkflowExecutor.parse_workflow(parameters)" class="doc doc-heading doc-heading-parameter">              <b><code>parameters</code></b>
+</h5>              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Parameter names supplied by the CLI, so a workflow
+may reference them in its templates before execution</p>
           </div>
         </li>
     </ul>
@@ -2834,7 +2971,7 @@ integer values [0, 1, 2, ..., 24].</p>
     <span class="n"><a class="autorefs autorefs-internal" title="workflow (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(workflow)">workflow</a></span><span class="p">:</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span>
     <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="cli_params (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(cli_params)">cli_params</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="step_logger (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger)">step_logger</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Callable">Callable</span></span><span class="p">[[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="step_logger (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger)">step_logger</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="causaliq_workflow.reporting.StepLogger">StepLogger</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="validate (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(validate)">validate</a></span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="source_path (causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path))" href="#causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(source_path)">source_path</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span>
@@ -2886,13 +3023,15 @@ in each step's 'with' block. Each step can write to its own cache.</p>
         </li>
         <li class="doc-section-item field-body">
 <h5 id="causaliq_workflow.workflow.WorkflowExecutor.execute_workflow(step_logger)" class="doc doc-heading doc-heading-parameter">              <b><code>step_logger</code></b>
-</h5>              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Callable">Callable</span>[[<span title="str">str</span>, <span title="str">str</span>, <span title="str">str</span>, <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]], None]]</code>, default:
+</h5>              (<code><span title="typing.Optional">Optional</span>[<span title="causaliq_workflow.reporting.StepLogger">StepLogger</span>]</code>, default:
                   <code>None</code>
 )
           –
           <div class="doc-md-description">
             <p>Optional function to log step execution
-(action_method, step_name, status, matrix_values)</p>
+(action_method, step_name, status, matrix_values). The
+optional <code>depth</code> and <code>detail</code> keyword arguments carry
+the workflow nesting depth and a trailing detail fragment.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -3004,8 +3143,9 @@ executor = WorkflowExecutor()
 try:
     # Parse and validate workflow (includes template variable validation)
     workflow = executor.parse_workflow(&quot;experiment.yml&quot;)
-    print(f&quot;Workflow ID: {workflow['id']}&quot;)
-    print(f&quot;Description: {workflow['description']}&quot;)
+    # Keys other than matrix and steps are workflow parameters
+    print(f&quot;Workflow ID: {workflow.get('id')}&quot;)
+    print(f&quot;Sample size: {workflow.get('sample_size')}&quot;)
 
     # Execute the complete workflow
     results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
@@ -3014,6 +3154,21 @@ try:
 except WorkflowExecutionError as e:
     print(f&quot;Workflow execution failed: {e}&quot;)
 </code></pre>
+<h3 id="workflow-parameters">Workflow Parameters</h3>
+<p>Declared parameters are overridden with <code>parameters</code> when parsing (so the
+parser knows the names a workflow expects) and with <code>cli_params</code> when
+executing:</p>
+<pre><code class="language-python">workflow = executor.parse_workflow(
+    &quot;experiment.yml&quot;, parameters={&quot;sample_size&quot;: 5000}
+)
+results = executor.execute_workflow(
+    workflow, mode=&quot;run&quot;, cli_params={&quot;sample_size&quot;: 5000}
+)
+</code></pre>
+<p>A name that matches a matrix dimension replaces that dimension; other
+names override a declared default or fill a <code>{{name}}</code> placeholder. A
+call step's <code>with</code> block uses the same rules; see
+<a href="../../userguide/subworkflows/#calling-parameters">Reusable Workflows</a>.</p>
 <h3 id="workflow-calls">Workflow Calls</h3>
 <p>A step can call another workflow by using a relative <code>uses</code> path.
 <code>parse_workflow</code> remembers the workflow's location, so relative calls
@@ -3056,7 +3211,6 @@ for i, job in enumerate(jobs):
 # Example: Valid template usage
 valid_workflow = {
     &quot;id&quot;: &quot;test-001&quot;,
-    &quot;description&quot;: &quot;Template validation example&quot;, 
     &quot;matrix&quot;: {&quot;dataset&quot;: [&quot;asia&quot;], &quot;algorithm&quot;: [&quot;pc&quot;]},
     &quot;steps&quot;: [{
         &quot;uses&quot;: &quot;my-custom-action&quot;,
@@ -3073,7 +3227,8 @@ try:
 except WorkflowExecutionError as e:
     if &quot;Unknown template variables&quot; in str(e):
         print(f&quot;Template validation failed: {e}&quot;)
-        # Example: &quot;Unknown template variables: missing_var. Available context: id, dataset, algorithm&quot;
+        # Example: &quot;Unknown template variables: ['missing_var'].
+        # Available variables: ['algorithm', 'dataset', 'id']&quot;
     else:
         print(f&quot;Workflow execution failed: {e}&quot;)
 </code></pre>
@@ -3081,7 +3236,6 @@ except WorkflowExecutionError as e:
 <pre><code class="language-python"># Example workflow YAML showing flexible action parameters
 workflow_yaml = \&quot;\&quot;\&quot;
 id: &quot;experiment-001&quot;
-description: &quot;Flexible causal discovery experiment&quot;
 matrix:
   dataset: [&quot;asia&quot;, &quot;cancer&quot;]
   algorithm: [&quot;pc&quot;, &quot;ges&quot;]
@@ -3093,7 +3247,7 @@ steps:
     with:
       data_path: &quot;/experiments/data/{{dataset}}.csv&quot;
       output_dir: &quot;/experiments/results/{{id}}/{{algorithm}}/&quot;
-      alpha: &quot;{{alpha}}&quot;
+      alpha: {{alpha}}
       max_iter: 1000
 
   - name: &quot;Validation&quot;
@@ -3121,11 +3275,27 @@ if &quot;matrix&quot; in workflow:
 <h2 id="template-variable-context">Template Variable Context</h2>
 <p>Template variables can reference:</p>
 <ol>
-<li><strong>Workflow properties</strong>: <code>{{id}}</code>, <code>{{description}}</code>, <code>{{name}}</code></li>
-<li><strong>Matrix variables</strong>: Any variables defined in the <code>matrix</code> section</li>
-<li><strong>Step context</strong>: Variables available during step execution</li>
-<li><strong>File paths</strong>: Dynamic path generation using workflow context</li>
+<li><strong>Workflow parameters</strong>: declared top-level keys such as <code>{{id}}</code></li>
+<li><strong>Matrix variables</strong>: any variables defined in the <code>matrix</code> section</li>
+<li><strong>Supplied parameters</strong>: values from a caller's <code>with:</code> or <code>--param</code></li>
 </ol>
+<p>Declared parameters have defaults and may be overridden:</p>
+<pre><code class="language-yaml">sample_size: 1000     # default 1000
+reference: null       # no value: the parameter is omitted from the action
+</code></pre>
+<p>A declaration with a <code>null</code> default supplies no value. Unless a caller or
+<code>--param</code> supplies one, the parameter is omitted from every action that
+would otherwise receive it, so the action's own default applies.</p>
+<p>Three rules apply to declarations:</p>
+<ul>
+<li>A declared parameter must be used as a <code>{{placeholder}}</code> in at least one
+  step's <code>with</code> block; an unused declaration is a validation error.</li>
+<li>A null-default parameter may only be the <strong>whole value</strong> of a step
+  parameter. <code>"data/{{reference}}.csv"</code> would substitute <code>None</code> and is
+  rejected.</li>
+<li>A placeholder that is not declared is effectively required, so a caller
+  or <code>--param</code> must supply it.</li>
+</ul>
 <h3 id="available-template-variables">Available Template Variables</h3>
 <table>
 <thead>
@@ -3137,9 +3307,9 @@ if &quot;matrix&quot; in workflow:
 </thead>
 <tbody>
 <tr>
-<td>Workflow</td>
-<td><code>id</code>, <code>description</code>, <code>name</code></td>
-<td><code>{{id}}</code></td>
+<td>Parameters</td>
+<td>Declared top-level keys</td>
+<td><code>{{id}}</code>, <code>{{output_root}}</code></td>
 </tr>
 <tr>
 <td>Matrix</td>
@@ -3147,12 +3317,47 @@ if &quot;matrix&quot; in workflow:
 <td><code>{{dataset}}</code>, <code>{{algorithm}}</code></td>
 </tr>
 <tr>
-<td>Paths</td>
-<td><code>data_root</code>, <code>output_root</code></td>
-<td><code>{{output_root}}/results</code></td>
+<td>AGGREGATE cache</td>
+<td>Keys derived from input caches</td>
+<td><code>{{network}}</code></td>
 </tr>
 </tbody>
 </table>
+<p>A whole-value token may be written without quotes:
+<code>sample_size: {{sample_size}}</code> is valid. A value that is exactly one
+token keeps its native type. An action parameter declared as <code>int</code>,
+<code>float</code> or <code>bool</code> also accepts its text spelling, because the value is
+converted just before the action runs.</p>
+<p>Unknown variables are rejected when the workflow is parsed, unless a
+caller or the CLI supplies them:</p>
+<pre><code>Unknown template variables: ['sampl_size'].
+Available variables: ['algorithm', 'dataset']
+</code></pre>
+<p>The same error reports a required parameter whose value was not supplied,
+because an undeclared placeholder has no default.</p>
+<h3 id="parameter-usage-requirement">Parameter Usage Requirement</h3>
+<p>A declared parameter must be used as a <code>{{name}}</code> placeholder in at least
+one step's <code>with</code> block. A declaration that no step references is reported
+as a validation error, because it cannot affect any action:</p>
+<pre><code class="language-yaml"># Invalid: 'sample_size' is declared but never used
+sample_size: 1000
+matrix:
+  network: [asia]
+steps:
+  - uses: causaliq-discovery
+    with:
+      action: run_pc
+      network: {{network}}
+</code></pre>
+<p>A null-default parameter is also restricted to whole-value use:</p>
+<pre><code class="language-yaml">reference: null
+steps:
+  - uses: causaliq-analysis
+    with:
+      action: evaluate_graph
+      reference: {{reference}}             # valid: whole value
+      dataset: &quot;data/{{reference}}.csv&quot;      # invalid: no value to embed
+</code></pre>
 <h3 id="matrix-variable-usage-requirement">Matrix Variable Usage Requirement</h3>
 <p>All matrix variables must be used in at least one <strong>CREATE pattern</strong> step's
 parameter templates. This ensures each matrix combination produces a distinct
@@ -3166,8 +3371,8 @@ steps:
   - uses: causaliq-discovery
     with:
       action: run_pc
-      network: &quot;{{network}}&quot;
-      seed: &quot;{{seed}}&quot;
+      network: {{network}}
+      seed: {{seed}}
       output: results.db
 </code></pre>
 <pre><code class="language-yaml"># Invalid: 'seed' is defined but never used
@@ -3178,7 +3383,7 @@ steps:
   - uses: causaliq-discovery
     with:
       action: run_pc
-      network: &quot;{{network}}&quot;
+      network: {{network}}
       output: results.db
 </code></pre>
 <p><strong>Exceptions:</strong></p>
@@ -3384,7 +3589,6 @@ aggregate statistics across parameter sweeps.</p>
 <pre><code class="language-python"># Example workflow with aggregation
 workflow_yaml = \&quot;\&quot;\&quot;
 id: &quot;merge_experiment&quot;
-description: &quot;Merge LLM-generated graphs&quot;
 matrix:
   model: [&quot;asia&quot;, &quot;cancer&quot;]
 
@@ -3393,8 +3597,8 @@ steps:
     uses: &quot;causaliq-analysis&quot;
     with:
       action: &quot;merge_graphs&quot;
-      input: &quot;results/llm_graphs.db&quot;  # .db triggers aggregation
-      output: &quot;results/merged.db&quot;
+      input: &quot;results/{{id}}/llm_graphs.db&quot;  # .db triggers aggregation
+      output: &quot;results/{{id}}/merged.db&quot;
 \&quot;\&quot;\&quot;
 
 # Execute with aggregation mode
@@ -3413,7 +3617,7 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
     with:
       action: &quot;merge_graphs&quot;
       input: &quot;results/graphs.db&quot;
-      filter: &quot;learn_graph.algorithm == 'pc' and sample_size &gt;= 1000&quot;
+      filter: learn_graph.algorithm == 'pc' and sample_size &gt;= 1000
       output: &quot;results/merged.db&quot;
 </code></pre>
 <h2 id="error-handling">Error Handling</h2>

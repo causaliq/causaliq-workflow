@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1016,6 +1044,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -2080,7 +2136,10 @@ completeness), and a further task populates <code>history</code> through a reser
 }
 </code></pre>
 <ul>
-<li><code>parameters</code> stays empty until the values-audit task.</li>
+<li><code>parameters</code> holds the effective parameters used by the action: values the
+  user supplied plus the declared defaults that applied. Parameters that
+  do not apply to the action in that configuration are absent, never
+  <code>null</code>; see <code>causaliq-core/docs/architecture/action_parameter_contract.md</code>.</li>
 <li><code>history</code> stays empty until the history-population task.</li>
 <li>Failure entries use the same shape with <code>result.status</code> and
   <code>result.error</code>, and no object file.</li>

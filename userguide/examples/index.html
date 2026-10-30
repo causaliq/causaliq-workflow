@@ -493,6 +493,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_patterns/" class="md-nav__link">
         
   
@@ -704,10 +732,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#workflow-with-properties" class="md-nav__link">
+  <a href="#workflow-with-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow with Properties
+        Workflow with Parameters
       
     </span>
   </a>
@@ -1203,6 +1231,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -1806,10 +1862,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#workflow-with-properties" class="md-nav__link">
+  <a href="#workflow-with-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow with Properties
+        Workflow with Parameters
       
     </span>
   </a>
@@ -1968,26 +2024,27 @@ steps:
       input: &quot;results/graphs.db&quot;
       reference: &quot;networks/asia/true.graphml&quot;
 </code></pre>
-<h2 id="workflow-with-properties">Workflow with Properties</h2>
-<p>Add workflow-level properties for identification and path management:</p>
-<pre><code class="language-yaml"># with_properties.yml
+<h2 id="workflow-with-parameters">Workflow with Parameters</h2>
+<p>Declare workflow parameters for identification and path management, with
+optional defaults:</p>
+<pre><code class="language-yaml"># with_parameters.yml
 id: &quot;experiment-001&quot;
-description: &quot;Evaluate learned graphs&quot;
-root_dir: &quot;/experiments/project&quot;
+reference: &quot;networks/asia/true.graphml&quot;
 
 steps:
   - name: &quot;Evaluate Graphs&quot;
     uses: &quot;causaliq-analysis&quot;
     with:
       action: &quot;evaluate_graph&quot;
-      input: &quot;results/graphs.db&quot;
-      reference: &quot;networks/asia/true.graphml&quot;
+      input: &quot;results/{{id}}/graphs.db&quot;
+      reference: {{reference}}
+</code></pre>
+<pre><code class="language-bash"># Override a declared default
+cqflow run with_parameters.yml --param id=experiment-002
 </code></pre>
 <h2 id="matrix-expansion">Matrix Expansion</h2>
 <p>Run steps across multiple parameter combinations:</p>
 <pre><code class="language-yaml"># matrix_example.yml
-id: &quot;comparison&quot;
-
 matrix:
   network: [asia, cancer, alarm]
   sample_size: [100, 1000]
@@ -1997,8 +2054,8 @@ steps:
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      network: &quot;{{network}}&quot;
-      sample_size: &quot;{{sample_size}}&quot;
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: &quot;results/graphs.db&quot;
 </code></pre>
 <p>This creates 6 cache entries (3 networks × 2 sample sizes).</p>
@@ -2015,7 +2072,7 @@ steps:
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      network: &quot;{{network}}&quot;
+      network: {{network}}
       dataset: &quot;data/{{network}}_10k.csv&quot;
       output: &quot;results/{{id}}/graphs.db&quot;
 </code></pre>
@@ -2031,8 +2088,8 @@ steps:
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      network: &quot;{{network}}&quot;
-      sample_size: &quot;{{sample_size}}&quot;
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: &quot;results/graphs.db&quot;
 </code></pre>
 <h2 id="run-once-steps">Run-once Steps</h2>
@@ -2068,8 +2125,6 @@ steps:
 <h2 id="multi-step-workflow">Multi-Step Workflow</h2>
 <p>Chain multiple steps sequentially:</p>
 <pre><code class="language-yaml"># multi_step.yml
-id: &quot;full-pipeline&quot;
-
 matrix:
   network: [asia, cancer]
   sample_size: [100, 1000]
@@ -2079,8 +2134,8 @@ steps:
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      network: &quot;{{network}}&quot;
-      sample_size: &quot;{{sample_size}}&quot;
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: &quot;results/graphs.db&quot;
 
   - name: &quot;Evaluate Graphs&quot;
@@ -2093,13 +2148,16 @@ steps:
 <h2 id="filtering-entries">Filtering Entries</h2>
 <p>Restrict which entries are processed:</p>
 <pre><code class="language-yaml"># with_filter.yml
+matrix:
+  network: [asia]
+
 steps:
   - name: &quot;Evaluate High-Quality&quot;
     uses: &quot;causaliq-analysis&quot;
     with:
       action: &quot;evaluate_graph&quot;
       input: &quot;results/graphs.db&quot;
-      filter: &quot;learn_graph.edge_count &gt; 5 and sample_size &gt;= 100&quot;
+      filter: learn_graph.edge_count &gt; 5 and sample_size &gt;= 100
       reference: &quot;networks/{{network}}/true.graphml&quot;
 </code></pre>
 <h2 id="aggregation-with-parameterised-filters">Aggregation with Parameterised Filters</h2>
@@ -2120,7 +2178,7 @@ steps:
       input:
         - &quot;results/bnsl-pdgs.db&quot;
         - &quot;results/llm-pdgs.db&quot;
-      filter: &quot;llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'&quot;
+      filter: llm_model == '{{llm_model}}' or sample_size == '{{sample_size}}'
       output: &quot;results/fused.db&quot;
 </code></pre>
 <p>For <code>{network: asia, llm_model: anthropic_claude, sample_size: 1K}</code>, the
@@ -2146,6 +2204,8 @@ steps:
       output: results/summary.csv
 </code></pre>
 <pre><code class="language-yaml"># modules/benchmark.yml
+sample_size: 1000
+
 matrix:
   network: [asia, cancer]
 
@@ -2154,8 +2214,8 @@ steps:
     uses: causaliq-discovery
     with:
       action: learn_structure
-      network: &quot;{{network}}&quot;
-      sample_size: 1000
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: results/graphs.db
 </code></pre>
 <p>The call resolves <code>./modules/benchmark.yml</code> relative to <code>parent.yml</code> and
@@ -2172,7 +2232,7 @@ cqflow run workflow.yml --mode=run
 cqflow run workflow.yml --mode=force
 
 # Detailed per-entry logging
-cqflow run workflow.yml --mode=run --log-level=all
+cqflow run workflow.yml --mode=run --log-depth=2
 </code></pre>
 <h2 id="further-reading">Further Reading</h2>
 <ul>

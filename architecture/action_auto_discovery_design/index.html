@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../action_architecture_design/">
+        <link rel="prev" href="../action_parameter_contract/">
       
       
         <link rel="next" href="../workflow_executor_design/">
@@ -470,6 +470,34 @@
     
   
     Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
   
 
     
@@ -1016,6 +1044,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -2550,10 +2606,7 @@ pip install -e .
 causaliq-workflow my-experiment.yml
 </code></pre>
 <p><strong>File: my-experiment.yml</strong></p>
-<pre><code class="language-yaml">description: &quot;PC Algorithm Test&quot;
-id: pc-test
-
-steps:
+<pre><code class="language-yaml">steps:
   - name: &quot;Learn Structure&quot;
     uses: &quot;causaliq-pc-algorithm&quot;  # Automatically discovered via entry point
     with:
@@ -2725,10 +2778,7 @@ class ActionProvider(BaseActionProvider):
         return {&quot;status&quot;: &quot;complete&quot;, &quot;result&quot;: inputs.get(&quot;value&quot;, 0) * 2}
 </code></pre>
 <p><strong>Usage in workflow.yaml:</strong></p>
-<pre><code class="language-yaml">description: &quot;Test my action&quot;
-id: test-my-action
-
-steps:
+<pre><code class="language-yaml">steps:
   - name: &quot;Run my action&quot;
     uses: &quot;my-causaliq-action&quot;
     with:
@@ -2781,7 +2831,7 @@ steps:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../action_architecture_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Architecture">
+          <a href="../action_parameter_contract/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Action Parameter Contract">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2791,7 +2841,7 @@ steps:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Action Architecture
+                Action Parameter Contract
               </div>
             </div>
           </a>

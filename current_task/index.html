@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#workflows-can-call-other-workflows" class="md-skip">
+        <a href="#correct-and-improve-log-messages" class="md-skip">
           Skip to content
         </a>
       
@@ -470,6 +470,34 @@
     
   
     Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
   
 
     
@@ -1091,6 +1119,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../architecture/action_auto_discovery_design/" class="md-nav__link">
         
   
@@ -1690,34 +1746,76 @@
 
 
 
-<h1 id="workflows-can-call-other-workflows">Workflows can call other workflows</h1>
-<p>Please propose a syntax for one CausalIQ YAML workflow calling another YAML workflow (used in place of the
-uses-with-action structure employed to invoke a package action). The syntax should
-be modelled on/inspired by standard CI YAML syntax. The <code>with</code> keyword can be used
-to specify parameters for the called sub-workflow.</p>
-<p>At this stage, parameters are not (fully) supported for causaliq workflows - this
-will be tackled in a subsequent task. For this task it is sufficient if the
-invoked workflows ignores any parameters specified for it.</p>
-<p>Recursive calling of workflows is not allowed and should be checked for</p>
+<h1 id="correct-and-improve-log-messages">Correct and improve log messages</h1>
+<p>Please develop a plan to correct and improve the log messages as follows:</p>
+<ol>
+<li>correct the skipped/executed counts in the final summary completed message in this example:</li>
+</ol>
+<pre><code class="language-text">(py311) PS C:\dev\causaliq\causaliq-research&gt; cqflow run papers/variable-ordering/workflows/var-ordering.yml --log-level all --mode run
+2026-10-29 21:11:13 [causaliq-workflow] LOADING workflow from: papers\variable-ordering\workflows\var-ordering.yml
+2026-10-29 21:11:13 [causaliq-workflow] VALIDATING workflow syntax and parameters...
+2026-10-29 21:11:15 [causaliq-workflow] VALIDATED workflow successfully
+2026-10-29 21:11:15 [causaliq-workflow] EXECUTING workflow in run mode...
+2026-10-29 21:11:15 [./legacy.yml] CALLING      Migrate legacy results into CausalIQ legacy.db cache
+2026-10-29 21:11:15 [migrate_trace] SKIPPED      Migrate legacy graphs for series BNLEARN/HC_STD [series=BNLEARN/HC_STD, network=asia, sample_size=1000]
+2026-10-29 21:11:15 [migrate_trace] SKIPPED      Migrate legacy graphs for series BNLEARN/HC_OPT [series=BNLEARN/HC_OPT, network=asia, sample_size=1000]
+2026-10-29 21:11:15 [migrate_trace] SKIPPED      Migrate legacy graphs for series BNLEARN/HC_BAD [series=BNLEARN/HC_BAD, network=asia, sample_size=1000]
+2026-10-29 21:11:15 [./bnsl.yml] CALLING      Perform BNSL using CausalIQ algorithms putting results in learn.db
+2026-10-29 21:11:15 [./bnsl_subflow.yml] CALLING      Run bnlearn hc with standard ordering
+2026-10-29 21:11:15 [learn_graph] SKIPPED      Learn graph using bnlearn for BNLEARN/HC_STD [series=BNLEARN/HC_STD, network=asia, sample_size=1000]
+2026-10-29 21:11:15 [./bnsl_subflow.yml] CALLING      Run bnlearn hc with optimal ordering
+2026-10-29 21:11:15 [learn_graph] SKIPPED      Learn graph using bnlearn for BNLEARN/HC_OPT [series=BNLEARN/HC_OPT, network=asia, sample_size=1000]
+2026-10-29 21:11:15 [./bnsl_subflow.yml] CALLING      Run bnlearn hc with worst ordering
+2026-10-29 21:11:15 [learn_graph] SKIPPED      Learn graph using bnlearn for BNLEARN/HC_BAD [series=BNLEARN/HC_BAD, network=asia, sample_size=1000]
+2026-10-29 21:11:15 [causaliq-workflow] COMPLETED 6 steps: 3 executed, 3 skipped (3 new entries)
+</code></pre>
+<ol>
+<li>improve the error messages in the final ERRORS: summary message so that they include the matrix parameter values. If it is not already implemented, place a limit on the number of errors reported - perhaps 10, with a message such as "... and xxx more errors" detailing how many more errors there are.</li>
+</ol>
+<pre><code class="language-text">(py311) PS C:\dev\causaliq\causaliq-research&gt; cqflow run papers/variable-ordering/workflows/var-ordering.yml --log-level all --mode run
+2026-10-29 21:26:03 [causaliq-workflow] LOADING workflow from: papers\variable-ordering\workflows\var-ordering.yml
+2026-10-29 21:26:03 [causaliq-workflow] VALIDATING workflow syntax and parameters...
+2026-10-29 21:26:05 [causaliq-workflow] VALIDATED workflow successfully
+2026-10-29 21:26:05 [causaliq-workflow] EXECUTING workflow in run mode...
+2026-10-29 21:26:05 [./legacy.yml] CALLING      Migrate legacy results into CausalIQ legacy.db cache
+2026-10-29 21:26:05 [migrate_trace] SKIPPED      Migrate legacy graphs for series BNLEARN/HC_STD [series=BNLEARN/HC_STD, network=asia, sample_size=10]
+2026-10-29 21:26:05 [migrate_trace] SKIPPED      Migrate legacy graphs for series BNLEARN/HC_OPT [series=BNLEARN/HC_OPT, network=asia, sample_size=10]
+2026-10-29 21:26:05 [migrate_trace] SKIPPED      Migrate legacy graphs for series BNLEARN/HC_BAD [series=BNLEARN/HC_BAD, network=asia, sample_size=10]
+2026-10-29 21:26:05 [./bnsl.yml] CALLING      Perform BNSL using CausalIQ algorithms putting results in learn.db
+2026-10-29 21:26:05 [./bnsl_subflow.yml] CALLING      Run bnlearn hc with standard ordering
+2026-10-29 21:26:06 [learn_graph] FAILED       Learn graph using bnlearn for BNLEARN/HC_STD [series=BNLEARN/HC_STD, network=asia, sample_size=10]
+2026-10-29 21:26:06 [./bnsl_subflow.yml] CALLING      Run bnlearn hc with optimal ordering
+2026-10-29 21:26:06 [learn_graph] FAILED       Learn graph using bnlearn for BNLEARN/HC_OPT [series=BNLEARN/HC_OPT, network=asia, sample_size=10]
+2026-10-29 21:26:06 [./bnsl_subflow.yml] CALLING      Run bnlearn hc with worst ordering
+2026-10-29 21:26:07 [learn_graph] FAILED       Learn graph using bnlearn for BNLEARN/HC_BAD [series=BNLEARN/HC_BAD, network=asia, sample_size=10]
+2026-10-29 21:26:07 [causaliq-workflow] COMPLETED 6 steps: 3 skipped, 3 failed
+2026-10-29 21:26:07 [causaliq-workflow] ERRORS:
+  Run bnlearn hc with standard ordering: Learn graph using bnlearn for BNLEARN/HC_STD: failed
+  Run bnlearn hc with optimal ordering: Learn graph using bnlearn for BNLEARN/HC_OPT: failed
+  Run bnlearn hc with worst ordering: Learn graph using bnlearn for BNLEARN/HC_BAD: failed
+</code></pre>
+<ol>
+<li>
+<p>Each call to a sub-workflow should have a <code>CALLING</code> message as now, but additionally a <code>COMPLETED</code> message just before it returns control to the calling workflow. This should detail the cummulative numbers of steps skipped, failed and executed  etc. which this workflow and any sub-workflows it calls have performed.</p>
+</li>
+<li>
+<p>Replace the values of the <code>--log-level</code> (<code>all</code>, <code>summary</code>, <code>none</code>) with an integer value that
+represents the maximum depth at which messages are reported (maybe rename the parameter as <code>log-depth</code>?), as follows</p>
+</li>
+<li>0: no message output - equivalent to <code>none</code> now</li>
+<li>1: summary messages from the top-level workflow are reported only - equivalent to <code>summary</code> now for a standalone workflow. This would be the default value.</li>
+<li>2: include log messages from the top-level steps - both actions it performs, and calls to sub-workflows but <strong>not</strong> any messages from within sub-workflows - equivalent to <code>all</code> for a standalone workflow, but omits messages from any sub-workflows</li>
+<li>3: all messages from top-level and next level down sub-workflows but not from any deeper sub-workflows</li>
+<li>
+<p>3+: the pattern continues, including messages at greater depths</p>
+</li>
+<li>
+<p>Delineate the transitions into and out of sub-workflows more clearly visually - perhaps by indenting messages according to call depth</p>
+</li>
+</ol>
 <h2 id="further-work-which-is-out-of-scope-for-this-task">Further work which is out of scope for this task</h2>
 <p>These are deliberately outside this task:</p>
 <ol>
-<li>
-<p><strong>Workflow parameters</strong></p>
-</li>
-<li>
-<p>should we declare parameters in a workflow, or can we just adopt a 
-     <code>tolerant</code> paradigm that any parameters specified just overwrite valu
-     in the called workflow, and any irrelevant parameters are silently ignored?</p>
-</li>
-<li>workflow parameters overwrite those with the same name in matrix and
-     step parameters</li>
-<li>workflow paramaters can be defined in the called workflow - these effectively
-     act as defaults</li>
-<li>
-<p>should it be possible to specify parameters when a workflow is invoked from
-     the CLI? - it would complicate validation of command line parameters</p>
-</li>
 <li>
 <p><strong>Values audit</strong></p>
 </li>

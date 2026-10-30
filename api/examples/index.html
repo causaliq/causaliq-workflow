@@ -488,6 +488,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1008,6 +1036,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -2180,7 +2236,6 @@ print(f&quot;Workflow completed: {results}&quot;)
 <h3 id="loading-from-yaml">Loading from YAML</h3>
 <pre><code class="language-yaml"># experiments/basic-experiment.yml
 id: &quot;basic-experiment&quot;
-description: &quot;Structure learning with PC algorithm&quot;
 data_root: &quot;/experiments/data&quot;
 output_root: &quot;/experiments/results&quot;
 
@@ -2201,7 +2256,6 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
 <h3 id="parameter-sweeps">Parameter Sweeps</h3>
 <pre><code class="language-yaml"># experiments/parameter-sweep.yml
 id: &quot;parameter-sweep&quot;
-description: &quot;Multi-algorithm parameter sweep&quot;
 data_root: &quot;/experiments/data&quot;
 output_root: &quot;/experiments/results&quot;
 
@@ -2216,8 +2270,8 @@ steps:
     with:
       data_path: &quot;{{data_root}}/{{dataset}}.csv&quot;
       output_path: &quot;{{output_root}}/{{id}}/{{dataset}}_{{algorithm}}_{{alpha}}.graphml&quot;
-      algorithm: &quot;{{algorithm}}&quot;
-      alpha: &quot;{{alpha}}&quot;
+      algorithm: {{algorithm}}
+      alpha: {{alpha}}
 
   - name: &quot;Validate Structure&quot;
     uses: &quot;structure-validator&quot;
@@ -2243,7 +2297,6 @@ results = executor.execute_workflow(workflow, mode=&quot;run&quot;)
 <h3 id="conditional-matrix">Conditional Matrix</h3>
 <pre><code class="language-yaml"># experiments/conditional-matrix.yml
 id: &quot;conditional-matrix&quot;
-description: &quot;Matrix with conditional parameters&quot;
 
 matrix:
   dataset: [&quot;small_data&quot;, &quot;medium_data&quot;, &quot;large_data&quot;]
@@ -2267,16 +2320,18 @@ steps:
     uses: &quot;adaptive-learner&quot;
     with:
       data_path: &quot;/data/{{dataset}}.csv&quot;
-      algorithm: &quot;{{algorithm}}&quot;
-      alpha: &quot;{{alpha|default(0.05)}}&quot;
-      max_iter: &quot;{{max_iter|default(1000)}}&quot;
-      regularization: &quot;{{regularization|default(0.0)}}&quot;
+      algorithm: {{algorithm}}
+      alpha: {{alpha}}
+      max_iter: {{max_iter}}
+      regularization: {{regularization}}
 </code></pre>
+<p>Optional values use a declared workflow default, such as
+<code>alpha: 0.05</code> above <code>matrix:</code>. The <code>default(...)</code> filter syntax shown in
+older examples is not supported.</p>
 <h2 id="multi-step-workflows">Multi-Step Workflows</h2>
 <h3 id="data-processing-pipeline">Data Processing Pipeline</h3>
 <pre><code class="language-yaml"># experiments/data-pipeline.yml
 id: &quot;data-processing-pipeline&quot;
-description: &quot;Complete data processing and analysis pipeline&quot;
 
 matrix:
   dataset: [&quot;healthcare&quot;, &quot;finance&quot;, &quot;biology&quot;]
@@ -2288,7 +2343,7 @@ steps:
     with:
       input_path: &quot;/raw_data/{{dataset}}.csv&quot;
       output_path: &quot;/processed_data/{{dataset}}_{{preprocessing}}.csv&quot;
-      method: &quot;{{preprocessing}}&quot;
+      method: {{preprocessing}}
       remove_outliers: true
       normalize: true
 
@@ -2433,7 +2488,6 @@ class NetworkAnalysisAction(BaseActionProvider):
 <h3 id="using-custom-actions">Using Custom Actions</h3>
 <pre><code class="language-yaml"># experiments/custom-workflow.yml
 id: &quot;custom-causal-discovery&quot;
-description: &quot;Workflow using custom actions&quot;
 
 matrix:
   dataset: [&quot;asia&quot;, &quot;cancer&quot;]
@@ -2445,7 +2499,7 @@ steps:
     with:
       data_path: &quot;/data/{{dataset}}.csv&quot;
       output_path: &quot;/results/{{dataset}}_{{alpha}}_structure.graphml&quot;
-      alpha: &quot;{{alpha}}&quot;
+      alpha: {{alpha}}
       max_depth: 3
 
   - name: &quot;Network Analysis&quot;

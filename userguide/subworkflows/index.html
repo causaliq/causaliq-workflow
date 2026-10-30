@@ -493,6 +493,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../action_patterns/" class="md-nav__link">
         
   
@@ -611,6 +639,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Calling Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaring-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unknown-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unknown parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters-and-cache-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters and cache keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -662,6 +729,17 @@
     <span class="md-ellipsis">
       
         Validation and Failures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calling-from-the-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calling from the CLI
       
     </span>
   </a>
@@ -1159,6 +1237,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -1781,6 +1887,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Calling Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaring-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unknown-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unknown parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters-and-cache-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters and cache keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1839,6 +1984,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#calling-from-the-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calling from the CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#limitations" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1888,7 +2044,7 @@ steps:
     uses: causaliq-discovery
     with:
       action: learn_structure
-      algorithm: &quot;{{algorithm}}&quot;
+      algorithm: {{algorithm}}
       output: results/graphs.db
 </code></pre>
 <p>A <code>uses</code> value that starts with <code>./</code> or <code>../</code> is a workflow call. Any
@@ -1911,34 +2067,180 @@ steps:
 working directory. Cache paths declared with <code>output:</code> still resolve
 against the working directory.</p>
 <h2 id="calling-parameters">Calling Parameters</h2>
-<p>The <code>with</code> block carries parameters for the called workflow. Template
-variables are resolved in the caller's context, so typos are reported
-during validation.</p>
-<p>!!! warning "Parameters are not yet forwarded"
-    Workflow parameters are not supported yet. Values in <code>with</code> are
-    accepted and validated but ignored, and the called workflow cannot
-    read them. Until then, keep called workflows self-contained: do not
-    rely on values from the caller, and do not declare required
-    (<code>null</code>) workflow-level variables in a called workflow.</p>
-<p><code>action</code> and <code>output</code> are reserved by the executor and are rejected in
-a call step's <code>with</code> block.</p>
+<p>The <code>with</code> block of a call step carries parameters for the called
+workflow. A parameter binds to the child by name:</p>
+<table>
+<thead>
+<tr>
+<th>Child declares</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a matrix dimension (<code>algorithm</code>)</td>
+<td>replaces that dimension's values (a scalar becomes <code>[value]</code>, a list is used as given)</td>
+</tr>
+<tr>
+<td>a parameter default (<code>sample_size: 1000</code>)</td>
+<td>overrides the default</td>
+</tr>
+<tr>
+<td>a <code>null</code> parameter (<code>reference: null</code>)</td>
+<td>supplies the value; omitting it leaves the parameter out of the action</td>
+</tr>
+<tr>
+<td>a <code>{{name}}</code> placeholder in a step</td>
+<td>substitutes the value</td>
+</tr>
+</tbody>
+</table>
+<p>Values are resolved in the caller's context, so they may reference the
+caller's own matrix and parameters:</p>
+<pre><code class="language-yaml">matrix:
+  label: [alpha, beta]
+
+steps:
+  - name: Call child
+    uses: ./modules/learn-graphs.yml
+    with:
+      algorithm: {{label}}     # child matrix becomes [alpha] then [beta]
+</code></pre>
+<p>A parameter value that is exactly one <code>{{name}}</code> token keeps the value's
+native type, so a numeric matrix override stays a number and a list stays
+a list. That applies inside the child too: <code>randomise: {{randomise}}</code>
+delivers the caller's list to the action unchanged, so a caller can pass
+<code>randomise: ["var_best"]</code>.</p>
+<p>To pass the child's <em>default</em> through a placeholder, use the value that
+means the default. A parameter whose default has an explicit spelling can
+therefore be driven by a caller matrix:</p>
+<pre><code class="language-yaml">matrix:
+  randomise: [no-randomise, var_best]
+
+steps:
+  - name: Learn
+    uses: ./modules/learn-graphs.yml
+    with:
+      randomise: {{randomise}}
+</code></pre>
+<p><code>no-randomise</code> is the default of <code>randomise</code>, so the first combination runs
+exactly as if the caller had omitted the parameter. To forward a value
+only when the caller's own caller set it, declare the forwarding
+parameter with a <code>null</code> default; see
+<a href="#declaring-parameters">Declaring parameters</a>.</p>
+<h3 id="declaring-parameters">Declaring parameters</h3>
+<p>Top-level keys of a workflow declare its parameters. A default may be a
+scalar, a list of scalars, or <code>null</code>. They are available as <code>{{name}}</code>
+placeholders and may be overridden by a caller:</p>
+<pre><code class="language-yaml"># modules/learn-graphs.yml
+sample_size: 1000            # default 1000
+reference: null              # no value: omitted from the action
+randomise: [&quot;var_best&quot;]      # a list default
+</code></pre>
+<p>A caller that supplies neither value runs the child exactly as its
+declarations describe: <code>sample_size</code> is <code>1000</code>, and <code>reference</code> is left
+out of every action that would otherwise receive it. A caller that
+supplies either value overrides the declaration:</p>
+<pre><code class="language-yaml">steps:
+  - name: Learn graphs
+    uses: ./modules/learn-graphs.yml
+    with:
+      sample_size: 5000
+      reference: networks/asia/true.graphml
+</code></pre>
+<p>A null-default parameter may only be used as the whole value of a step
+parameter (<code>reference: {{reference}}</code>), because there is no text to
+substitute when no value is supplied. A declared parameter must also be
+used as a placeholder in at least one step; an unused declaration is a
+validation error.</p>
+<p>A list default is a single value that a caller forwards whole, which is
+how a caller-level list fans out inside a called workflow's matrix:</p>
+<pre><code class="language-yaml"># workflows/bnsl.yml
+network: [asia, sports]
+
+steps:
+  - name: Run bnlearn hc
+    uses: ./modules/learn-graphs.yml
+    with:
+      algorithm: hc
+      network: {{network}}    # child matrix becomes [asia, sports]
+</code></pre>
+<p>The call step runs once, because its parameters do not reference a matrix
+variable of the calling workflow. The called workflow expands <code>network</code>
+into two jobs. A list default may also be overridden by the caller, and
+either YAML spelling is accepted:</p>
+<pre><code class="language-yaml">network:
+  - asia
+  - sports
+</code></pre>
+<p>A list default may only be the whole value of a step parameter, for the
+same reason as a null default: a list has no text form. <code>input:
+"data/{{network}}.csv"</code> and a list element such as <code>series:
+["{{network}}"]</code> are therefore rejected rather than substituted as text.</p>
+<p>A placeholder the child uses but does not declare is a <strong>required
+parameter</strong>. The caller must supply it, and validation reports it when it
+is missing:</p>
+<pre><code>Step 'Call child' (workflow 'hc_bad.yml'): Unknown template variables:
+['randomise']. Available variables: ['network', 'sample_size', 'series'].
+Declare a default value for each missing name as a top-level workflow
+key, or supply it with 'with:' in the calling workflow or --param.
+</code></pre>
+<p>Because a null default forwards an omission, a module can pass a value on
+only when its own caller set it:</p>
+<pre><code class="language-yaml"># modules/base.yml
+reference: null
+
+steps:
+  - name: Learn graphs
+    uses: ./learn-graphs.yml
+    with:
+      reference: {{reference}}
+</code></pre>
+<p>If the caller of <code>base.yml</code> omits <code>reference</code>, the inner call omits it
+too. If the caller supplies it, the value flows through both calls.</p>
+<h3 id="unknown-parameters">Unknown parameters</h3>
+<p>A parameter that the child neither declares, nor lists as a matrix
+dimension, nor uses in a step is rejected with the accepted names:</p>
+<pre><code>Step 'Call child': Parameter 'sampl_size' is not used by workflow
+'learn-graphs.yml'. Accepted: ['algorithm', 'reference', 'sample_size']
+</code></pre>
+<p><code>action</code> and <code>output</code> are reserved by the executor and are rejected in a
+call step's <code>with</code> block. A name may not be declared as both a parameter
+and a matrix dimension.</p>
+<p>A token the child uses but the caller does not supply is reported the
+same way, so a required parameter is never silently left blank (see
+above).</p>
+<p>Tokens may be written without quotes, for example
+<code>randomise: {{randomise}}</code>. See
+<a href="../values_and_types/">Values and Quoting</a> for the quoting rules.</p>
+<h3 id="parameters-and-cache-keys">Parameters and cache keys</h3>
+<p>Parameters that are not matrix dimensions are <strong>not</strong> part of a cache
+key. Conservative execution therefore still skips an entry when only a
+parameter value has changed — use <code>--mode=force</code> to re-run. Declare the
+name as a child matrix dimension when its value must distinguish cache
+entries.</p>
 <h2 id="matrix-and-execution">Matrix and Execution</h2>
-<p>A called workflow is a complete run: it expands its own <code>matrix</code> and
-writes its own caches.</p>
+<p>A called workflow is a complete run: it expands its own <code>matrix</code>, applies
+the caller's overrides, and writes its own caches.</p>
 <ul>
-<li>The call step has no cache output of its own, so it runs once per
-  workflow. In a workflow with a matrix, the call executes on the first
-  job and is skipped on later jobs.</li>
-<li>Conservative execution still applies inside the called workflow, so
-  repeating a call is cheap.</li>
-<li>The caller's matrix values and CLI parameters are not forwarded.</li>
+<li>A call step has no cache output of its own, so it runs once per
+  workflow and is skipped on later jobs.</li>
+<li>When the call's <code>with</code> values reference a caller matrix variable, the
+  parameters differ per combination, so the call runs once per
+  combination instead.</li>
+<li>Conservative execution still applies inside the called workflow.</li>
 </ul>
 <pre><code class="language-yaml">matrix:
   network: [asia, cancer]
 
 steps:
-  - name: Learn graphs      # runs once, not twice
+  - name: Learn graphs      # constant parameters: runs once
     uses: ./modules/learn-graphs.yml
+
+  - name: Learn by label    # varies per combination: runs twice
+    uses: ./modules/learn-graphs.yml
+    with:
+      algorithm: {{network}}
 </code></pre>
 <h2 id="execution-modes">Execution Modes</h2>
 <table>
@@ -1950,7 +2252,7 @@ steps:
 </thead>
 <tbody>
 <tr>
-<td><code>validate</code></td>
+<td><code>validate</code> (API)</td>
 <td>Every called workflow is loaded and validated recursively; nothing executes</td>
 </tr>
 <tr>
@@ -1967,14 +2269,27 @@ steps:
 </tr>
 </tbody>
 </table>
+<p><code>cqflow run</code> validates automatically before it executes, so the <code>validate</code>
+mode itself is reached through <code>execute_workflow(mode="validate")</code>.</p>
 <h2 id="logging">Logging</h2>
-<p>With <code>--log-level=all</code>, a call is announced before the called
-workflow's own step messages:</p>
-<pre><code>[.../hc_std.yml] CALLING      Run bnlearn hc with standard ordering
-[learn_graph] WOULD SKIP      Learn graph using bnlearn ...
+<p><code>--log-depth</code> controls how deep into the call stack messages are
+reported. A call at the top level is announced with <code>CALLING</code> at depth
+<code>2</code>, and the matching <code>COMPLETED</code> line is printed when control returns:</p>
+<pre><code>[.../hc_std.yml] CALLING Run bnlearn hc with standard ordering
+[.../hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 skipped)
 </code></pre>
-<p>The final <code>COMPLETED</code> summary counts the called workflow's steps rather
-than the call step, so the totals match the work that actually ran.</p>
+<p>Depth <code>3</code> also prints the called workflow's own step messages, indented
+by two spaces per level, and each further level adds the next level of
+nesting:</p>
+<pre><code>[.../hc_std.yml] CALLING Run bnlearn hc with standard ordering
+  [learn_graph] SKIPPED Learn graph using bnlearn ...
+[.../hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 skipped)
+</code></pre>
+<p>The <code>COMPLETED</code> line reports the cumulative step counts of the whole
+subtree — the called workflow and any workflows it calls. The final run
+summary counts those same leaf steps rather than the call steps, so the
+totals match the work that actually ran. The call step's result also
+records the parameters that were applied.</p>
 <h2 id="recursion">Recursion</h2>
 <p>Recursive calls are rejected. A workflow may not call itself, directly
 or through a chain:</p>
@@ -1991,10 +2306,26 @@ filters. A problem is reported against the calling step:</p>
 </code></pre>
 <p>A called step that records an <code>error</code> status makes the call step report
 <code>error</code>, and the CLI lists the child messages.</p>
+<h2 id="calling-from-the-cli">Calling from the CLI</h2>
+<p>The same parameters can be supplied to a top-level workflow on the
+command line:</p>
+<pre><code class="language-bash">cqflow run benchmark.yml --mode=run --param sample_size=5000 \
+  --param reference=networks/asia/true.graphml
+</code></pre>
+<p>A name that matches a top-level matrix dimension replaces it, so
+<code>--param network=asia</code> runs a single combination. A name that matches a
+declared parameter overrides its default; the value replaces a <code>null</code>
+default, so a null-default parameter is no longer omitted. Unknown names
+are reported as validation errors.</p>
 <h2 id="limitations">Limitations</h2>
 <ul>
-<li>Workflow parameters and defaults are a follow-up task; see the
-  <a href="../../roadmap/">roadmap</a>.</li>
+<li>Parameters do not invalidate cache entries; use <code>--mode=force</code> after a
+  parameter change.</li>
+<li><code>{{...}}</code> placeholders in step names are not expanded.</li>
+<li>A parameter with a concrete default cannot be forwarded only when the
+  caller sets it. Declare the forwarding parameter with a <code>null</code> default
+  so that an omission stays an omission (see
+  <a href="#declaring-parameters">Declaring parameters</a>).</li>
 <li>Called step outputs are not yet available to the caller.</li>
 </ul>
 

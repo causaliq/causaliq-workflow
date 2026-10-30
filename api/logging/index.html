@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1010,6 +1038,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -3355,9 +3411,9 @@ def run(
     return results
 </code></pre>
 <h3 id="cli-integration">CLI Integration</h3>
-<p>The CLI will provide logging configuration options:</p>
-<pre><code class="language-bash"># Future CLI integration
-causaliq-workflow run workflow.yml --log-file=execution.log --log-level=all
+<p>The <code>run</code> command accepts <code>--log-depth</code> to control how much of the
+execution log is printed:</p>
+<pre><code class="language-bash">causaliq-workflow run workflow.yml --log-depth=2
 </code></pre>
 <h2 id="error-handling">Error Handling</h2>
 <h3 id="file-system-errors">File System Errors</h3>

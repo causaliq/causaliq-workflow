@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1030,6 +1058,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/action_auto_discovery_design/" class="md-nav__link">
         
   
@@ -1431,6 +1487,34 @@
   
     <nav class="md-nav" aria-label="CausalIQActionProvider">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_core.CausalIQActionProvider.__init_subclass__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init_subclass__
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="__init_subclass__">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_core.CausalIQActionProvider.__init_subclass__(**kwargs)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        **kwargs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#causaliq_core.CausalIQActionProvider.compress" class="md-nav__link">
@@ -2123,6 +2207,34 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#causaliq_core.CausalIQActionProvider.__init_subclass__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init_subclass__
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="__init_subclass__">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#causaliq_core.CausalIQActionProvider.__init_subclass__(**kwargs)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        **kwargs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#causaliq_core.CausalIQActionProvider.compress" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2609,7 +2721,7 @@ handles compression for each data type.</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code><span title="causaliq_core.CausalIQActionProvider.action_patterns">action_patterns</span></code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="causaliq_core.action.ActionPattern">ActionPattern</span>]</code>)
+              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="causaliq_core.action.spec.ActionPattern">ActionPattern</span>]</code>)
           –
           <div class="doc-md-description">
             <p>Mapping of action names to their execution patterns.</p>
@@ -2630,7 +2742,7 @@ handles compression for each data type.</p>
 
   
       dataclass
-   (causaliq_core.action.ActionInput)" href="#causaliq_core.ActionInput">ActionInput</a>]</code>)
+   (causaliq_core.action.spec.ActionInput)" href="#causaliq_core.ActionInput">ActionInput</a>]</code>)
           –
           <div class="doc-md-description">
             <p>Input parameter specifications.</p>
@@ -2660,6 +2772,13 @@ handles compression for each data type.</p>
 
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            __init_subclass__ (causaliq_core.CausalIQActionProvider.__init_subclass__)" href="#causaliq_core.CausalIQActionProvider.__init_subclass__">__init_subclass__</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Check the input specification contract for a new provider.</p>
+            </div>
+          </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            compress (causaliq_core.CausalIQActionProvider.compress)" href="#causaliq_core.CausalIQActionProvider.compress">compress</a></code></b>
             –
@@ -2705,6 +2824,60 @@ handles compression for each data type.</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="causaliq_core.CausalIQActionProvider.__init_subclass__" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">__init_subclass__</span>
+
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init_subclass__</span><span class="p">(</span><span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (causaliq_core.CausalIQActionProvider.__init_subclass__(**kwargs))" href="#causaliq_core.CausalIQActionProvider.__init_subclass__(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Check the input specification contract for a new provider.</p>
+<p>Every declared default must be a value the user could supply, a
+required input must not declare one, and a null default is
+rejected. This runs when the provider class is defined, so an
+inconsistent provider fails at load time and is reported by the
+workflow registry as a discovery error.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h6 id="causaliq_core.CausalIQActionProvider.__init_subclass__(**kwargs)" class="doc doc-heading doc-heading-parameter">              <b><code>**kwargs</code></b>
+</h6>              (<code><span title="typing.Any">Any</span></code>, default:
+                  <code>{}</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Class keyword arguments passed to the base class.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_core.action.errors.ActionValidationError)" href="#causaliq_core.ActionValidationError">ActionValidationError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If an input specification is
+inconsistent.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -2881,7 +3054,7 @@ supported_types).</p>
     <span class="n"><a class="autorefs autorefs-internal" title="mode (causaliq_core.CausalIQActionProvider.run(mode))" href="#causaliq_core.CausalIQActionProvider.run(mode)">mode</a></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;dry-run&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="context (causaliq_core.CausalIQActionProvider.run(context))" href="#causaliq_core.CausalIQActionProvider.run(context)">context</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="logger (causaliq_core.CausalIQActionProvider.run(logger))" href="#causaliq_core.CausalIQActionProvider.run(logger)">logger</a></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="causaliq_core.action.ActionResult">ActionResult</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="causaliq_core.action.provider.ActionResult">ActionResult</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2952,14 +3125,14 @@ supported_actions)</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="causaliq_core.action.ActionResult">ActionResult</span></code>
+              <code><span title="causaliq_core.action.provider.ActionResult">ActionResult</span></code>
           –
           <div class="doc-md-description">
             <p>Tuple of (status, metadata, objects) where:</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><span title="causaliq_core.action.ActionResult">ActionResult</span></code>
+              <code><span title="causaliq_core.action.provider.ActionResult">ActionResult</span></code>
           –
           <div class="doc-md-description">
             <ul>
@@ -2968,7 +3141,7 @@ supported_actions)</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><span title="causaliq_core.action.ActionResult">ActionResult</span></code>
+              <code><span title="causaliq_core.action.provider.ActionResult">ActionResult</span></code>
           –
           <div class="doc-md-description">
             <ul>
@@ -2977,7 +3150,7 @@ supported_actions)</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><span title="causaliq_core.action.ActionResult">ActionResult</span></code>
+              <code><span title="causaliq_core.action.provider.ActionResult">ActionResult</span></code>
           –
           <div class="doc-md-description">
             <ul>
@@ -2994,14 +3167,14 @@ supported_actions)</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionExecutionError (causaliq_core.action.ActionExecutionError)" href="#causaliq_core.ActionExecutionError">ActionExecutionError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionExecutionError (causaliq_core.action.errors.ActionExecutionError)" href="#causaliq_core.ActionExecutionError">ActionExecutionError</a></code>
             –
           <div class="doc-md-description">
             <p>If action execution fails</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_core.action.ActionValidationError)" href="#causaliq_core.ActionValidationError">ActionValidationError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_core.action.errors.ActionValidationError)" href="#causaliq_core.ActionValidationError">ActionValidationError</a></code>
             –
           <div class="doc-md-description">
             <p>If validation fails</p>
@@ -3060,7 +3233,7 @@ validation errors are caught early (during workflow parsing).</p>
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_core.action.ActionValidationError)" href="#causaliq_core.ActionValidationError">ActionValidationError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            ActionValidationError (causaliq_core.action.errors.ActionValidationError)" href="#causaliq_core.ActionValidationError">ActionValidationError</a></code>
             –
           <div class="doc-md-description">
             <p>If action is not supported or
@@ -3101,8 +3274,9 @@ parameters are invalid.</p>
     <span class="n"><span title="causaliq_core.ActionInput(name)">name</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
     <span class="n"><span title="causaliq_core.ActionInput(description)">description</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
     <span class="n"><span title="causaliq_core.ActionInput(required)">required</span></span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n"><span title="causaliq_core.ActionInput(default)">default</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="causaliq_core.ActionInput(default)">default</span></span><span class="p">:</span> <span class="n"><span title="typing.Any">Any</span></span> <span class="o">=</span> <span class="n"><span title="causaliq_core.action.spec.NO_DEFAULT">NO_DEFAULT</span></span><span class="p">,</span>
     <span class="n"><span title="causaliq_core.ActionInput(type_hint)">type_hint</span></span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;Any&quot;</span><span class="p">,</span>
+    <span class="n"><span title="causaliq_core.ActionInput(choices)">choices</span></span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -3110,6 +3284,9 @@ parameters are invalid.</p>
 
 
         <p>Define action input specification.</p>
+<p>The specification is the single source of truth for a parameter's
+default. Providers must not repeat the default in their own code; the
+framework supplies it before the action runs.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3135,7 +3312,8 @@ parameters are invalid.</p>
               (<code><span title="bool">bool</span></code>)
           –
           <div class="doc-md-description">
-            <p>Whether the parameter is required.</p>
+            <p>Whether the parameter is required. A required input
+must not declare a default.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -3143,7 +3321,10 @@ parameters are invalid.</p>
               (<code><span title="typing.Any">Any</span></code>)
           –
           <div class="doc-md-description">
-            <p>Default value if not provided.</p>
+            <p>Default value if not provided, or <code>NO_DEFAULT</code> when
+the parameter has no default. A default must be a value the
+user could supply and must appear in <code>choices</code> when choices
+are declared. <code>None</code> is never a valid default.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -3152,6 +3333,17 @@ parameters are invalid.</p>
           –
           <div class="doc-md-description">
             <p>Type hint string for documentation.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="causaliq_core.ActionInput.choices">choices</span></code></b>
+              (<code><span title="typing.Optional">Optional</span>[<span title="typing.Tuple">Tuple</span>[<span title="typing.Any">Any</span>, ...]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Closed set of values the parameter may take, or <code>None</code>
+when any value of the declared type is accepted. For a
+list-valued parameter the choices enumerate the values each
+element may take, in addition to any scalar "off" token.</p>
           </div>
         </li>
     </ul>

@@ -12,7 +12,7 @@
         <link rel="prev" href="../">
       
       
-        <link rel="next" href="../action_patterns/">
+        <link rel="next" href="../values_and_types/">
       
       
         
@@ -537,10 +537,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#workflow-level-properties" class="md-nav__link">
+  <a href="#workflow-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow-Level Properties
+        Workflow Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Parameters
       
     </span>
   </a>
@@ -549,6 +560,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters-and-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters and Defaults
+      
+    </span>
+  </a>
   
 </li>
       
@@ -643,10 +665,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quoting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quoting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#variable-resolution-order" class="md-nav__link">
     <span class="md-ellipsis">
       
         Variable Resolution Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step Names
       
     </span>
   </a>
@@ -673,6 +728,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1205,6 +1288,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -1809,10 +1920,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#workflow-level-properties" class="md-nav__link">
+  <a href="#workflow-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow-Level Properties
+        Workflow Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Parameters
       
     </span>
   </a>
@@ -1821,6 +1943,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters-and-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters and Defaults
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1915,10 +2048,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quoting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quoting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#variable-resolution-order" class="md-nav__link">
     <span class="md-ellipsis">
       
         Variable Resolution Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step Names
       
     </span>
   </a>
@@ -1973,7 +2139,7 @@ steps:
       input: &quot;results/graphs.db&quot;
       output: &quot;results/merged.db&quot;
 </code></pre>
-<h3 id="workflow-level-properties">Workflow-Level Properties</h3>
+<h3 id="workflow-structure">Workflow Structure</h3>
 <table>
 <thead>
 <tr>
@@ -1983,21 +2149,6 @@ steps:
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>id</code></td>
-<td>No</td>
-<td>Unique identifier for the workflow</td>
-</tr>
-<tr>
-<td><code>description</code></td>
-<td>No</td>
-<td>Human-readable description</td>
-</tr>
-<tr>
-<td><code>root_dir</code></td>
-<td>No</td>
-<td>Base directory for relative paths (default: current directory)</td>
-</tr>
 <tr>
 <td><code>steps</code></td>
 <td><strong>Yes</strong></td>
@@ -2010,8 +2161,115 @@ steps:
 </tr>
 </tbody>
 </table>
-<p>Custom properties defined at the workflow level become available as template
-variables in step parameters.</p>
+<h3 id="workflow-parameters">Workflow Parameters</h3>
+<p>Any top-level key other than <code>matrix</code> and <code>steps</code> declares a workflow
+parameter and its default value. A default may be a scalar, a list of
+scalars, or <code>null</code>. Declare parameters before <code>matrix</code> and <code>steps</code> so the
+intent is clear; the parser itself is order-independent. Declared
+parameters are available as template variables in step parameters, and a
+caller or the CLI can override them:</p>
+<pre><code class="language-yaml"># workflow.yml
+sample_size: 1000      # default 1000
+reference: null        # no value: omitted from the action
+network: [asia, sports]  # a list value, passed on as one value
+
+steps:
+  - name: &quot;Learn&quot;
+    uses: &quot;causaliq-discovery&quot;
+    with:
+      action: &quot;learn_structure&quot;
+      sample_size: {{sample_size}}
+      reference: {{reference}}
+</code></pre>
+<pre><code class="language-bash">cqflow run workflow.yml --param sample_size=5000 \
+  --param reference=networks/asia.graphml
+</code></pre>
+<p>A declaration binds as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Declaration</th>
+<th>Value used when nothing supplies it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_size: 1000</code></td>
+<td><code>1000</code></td>
+</tr>
+<tr>
+<td><code>reference: null</code></td>
+<td>none — the parameter is omitted from the action, so the action's own default applies</td>
+</tr>
+<tr>
+<td><code>network: [asia, sports]</code></td>
+<td>the list <code>[asia, sports]</code></td>
+</tr>
+</tbody>
+</table>
+<p>A list may be written inline (<code>[asia, sports]</code>) or as a block list:</p>
+<pre><code class="language-yaml">network:
+  - asia
+  - sports
+</code></pre>
+<p>The two spellings are equivalent. A list item must be text, a number or a
+boolean, so a nested list and a <code>null</code> item are rejected. A list default
+is <strong>one value</strong>: it never adds a matrix dimension, and <code>{{network}}</code>
+delivers the list itself rather than one element per job.</p>
+<p>Defaults are convenient when several steps need the same value, and they
+let a workflow be run standalone without supplying anything.</p>
+<p>Four rules keep declarations honest:</p>
+<ul>
+<li>A declared parameter must be used as a <code>{{placeholder}}</code> in at least one
+  step's <code>with</code> block or <code>name</code>. An unused declaration is a validation
+  error.</li>
+<li>A <code>null</code> parameter may only be the <strong>whole value</strong> of a step parameter.
+  <code>"data/{{reference}}.csv"</code> would substitute <code>None</code> and is rejected.</li>
+<li>A list parameter may also only be the <strong>whole value</strong> of a step
+  parameter. Interpolating a list has no text form, so
+  <code>"data/{{network}}.csv"</code> and a list element such as <code>["{{network}}"]</code>
+  are rejected rather than substituted as text.</li>
+<li>A placeholder that is not declared is a <strong>required parameter</strong>: a
+  caller or the CLI must supply it, otherwise validation reports the
+  name as an unknown template variable.</li>
+</ul>
+<p>A declaration never adds a matrix dimension, and no parameter value is
+part of a cache key, so a changed default does not invalidate existing
+entries. Use <code>matrix</code> when each value must be a separate job.</p>
+<p><code>matrix</code> and <code>steps</code> are reserved. A name may not be declared as both a
+parameter and a matrix variable. See
+<a href="../subworkflows/#calling-parameters">Reusable Workflows</a> for parameters
+passed to a called workflow.</p>
+<h2 id="parameters-and-defaults">Parameters and Defaults</h2>
+<p>Omitting an action parameter means that its default applies. Omitting it is
+also how a parameter that does not apply to the action is expressed — for
+example, a score type for a constraint-based structure learning algorithm.
+The two cases are deliberately indistinguishable, so a workflow never needs
+a null or "none" value:</p>
+<pre><code class="language-yaml">with:
+  action: &quot;learn_graph&quot;
+  input: &quot;data/asia.csv&quot;
+  algorithm: &quot;pc&quot;
+  # randomise, sample_size and variable_types omitted: their defaults apply
+</code></pre>
+<p>Every default is a value the action could have been given explicitly. The
+<code>learn_graph</code> action, for instance, accepts <code>randomise: no-randomise</code>,
+<code>sample_size: all</code> and <code>variable_types: impute</code> as explicit spellings of
+its defaults. That makes a default expressible in a matrix, comparable in a
+filter, and passable to a called workflow:</p>
+<pre><code class="language-yaml">matrix:
+  randomise: [no-randomise, var_best]
+</code></pre>
+<p>A literal <code>null</code> in a <code>with</code> block is rejected with a message asking you to
+omit the parameter instead. A <code>{{placeholder}}</code> that resolves to null at run
+time is still allowed: that is how a matrix wildcard marks a dimension as
+not applicable (see
+<a href="#null-values-and-dimension-matching">Null Values and Dimension Matching</a>),
+and how a workflow parameter declared with a <code>null</code> default reaches an
+action as an omitted parameter.</p>
+<p>The metadata recorded for a step follows the same rule: parameters that
+were supplied or defaulted are listed, parameters that did not apply are
+absent, and no recorded value is null.</p>
 <h2 id="steps">Steps</h2>
 <p>Each <strong>step</strong> performs a single unit of work. Steps execute sequentially.</p>
 <pre><code class="language-yaml">steps:
@@ -2035,7 +2293,7 @@ variables in step parameters.</p>
 <tr>
 <td><code>name</code></td>
 <td><strong>Yes</strong></td>
-<td>Human-readable step name</td>
+<td>Human-readable step name, unique within the workflow</td>
 </tr>
 <tr>
 <td><code>uses</code></td>
@@ -2053,6 +2311,9 @@ variables in step parameters.</p>
 (e.g., <code>causaliq-analysis</code>, <code>causaliq-discovery</code>, <code>causaliq-knowledge</code>).
 A value that starts with <code>./</code> or <code>../</code> calls another workflow instead of
 an action; see <a href="../subworkflows/">Reusable Workflows</a>.</p>
+<p>A <code>name</code> may contain <code>{{placeholder}}</code> tokens. They are expanded for each
+job, so a name can identify the matrix combination a step ran for; see
+<a href="#step-names">Step Names</a>.</p>
 <h2 id="actions">Actions</h2>
 <p><strong>Actions</strong> are the reusable operations provided by CausalIQ packages. Each
 action has specific parameters documented in its package.</p>
@@ -2077,8 +2338,8 @@ steps:
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      network: &quot;{{network}}&quot;
-      sample_size: &quot;{{sample_size}}&quot;
+      network: {{network}}
+      sample_size: {{sample_size}}
       output: &quot;results/graphs.db&quot;
 </code></pre>
 <p>This creates <strong>6 jobs</strong> (3 networks × 2 sample sizes), each with a unique
@@ -2164,7 +2425,7 @@ targets intended for the other source via null wildcard matching.
 </code></pre>
 <h2 id="template-variables">Template Variables</h2>
 <p><strong>Template variables</strong> use <code>{{variable}}</code> syntax to reference workflow
-properties and matrix values within step parameters.</p>
+parameters and matrix values within step parameters.</p>
 <pre><code class="language-yaml">matrix:
   network: [asia, cancer]
 
@@ -2173,22 +2434,84 @@ steps:
     uses: &quot;causaliq-discovery&quot;
     with:
       action: &quot;learn_structure&quot;
-      network: &quot;{{network}}&quot;
-      dataset: &quot;data/{{network}}_10k.csv&quot;
+      network: {{network}}
+      dataset: data/{{network}}_10k.csv
+      output: results/graphs.db
+</code></pre>
+<h3 id="types">Types</h3>
+<p>A value that is exactly one <code>{{name}}</code> token keeps the variable's native
+type: a matrix number stays a number, and a list parameter stays a list.
+Text with extra characters is substituted as text.</p>
+<pre><code class="language-yaml">with:
+  randomise: {{randomise}}       # a list parameter, passed through
+  dataset: data/{{network}}.csv  # text: &quot;data/asia.csv&quot;
+</code></pre>
+<p>An action parameter declared as <code>int</code>, <code>float</code> or <code>bool</code> also accepts its
+text spelling. The value is converted just before the action runs, so
+<code>seed: "42"</code> and <code>seed: 42</code> are equivalent. A <code>str</code> parameter keeps the
+text you wrote.</p>
+<h3 id="quoting">Quoting</h3>
+<p>Ordinary values need no quotes. A whole-value template token is written
+without quotes:</p>
+<pre><code class="language-yaml">sample_size: {{sample_size}}   # valid: a template token
+</code></pre>
+<p>Quote a value only when YAML would otherwise read it as syntax or as a
+different type. For example, <code>version: "1.10"</code> keeps the trailing zero,
+and a value containing <code>:</code> must be quoted. See
+<a href="../values_and_types/">Values and Quoting</a> for the complete rules.</p>
+<h3 id="variable-resolution-order">Variable Resolution Order</h3>
+<p>Variables are resolved in this order, with later entries winning:</p>
+<ol>
+<li><strong>Workflow parameters</strong>: declared defaults</li>
+<li><strong>Matrix variables</strong>: values from the current matrix combination</li>
+<li><strong>Supplied parameters</strong>: values from the caller's <code>with</code> or <code>--param</code></li>
+</ol>
+<h3 id="step-names">Step Names</h3>
+<p>A step's <code>name</code> may contain <code>{{placeholder}}</code> tokens. They are expanded
+for each job before the step runs:</p>
+<pre><code class="language-yaml">matrix:
+  series: [asia, cancer]
+
+steps:
+  - name: &quot;Learn graph using bnlearn for {{series}}&quot;
+    uses: &quot;causaliq-discovery&quot;
+    with:
+      action: &quot;learn_bn&quot;
+      series: {{series}}
       output: &quot;results/graphs.db&quot;
 </code></pre>
-<h3 id="variable-resolution-order">Variable Resolution Order</h3>
-<p>Variables are resolved in this order:</p>
-<ol>
-<li><strong>Workflow properties</strong>: <code>id</code>, <code>description</code>, custom workflow-level values</li>
-<li><strong>Matrix variables</strong>: Values from the current matrix combination</li>
-</ol>
+<p>Each matrix combination logs and records its own name, so
+<code>cqflow run workflow.yml --mode=run --log-depth=2</code> prints
+<code>Learn graph using bnlearn for asia</code> and
+<code>Learn graph using bnlearn for cancer</code>. The expanded name is also what
+the completion summary and a called workflow's step list report.</p>
+<p>A name is always text, so every value is expanded with its text form: a
+number renders as <code>1000</code>, a boolean as <code>True</code>, and a list as
+<code>['asia', 'sports']</code>. A <code>null</code> value renders as <code>None</code>, so give a name
+placeholder a scalar value and avoid a null-default parameter or a null
+matrix wildcard in a name.</p>
+<p>Naming rules:</p>
+<ul>
+<li>A placeholder in a name counts as a use of a declared parameter, so a
+  caller or <code>--param</code> may supply it.</li>
+<li>Validation runs before the matrix is expanded, so a validation message
+  shows the name as written.</li>
+<li>Names must stay unique after expansion. Two steps that expand to the
+  same name in one job are rejected, because results are recorded by
+  name.</li>
+</ul>
 <h3 id="validation">Validation</h3>
 <p>Template variables are validated at parse time. Unknown variables cause a
-validation error:</p>
-<pre><code>WorkflowExecutionError: Unknown template variables: unknown_var
-Available context: id, description, network
+validation error, which is also how a missing required parameter is
+reported:</p>
+<pre><code>Unknown template variables: ['seed']. Available variables: ['dataset',
+'network']. Declare a default value for each missing name as a top-level
+workflow key, or supply it with 'with:' in the calling workflow or
+--param.
 </code></pre>
+<p>A workflow that is called from another workflow also sees the caller's
+parameter names, and the CLI passes <code>--param</code> names to the parser, so a
+template may reference a value that is supplied at run time.</p>
 <p>AGGREGATE steps also see the matrix keys derived from their input caches, so
 <code>{{network}}</code> resolves from a learned graph cache even when the workflow
 declares no matrix. When an input cache does not exist yet — it may be
@@ -2248,13 +2571,13 @@ instead.</p>
         
         
           
-          <a href="../action_patterns/" class="md-footer__link md-footer__link--next" aria-label="Next: Action Patterns">
+          <a href="../values_and_types/" class="md-footer__link md-footer__link--next" aria-label="Next: Values and Quoting">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Action Patterns
+                Values and Quoting
               </div>
             </div>
             <div class="md-footer__button md-icon">

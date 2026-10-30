@@ -490,6 +490,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../userguide/values_and_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Values and Quoting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../userguide/action_patterns/" class="md-nav__link">
         
   
@@ -1010,6 +1038,34 @@
     
   
     Action Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/action_parameter_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Parameter Contract
   
 
     
@@ -2612,12 +2668,10 @@ workflow_data = {
 try:
     result = validate_workflow(workflow_data)
     print(&quot;Workflow validation passed!&quot;)
-    print(f&quot;Validated workflow: {result['id']}&quot;)
+    print(f&quot;Validated workflow: {workflow_data['id']}&quot;)
 except WorkflowValidationError as e:
     print(f&quot;Validation failed: {e}&quot;)
     print(f&quot;Schema path: {e.schema_path}&quot;)
-    if hasattr(e, 'validator'):
-        print(f&quot;Validation details: {e.validator}&quot;)
 </code></pre>
 <h3 id="loading-and-using-custom-schemas">Loading and Using Custom Schemas</h3>
 <pre><code class="language-python">from causaliq_workflow.schema import load_schema, validate_workflow
@@ -2629,7 +2683,7 @@ schema = load_schema(schema_path)
 
 # Use custom schema with validation
 try:
-    validate_workflow(workflow_data, schema)
+    validate_workflow(workflow_data, schema_path)
     print(&quot;Custom schema validation passed!&quot;)
 except WorkflowValidationError as e:
     print(f&quot;Custom validation failed: {e}&quot;)
@@ -2697,27 +2751,32 @@ for workflow_file in workflow_files:
 <p>The default workflow schema validates:</p>
 <h3 id="required-fields">Required Fields</h3>
 <ul>
-<li><code>id</code>: Unique workflow identifier</li>
-<li><code>steps</code>: Array of workflow steps</li>
+<li><code>steps</code>: array of workflow steps</li>
 </ul>
 <h3 id="optional-fields">Optional Fields</h3>
 <ul>
-<li><code>name</code>: Human-readable workflow name</li>
-<li><code>description</code>: Workflow description</li>
-<li><code>matrix</code>: Parameter matrix for expansion</li>
-<li><code>data_root</code>: Base path for data files</li>
-<li><code>output_root</code>: Base path for output files</li>
+<li><code>matrix</code>: parameter matrix for expansion</li>
+<li>Any other top-level key declares a <strong>workflow parameter</strong> and its
+  default value. A value must be a scalar (string, number, boolean or
+  <code>null</code>) or a list of scalars; a <code>null</code> value means the parameter is
+  omitted from an action when nothing supplies it. See
+  <a href="../../userguide/core_concepts/#workflow-parameters">Core Concepts</a>.</li>
 </ul>
 <h3 id="step-schema">Step Schema</h3>
-<p>Each step must include:
-- <code>uses</code>: Action identifier
-- <code>name</code> (optional): Human-readable step name
-- <code>with</code> (optional): Action parameters</p>
+<p>Each step must include:</p>
+<ul>
+<li><code>name</code>: human-readable step name, unique within the workflow</li>
+<li><code>uses</code> (an action provider or a relative workflow path) or <code>run</code></li>
+<li><code>with</code> (optional): action parameters, or a called workflow's parameters</li>
+</ul>
 <h3 id="matrix-schema">Matrix Schema</h3>
-<p>Matrix definitions support:
-- <strong>Simple arrays</strong>: <code>{"param": ["value1", "value2"]}</code>
-- <strong>Nested structures</strong>: Complex parameter combinations
-- <strong>Type validation</strong>: Ensures consistent parameter types</p>
+<p>Matrix definitions support:</p>
+<ul>
+<li><strong>Simple arrays</strong>: <code>{"param": ["value1", "value2"]}</code></li>
+<li><strong>Range strings</strong>: <code>"0-24"</code> expands to individual integers</li>
+<li><strong>Scalar values</strong>: strings, numbers, booleans and <code>null</code>; a <code>null</code>
+  value is a wildcard when matching cache entries</li>
+</ul>
 <h2 id="error-reporting">Error Reporting</h2>
 <p>WorkflowValidationError provides detailed information:</p>
 <pre><code class="language-python">try:
@@ -2725,11 +2784,6 @@ for workflow_file in workflow_files:
 except WorkflowValidationError as e:
     print(f&quot;Validation error: {e}&quot;)
     print(f&quot;Schema path: {e.schema_path}&quot;)
-
-    # Access underlying jsonschema validation details
-    if hasattr(e, 'validator'):
-        print(f&quot;Failed constraint: {e.validator}&quot;)
-        print(f&quot;Schema context: {e.schema_path}&quot;)
 </code></pre>
 <h2 id="custom-schema-development">Custom Schema Development</h2>
 <pre><code class="language-python"># Example custom schema with additional constraints
@@ -2772,7 +2826,7 @@ with open(&quot;custom-workflow-schema.json&quot;, &quot;w&quot;) as f:
     json.dump(custom_schema, f, indent=2)
 
 custom_schema_obj = load_schema(&quot;custom-workflow-schema.json&quot;)
-validate_workflow(workflow_data, custom_schema_obj)
+validate_workflow(workflow_data, &quot;custom-workflow-schema.json&quot;)
 </code></pre>
 <hr />
 <p><strong><a href="../cache/">← Previous: Cache</a></strong> | <strong><a href="../overview/">Back to API Overview</a></strong> | <strong><a href="../status/">Next: Status System →</a></strong></p>
