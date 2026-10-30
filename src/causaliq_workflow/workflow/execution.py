@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from causaliq_workflow.registry import WorkflowContext
+from causaliq_workflow.reporting import StepLogger
 from causaliq_workflow.schema import WorkflowValidationError
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.aggregation import AggregationConfig
@@ -34,10 +35,11 @@ class _JobState:
     job: Dict[str, Any]
     context: WorkflowContext
     cli_params: Dict[str, Any]
-    step_logger: Optional[Callable[[str, str, str, Dict[str, Any]], None]]
+    step_logger: Optional[StepLogger]
     variables: Dict[str, Any]
     step_results: Dict[str, Any] = field(default_factory=dict)
     frames: Tuple[WorkflowFrame, ...] = ()
+    depth: int = 0
 
 
 class ExecutionMixin(WorkflowExecutorBase):
@@ -94,9 +96,7 @@ class ExecutionMixin(WorkflowExecutorBase):
         workflow: Dict[str, Any],
         mode: str = "dry-run",
         cli_params: Optional[Dict[str, Any]] = None,
-        step_logger: Optional[
-            Callable[[str, str, str, Dict[str, Any]], None]
-        ] = None,
+        step_logger: Optional[StepLogger] = None,
         validate: bool = True,
         source_path: Optional[Union[str, Path]] = None,
     ) -> List[Dict[str, Any]]:
@@ -117,7 +117,9 @@ class ExecutionMixin(WorkflowExecutorBase):
             mode: Execution mode ('dry-run', 'run', 'compare')
             cli_params: Additional parameters from CLI
             step_logger: Optional function to log step execution
-                (action_method, step_name, status, matrix_values)
+                (action_method, step_name, status, matrix_values). The
+                optional ``depth`` and ``detail`` keyword arguments carry
+                the workflow nesting depth and a trailing detail fragment.
             validate: When True (default) run the validation pass first.
                 Set False when the caller has already validated the same
                 workflow to avoid a redundant pass.
@@ -176,8 +178,9 @@ class ExecutionMixin(WorkflowExecutorBase):
         workflow: Dict[str, Any],
         mode: str,
         cli_params: Dict[str, Any],
-        step_logger: Optional[Callable[[str, str, str, Dict[str, Any]], None]],
+        step_logger: Optional[StepLogger],
         frames: Tuple[WorkflowFrame, ...] = (),
+        depth: int = 0,
     ) -> List[Dict[str, Any]]:
         """Execute every matrix job and collect the results."""
         # Derive matrix from explicit definition or from input caches
@@ -198,7 +201,13 @@ class ExecutionMixin(WorkflowExecutorBase):
             )
             results.append(
                 self._execute_job(
-                    workflow, job, context, cli_params, step_logger, frames
+                    workflow,
+                    job,
+                    context,
+                    cli_params,
+                    step_logger,
+                    frames,
+                    depth=depth,
                 )
             )
 
@@ -210,10 +219,9 @@ class ExecutionMixin(WorkflowExecutorBase):
         job: Dict[str, Any],
         context: WorkflowContext,
         cli_params: Dict[str, Any],
-        step_logger: Optional[
-            Callable[[str, str, str, Dict[str, Any]], None]
-        ] = None,
+        step_logger: Optional[StepLogger] = None,
         frames: Tuple[WorkflowFrame, ...] = (),
+        depth: int = 0,
     ) -> Dict[str, Any]:
         """Execute single job with resolved matrix variables.
 
@@ -224,6 +232,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             cli_params: CLI parameters
             step_logger: Optional function to log step execution
             frames: Call stack leading to this workflow
+            depth: Workflow nesting depth (0 for the top-level workflow)
 
         Returns:
             Job execution results
@@ -238,6 +247,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             step_logger=step_logger,
             variables={**workflow, **job, **cli_params},
             frames=frames,
+            depth=depth,
         )
 
         for step in workflow.get("steps", []):
@@ -575,7 +585,11 @@ class ExecutionMixin(WorkflowExecutorBase):
         else:
             status = "FAILED"
         state.step_logger(
-            action_method, step_name, status, state.context.matrix_values
+            action_method,
+            step_name,
+            status,
+            state.context.matrix_values,
+            depth=state.depth,
         )
 
 
@@ -625,5 +639,9 @@ def _log_step_status(
     if state.step_logger:
         action_method = resolved_inputs.get("action", "default")
         state.step_logger(
-            action_method, step_name, status, state.context.matrix_values
+            action_method,
+            step_name,
+            status,
+            state.context.matrix_values,
+            depth=state.depth,
         )

@@ -154,7 +154,11 @@ def test_step_logger_receives_expanded_step_name(
     logged: List[str] = []
 
     def step_logger(
-        action: str, name: str, status: str, values: Dict[str, Any]
+        action: str,
+        name: str,
+        status: str,
+        values: Dict[str, Any],
+        **_: object,
     ) -> None:
         logged.append(name)
 

@@ -23,12 +23,13 @@ from typing import (
 from causaliq_core import ActionPattern
 
 from causaliq_workflow.registry import ActionRegistry
+from causaliq_workflow.reporting import StepLogger
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.workflow.aggregation import AggregationConfig
     from causaliq_workflow.workflow.frames import WorkflowFrame
 
-_StepLogger = Optional[Callable[[str, str, str, Dict[str, Any]], None]]
+_StepLogger = Optional[StepLogger]
 
 
 class WorkflowExecutorBase:  # pragma: no cover
@@ -230,6 +231,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         cli_params: Dict[str, Any],
         step_logger: _StepLogger,
         frames: Tuple["WorkflowFrame", ...] = (),
+        depth: int = 0,
     ) -> List[Dict[str, Any]]:
         """Execute every matrix job and collect the results."""
         raise NotImplementedError

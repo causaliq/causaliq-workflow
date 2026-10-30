@@ -453,7 +453,9 @@ def test_execute_workflow_logs_step_completion(
     executor.action_registry._actions["mock_successful"] = MockSuccessfulAction
     statuses = []
 
-    def step_logger(action_method, step_name, status, matrix_values):
+    def step_logger(
+        action_method, step_name, status, matrix_values, **_: object
+    ):
         statuses.append(status)
 
     workflow = {
@@ -491,7 +493,9 @@ def test_execute_workflow_logs_failed_step(
     executor.action_registry._actions["mock_error_action"] = MockErrorAction
     statuses = []
 
-    def step_logger(action_method, step_name, status, matrix_values):
+    def step_logger(
+        action_method, step_name, status, matrix_values, **_: object
+    ):
         statuses.append(status)
 
     workflow = {
@@ -528,7 +532,9 @@ def test_execute_workflow_logs_skipped_step(
     executor.action_registry._actions["mock_skipping"] = MockSkippingAction
     statuses = []
 
-    def step_logger(action_method, step_name, status, matrix_values):
+    def step_logger(
+        action_method, step_name, status, matrix_values, **_: object
+    ):
         statuses.append(status)
 
     workflow = {

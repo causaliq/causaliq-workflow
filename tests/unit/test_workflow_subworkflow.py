@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional
 import pytest
 from causaliq_core import ActionValidationError, CausalIQActionProvider
 
-from causaliq_workflow.cli_report import _count_results
 from causaliq_workflow.registry import WorkflowContext
+from causaliq_workflow.reporting import count_results
 from causaliq_workflow.schema import WorkflowValidationError
 from causaliq_workflow.workflow import (
     WorkflowExecutionError,
@@ -269,6 +269,7 @@ def test_run_call_step_executes_child(
         cli_params: Dict[str, Any],
         step_logger: Any,
         frames: Any,
+        **_: Any,
     ) -> List[Dict[str, Any]]:
         captured.update(
             workflow=workflow,
@@ -312,7 +313,7 @@ def test_run_call_step_overrides_child_matrix(
         return child
 
     def record_jobs(
-        workflow: Dict[str, Any], *args: Any
+        workflow: Dict[str, Any], *args: Any, **kwargs: Any
     ) -> List[Dict[str, Any]]:
         captured.update(workflow=workflow, variables=args[1])
         return []
@@ -346,7 +347,7 @@ def test_run_call_step_forwards_list_parameter(
         return child
 
     def record_jobs(
-        workflow: Dict[str, Any], *args: Any
+        workflow: Dict[str, Any], *args: Any, **kwargs: Any
     ) -> List[Dict[str, Any]]:
         captured.update(workflow=workflow, variables=args[1])
         return []
@@ -410,14 +411,16 @@ def test_run_call_step_announces_before_child(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     logged: List[Any] = []
-    state = _state(tmp_path, logger=lambda *args: logged.append(args))
+    state = _state(
+        tmp_path, logger=lambda *args, **kwargs: logged.append(args)
+    )
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
     ) -> Dict[str, Any]:
         return {"steps": []}
 
-    def run_jobs(*args: Any) -> List[Dict[str, Any]]:
+    def run_jobs(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
         logged.append(("child", "inner", "SUCCESS", {}))
         return [{"steps": {"inner": {"status": "success"}}}]
 
@@ -450,7 +453,7 @@ def test_count_results_counts_called_steps() -> None:
             }
         }
     ]
-    counts = _count_results(results, "dry-run")
+    counts = count_results(results, "dry-run")
     assert counts.would_skip == 2
     assert counts.total == 2
 
@@ -477,7 +480,7 @@ def test_count_results_counts_all_call_steps() -> None:
             }
         }
     ]
-    counts = _count_results(results, "dry-run")
+    counts = count_results(results, "dry-run")
     assert counts.would_skip == 2
     assert counts.would_execute == 4
     assert counts.new_entries == 4
@@ -503,7 +506,7 @@ def test_count_results_reports_called_failures() -> None:
             }
         }
     ]
-    counts = _count_results(results, "run")
+    counts = count_results(results, "run")
     assert counts.failed == 1
     assert counts.errors == ["  Child record: boom"]
 
@@ -542,7 +545,7 @@ def test_run_call_step_resolves_caller_variables(
         return {"matrix": {"variant": ["one"]}, "steps": []}
 
     def record_jobs(
-        workflow: Dict[str, Any], *args: Any
+        workflow: Dict[str, Any], *args: Any, **kwargs: Any
     ) -> List[Dict[str, Any]]:
         captured["matrix"] = workflow["matrix"]
         return []
@@ -708,3 +711,101 @@ def test_call_forwards_list_parameter_to_child_matrix(
         "Learn graph using typed data for 10",
         "Learn graph using typed data for 20",
     ]
+
+
+def _recording_logger(logged: List[Dict[str, Any]]) -> Any:
+    """Return a step logger that records every event as a dictionary."""
+
+    def record(
+        action: str,
+        name: str,
+        status: str,
+        values: Dict[str, Any],
+        **kwargs: Any,
+    ) -> None:
+        logged.append({"status": status, "name": name, **kwargs})
+
+    return record
+
+
+# A returned call reports the cumulative step counts of its subtree.
+def test_run_call_step_logs_completed_with_counts(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    logged: List[Dict[str, Any]] = []
+    state = _state(tmp_path, logger=_recording_logger(logged))
+
+    def load_child(
+        target: Any, step_name: str, parameter_names: Any = frozenset()
+    ) -> Dict[str, Any]:
+        return {"steps": []}
+
+    def run_jobs(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        return [
+            {
+                "job": {"network": "asia"},
+                "steps": {
+                    "Child record": {"status": "skipped"},
+                    "Nested call": {
+                        "status": "skipped",
+                        "workflow": "grandchild.yml",
+                        "steps": [{"name": "Grandchild", "status": "skipped"}],
+                    },
+                },
+            }
+        ]
+
+    monkeypatch.setattr(executor, "_load_child_workflow", load_child)
+    monkeypatch.setattr(executor, "_execute_jobs", run_jobs)
+    executor._run_workflow_call_step(
+        state, {"name": "Call", "uses": "./child.yml"}, "Call"
+    )
+
+    assert [event["status"] for event in logged] == ["CALLING", "COMPLETED"]
+    assert logged[1]["detail"] == "2 steps: 2 skipped"
+    assert logged[1]["depth"] == 0
+
+
+# A called workflow's own steps are logged one level deeper.
+def test_execute_child_workflow_passes_next_depth(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _state(tmp_path)
+    captured: Dict[str, Any] = {}
+
+    def record_jobs(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(executor, "_execute_jobs", record_jobs)
+    executor._execute_child_workflow({}, tmp_path / "child.yml", state, {})
+
+    assert captured["depth"] == 1
+
+
+# A call summary keeps nested call steps so totals span every depth.
+def test_summarise_call_keeps_nested_call_steps(tmp_path: Path) -> None:
+    results = [
+        {
+            "job": {"network": "asia"},
+            "steps": {
+                "Inner call": {
+                    "status": "skipped",
+                    "workflow": "grandchild.yml",
+                    "steps": [{"name": "Grandchild", "status": "skipped"}],
+                }
+            },
+        }
+    ]
+
+    summary = _summarise_call(tmp_path / "child.yml", results, "run", {})
+
+    assert summary["steps"][0]["workflow"] == "grandchild.yml"
+    assert summary["steps"][0]["steps"] == [
+        {"name": "Grandchild", "status": "skipped"}
+    ]
+    assert summary["steps"][0]["matrix_values"] == {"network": "asia"}

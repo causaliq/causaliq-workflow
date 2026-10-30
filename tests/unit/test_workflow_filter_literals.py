@@ -165,7 +165,9 @@ def test_parse_workflow_relaxes_filters(monkeypatch) -> None:
 def test_execute_workflow_relaxes_filters(monkeypatch) -> None:
     captured: Dict[str, Any] = {}
 
-    def fake_execute(workflow, mode, cli_params, step_logger, frames):
+    def fake_execute(
+        workflow, mode, cli_params, step_logger, frames, **kwargs
+    ):
         captured["filter"] = workflow["steps"][0]["with"]["filter"]
         return []
 

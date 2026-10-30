@@ -105,7 +105,9 @@ def test_create_pattern_conservative_skip_with_logger(
 
     log_calls: list = []
 
-    def capture_logger(action_method, step_name, status, matrix_values):
+    def capture_logger(
+        action_method, step_name, status, matrix_values, **_: object
+    ):
         log_calls.append((action_method, step_name, status, matrix_values))
 
     result = executor._execute_job(
@@ -239,7 +241,9 @@ def test_aggregate_pattern_conservative_skip_with_logger(
 
     log_calls: list = []
 
-    def capture_logger(action_method, step_name, status, matrix_values):
+    def capture_logger(
+        action_method, step_name, status, matrix_values, **_: object
+    ):
         log_calls.append((action_method, step_name, status, matrix_values))
 
     result = executor._execute_job(

@@ -39,7 +39,7 @@ def test_cli_run_help(runner: CliRunner) -> None:
     assert "Usage: causaliq-workflow run" in result.output
     assert "WORKFLOW_FILE" in result.output
     assert "--mode" in result.output
-    assert "--log-level" in result.output
+    assert "--log-depth" in result.output
 
 
 # Test export-cache subcommand help.
@@ -59,7 +59,7 @@ def test_cli_export_cache_help(runner: CliRunner) -> None:
 def test_report_results_empty_results(capsys: "pytest.CaptureFixture") -> None:
     from causaliq_workflow.cli import _report_results
 
-    _report_results([], {}, "run", "all")
+    _report_results([], {}, "run", 2)
 
     captured = capsys.readouterr()
     assert "COMPLETED 0 steps" in captured.out
@@ -72,7 +72,7 @@ def test_report_results_dry_run_would_execute(
     from causaliq_workflow.cli import _report_results
 
     results = [{"steps": {"step1": {"status": "would_execute"}}}]
-    _report_results(results, {}, "dry-run", "all")
+    _report_results(results, {}, "dry-run", 2)
 
     captured = capsys.readouterr()
     assert "1 would execute" in captured.out
@@ -85,7 +85,7 @@ def test_report_results_dry_run_would_skip(
     from causaliq_workflow.cli import _report_results
 
     results = [{"steps": {"step1": {"status": "would_skip"}}}]
-    _report_results(results, {}, "dry-run", "all")
+    _report_results(results, {}, "dry-run", 2)
 
     captured = capsys.readouterr()
     assert "1 would skip" in captured.out
@@ -96,7 +96,7 @@ def test_report_results_skipped(capsys: "pytest.CaptureFixture") -> None:
     from causaliq_workflow.cli import _report_results
 
     results = [{"steps": {"step1": {"status": "skipped"}}}]
-    _report_results(results, {}, "run", "all")
+    _report_results(results, {}, "run", 2)
 
     captured = capsys.readouterr()
     assert "1 skipped" in captured.out
@@ -107,7 +107,7 @@ def test_report_results_forced(capsys: "pytest.CaptureFixture") -> None:
     from causaliq_workflow.cli import _report_results
 
     results = [{"steps": {"step1": {"status": "success"}}}]
-    _report_results(results, {}, "force", "all")
+    _report_results(results, {}, "force", 2)
 
     captured = capsys.readouterr()
     assert "1 forced" in captured.out
@@ -118,7 +118,7 @@ def test_report_results_failed(capsys: "pytest.CaptureFixture") -> None:
     from causaliq_workflow.cli import _report_results
 
     results = [{"steps": {"step1": {"status": "failed"}}}]
-    _report_results(results, {}, "run", "all")
+    _report_results(results, {}, "run", 2)
 
     captured = capsys.readouterr()
     assert "1 failed" in captured.out
@@ -142,7 +142,7 @@ def test_report_results_failed_with_errors(
             }
         }
     ]
-    _report_results(results, {}, "run", "all")
+    _report_results(results, {}, "run", 2)
 
     captured = capsys.readouterr()
     assert "1 failed" in captured.out
@@ -178,7 +178,7 @@ def test_log_step_execution_with_matrix_values(
             else:
                 matrix_part = ""
             click.echo(
-                f"{timestamp} [{action_method}] {status:12} "
+                f"{timestamp} [{action_method}] {status} "
                 f"{step_name}{matrix_part}"
             )
 
@@ -214,7 +214,7 @@ def test_report_results_with_entry_counts(
             }
         }
     ]
-    _report_results(results, {}, "dry-run", "all")
+    _report_results(results, {}, "dry-run", 2)
 
     captured = capsys.readouterr()
     assert "1 would execute" in captured.out
@@ -238,7 +238,7 @@ def test_report_results_entries_to_process_only(
             }
         }
     ]
-    _report_results(results, {}, "dry-run", "all")
+    _report_results(results, {}, "dry-run", 2)
 
     captured = capsys.readouterr()
     assert "5 updates" in captured.out
@@ -261,7 +261,7 @@ def test_report_results_entries_to_skip_only(
             }
         }
     ]
-    _report_results(results, {}, "dry-run", "all")
+    _report_results(results, {}, "dry-run", 2)
 
     captured = capsys.readouterr()
     # UPDATE step with 0 would_process but 3 would_skip still
@@ -285,7 +285,7 @@ def test_report_results_executed_update_step(
             }
         }
     ]
-    _report_results(results, {}, "run", "all")
+    _report_results(results, {}, "run", 2)
 
     captured = capsys.readouterr()
     assert "1 executed" in captured.out
@@ -461,3 +461,123 @@ def test_cli_run_rejects_invalid_param(runner: CliRunner) -> None:
     )
     assert result.exit_code == 2
     assert "NAME=VALUE" in result.output
+
+
+# ===========================================================================
+# Log depth tests
+# ===========================================================================
+
+
+# Depth 1 reports the run summary.
+def test_report_results_summary_at_depth_one(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [{"steps": {"step1": {"status": "success"}}}]
+    _report_results(results, {}, "run", 1)
+
+    assert "COMPLETED 1 steps: 1 executed" in capsys.readouterr().out
+
+
+# Depth 0 suppresses the run summary.
+def test_report_results_silent_at_depth_zero(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [{"steps": {"step1": {"status": "success"}}}]
+    _report_results(results, {}, "run", 0)
+
+    assert capsys.readouterr().out == ""
+
+
+# Depth 0 suppresses CLI progress messages.
+def test_log_cli_message_silent_at_depth_zero(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _log_cli_message
+
+    _log_cli_message(0, "LOADING workflow")
+
+    assert capsys.readouterr().out == ""
+
+
+# Errors include the matrix values that identify the failing entry.
+def test_report_results_error_includes_matrix(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    results = [
+        {
+            "job": {"network": "asia"},
+            "steps": {"Learn": {"status": "failed"}},
+        }
+    ]
+    _report_results(results, {}, "run", 1)
+
+    assert "Learn [network=asia]: failed" in capsys.readouterr().out
+
+
+# The error list stops at the configured maximum.
+def test_report_results_caps_error_list(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _report_results
+
+    steps = {
+        f"step{i}": {"status": "failed", "errors": [f"error {i}"]}
+        for i in range(12)
+    }
+    _report_results([{"steps": steps}], {}, "run", 1)
+
+    out = capsys.readouterr().out
+    assert out.count("error ") == 10
+    assert "... and 2 more errors" in out
+
+
+# Depth 2 reports the top-level steps only.
+def test_make_step_logger_reports_top_level_steps(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _make_step_logger
+
+    logger = _make_step_logger(2)
+    logger("evaluate", "Top step", "EXECUTED", {}, depth=0)
+    logger("evaluate", "Child step", "EXECUTED", {}, depth=1)
+
+    out = capsys.readouterr().out
+    assert "Top step" in out
+    assert "Child step" not in out
+
+
+# Depth 3 indents first-level sub-workflow steps.
+def test_make_step_logger_indents_child_steps(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _make_step_logger
+
+    _make_step_logger(3)("evaluate", "Child step", "EXECUTED", {}, depth=1)
+
+    out = capsys.readouterr().out
+    assert "  [evaluate] EXECUTED Child step" in out
+
+
+# A call completion event renders its cumulative counts.
+def test_make_step_logger_renders_call_completion(
+    capsys: "pytest.CaptureFixture",
+) -> None:
+    from causaliq_workflow.cli import _make_step_logger
+
+    _make_step_logger(2)(
+        "./child.yml",
+        "Call child",
+        "COMPLETED",
+        {},
+        depth=0,
+        detail="2 steps: 2 skipped",
+    )
+
+    out = capsys.readouterr().out
+    assert "[./child.yml] COMPLETED Call child (2 steps: 2 skipped)" in out

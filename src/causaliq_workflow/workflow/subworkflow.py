@@ -9,6 +9,7 @@ block become parameters of the called workflow; see
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
+from causaliq_workflow.reporting import count_results, format_counts
 from causaliq_workflow.schema import (
     WorkflowValidationError,
     load_workflow_file,
@@ -70,6 +71,7 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         child = self._load_child_workflow(target, step_name, set(parameters))
         child, variables = _bind_parameters(child, parameters)
         results = self._execute_child_workflow(child, target, state, variables)
+        _log_call_end(state, step, step_name, results)
         summary = _summarise_call(
             target, results, state.context.mode, parameters
         )
@@ -126,7 +128,12 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         """
         frames = state.frames + (workflow_frame(target),)
         return self._execute_jobs(
-            child, state.context.mode, variables, state.step_logger, frames
+            child,
+            state.context.mode,
+            variables,
+            state.step_logger,
+            frames,
+            depth=state.depth + 1,
         )
 
     def _workflow_call_target(
@@ -332,14 +339,29 @@ def _collect_child_steps(
     """Collect a summary of every step run by the child workflow."""
     steps: List[Dict[str, Any]] = []
     for result in results:
-        for name, step in result.get("steps", {}).items():
-            steps.append({"name": name, **_step_summary(step)})
+        steps.extend(_job_step_summaries(result))
     return steps
 
 
+def _job_step_summaries(result: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Return one job's step summaries, tagged with its matrix values."""
+    matrix_values = result.get("job") or {}
+    summaries: List[Dict[str, Any]] = []
+    for name, step in result.get("steps", {}).items():
+        summary = {"name": name, **_step_summary(step)}
+        if matrix_values:
+            summary["matrix_values"] = matrix_values
+        summaries.append(summary)
+    return summaries
+
+
 def _step_summary(step: Dict[str, Any]) -> Dict[str, Any]:
-    """Return the reporting fields of a child step result."""
-    fields = ("status", "reason", "errors")
+    """Return the reporting fields of a child step result.
+
+    A nested call step keeps its ``workflow`` marker and its own
+    ``steps`` so run totals can be counted through every call depth.
+    """
+    fields = ("status", "reason", "errors", "workflow", "steps")
     return {key: step[key] for key in fields if key in step}
 
 
@@ -407,4 +429,40 @@ def _log_call_start(
     """Announce a workflow call before its steps are logged."""
     if not state.step_logger:
         return
-    state.step_logger(str(step.get("uses", "")), step_name, "CALLING", {})
+    state.step_logger(
+        str(step.get("uses", "")),
+        step_name,
+        "CALLING",
+        {},
+        depth=state.depth,
+    )
+
+
+def _log_call_end(
+    state: "_JobState",
+    step: Dict[str, Any],
+    step_name: str,
+    results: List[Dict[str, Any]],
+) -> None:
+    """Announce a workflow call's cumulative totals as it returns.
+
+    The counts cover the called workflow and every workflow it called,
+    so the message describes all the work the call performed.
+
+    Args:
+        state: Per-job execution state of the calling workflow.
+        step: Step configuration declaring the call.
+        step_name: Step name used in logs.
+        results: Job results produced by the called workflow.
+    """
+    if not state.step_logger:
+        return
+    counts = count_results(results, state.context.mode)
+    state.step_logger(
+        str(step.get("uses", "")),
+        step_name,
+        "COMPLETED",
+        {},
+        depth=state.depth,
+        detail=format_counts(counts, state.context.mode),
+    )

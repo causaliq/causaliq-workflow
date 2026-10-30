@@ -3,12 +3,13 @@
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
 import click
 import yaml
 
 from causaliq_workflow.cli_report import _report_results
+from causaliq_workflow.reporting import StepLogger, format_matrix_values
 from causaliq_workflow.yaml_frontend import parse_scalar_text
 
 from . import __version__
@@ -17,11 +18,12 @@ if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.workflow import WorkflowExecutor
 
 
-def _log_cli_message(level: str, message: str) -> None:
+def _log_cli_message(log_depth: int, message: str) -> None:
     """Log CLI message with standardised format."""
-    if level != "none":
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        click.echo(f"{timestamp} [causaliq-workflow] {message}")
+    if log_depth < 1:
+        return
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    click.echo(f"{timestamp} [causaliq-workflow] {message}")
 
 
 def _log_cli_error(message: str) -> None:
@@ -110,10 +112,14 @@ def cli(ctx: click.Context) -> None:
     "'run' executes with conservative skip, 'force' executes without skip",
 )
 @click.option(
-    "--log-level",
-    default="summary",
-    type=click.Choice(["none", "summary", "all"]),
-    help="Logging level for output",
+    "--log-depth",
+    default=1,
+    type=click.IntRange(min=0),
+    envvar="CAUSALIQ_LOG_DEPTH",
+    show_default=True,
+    help="Maximum workflow nesting depth to report: 0 is silent, "
+    "1 reports the top-level summary, 2 adds the top-level steps, "
+    "3 also adds first-level sub-workflow steps, and so on.",
 )
 @click.option(
     "--param",
@@ -128,7 +134,7 @@ def cli(ctx: click.Context) -> None:
 def run_workflow(
     workflow_file: Path,
     mode: str,
-    log_level: str,
+    log_depth: int,
     raw_params: Tuple[str, ...],
 ) -> None:
     """Execute a CausalIQ workflow file.
@@ -141,7 +147,7 @@ def run_workflow(
 
         causaliq-workflow run experiment.yml --mode=run
 
-        causaliq-workflow run experiment.yml --mode=dry-run --log-level=all
+        causaliq-workflow run experiment.yml --mode=dry-run --log-depth=2
 
         causaliq-workflow run experiment.yml --param sample_size=1000
     """
@@ -150,14 +156,14 @@ def run_workflow(
 
         parameters = _parse_cli_parameters(raw_params)
         executor = WorkflowExecutor()
-        _log_cli_message(log_level, f"LOADING workflow from: {workflow_file}")
+        _log_cli_message(log_depth, f"LOADING workflow from: {workflow_file}")
 
         workflow = _parse_workflow_file(executor, workflow_file, parameters)
-        _validate_workflow(executor, workflow, log_level, parameters)
+        _validate_workflow(executor, workflow, log_depth, parameters)
         results = _run_workflow_jobs(
-            executor, workflow, mode, log_level, parameters
+            executor, workflow, mode, log_depth, parameters
         )
-        _report_results(results, workflow, mode, log_level)
+        _report_results(results, workflow, mode, log_depth)
 
     except KeyboardInterrupt:
         _log_cli_error("Workflow execution interrupted by user")
@@ -200,16 +206,16 @@ def _log_parse_error(error: Exception) -> None:
 def _validate_workflow(
     executor: "WorkflowExecutor",
     workflow: Dict[str, Any],
-    log_level: str,
+    log_depth: int,
     parameters: Dict[str, Any],
 ) -> None:
     """Validate the parsed workflow, exiting with a message on failure."""
-    _log_cli_message(log_level, "VALIDATING workflow syntax and parameters...")
+    _log_cli_message(log_depth, "VALIDATING workflow syntax and parameters...")
     try:
         executor.execute_workflow(
             workflow, mode="validate", cli_params=parameters
         )
-        _log_cli_message(log_level, "VALIDATED workflow successfully")
+        _log_cli_message(log_depth, "VALIDATED workflow successfully")
     except Exception as e:
         _log_cli_error(str(e))
         sys.exit(1)
@@ -219,12 +225,12 @@ def _run_workflow_jobs(
     executor: "WorkflowExecutor",
     workflow: Dict[str, Any],
     mode: str,
-    log_level: str,
+    log_depth: int,
     parameters: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Execute the workflow in the requested mode, exiting on failure."""
-    step_logger = _make_step_logger(log_level)
-    _log_cli_message(log_level, f"EXECUTING workflow in {mode} mode...")
+    step_logger = _make_step_logger(log_depth)
+    _log_cli_message(log_depth, f"EXECUTING workflow in {mode} mode...")
     try:
         return executor.execute_workflow(
             workflow,
@@ -238,19 +244,20 @@ def _run_workflow_jobs(
         sys.exit(1)
 
 
-def _make_step_logger(
-    log_level: str,
-) -> Callable[[str, str, str, Dict[str, Any]], None]:
-    """Build the real-time per-step logging callback for a log level."""
+def _make_step_logger(log_depth: int) -> StepLogger:
+    """Build the real-time per-step logging callback for a log depth."""
 
     def log_step_execution(
         action_method: str,
         step_name: str,
         status: str,
         matrix_values: Dict[str, Any],
+        *,
+        depth: int = 0,
+        detail: str = "",
     ) -> None:
-        """Log step execution in real-time."""
-        if log_level != "all":
+        """Log a step event, indented by its workflow call depth."""
+        if depth + 2 > log_depth:
             return
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -259,25 +266,17 @@ def _make_step_logger(
         would_process = matrix_values.pop("_entries_would_process", None)
         would_skip = matrix_values.pop("_entries_would_skip", None)
 
-        matrix_part = _format_matrix_values(matrix_values)
+        indent = "  " * depth
+        matrix_part = format_matrix_values(matrix_values)
         entry_info = _format_entry_counts(would_process, would_skip)
+        detail_part = f" ({detail})" if detail else ""
 
         click.echo(
-            f"{timestamp} [{action_method}] {status:12} "
-            f"{step_name}{matrix_part}{entry_info}"
+            f"{timestamp} {indent}[{action_method}] {status} "
+            f"{step_name}{matrix_part}{entry_info}{detail_part}"
         )
 
     return log_step_execution
-
-
-def _format_matrix_values(matrix_values: Dict[str, Any]) -> str:
-    """Format matrix values as ' [key=value, ...]' (empty when none)."""
-    if not matrix_values:
-        return ""
-    matrix_str = ", ".join(
-        f"{key}={value}" for key, value in matrix_values.items()
-    )
-    return f" [{matrix_str}]"
 
 
 def _format_entry_counts(would_process: Any, would_skip: Any) -> str:

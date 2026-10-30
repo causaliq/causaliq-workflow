@@ -40,9 +40,7 @@ def test_cli_run_missing_workflow_argument() -> None:
 # Test run with valid workflow file.
 def test_cli_run_shows_action_success(cli_runner: CliRunner) -> None:
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 0
     assert "[causaliq-workflow] LOADING" in result.output
 
@@ -50,9 +48,7 @@ def test_cli_run_shows_action_success(cli_runner: CliRunner) -> None:
 # Test run with invalid workflow (validation error).
 def test_cli_run_validation_error(cli_runner: CliRunner) -> None:
     workflow_file = "tests/data/functional/invalid_cli_test.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 1
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] ERROR" in result.output
@@ -76,7 +72,7 @@ def test_cli_run_accepts_param(cli_runner: CliRunner) -> None:
             workflow_file,
             "--param",
             "sample_size=20",
-            "--log-level=summary",
+            "--log-depth=1",
         ],
     )
     assert result.exit_code == 0
@@ -88,18 +84,14 @@ def test_cli_run_accepts_param(cli_runner: CliRunner) -> None:
 # Test run without --param uses the declared default.
 def test_cli_run_uses_parameter_default(cli_runner: CliRunner) -> None:
     workflow_file = "tests/data/functional/cli_param_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 0
 
 
 # Test run omits a null-default parameter when no value is supplied.
 def test_cli_run_omits_null_default(cli_runner: CliRunner) -> None:
     workflow_file = "tests/data/functional/cli_null_param_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 0
 
 
@@ -113,7 +105,7 @@ def test_cli_run_overrides_null_default(cli_runner: CliRunner) -> None:
             workflow_file,
             "--param",
             "message=hello",
-            "--log-level=summary",
+            "--log-depth=1",
         ],
     )
     assert result.exit_code == 0
@@ -159,9 +151,7 @@ def test_cli_run_successful_execution_empty_results(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 0
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] VALIDATING" in result.output
@@ -196,7 +186,7 @@ def test_cli_run_passes_validate_false(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=none"])
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=0"])
 
     assert result.exit_code == 0
     assert calls[0]["mode"] == "validate"
@@ -235,7 +225,7 @@ def test_cli_run_successful_execution_log_none(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=none"])
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=0"])
     assert result.exit_code == 0
     assert result.output == ""
 
@@ -270,9 +260,7 @@ def test_cli_run_keyboard_interrupt(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 130
     assert (
         "[causaliq-workflow] ERROR Workflow execution interrupted by user"
@@ -290,9 +278,7 @@ def test_cli_run_import_error(cli_runner: CliRunner, monkeypatch) -> None:
     monkeypatch.setattr(workflow, "WorkflowExecutor", mock_workflow_executor)
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 1
     assert (
         "[causaliq-workflow] ERROR Missing required dependencies"
@@ -345,7 +331,7 @@ def test_cli_run_successful_execution(
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
     result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=all", "--mode=run"]
+        cli, ["run", workflow_file, "--log-depth=2", "--mode=run"]
     )
     assert result.exit_code == 0
     assert "[causaliq-workflow] LOADING" in result.output
@@ -388,9 +374,7 @@ def test_cli_run_execution_failure(cli_runner: CliRunner, monkeypatch) -> None:
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 1
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] VALIDATING" in result.output
@@ -433,9 +417,7 @@ def test_cli_run_validation_failure(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 1
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] VALIDATING" in result.output
@@ -456,9 +438,7 @@ def test_cli_run_general_parsing_error(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 1
     assert "[causaliq-workflow] LOADING" in result.output
     assert (
@@ -480,9 +460,7 @@ def test_cli_run_file_not_found_direct_error(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=summary"]
-    )
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=1"])
     assert result.exit_code == 1
     assert "[causaliq-workflow] LOADING" in result.output
     assert "[causaliq-workflow] ERROR Workflow file not found" in result.output
@@ -743,7 +721,7 @@ def test_cli_run_step_logger_coverage(cli_runner: CliRunner, tmp_path) -> None:
     workflow_file.write_text(workflow_content)
 
     result = cli_runner.invoke(
-        cli, ["run", str(workflow_file), "--log-level=all"]
+        cli, ["run", str(workflow_file), "--log-depth=2"]
     )
     assert result.exit_code == 0
     # New log format: [action_method] STATUS step_name
@@ -992,7 +970,7 @@ def test_cli_run_step_logger_with_matrix_values(
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
     result = cli_runner.invoke(
-        cli, ["run", workflow_file, "--log-level=all", "--mode=run"]
+        cli, ["run", workflow_file, "--log-depth=2", "--mode=run"]
     )
     assert result.exit_code == 0
     # Check matrix values are formatted in output
@@ -1053,7 +1031,7 @@ def test_cli_run_update_step_shows_entry_counts(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=2"])
     assert result.exit_code == 0
     # Check entry counts are shown in step log
     assert "[evaluate]" in result.output
@@ -1114,7 +1092,7 @@ def test_cli_run_update_step_entries_to_process_only(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=2"])
     assert result.exit_code == 0
     assert "5 to process" in result.output
     # Should not show "to skip" when count is 0
@@ -1172,7 +1150,7 @@ def test_cli_run_update_step_entries_to_skip_only(
     )
 
     workflow_file = "tests/data/functional/test_cli_workflow.yml"
-    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-level=all"])
+    result = cli_runner.invoke(cli, ["run", workflow_file, "--log-depth=2"])
     assert result.exit_code == 0
     assert "3 to skip" in result.output
     # Should not show "to process" when count is 0
