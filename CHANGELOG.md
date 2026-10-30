@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `action.parameters.*` / `action.result.*` and provider-qualified forms
 - `WorkflowCache.list_entry_summaries()` - list each entry's matrix values
   and metadata without decompressing object payloads
+- **Sub-workflow completion messages** - a call step logs `COMPLETED`,
+  with the cumulative step counts of the called workflow and any
+  workflows it calls, when control returns to its caller; step messages
+  are indented by call depth
 
 ### Changed
 
@@ -75,6 +79,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as a `{{placeholder}}` in a step, a null-default parameter may only be a
   whole-value placeholder, and an undeclared placeholder is a required
   parameter
+- **`--log-depth`** - replaces `--log-level`; the integer value is the
+  deepest workflow nesting level that reports messages: `0` silent, `1`
+  the top-level summary (default), `2` the top-level steps, `3` also
+  first-level sub-workflow steps, and so on
+- **Error summary** - `ERRORS:` lines now name the matrix values that
+  identify each failing combination; the list stops after ten messages
+  and reports `... and N more errors`
 
 ### Deprecated
 
@@ -98,6 +109,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   under-count the steps that ran
 - `random()` filter resolution now accepts qualified variable names such as
   `learn_graph.seed`
+- **Completion summary counts** - a called workflow's steps are now
+  counted through every nesting level. A nested call was previously
+  counted as an executed step, and steps below it were missed, so the
+  `COMPLETED` totals reported executed steps that never ran
 
 ### Security
 

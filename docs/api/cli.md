@@ -41,14 +41,17 @@ cqflow run experiment.yml --mode=run
 # Override a workflow parameter
 cqflow run experiment.yml --mode=run --param sample_size=5000
 
-# Set logging level
-cqflow run experiment.yml --mode=run --log-level=all
+# Set the logging depth
+cqflow run experiment.yml --mode=run --log-depth=2
 ```
 
 Options:
 
 - `--mode` - Execution mode: `dry-run` (default), `run`, or `force`
-- `--log-level` - Logging level: `none`, `summary` (default), or `all`
+- `--log-depth` - Maximum workflow nesting depth to report: `0` is
+  silent, `1` reports the top-level summary (default), `2` adds the
+  top-level steps, `3` also adds first-level sub-workflow steps, and so
+  on. `CAUSALIQ_LOG_DEPTH` supplies the default
 - `--param NAME=VALUE` / `-p` - Workflow parameter, repeatable. A name
   matching a matrix entry replaces that entry; other names override a
   declared parameter or fill a `{{name}}` placeholder. Values follow the
@@ -58,8 +61,20 @@ Options:
 
 #### Log Output Status Messages
 
-When `--log-level=all`, the CLI outputs a status line per job. Each matrix
-combination receives its own log line with one of the following statuses:
+`--log-depth` controls how much of the execution log is printed. Each
+value above `1` adds one more level of workflow nesting:
+
+| Depth | Messages |
+|-------|----------|
+| `0` | Nothing |
+| `1` | Loading, validation, execution and the final summary |
+| `2` | Also the top-level steps, including the `CALLING` and `COMPLETED` boundaries of workflows they call |
+| `3` | Also the steps of those called workflows, indented by two spaces |
+| `3+` | Each further level adds the next level of sub-workflow messages |
+
+When the depth includes step messages, the CLI outputs a status line per
+job. Each matrix combination receives its own log line with one of the
+following statuses:
 
 | Status | Dry-run Equivalent | Description |
 |--------|-------------------|-------------|
@@ -68,20 +83,37 @@ combination receives its own log line with one of the following statuses:
 | **SKIPPED** | WOULD SKIP | Conservative skip - entry already exists |
 | **IGNORED** | WOULD IGNORE | Job filtered out by `filter` expression (never executes) |
 | **FAILED** | - | Action raised an exception for this job |
+| **CALLING** | WOULD CALL | A step calls another workflow; the enclosed steps run next |
+| **COMPLETED** | WOULD COMPLETE | A called workflow returned, with the cumulative step counts of that call |
 
-Example output with `--log-level=all`:
+Example output with `--log-depth=3`:
 
 ```
-2026-03-11 14:23:01 [evaluate] EXECUTED     eval-step [network=asia]
-2026-03-11 14:23:02 [evaluate] EXECUTED     eval-step [network=cancer]
-2026-03-11 14:23:02 [evaluate] SKIPPED      eval-step [network=alarm]
-2026-03-11 14:23:02 [evaluate] IGNORED      eval-step [network=sachs]
+2026-03-11 14:23:01 [./hc_std.yml] CALLING Run bnlearn hc with standard ordering
+2026-03-11 14:23:01   [learn_graph] EXECUTED eval-step [network=asia]
+2026-03-11 14:23:02 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
 ```
+
+The two spaces before a message mark its call depth, so the entry and
+exit of each sub-workflow are visible. The `COMPLETED` line counts the
+steps performed by the called workflow **and** any workflows it called.
 
 **Note**: The `filter` parameter excludes entries from processing entirely
 (IGNORED), whilst conservative execution skips entries that have already been
 processed (SKIPPED). Force mode (`--mode=force`) bypasses conservative
 execution but does not override filters.
+
+#### Error Summary
+
+A run that fails steps ends with an `ERRORS:` list. Each line names the
+failing step together with the matrix values that identify that
+combination, and the list stops after ten messages:
+
+```
+2026-03-11 14:23:02 [causaliq-workflow] ERRORS:
+  Learn graph [series=BNLEARN/HC_STD, network=asia, sample_size=10]: failed
+  ... and 5 more errors
+```
 
 ### Export Cache Command
 
@@ -162,7 +194,7 @@ jobs:
 
     - name: Execute workflow
       run: |
-        cqflow run workflows/experiment.yml --mode=run --log-level=all
+        cqflow run workflows/experiment.yml --mode=run --log-depth=2
 
     - name: Export results
       run: |

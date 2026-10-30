@@ -274,17 +274,30 @@ mode itself is reached through `execute_workflow(mode="validate")`.
 
 ## Logging
 
-With `--log-level=all`, a call is announced before the called
-workflow's own step messages:
+`--log-depth` controls how deep into the call stack messages are
+reported. A call at the top level is announced with `CALLING` at depth
+`2`, and the matching `COMPLETED` line is printed when control returns:
 
 ```
-[.../hc_std.yml] CALLING      Run bnlearn hc with standard ordering
-[learn_graph] WOULD SKIP      Learn graph using bnlearn ...
+[.../hc_std.yml] CALLING Run bnlearn hc with standard ordering
+[.../hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 skipped)
 ```
 
-The final `COMPLETED` summary counts the called workflow's steps rather
-than the call step, so the totals match the work that actually ran. The
-call step's result also records the parameters that were applied.
+Depth `3` also prints the called workflow's own step messages, indented
+by two spaces per level, and each further level adds the next level of
+nesting:
+
+```
+[.../hc_std.yml] CALLING Run bnlearn hc with standard ordering
+  [learn_graph] SKIPPED Learn graph using bnlearn ...
+[.../hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 skipped)
+```
+
+The `COMPLETED` line reports the cumulative step counts of the whole
+subtree — the called workflow and any workflows it calls. The final run
+summary counts those same leaf steps rather than the call steps, so the
+totals match the work that actually ran. The call step's result also
+records the parameters that were applied.
 
 ## Recursion
 

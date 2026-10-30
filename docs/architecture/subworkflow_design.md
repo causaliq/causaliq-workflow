@@ -139,17 +139,24 @@ Called step failures are folded into `status: error` plus an `errors`
 list, so the CLI report treats a failing call like an ordinary failing
 step.
 
+Each nested step summary also carries the fields needed to report the
+run consistently at any depth: a nested call keeps its `workflow` marker
+and its own `steps`, and a job with matrix values contributes
+`matrix_values`. That lets the final summary count leaf steps at every
+level and name the failing matrix combination in the error list.
+
 The CLI report counts a call step's nested step results in place of the
 call itself, so a parent that calls one twelve-step workflow reports
 twelve steps, not one.
 
 Call steps are announced through the step logger (`CALLING`) before the
-called workflow's own step messages, so the log reads as a call followed
-by its work.
+called workflow's own step messages, and a `COMPLETED` message carrying
+the call's cumulative step counts is emitted when the child returns.
+Every event carries its call depth, so the CLI indents deeper levels and
+`--log-depth` can stop reporting below a chosen level.
 
 ## Deferred
 
 - Parameter values invalidating or keying cache entries.
 - Step output chaining from a called workflow to its caller.
-- Rolling child step counts into the CLI summary.
 - Memoising loaded child workflows across parent jobs.

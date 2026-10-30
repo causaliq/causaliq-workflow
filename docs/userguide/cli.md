@@ -66,22 +66,27 @@ replaces the omission. Names the workflow does not use are reported as
 validation errors, and repeating a name is rejected. A parameter change
 does not invalidate cached entries — use `--mode=force` to re-run.
 
-### Logging Levels
+### Logging Depth
 
-| Level | Description |
+`--log-depth` sets the deepest workflow nesting level that prints
+messages. Each level above the default adds one layer:
+
+| Depth | Description |
 |-------|-------------|
-| `none` | No output |
-| `summary` | Summary of execution (default) |
-| `all` | Detailed per-entry status messages |
+| `0` | No output |
+| `1` | Top-level summary only (default) |
+| `2` | Adds the top-level steps and their `CALLING`/`COMPLETED` call boundaries |
+| `3` | Adds first-level sub-workflow steps, indented by two spaces |
+| `3+` | Each further level adds the next level of sub-workflow messages |
 
 ```bash
-# Detailed output showing each entry
-cqflow run workflow.yml --mode=run --log-level=all
+# Show the top-level steps and the workflows they call
+cqflow run workflow.yml --mode=run --log-depth=2
 ```
 
 ### Status Messages
 
-With `--log-level=all`, each entry displays a status:
+With `--log-depth=2` or higher, each entry displays a status:
 
 | Status | Dry-run Equivalent | Description |
 |--------|-------------------|-------------|
@@ -90,14 +95,21 @@ With `--log-level=all`, each entry displays a status:
 | SKIPPED | WOULD SKIP | Already completed (conservative execution) |
 | IGNORED | WOULD IGNORE | Excluded by filter expression |
 | FAILED | — | Action raised an exception |
+| CALLING | — | A step calls another workflow |
+| COMPLETED | — | A called workflow returned, with its cumulative step counts |
 
 Example output:
 
 ```
-2026-03-15 14:23:01 [evaluate] EXECUTED  eval-step [network=asia]
-2026-03-15 14:23:02 [evaluate] EXECUTED  eval-step [network=cancer]
-2026-03-15 14:23:02 [evaluate] SKIPPED   eval-step [network=alarm]
+2026-03-15 14:23:01 [./hc_std.yml] CALLING Run bnlearn hc with standard ordering
+2026-03-15 14:23:01   [evaluate] EXECUTED eval-step [network=asia]
+2026-03-15 14:23:02 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
 ```
+
+Messages from a sub-workflow are indented by two spaces per call level.
+A failed run finishes with an `ERRORS:` list that names each failing step
+with the matrix values that identify it, capped at ten entries followed
+by `... and N more errors`.
 
 The step name shown is the name expanded for that job, so a
 `{{placeholder}}` in a step's `name` appears with its value (see
@@ -147,7 +159,7 @@ Organise related workflows in a directory structure that matches your project.
 | Variable | Description |
 |----------|-------------|
 | `CAUSALIQ_ROOT` | Default root directory for workflows |
-| `CAUSALIQ_LOG_LEVEL` | Default logging level |
+| `CAUSALIQ_LOG_DEPTH` | Default logging depth |
 
 ## Exit Codes
 

@@ -336,7 +336,7 @@ steps:
 ```
 
 Each matrix combination logs and records its own name, so
-`cqflow run workflow.yml --mode=run --log-level=all` prints
+`cqflow run workflow.yml --mode=run --log-depth=2` prints
 `Learn graph using bnlearn for asia` and
 `Learn graph using bnlearn for cancer`. The expanded name is also what
 the completion summary and a called workflow's step list report.

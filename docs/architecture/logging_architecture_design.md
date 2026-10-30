@@ -304,7 +304,7 @@ if logger:
 **Target**: Complete user interface with logging
 
 **Components**:
-- CLI parameters: `--log-file`, `--log-level`
+- CLI parameters: `--log-depth`
 - `ProgressReporter` with Click integration
 - Summary reports with status counts
 - User-friendly error display

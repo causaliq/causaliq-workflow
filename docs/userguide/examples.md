@@ -276,7 +276,7 @@ cqflow run workflow.yml --mode=run
 cqflow run workflow.yml --mode=force
 
 # Detailed per-entry logging
-cqflow run workflow.yml --mode=run --log-level=all
+cqflow run workflow.yml --mode=run --log-depth=2
 ```
 
 ## Further Reading

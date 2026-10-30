@@ -199,11 +199,11 @@ def run(
 ```
 
 ### CLI Integration
-The CLI will provide logging configuration options:
+The `run` command accepts `--log-depth` to control how much of the
+execution log is printed:
 
 ```bash
-# Future CLI integration
-causaliq-workflow run workflow.yml --log-file=execution.log --log-level=all
+causaliq-workflow run workflow.yml --log-depth=2
 ```
 
 ## Error Handling
