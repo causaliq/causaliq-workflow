@@ -262,36 +262,16 @@ def _make_step_logger(log_depth: int) -> StepLogger:
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Extract per-entry counts from a dry-run scan if present
-        would_process = matrix_values.pop("_entries_would_process", None)
-        would_skip = matrix_values.pop("_entries_would_skip", None)
-
         indent = "  " * depth
         matrix_part = format_matrix_values(matrix_values)
-        entry_info = _format_entry_counts(would_process, would_skip)
         detail_part = f" ({detail})" if detail else ""
 
         click.echo(
             f"{timestamp} {indent}[{action_method}] {status} "
-            f"{step_name}{matrix_part}{entry_info}{detail_part}"
+            f"{step_name}{matrix_part}{detail_part}"
         )
 
     return log_step_execution
-
-
-def _format_entry_counts(would_process: Any, would_skip: Any) -> str:
-    """Format per-entry counts as ' (n to process, m to skip)'."""
-    if would_process is None and would_skip is None:
-        return ""
-
-    parts = []
-    if would_process:
-        parts.append(f"{would_process} to process")
-    if would_skip:
-        parts.append(f"{would_skip} to skip")
-    if not parts:
-        return ""
-    return f" ({', '.join(parts)})"
 
 
 # ============================================================================

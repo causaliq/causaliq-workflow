@@ -1,5 +1,7 @@
 """Unit tests for WorkflowCache class with CacheEntry API."""
 
+from types import SimpleNamespace
+
 import pytest
 from causaliq_core.metadata import build_metadata
 from pytest_mock import MockerFixture
@@ -9,6 +11,7 @@ from causaliq_workflow.cache import (
     CacheTypeError,
     MatrixSchemaError,
     WorkflowCache,
+    store_action_result,
 )
 
 # ============================================================================
@@ -163,25 +166,6 @@ def test_put_overwrites_existing() -> None:
         assert result is not None
         assert result.metadata == {"version": 2}
         assert cache.entry_count() == 1
-
-
-# Test get_or_create returns new entry for missing key.
-def test_get_or_create_returns_new_for_missing() -> None:
-    with WorkflowCache(":memory:") as cache:
-        key = {"algorithm": "pc"}
-        entry = cache.get_or_create(key)
-        assert entry.metadata == {}
-        assert entry.objects == {}
-
-
-# Test get_or_create returns existing entry.
-def test_get_or_create_returns_existing() -> None:
-    with WorkflowCache(":memory:") as cache:
-        key = {"algorithm": "pc"}
-        original = CacheEntry(metadata={"original": True})
-        cache.put(key, original)
-        entry = cache.get_or_create(key)
-        assert entry.metadata == {"original": True}
 
 
 # ============================================================================
@@ -595,12 +579,12 @@ def test_matrix_schema_error_importable() -> None:
 
 
 # ============================================================================
-# Legacy compatibility tests
+# store_action_result tests
 # ============================================================================
 
 
-# Test put_from_action stores a single typed object.
-def test_put_from_action() -> None:
+# Test store_action_result stores a single typed object.
+def test_store_action_result_stores_single_object() -> None:
     with WorkflowCache(":memory:") as cache:
         key = {"algorithm": "pc"}
         metadata = build_metadata(
@@ -612,7 +596,8 @@ def test_put_from_action() -> None:
         objects = [
             {"type": "dag", "format": "graphml", "content": "<graphml/>"},
         ]
-        hash_key = cache.put_from_action(key, metadata, objects)
+        context = SimpleNamespace(matrix_values=key)
+        hash_key = store_action_result(cache, context, metadata, objects)
         assert hash_key == cache.compute_hash(key)
 
         result = cache.get(key)
@@ -622,19 +607,20 @@ def test_put_from_action() -> None:
         assert cache.get_cache_type() == "dag"
 
 
-# Test put_from_action rejects several objects for one key.
-def test_put_from_action_rejects_multiple_objects() -> None:
+# Test store_action_result rejects several objects for one key.
+def test_store_action_result_rejects_multiple_objects() -> None:
     with WorkflowCache(":memory:") as cache:
         objects = [
             {"type": "dag", "format": "graphml", "content": "<graphml/>"},
             {"type": "data", "format": "json", "content": "{}"},
         ]
+        context = SimpleNamespace(matrix_values={"algorithm": "pc"})
         with pytest.raises(CacheTypeError, match="exactly one object"):
-            cache.put_from_action({"algorithm": "pc"}, {}, objects)
+            store_action_result(cache, context, {}, objects)
 
 
-# Test put_from_action rejects an entry with no objects.
-def test_put_from_action_without_objects_raises() -> None:
+# Test store_action_result rejects an entry with no objects.
+def test_store_action_result_without_objects_raises() -> None:
     with WorkflowCache(":memory:") as cache:
         metadata = build_metadata(
             "causaliq-discovery",
@@ -642,8 +628,9 @@ def test_put_from_action_without_objects_raises() -> None:
             {},
             {"status": "ok"},
         )
+        context = SimpleNamespace(matrix_values={"algorithm": "pc"})
         with pytest.raises(CacheTypeError):
-            cache.put_from_action({"algorithm": "pc"}, metadata, [])
+            store_action_result(cache, context, metadata, [])
 
 
 # ============================================================================
@@ -745,18 +732,6 @@ def test_get_config_returns_empty_when_not_dict(
         )
         result = cache._get_config()
         assert result == {}
-
-
-# ============================================================================
-# Update entry tests
-# ============================================================================
-
-
-# Test update_entry is deprecated and raises a clear error.
-def test_update_entry_is_deprecated() -> None:
-    with WorkflowCache(":memory:") as cache:
-        with pytest.raises(NotImplementedError, match="deprecated"):
-            cache.update_entry({"algo": "pc"}, metadata={})
 
 
 # ============================================================================

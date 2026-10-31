@@ -33,7 +33,7 @@ from causaliq_workflow.workflow.parameters import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from causaliq_workflow.workflow.execution import _JobState
+    from causaliq_workflow.workflow.job_state import _JobState
 
 _RESERVED_PARAMETERS = ("action", "output")
 _FAILURE_STATUSES = ("error", "failed")

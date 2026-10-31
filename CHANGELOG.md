@@ -86,14 +86,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error summary** - `ERRORS:` lines now name the matrix values that
   identify each failing combination; the list stops after ten messages
   and reports `... and N more errors`
+- **Workflow engine module split** - `workflow/execution.py` is decomposed
+  into `execution` (entry points and the job loop), `step_runner`,
+  `step_store` and `job_state`, so every module stays within the code
+  limits; public imports are unchanged
+- **Single metadata splitter** - the action registry and the provenance
+  layer now share `causaliq_workflow.action_metadata.split_action_metadata`
+  instead of duplicating the "unwrap `result`, flat is result" rule
 
 ### Deprecated
 
-- `WorkflowCache.update_entry()` - the UPDATE action pattern has been
-  removed; write a complete entry with `put_typed()` instead
+- Nothing yet
 
 ### Removed
 
+- `WorkflowCache.update_entry()` - the UPDATE action pattern has been
+  removed; write a complete entry with `put_typed()` instead
+- `WorkflowCache.get_or_create()` - entries are written as a whole by the
+  action that produced them, so there is nothing to get-or-create
+- `WorkflowCache.put_from_action()` - use `put_typed()` with a
+  `CacheEntry`, which is what `cache.store_action_result()` now does
+- The unused `entry_type` argument of `cache.store_action_result()`
+- Per-entry `updates` reporting (`entries_updated`, `would_process` and
+  `_entries_would_process`/`_entries_would_skip`); a successful step now
+  always counts as one new entry
 - `created_at` from exported `_meta.json` files and
   `WorkflowCache.list_entries()`; the SQLite column remains internal cache
   bookkeeping for workflow and LLM caches

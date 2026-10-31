@@ -216,12 +216,30 @@ def test_store_action_result_returns_none_when_no_cache() -> None:
     result = store_action_result(
         cache=None,
         context=context,
-        entry_type="workflow",
         metadata={"status": "success"},
         objects=[{"type": "json", "name": "result", "content": "{}"}],
     )
 
     assert result is None
+
+
+# Test store_action_result writes one typed object and returns its hash.
+def test_store_action_result_writes_typed_entry() -> None:
+    """Test that store_action_result stores the entry in the cache."""
+    from causaliq_workflow.cache import WorkflowCache
+
+    context = MagicMock()
+    context.matrix_values = {"dataset": "asia"}
+    metadata = {"status": "success", "node_count": 5}
+    objects = [{"type": "dag", "format": "graphml", "content": "<graphml/>"}]
+
+    with WorkflowCache(":memory:") as cache:
+        hash_key = store_action_result(cache, context, metadata, objects)
+        assert hash_key == cache.compute_hash({"dataset": "asia"})
+        entry = cache.get({"dataset": "asia"})
+        assert entry is not None
+        assert entry.metadata["result"]["node_count"] == 5
+        assert entry.has_object("dag")
 
 
 # Test store_failure_result returns None when cache is None.
@@ -237,53 +255,6 @@ def test_store_failure_result_returns_none_when_no_cache() -> None:
     )
 
     assert result is None
-
-
-# Test store_action_result calls put_from_action on cache.
-def test_store_action_result_calls_put_from_action() -> None:
-    """Test that store_action_result delegates to cache.put_from_action."""
-    mock_cache = MagicMock()
-    mock_cache.put_from_action.return_value = "abc123"
-
-    context = MagicMock()
-    context.matrix_values = {"dataset": "asia", "method": "pc"}
-
-    metadata = {"status": "success", "node_count": 5}
-    objects = [{"type": "graphml", "name": "graph", "content": "<graphml/>"}]
-
-    result = store_action_result(
-        cache=mock_cache,
-        context=context,
-        entry_type="workflow",  # entry_type is ignored
-        metadata=metadata,
-        objects=objects,
-    )
-
-    mock_cache.put_from_action.assert_called_once_with(
-        key_data={"dataset": "asia", "method": "pc"},
-        metadata=metadata,
-        objects=objects,
-    )
-    assert result == "abc123"
-
-
-# Test store_action_result ignores entry_type parameter.
-def test_store_action_result_ignores_entry_type() -> None:
-    """Test that entry_type parameter is ignored (legacy compatibility)."""
-    mock_cache = MagicMock()
-    mock_cache.put_from_action.return_value = "hash123"
-
-    context = MagicMock()
-    context.matrix_values = {"x": 1}
-
-    # Different entry_type values should not affect the call
-    store_action_result(mock_cache, context, "type_a", {}, [])
-    store_action_result(mock_cache, context, "type_b", {}, [])
-
-    # Both calls should use same put_from_action args (entry_type ignored)
-    calls = mock_cache.put_from_action.call_args_list
-    assert len(calls) == 2
-    assert calls[0] == calls[1]
 
 
 # Metadata-only entries are exported so their _meta.json is produced.

@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional, Tuple
 from causaliq_core.metadata import build_metadata
 from causaliq_core.utils import environment as _environment
 
+from causaliq_workflow.action_metadata import split_action_metadata
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 
 __all__ = [
@@ -109,30 +110,6 @@ def resolve_action_name(
         return name
     supported = sorted(getattr(action_class, "supported_actions", set()) or [])
     return supported[0] if len(supported) == 1 else ""
-
-
-def split_action_metadata(
-    raw_metadata: Any,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Split action metadata into effective parameters and results.
-
-    CausalIQ actions return ``{"parameters": {...}, "result": {...}}``. A
-    legacy flat mapping is treated as the result so third-party providers
-    keep working during the transition.
-
-    Args:
-        raw_metadata: Metadata returned by an action.
-
-    Returns:
-        Tuple of (parameters, result) dictionaries.
-    """
-    if not isinstance(raw_metadata, dict):
-        return {}, {}
-    parameters = raw_metadata.get("parameters")
-    result = raw_metadata.get("result")
-    if isinstance(parameters, dict) and isinstance(result, dict):
-        return dict(parameters), dict(result)
-    return {}, dict(raw_metadata)
 
 
 def execute_with_provenance(

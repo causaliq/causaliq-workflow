@@ -6,9 +6,10 @@ from typing import Any, Dict, List, Optional
 from causaliq_workflow.registry import ActionRegistry
 from causaliq_workflow.workflow.aggregation import AggregationMixin
 from causaliq_workflow.workflow.execution import ExecutionMixin
-from causaliq_workflow.workflow.filters import FilterMixin
 from causaliq_workflow.workflow.matrix import MatrixMixin
 from causaliq_workflow.workflow.patterns import PatternMixin
+from causaliq_workflow.workflow.step_runner import StepRunnerMixin
+from causaliq_workflow.workflow.step_store import StepStoreMixin
 from causaliq_workflow.workflow.subworkflow import SubWorkflowMixin
 from causaliq_workflow.workflow.templates import TemplateMixin
 from causaliq_workflow.workflow.validation import ValidationMixin
@@ -22,8 +23,9 @@ class WorkflowExecutor(
     TemplateMixin,
     PatternMixin,
     SubWorkflowMixin,
-    FilterMixin,
     AggregationMixin,
+    StepRunnerMixin,
+    StepStoreMixin,
     ValidationMixin,
     EntryValidationMixin,
     ExecutionMixin,

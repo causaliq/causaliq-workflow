@@ -16,7 +16,7 @@ from typing import Any
 
 from causaliq_core.cache import TokenCache
 from causaliq_core.cache.compressors import Compressor, JsonCompressor
-from causaliq_core.metadata import normalise_metadata, split_metadata
+from causaliq_core.metadata import split_metadata
 
 from causaliq_workflow.cache.contract import (
     pin_cache_type,
@@ -328,30 +328,6 @@ class WorkflowCache:
         data, metadata = result
         return CacheEntry.from_storage(data, metadata)
 
-    def get_or_create(
-        self,
-        key_data: dict[str, Any],
-    ) -> CacheEntry:
-        """Get existing entry or create a new empty one.
-
-        Convenience method for actions that modify entries. If the entry
-        doesn't exist, returns a new empty CacheEntry.
-
-        Args:
-            key_data: Dictionary of matrix variable values (cache key).
-
-        Returns:
-            Existing CacheEntry or new empty entry.
-
-        Example:
-            >>> with WorkflowCache(":memory:") as cache:
-            ...     entry = cache.get_or_create({"algo": "pc"})
-            ...     entry.metadata["step"] = 1
-            ...     cache.put({"algo": "pc"}, entry)
-        """
-        entry = self.get(key_data)
-        return entry if entry is not None else CacheEntry()
-
     def exists(
         self,
         key_data: dict[str, Any],
@@ -456,32 +432,6 @@ class WorkflowCache:
             CacheTypeError: If the cache type is unknown.
         """
         return store_failure_entry(self, key_data, metadata, cache_type)
-
-    def update_entry(
-        self,
-        key_data: dict[str, Any],
-        metadata: dict[str, Any],
-        objects: list[dict[str, Any]] | None = None,
-    ) -> bool:
-        """Deprecated: an entry is written by one action.
-
-        The UPDATE action pattern has been removed, so entries are replaced
-        as a whole by the action that produced them. This method remains
-        only to raise a clear error for older callers.
-
-        Args:
-            key_data: Dictionary of matrix variable values (cache key).
-            metadata: Unused.
-            objects: Unused.
-
-        Raises:
-            NotImplementedError: Always.
-        """
-        _ = key_data, metadata, objects
-        raise NotImplementedError(
-            "update_entry is deprecated: an entry is written by one "
-            "action. Write a complete entry with put_typed() instead."
-        )
 
     def has_action_metadata(
         self,
@@ -755,51 +705,6 @@ class WorkflowCache:
         from causaliq_workflow.cache.import_ import import_entries
 
         return import_entries(self, input_path)
-
-    # ========================================================================
-    # Legacy compatibility
-    # ========================================================================
-
-    def put_from_action(
-        self,
-        key_data: dict[str, Any],
-        metadata: dict[str, Any],
-        objects: list[dict[str, Any]],
-    ) -> str:
-        """Store one action result, enforcing the one-object contract.
-
-        Args:
-            key_data: Dictionary of matrix variable values (cache key).
-            metadata: Version 2 metadata envelope. Legacy provider -> action
-                metadata is normalised for compatibility.
-            objects: List holding exactly one object dict with 'type',
-                'format', 'action' and 'content'.
-
-        Returns:
-            The hash key used for storage.
-
-        Raises:
-            CacheTypeError: If the result does not hold exactly one
-                object, or its type conflicts with the cache's pinned type.
-        """
-        entry = CacheEntry(metadata=normalise_metadata(metadata))
-        _add_entry_objects(entry, objects)
-        return self.put_typed(key_data, entry)
-
-
-def _add_entry_objects(
-    entry: CacheEntry, objects: list[dict[str, Any]] | None
-) -> None:
-    """Add or replace an entry's objects from a list of object dicts."""
-    if not objects:
-        return
-    for obj in objects:
-        entry.add_object(
-            obj.get("type", "unknown"),
-            obj.get("format", "dat"),
-            obj.get("content"),
-            obj.get("action", "unknown"),
-        )
 
 
 def _build_entry_summary(

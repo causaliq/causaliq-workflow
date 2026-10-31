@@ -220,3 +220,73 @@ def test_evaluate_entry_filter_raises_for_unknown_name():
     view = build_entry_view({}, _metadata())
     with pytest.raises(Exception):
         evaluate_entry_filter("learn_graph.unknown > 1", view)
+
+
+# The reporting view exposes matrix values on their own.
+def test_build_entry_view_matrix_only() -> None:
+    matrix_values = {"network": "asia", "sample_size": 100}
+    metadata: dict = {}
+    result = build_entry_view(matrix_values, metadata)
+    assert result == {"network": "asia", "sample_size": 100}
+
+
+# The reporting view exposes nested provider metadata under short names.
+def test_build_entry_view_nested_provider_fields() -> None:
+    matrix_values = {"network": "asia"}
+    metadata = build_metadata(
+        "causaliq-research",
+        "generate_graph",
+        {},
+        {"node_count": 5, "edge_count": 8},
+    )
+    result = build_entry_view(matrix_values, metadata)
+
+    # Matrix value remains bare
+    assert result["network"] == "asia"
+
+    # Short action-qualified names are available when unique
+    assert result["generate_graph.node_count"] == 5
+    assert result["generate_graph.edge_count"] == 8
+
+    # Provider-qualified names are also available
+    assert result["causaliq_research.generate_graph.node_count"] == 5
+
+
+# A metadata name that collides with a matrix value stays qualified.
+def test_build_entry_view_qualified_names_on_conflict() -> None:
+    matrix_values = {"network": "asia"}
+    metadata = build_metadata(
+        "provider1",
+        "action1",
+        {},
+        {"network": "overridden"},
+        history={
+            "provider2.action2": {
+                "parameters": {},
+                "result": {"network": "also_overridden"},
+            }
+        },
+    )
+    result = build_entry_view(matrix_values, metadata)
+
+    # Matrix value takes precedence for the bare name
+    assert result["network"] == "asia"
+
+    # Qualified names preserve all values
+    assert result["action1.network"] == "overridden"
+    assert result["action2.network"] == "also_overridden"
+
+
+# Nested metadata dictionaries are exposed as dotted paths.
+def test_build_entry_view_nested_dictionaries() -> None:
+    matrix_values = {"network": "asia"}
+    metadata = build_metadata(
+        "provider",
+        "action",
+        {},
+        {"simple_key": "simple_value", "nested": {"value": 1}},
+    )
+    result = build_entry_view(matrix_values, metadata)
+
+    assert result["action.simple_key"] == "simple_value"
+    assert result["action.nested.value"] == 1

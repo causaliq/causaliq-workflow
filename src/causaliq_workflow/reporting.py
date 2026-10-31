@@ -56,7 +56,6 @@ class StepCounts:
     would_skip: int = 0
     failed: int = 0
     new_entries: int = 0
-    updates: int = 0
     errors: List[str] = field(default_factory=list)
 
     @property
@@ -119,17 +118,11 @@ def format_summary(counts: StepCounts, mode: str) -> str:
 
 
 def format_detail(counts: StepCounts) -> str:
-    """Format the new-entry/update detail fragment."""
-    detail_parts: List[str] = []
-    if counts.new_entries > 0:
-        detail_parts.append(
-            _pluralise(counts.new_entries, "new entry", "new entries")
-        )
-    if counts.updates > 0:
-        detail_parts.append(_pluralise(counts.updates, "update", "updates"))
-    if not detail_parts:
+    """Format the new-entry detail fragment."""
+    if counts.new_entries <= 0:
         return ""
-    return f" ({', '.join(detail_parts)})"
+    entries = _pluralise(counts.new_entries, "new entry", "new entries")
+    return f" ({entries})"
 
 
 def format_counts(counts: StepCounts, mode: str) -> str:
@@ -210,13 +203,13 @@ def _count_by_status(
     """Fold one action step's status into the aggregate counts."""
     status = step_result.get("status", "unknown")
     if status == "success":
-        _count_success(counts, step_result, mode)
+        _count_success(counts, mode)
         return
     if status == "skipped":
         counts.skipped += 1
         return
     if status == "would_execute":
-        _count_would_execute(counts, step_result)
+        _count_would_execute(counts)
         return
     if status == "would_skip":
         counts.would_skip += 1
@@ -225,36 +218,19 @@ def _count_by_status(
         _count_failure(counts, step_name, step_result, matrix_values)
 
 
-def _count_success(
-    counts: StepCounts, step_result: Dict[str, Any], mode: str
-) -> None:
+def _count_success(counts: StepCounts, mode: str) -> None:
     """Fold a successful step result into the counts."""
     if mode == "force":
         counts.forced += 1
     else:
         counts.executed += 1
-
-    # Track new entries vs updates
-    updated = step_result.get("entries_updated", 0)
-    if updated > 0:
-        counts.updates += updated
-    else:
-        counts.new_entries += 1
+    counts.new_entries += 1
 
 
-def _count_would_execute(
-    counts: StepCounts, step_result: Dict[str, Any]
-) -> None:
+def _count_would_execute(counts: StepCounts) -> None:
     """Fold a dry-run would-execute step into the counts."""
     counts.would_execute += 1
-    would_process = step_result.get("would_process", 0)
-    would_skip = step_result.get("would_skip", 0)
-    if would_process > 0 or would_skip > 0:
-        # step with per-entry sub-counts
-        counts.updates += would_process
-    else:
-        # CREATE / AGGREGATE step
-        counts.new_entries += 1
+    counts.new_entries += 1
 
 
 def _count_failure(

@@ -196,102 +196,6 @@ def test_log_step_execution_with_matrix_values(
     assert "[network=asia, algorithm=pc]" in captured.out
 
 
-# Test _report_results with UPDATE step entry counts in dry-run mode.
-def test_report_results_with_entry_counts(
-    capsys: "pytest.CaptureFixture",
-) -> None:
-    from causaliq_workflow.cli import _report_results
-
-    # Step result with entry counts (from UPDATE step dry-run)
-    results = [
-        {
-            "steps": {
-                "update-step": {
-                    "status": "would_execute",
-                    "would_process": 10,
-                    "would_skip": 2,
-                }
-            }
-        }
-    ]
-    _report_results(results, {}, "dry-run", 2)
-
-    captured = capsys.readouterr()
-    assert "1 would execute" in captured.out
-    assert "10 updates" in captured.out
-
-
-# Test _report_results with only entries to process (no skip).
-def test_report_results_entries_to_process_only(
-    capsys: "pytest.CaptureFixture",
-) -> None:
-    from causaliq_workflow.cli import _report_results
-
-    results = [
-        {
-            "steps": {
-                "update-step": {
-                    "status": "would_execute",
-                    "would_process": 5,
-                    "would_skip": 0,
-                }
-            }
-        }
-    ]
-    _report_results(results, {}, "dry-run", 2)
-
-    captured = capsys.readouterr()
-    assert "5 updates" in captured.out
-
-
-# Test _report_results UPDATE step with only skips (no process).
-def test_report_results_entries_to_skip_only(
-    capsys: "pytest.CaptureFixture",
-) -> None:
-    from causaliq_workflow.cli import _report_results
-
-    results = [
-        {
-            "steps": {
-                "update-step": {
-                    "status": "would_execute",
-                    "would_process": 0,
-                    "would_skip": 3,
-                }
-            }
-        }
-    ]
-    _report_results(results, {}, "dry-run", 2)
-
-    captured = capsys.readouterr()
-    # UPDATE step with 0 would_process but 3 would_skip still
-    # counts as an UPDATE step, but shows no updates in summary.
-    assert "updates" not in captured.out
-
-
-# Test _report_results counts updates from executed UPDATE steps.
-def test_report_results_executed_update_step(
-    capsys: "pytest.CaptureFixture",
-) -> None:
-    from causaliq_workflow.cli import _report_results
-
-    results = [
-        {
-            "steps": {
-                "update-step": {
-                    "status": "success",
-                    "entries_updated": 3,
-                }
-            }
-        }
-    ]
-    _report_results(results, {}, "run", 2)
-
-    captured = capsys.readouterr()
-    assert "1 executed" in captured.out
-    assert "3 updates" in captured.out
-
-
 # Test CLI runs with non-YAML exception (covers else branch).
 def test_cli_run_non_yaml_exception(runner: CliRunner, monkeypatch) -> None:
     """Test that non-YAML exceptions trigger 'Failed to parse' error."""
@@ -341,13 +245,6 @@ def test_cli_run_yaml_exception(runner: CliRunner, monkeypatch) -> None:
 
     assert result.exit_code == 1, f"Output: {result.output}"
     assert "Invalid YAML in workflow file" in result.output
-
-
-# Test _format_entry_counts is empty when both counts are zero.
-def test_format_entry_counts_zero() -> None:
-    from causaliq_workflow.cli import _format_entry_counts
-
-    assert _format_entry_counts(0, 0) == ""
 
 
 # Test CLI parameters are parsed with YAML types.

@@ -2,7 +2,6 @@
 
 import pytest
 import pytest_mock
-from causaliq_core.metadata import build_metadata
 
 from causaliq_workflow.workflow import (
     AggregationConfig,
@@ -186,76 +185,6 @@ def test_aggregation_config_with_values() -> None:
 # ============================================================================
 # Aggregation scan phase tests
 # ============================================================================
-
-
-# Test _flatten_metadata with matrix values only.
-def test_flatten_metadata_matrix_only(executor: WorkflowExecutor) -> None:
-    matrix_values = {"network": "asia", "sample_size": 100}
-    metadata: dict = {}
-    result = executor._flatten_metadata(matrix_values, metadata)
-    assert result == {"network": "asia", "sample_size": 100}
-
-
-# Test _flatten_metadata with nested provider metadata.
-def test_flatten_metadata_nested(executor: WorkflowExecutor) -> None:
-    matrix_values = {"network": "asia"}
-    metadata = build_metadata(
-        "causaliq-research",
-        "generate_graph",
-        {},
-        {"node_count": 5, "edge_count": 8},
-    )
-    result = executor._flatten_metadata(matrix_values, metadata)
-
-    # Matrix value remains bare
-    assert result["network"] == "asia"
-
-    # Short action-qualified names are available when unique
-    assert result["generate_graph.node_count"] == 5
-    assert result["generate_graph.edge_count"] == 8
-
-    # Provider-qualified names are also available
-    assert result["causaliq_research.generate_graph.node_count"] == 5
-
-
-# Test _flatten_metadata keeps metadata names qualified on conflict.
-def test_flatten_metadata_key_conflict(executor: WorkflowExecutor) -> None:
-    matrix_values = {"network": "asia"}
-    metadata = build_metadata(
-        "provider1",
-        "action1",
-        {},
-        {"network": "overridden"},
-        history={
-            "provider2.action2": {
-                "parameters": {},
-                "result": {"network": "also_overridden"},
-            }
-        },
-    )
-    result = executor._flatten_metadata(matrix_values, metadata)
-
-    # Matrix value takes precedence for the bare name
-    assert result["network"] == "asia"
-
-    # Qualified names preserve all values
-    assert result["action1.network"] == "overridden"
-    assert result["action2.network"] == "also_overridden"
-
-
-# Test _flatten_metadata flattens nested dictionaries.
-def test_flatten_metadata_non_dict_nested(executor: WorkflowExecutor) -> None:
-    matrix_values = {"network": "asia"}
-    metadata = build_metadata(
-        "provider",
-        "action",
-        {},
-        {"simple_key": "simple_value", "nested": {"value": 1}},
-    )
-    result = executor._flatten_metadata(matrix_values, metadata)
-
-    assert result["action.simple_key"] == "simple_value"
-    assert result["action.nested.value"] == 1
 
 
 # Test _scan_aggregation_inputs with in-memory cache.

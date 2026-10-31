@@ -1,11 +1,11 @@
 """Shared type surface for the WorkflowExecutor functional mixins.
 
 ``WorkflowExecutor`` is composed from single-responsibility mixins (matrix,
-templates, patterns, filters, aggregation, validation and
-execution). Each mixin calls methods and attributes provided by the others;
-this base declares that shared surface so every mixin type-checks on its
-own. The declarations are never executed at runtime (the mixins override
-them all) and are excluded from coverage.
+templates, patterns, filters, aggregation, step runner, step store,
+validation and execution). Each mixin calls methods and attributes provided
+by the others; this base declares that shared surface so every mixin
+type-checks on its own. The declarations are never executed at runtime (the
+mixins override them all) and are excluded from coverage.
 """
 
 from pathlib import Path
@@ -127,14 +127,6 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Return True when step inputs name any cache (.db) file."""
         raise NotImplementedError
 
-    def _flatten_metadata(
-        self,
-        matrix_values: Dict[str, Any],
-        metadata: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        """Flatten nested metadata for filter evaluation."""
-        raise NotImplementedError
-
     def _get_aggregation_config(
         self,
         step: Dict[str, Any],
@@ -193,6 +185,35 @@ class WorkflowExecutorBase:  # pragma: no cover
         resolved_inputs: Dict[str, Any],
     ) -> bool:
         """Return True when a single-run step is skipped for this job."""
+        raise NotImplementedError
+
+    def _run_action_step(
+        self, state: Any, step: Dict[str, Any], step_name: str
+    ) -> bool:
+        """Execute a step's action or workflow call."""
+        raise NotImplementedError
+
+    def _get_environment(self) -> Optional[Dict[str, Any]]:
+        """Return the run environment, collecting it at most once."""
+        raise NotImplementedError
+
+    def _store_step_result(
+        self,
+        state: Any,
+        step_result: Dict[str, Any],
+        provenance: Dict[str, Any],
+    ) -> None:
+        """Store a step result in the open cache when appropriate."""
+        raise NotImplementedError
+
+    def _log_step_completion(
+        self,
+        state: Any,
+        step_name: str,
+        resolved_inputs: Dict[str, Any],
+        step_result: Dict[str, Any],
+    ) -> None:
+        """Log a step's completion status when a logger is present."""
         raise NotImplementedError
 
     def _validate_create_entries(

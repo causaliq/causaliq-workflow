@@ -383,3 +383,30 @@ def test_deduplicate_errors_keeps_unmatched_errors() -> None:
     assert "Another unmatched error" in result
     # Duplicates should be removed
     assert result.count("Some random error without step prefix") == 1
+
+
+# Test validation failure for unknown action.
+def test_validate_workflow_actions_failure(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {"steps": [{"uses": "unknown-action", "name": "Test Step"}]}
+    with pytest.raises(
+        WorkflowExecutionError, match="Unknown provider 'unknown-action'"
+    ):
+        executor._validate_workflow_actions(workflow, "run")
+
+
+# Test skipping validation in dry-run mode.
+def test_validate_workflow_actions_dry_run_skip(
+    executor: WorkflowExecutor,
+) -> None:
+    workflow = {
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                "with": {"action": "test", "param": "value"},
+            }
+        ]
+    }
+    executor._validate_workflow_actions(workflow, "dry-run")

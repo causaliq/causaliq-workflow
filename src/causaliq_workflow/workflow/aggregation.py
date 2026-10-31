@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from causaliq_workflow.cache.reporting import build_entry_view
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.matrix import (
     _derive_matrix_from_caches,
@@ -195,7 +196,7 @@ class AggregationMixin(WorkflowExecutorBase):
         return index
 
     def _build_scan_index(self, cache_path: str) -> List[Dict[str, Any]]:
-        """Read entry summaries and flatten metadata for one cache."""
+        """Read entry summaries and build the reporting view for one cache."""
         from causaliq_workflow.cache import WorkflowCache
 
         index: List[Dict[str, Any]] = []
@@ -205,7 +206,7 @@ class AggregationMixin(WorkflowExecutorBase):
                 index.append(
                     {
                         "matrix_values": matrix_values,
-                        "flat_meta": self._flatten_metadata(
+                        "flat_meta": build_entry_view(
                             matrix_values, summary["metadata"]
                         ),
                         "hash": summary["hash"],

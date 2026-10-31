@@ -361,43 +361,60 @@ def _export_single_entry(
     return True
 
 
-# Legacy function for backward compatibility
 def store_action_result(
     cache: "WorkflowCache | None",
     context: Any,
-    entry_type: str,
     metadata: dict[str, Any],
     objects: list[dict[str, Any]],
     matrix_key_order: list[str] | None = None,
 ) -> str | None:
-    """Store action result to workflow cache (framework interface).
+    """Store one action result in a workflow cache.
+
+    The entry holds the version 2 metadata envelope and exactly one typed
+    object; the cache's object type is pinned from that object on the
+    first write.
 
     Args:
         cache: WorkflowCache instance to store into, or None.
         context: WorkflowContext with matrix_values for cache key.
-        entry_type: Unused (kept for compatibility).
         metadata: Version 2 metadata envelope built by the executor.
-        objects: List of object dicts with type, name, content.
+        objects: List holding exactly one object dict with 'type',
+            'format', 'action' and 'content'.
         matrix_key_order: Optional ordered list of matrix variable names
             for export directory structure. If provided and not already
             set in cache, stores this order.
 
     Returns:
         Hash key used for storage, or None if no cache available.
+
+    Raises:
+        CacheTypeError: If the result does not hold exactly one object, or
+            its type conflicts with the cache's pinned type.
     """
-    _ = entry_type  # No longer used
     if cache is None:
         return None
 
-    # Store matrix key order if provided and not already set
     if matrix_key_order is not None and cache.get_matrix_key_order() is None:
         cache.set_matrix_key_order(matrix_key_order)
 
-    return cache.put_from_action(
-        key_data=context.matrix_values,
-        metadata=metadata,
-        objects=objects,
-    )
+    entry = CacheEntry(metadata=normalise_metadata(metadata))
+    _add_entry_objects(entry, objects)
+    return cache.put_typed(context.matrix_values, entry)
+
+
+def _add_entry_objects(
+    entry: CacheEntry, objects: list[dict[str, Any]] | None
+) -> None:
+    """Add an entry's typed objects from a list of object dicts."""
+    if not objects:
+        return
+    for obj in objects:
+        entry.add_object(
+            obj.get("type", "unknown"),
+            obj.get("format", "dat"),
+            obj.get("content"),
+            obj.get("action", "unknown"),
+        )
 
 
 def store_failure_result(

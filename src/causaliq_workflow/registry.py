@@ -21,6 +21,7 @@ from causaliq_core import (
     resolve_action_parameters,
 )
 
+from causaliq_workflow.action_metadata import split_action_metadata
 from causaliq_workflow.value_coercion import coerce_action_parameters
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -477,7 +478,7 @@ class ActionRegistry:
                 "status": status,
                 **{
                     k: v
-                    for k, v in _result_fields(metadata).items()
+                    for k, v in split_action_metadata(metadata)[1].items()
                     if k != "status"
                 },
                 "_action_metadata": metadata,
@@ -624,22 +625,3 @@ def _effective_parameters(
         action_instance, action_name, supplied
     )
     return coerce_action_parameters(action_instance, parameters)
-
-
-def _result_fields(metadata: Any) -> Dict[str, Any]:
-    """Return the result fields exposed for output chaining.
-
-    CausalIQ actions return ``{"parameters": ..., "result": ...}``. Legacy
-    flat metadata is returned unchanged so third-party providers keep
-    working during the transition.
-
-    Args:
-        metadata: Metadata returned by an action.
-
-    Returns:
-        Mapping of result fields exposed at the top level of the result.
-    """
-    if not isinstance(metadata, dict):
-        return {}
-    result = metadata.get("result")
-    return result if isinstance(result, dict) else metadata

@@ -132,7 +132,6 @@ def test_format_summary_empty() -> None:
 # Entry counts are pluralised in the detail fragment.
 def test_format_detail_pluralises() -> None:
     assert format_detail(StepCounts(new_entries=1)) == " (1 new entry)"
-    assert format_detail(StepCounts(updates=2)) == " (2 updates)"
     assert format_detail(StepCounts()) == ""
 
 
