@@ -201,6 +201,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
     ) -> Dict[str, Any]:
         """Execute the action, then store, check and log its result."""
         try:
+            _log_step_status(state, step_name, resolved_inputs, "RUNNING")
             step_result, provenance = execute_with_provenance(
                 self.action_registry,
                 action_name,
@@ -217,7 +218,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
                 state, step_name, resolved_inputs, step_result
             )
             self._log_step_completion(
-                state, step_name, resolved_inputs, step_result
+                state, step_name, resolved_inputs, step_result, provenance
             )
             return step_result
         finally:

@@ -3,14 +3,13 @@
 from datetime import datetime
 from typing import Any, Dict, List
 
-import click
-
 from causaliq_workflow.reporting import (
     count_results,
     format_detail,
     format_summary,
     limit_errors,
 )
+from causaliq_workflow.terminal import echo_line
 
 
 def _report_results(
@@ -26,13 +25,13 @@ def _report_results(
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     if not results:
-        click.echo(f"{timestamp} [causaliq-workflow] COMPLETED 0 steps")
+        echo_line(f"{timestamp} [causaliq-workflow] COMPLETED 0 steps")
         return
 
     counts = count_results(results, mode)
     summary = format_summary(counts, mode)
     detail = format_detail(counts)
-    click.echo(
+    echo_line(
         f"{timestamp} [causaliq-workflow] COMPLETED {counts.total} steps: "
         f"{summary}{detail}"
     )
@@ -43,6 +42,6 @@ def _log_result_errors(timestamp: str, error_messages: List[str]) -> None:
     """Print recorded step error messages, capped, with an omitted count."""
     if not error_messages:
         return
-    click.echo(f"{timestamp} [causaliq-workflow] ERRORS:")
+    echo_line(f"{timestamp} [causaliq-workflow] ERRORS:")
     for err_msg in limit_errors(error_messages):
-        click.echo(err_msg)
+        echo_line(err_msg)

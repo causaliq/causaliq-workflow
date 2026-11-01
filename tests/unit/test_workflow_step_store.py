@@ -154,7 +154,7 @@ def test_execute_workflow_logs_step_completion(
     executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
     executor.execute_workflow(workflow, mode="force", step_logger=step_logger)
 
-    assert statuses == ["EXECUTED", "FORCED"]
+    assert statuses == ["RUNNING", "EXECUTED", "RUNNING", "FORCED"]
 
 
 # Test step logging reports a failed step.
@@ -193,7 +193,7 @@ def test_execute_workflow_logs_failed_step(
     }
     executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
 
-    assert statuses == ["FAILED"]
+    assert statuses == ["RUNNING", "FAILED"]
 
 
 # Test a successful step stores the version 2 envelope with provenance.

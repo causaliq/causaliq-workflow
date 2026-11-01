@@ -68,7 +68,7 @@ def test_execute_workflow_logs_skipped_step(
     }
     executor.execute_workflow(workflow, mode="run", step_logger=step_logger)
 
-    assert statuses == ["SKIPPED"]
+    assert statuses == ["RUNNING", "SKIPPED"]
 
 
 # Test dry-run reports would_skip when the output cache holds the entry.

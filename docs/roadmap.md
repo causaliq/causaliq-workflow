@@ -1,6 +1,6 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: October 30, 2026
+**Last updated**: November 1, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
@@ -20,10 +20,12 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 1. ✅ Workflows accept input parameters
 1. ✅ Default parameter values
 1. ✅ Default workflow parameter values
-1. ✅ [Simplify and standardise quoting and typing rules
-1. ✅ List type supported for workflow parameters
-1. 🚧 [Correct and improve log messages](current_task.md)
+1. ✅ Simplify and standardise quoting and typing rules
 1. ✅ Placeholders expanded in workflow step names
+1. ✅ List type supported for workflow parameters
+1. ✅ Correct and improve log messages
+1. ✅ Refactor to meet project coding policies
+1. ✅ [Flush log messages immediately](current_task.md)
 1. 🛣️ Metadata propagation, values audit and reporting capabilities
 1. 🛣️ Action metadata catalogue with generated documentation and CLI discovery
 1. 🛣️ Support Python 3.10-14, with 3.12 as default, and badge as [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)

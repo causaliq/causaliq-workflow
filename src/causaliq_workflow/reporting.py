@@ -81,6 +81,18 @@ def format_matrix_values(matrix_values: Dict[str, Any]) -> str:
     return f" [{matrix_str}]"
 
 
+def format_elapsed(seconds: float) -> str:
+    """Format an action's duration as ``'12.4s'``.
+
+    Args:
+        seconds: Monotonic wall-clock duration in seconds.
+
+    Returns:
+        Duration with one decimal place and a unit suffix.
+    """
+    return f"{seconds:.1f}s"
+
+
 def count_results(results: List[Dict[str, Any]], mode: str) -> StepCounts:
     """Aggregate step statuses across job results at every call depth.
 

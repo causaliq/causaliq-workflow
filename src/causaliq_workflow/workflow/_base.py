@@ -212,6 +212,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         step_name: str,
         resolved_inputs: Dict[str, Any],
         step_result: Dict[str, Any],
+        provenance: Dict[str, Any],
     ) -> None:
         """Log a step's completion status when a logger is present."""
         raise NotImplementedError

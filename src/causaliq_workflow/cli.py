@@ -10,6 +10,7 @@ import yaml
 
 from causaliq_workflow.cli_report import _report_results
 from causaliq_workflow.reporting import StepLogger, format_matrix_values
+from causaliq_workflow.terminal import configure_terminal_output, echo_line
 from causaliq_workflow.yaml_frontend import parse_scalar_text
 
 from . import __version__
@@ -23,13 +24,13 @@ def _log_cli_message(log_depth: int, message: str) -> None:
     if log_depth < 1:
         return
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    click.echo(f"{timestamp} [causaliq-workflow] {message}")
+    echo_line(f"{timestamp} [causaliq-workflow] {message}")
 
 
 def _log_cli_error(message: str) -> None:
     """Log CLI error message with standardised format."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    click.echo(f"{timestamp} [causaliq-workflow] ERROR {message}", err=True)
+    echo_line(f"{timestamp} [causaliq-workflow] ERROR {message}", err=True)
 
 
 def _split_cli_parameter(item: str) -> Tuple[str, Any]:
@@ -88,8 +89,9 @@ def cli(ctx: click.Context) -> None:
     Use 'cqwork export-cache' to export cache entries.
     Use 'cqwork import-cache' to import cache entries.
     """
+    configure_terminal_output()
     if ctx.invoked_subcommand is None:
-        click.echo(ctx.get_help())
+        echo_line(ctx.get_help())
 
 
 # ============================================================================
@@ -113,7 +115,7 @@ def cli(ctx: click.Context) -> None:
 )
 @click.option(
     "--log-depth",
-    default=1,
+    default=2,
     type=click.IntRange(min=0),
     envvar="CAUSALIQ_LOG_DEPTH",
     show_default=True,
@@ -266,7 +268,7 @@ def _make_step_logger(log_depth: int) -> StepLogger:
         matrix_part = format_matrix_values(matrix_values)
         detail_part = f" ({detail})" if detail else ""
 
-        click.echo(
+        echo_line(
             f"{timestamp} {indent}[{action_method}] {status} "
             f"{step_name}{matrix_part}{detail_part}"
         )
@@ -315,7 +317,7 @@ def export_cache(
         from causaliq_workflow.cache import WorkflowCache
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        click.echo(
+        echo_line(
             f"{timestamp} [causaliq-workflow] EXPORTING cache: {cache_file}"
         )
 
@@ -338,18 +340,18 @@ def _export_cache_entries(cache: Any, output: Path, timestamp: str) -> None:
     """Report the entry count and export the cache contents."""
     entry_count = cache.entry_count()
     if entry_count == 0:
-        click.echo(
+        echo_line(
             f"{timestamp} [causaliq-workflow] " "No entries found in cache"
         )
         sys.exit(0)
 
-    click.echo(
+    echo_line(
         f"{timestamp} [causaliq-workflow] " f"Found {entry_count} entries"
     )
 
     try:
         exported = cache.export(output)
-        click.echo(
+        echo_line(
             f"{timestamp} [causaliq-workflow] "
             f"EXPORTED {exported} entries to: {output}"
         )
@@ -395,7 +397,7 @@ def import_cache(
         from causaliq_workflow.cache import WorkflowCache
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        click.echo(
+        echo_line(
             f"{timestamp} [causaliq-workflow] IMPORTING from: {input_path}"
         )
 
@@ -420,7 +422,7 @@ def _import_cache_entries(
     """Import entries from a path and report the result."""
     try:
         imported = cache.import_entries(input_path)
-        click.echo(
+        echo_line(
             f"{timestamp} [causaliq-workflow] "
             f"IMPORTED {imported} entries into: {cache_file}"
         )

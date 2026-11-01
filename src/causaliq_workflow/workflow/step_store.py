@@ -7,6 +7,7 @@ the module and method limits.
 
 from typing import Any, Dict, Optional
 
+from causaliq_workflow.reporting import format_elapsed
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.job_state import _JobState
 from causaliq_workflow.workflow.provenance import (
@@ -96,23 +97,28 @@ class StepStoreMixin(WorkflowExecutorBase):
         step_name: str,
         resolved_inputs: Dict[str, Any],
         step_result: Dict[str, Any],
+        provenance: Dict[str, Any],
     ) -> None:
         """Log a step's completion status when a step logger is present."""
         if not state.step_logger:
             return
 
         action_method = resolved_inputs.get("action", "default")
-        status = step_result.get("status", "unknown")
-        if status == "success":
-            status = "FORCED" if state.context.mode == "force" else "EXECUTED"
-        elif status == "skipped":
-            status = "SKIPPED"
-        else:
-            status = "FAILED"
         state.step_logger(
             action_method,
             step_name,
-            status,
+            _completion_status(state, step_result),
             state.context.matrix_values,
             depth=state.depth,
+            detail=format_elapsed(float(provenance["elapsed"])),
         )
+
+
+def _completion_status(state: _JobState, step_result: Dict[str, Any]) -> str:
+    """Return the reported status of a finished step."""
+    status = step_result.get("status", "unknown")
+    if status == "success":
+        return "FORCED" if state.context.mode == "force" else "EXECUTED"
+    if status == "skipped":
+        return "SKIPPED"
+    return "FAILED"
