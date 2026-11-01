@@ -7,6 +7,7 @@ from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.matrix import (
     _cache_input_paths,
     _derive_matrix_from_caches,
+    _has_db_input,
 )
 from causaliq_workflow.workflow.parameters import (
     _declared_parameters,
@@ -45,20 +46,20 @@ class TemplateMixin(WorkflowExecutorBase):
 
         1. All template variables must exist in the available context
            (declared parameters, supplied parameter names, matrix
-           variables, or keys derived from an AGGREGATE step's input
+           variables, or keys derived from a cache-reading step's input
            cache). A variable with no value is a required parameter.
-        2. All matrix variables must be used in at least one CREATE step's
-           template. AGGREGATE steps use matrix for grouping (not
-           templating).
+        2. All matrix variables must be used in at least one templating
+           (PRODUCE or MAP) step's template. AGGREGATE steps use matrix
+           for grouping (not templating).
         3. A name may not be declared as both a parameter and a matrix
            variable.
         4. A declared parameter must be used as a ``{{placeholder}}``, and
            a null-default parameter may only be a whole-value
            placeholder.
 
-        Variables used only by an AGGREGATE step whose input cache does not
-        exist yet (it may be produced by an earlier step) are deferred to
-        runtime resolution.
+        Variables used only by a cache-reading step whose input cache does
+        not exist yet (it may be produced by an earlier step) are deferred
+        to runtime resolution.
 
         Args:
             workflow: Parsed workflow dictionary
@@ -67,7 +68,7 @@ class TemplateMixin(WorkflowExecutorBase):
         Raises:
             WorkflowExecutionError: If unknown template variables found,
                 a parameter declaration is ineffective, or matrix
-                variables are not used in any CREATE step
+                variables are not used in any templating step
         """
         parameters = set(parameters or ())
         matrix_vars = set(workflow.get("matrix", {}).keys())
@@ -76,14 +77,14 @@ class TemplateMixin(WorkflowExecutorBase):
             workflow, matrix_vars, parameters
         )
         available.update(derived_vars)
-        all_vars, has_create_steps = self._scan_step_variables(workflow)
-        create_vars = self._collect_create_variables(workflow)
+        all_vars, has_templating_steps = self._scan_step_variables(workflow)
+        templating_vars = self._collect_templating_variables(workflow)
 
         _raise_parameter_errors(workflow)
         _raise_unknown_variables(all_vars - deferred_vars, available)
-        if matrix_vars and has_create_steps:
+        if matrix_vars and has_templating_steps:
             _raise_unused_matrix_variables(
-                matrix_vars, create_vars, workflow.get("matrix", {})
+                matrix_vars, templating_vars, workflow.get("matrix", {})
             )
 
     def _missing_variable_errors(
@@ -94,8 +95,8 @@ class TemplateMixin(WorkflowExecutorBase):
         A ``{{name}}`` token that is not a declared parameter, matrix
         variable, supplied parameter or cache-derived name has no value,
         so an undeclared placeholder is effectively a required
-        parameter. Variables of an AGGREGATE step whose input cache does
-        not exist yet are resolved at run time and are not reported.
+        parameter. Variables of a cache-reading step whose input cache
+        does not exist yet are resolved at run time and are not reported.
 
         Args:
             workflow: Parsed workflow dictionary.
@@ -120,9 +121,9 @@ class TemplateMixin(WorkflowExecutorBase):
     def _aggregate_template_scope(
         self, workflow: Dict[str, Any]
     ) -> Tuple[Set[str], Set[str]]:
-        """Return (derived matrix keys, deferred variables).
+        """Return (matrix keys taken from caches, deferred variables).
 
-        An AGGREGATE step without an explicit matrix takes its
+        A cache-reading step without an explicit matrix takes its
         dimensionality from the entries of its input caches. When a cache
         exists its keys are known now, so templates using them are
         validated strictly; when no cache exists yet the step's variables
@@ -132,7 +133,7 @@ class TemplateMixin(WorkflowExecutorBase):
         deferred: Set[str] = set()
 
         for step in workflow.get("steps", []):
-            if not self._is_aggregate_pattern_step(step, workflow):
+            if not self._reads_cache_entries(step):
                 continue
             matrix_keys = _cached_matrix_keys(step)
             if matrix_keys:
@@ -142,50 +143,71 @@ class TemplateMixin(WorkflowExecutorBase):
 
         return derived, deferred
 
+    def _reads_cache_entries(self, step: Dict[str, Any]) -> bool:
+        """Return True when a step reads entries from a workflow cache.
+
+        MAP and AGGREGATE steps take their dimensionality from an input
+        cache, so their matrix may be absent. A PRODUCE step has no input
+        cache to inherit from.
+        """
+        from causaliq_core import ActionPattern
+
+        step_inputs = step.get("with", {})
+        return self._get_step_action_pattern(step) in (
+            ActionPattern.MAP,
+            ActionPattern.AGGREGATE,
+        ) and _has_db_input(step_inputs.get("input"))
+
     def _step_template_variables(self, step: Dict[str, Any]) -> Set[str]:
         """Return the template variables used by a single step."""
         step_vars: Set[str] = set()
         self._collect_template_variables(step, step_vars)
         return step_vars
 
-    def _collect_create_variables(self, workflow: Dict[str, Any]) -> Set[str]:
-        """Collect template variables used by CREATE steps.
+    def _collect_templating_variables(
+        self, workflow: Dict[str, Any]
+    ) -> Set[str]:
+        """Collect template variables used by templating steps.
 
-        AGGREGATE step variables are intentionally not collected: their
-        matrix variables group entries rather than templating parameters.
+        A grouping (AGGREGATE) step's matrix variables select entries
+        rather than template parameters, so they are excluded. MAP and
+        PRODUCE steps template their matrix values, so they are included.
         """
-        create_vars: Set[str] = set()
+        templating_vars: Set[str] = set()
 
         for step in workflow.get("steps", []):
             if self._is_aggregate_pattern_step(step, workflow):
                 continue
             step_vars: Set[str] = set()
             self._collect_template_variables(step, step_vars)
-            create_vars.update(step_vars)
+            templating_vars.update(step_vars)
 
-        return create_vars
+        return templating_vars
 
     def _scan_step_variables(
         self, workflow: Dict[str, Any]
     ) -> Tuple[Set[str], bool]:
-        """Collect template variables and detect CREATE steps.
+        """Collect template variables and detect templating steps.
 
-        Returns a tuple of (all_vars, has_create_steps).
+        Returns a tuple of (all_vars, has_templating_steps). A templating
+        step is a MAP or PRODUCE step, whose matrix values appear in
+        ``{{variable}}`` templates.
         """
         from causaliq_core import ActionPattern
 
+        templating_patterns = (ActionPattern.PRODUCE, ActionPattern.MAP)
         all_vars: Set[str] = set()
-        has_create_steps = False
+        has_templating_steps = False
 
         for step in workflow.get("steps", []):
             step_vars: Set[str] = set()
             self._collect_template_variables(step, step_vars)
             all_vars.update(step_vars)
 
-            if self._get_step_action_pattern(step) == ActionPattern.CREATE:
-                has_create_steps = True
+            if self._get_step_action_pattern(step) in templating_patterns:
+                has_templating_steps = True
 
-        return all_vars, has_create_steps
+        return all_vars, has_templating_steps
 
     def _collect_template_variables(
         self, obj: Any, used_variables: Set[str]
@@ -351,19 +373,19 @@ def _raise_unknown_variables(used_vars: Set[str], available: Set[str]) -> None:
 
 def _raise_unused_matrix_variables(
     matrix_vars: Set[str],
-    create_vars: Set[str],
+    templating_vars: Set[str],
     matrix_def: Dict[str, Any],
 ) -> None:
-    """Raise when matrix variables are unused by any CREATE step."""
+    """Raise when matrix variables are unused by any templating step."""
     unused = {
         var
-        for var in matrix_vars - create_vars
+        for var in matrix_vars - templating_vars
         if not all(v is None for v in matrix_def.get(var, []))
     }
     if not unused:
         return
     raise WorkflowExecutionError(
         f"Matrix variables not used in any step: {sorted(unused)}. "
-        f"Each matrix variable must appear in at least one "
-        f"{{{{variable}}}} template in CREATE pattern steps."
+        f"Each matrix variable must appear as a {{{{variable}}}} template "
+        f"in at least one step that creates or maps cache entries."
     )

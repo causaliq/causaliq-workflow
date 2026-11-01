@@ -1,42 +1,29 @@
-# Flush log messages to terminal immediately
-
-Please produce a plan to ensure that log messages appear at the terminal output
-immediately that the relevant action has compleleted. This is necessary to provide
-assurance that the job is still running and show progress in real time.
-
-I recently ran @causaliq-workflow/papers/variable-ordering/workflows/var-ordering.yml
-which executed some slow structure learning steps and it seemed that log messages
-appeared only just as the workflow finished.
-
-## Further work which is out of scope for this task
-
-These are deliberately outside this task:
-
-0. __Clarify CREATE and AGGREGATE ActionPattern definitions__
+# Review ActionPattern definitions
 
 Please review the current action patterns: CREATE and AGGREGATE:
 
 - is this the correct distinction to make?
+- do we need this concept?
 - are existing actions being assigned to the correct pattern?
 - even if the distinction is relevant, do we need to expose the end-user to this distinction in the userguide?
 
 I am beginning to think (maybe incorrectly) that the two fundamental patterns are:
 
 - AGGREGATE - where there is a need to aggregate entries from input caches in some way to
-get the required dimensions in the output (be that a cache, plot or summarisation)
-  - examples are: `merge_graph`, `plot` and `summarise`
+get different dimensions in the output (be that a workflow cache matrix definition, or plot or summarisation dimensions) - might also be thought of as a GROUP-BY
+  - examples are: `merge_graph`, `plot` and `summarise` 
 - NON-AGGREGATE - where there is no need to aggregate input entries: either because there is no
 input cache (`learn_graph`, `generate_graph` or `migrate_trace`) or the inputs and the
 outputs have the same dimension (`best_graph` and `evaluate_graph`)
 
 We also have a convention that, in some cases at least, it is possible to omit
 the matrix definition and the one from the input cache is used silently - for example,
-with `evaluate_graph`.
+with `evaluate_graph`. Maybe this can apply to all NON-AGGREGATE actions.
 
-- should this be provided on all NON-AGGREGATE actions which allow an input workflow cache?
-- a further tweak I would like to add is the ability to use the input cache dimensions
-as defualt but be able to add an extra matrix dimension with a fixed value.
 
+## Further work which is out of scope for this task
+
+These are deliberately outside this task:
 
 1. __Values audit__
 

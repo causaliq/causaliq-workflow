@@ -19,19 +19,19 @@ def test_expand_range_value_descending(executor: WorkflowExecutor) -> None:
     assert executor._expand_range_value("5-3") == ["5-3"]
 
 
-# _aggregate_step_matrix returns empty for an AGGREGATE step without input.
-def test_aggregate_step_matrix_without_cache_input(
+# _map_step_matrix returns empty for a MAP step without input.
+def test_map_step_matrix_without_cache_input(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
 
-    step = {"uses": "provider", "with": {"action": "agg"}}
+    step = {"uses": "provider", "with": {"action": "evaluate"}}
     monkeypatch.setattr(
         executor.action_registry,
         "get_action_pattern",
-        lambda provider, action: ActionPattern.AGGREGATE,
+        lambda provider, action: ActionPattern.MAP,
     )
-    assert executor._aggregate_step_matrix(step) == {}
+    assert executor._map_step_matrix(step) == {}
 
 
 # _deduplicate_errors removes repeated step errors.

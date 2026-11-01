@@ -47,28 +47,57 @@ def _add_unique_error(
     result.append(f"Step '{key[0]}': {key[1]}")
 
 
-def _check_create_pattern(
+def _check_produce_pattern(
     step_name: str,
     step_inputs: Dict[str, Any],
     has_matrix: bool,
     has_cache_input: bool,
 ) -> List[str]:
-    """Return CREATE pattern validation errors for one step."""
+    """Return PRODUCE pattern validation errors for one step."""
+    action = step_inputs.get("action")
     errors: List[str] = []
     if "output" not in step_inputs:
         errors.append(
-            f"Step '{step_name}': CREATE pattern requires "
-            f"'output' parameter"
+            f"Step '{step_name}': action '{action}' creates cache entries, "
+            f"so an 'output' cache path is required"
         )
     if not has_matrix:
         errors.append(
-            f"Step '{step_name}': CREATE pattern requires "
-            f"workflow 'matrix' definition"
+            f"Step '{step_name}': action '{action}' creates one cache "
+            f"entry per matrix combination, so the workflow 'matrix' "
+            f"must be defined"
         )
     if has_cache_input:
         errors.append(
-            f"Step '{step_name}': CREATE pattern prohibits "
-            f"cache input (.db files)"
+            f"Step '{step_name}': action '{action}' does not read a "
+            f"workflow cache, so 'input' cannot name a cache (.db) file"
+        )
+    return errors
+
+
+def _check_map_pattern(
+    step_name: str,
+    step_inputs: Dict[str, Any],
+    has_matrix: bool,
+    has_cache_input: bool,
+) -> List[str]:
+    """Return MAP pattern validation errors for one step.
+
+    A MAP action gives one output entry per input entry, so its matrix is
+    optional: when it is omitted the dimensions are taken from the input
+    cache.
+    """
+    action = step_inputs.get("action")
+    errors: List[str] = []
+    if "input" not in step_inputs:
+        errors.append(
+            f"Step '{step_name}': action '{action}' maps one cache entry "
+            f"to one output entry, so an 'input' cache path is required"
+        )
+    if "output" not in step_inputs:
+        errors.append(
+            f"Step '{step_name}': action '{action}' maps one cache entry "
+            f"to one output entry, so an 'output' cache path is required"
         )
     return errors
 
@@ -80,28 +109,29 @@ def _check_aggregate_pattern(
     has_cache_input: bool,
 ) -> List[str]:
     """Return AGGREGATE pattern validation errors for one step."""
+    action = step_inputs.get("action")
     errors: List[str] = []
     if "input" not in step_inputs:
         errors.append(
-            f"Step '{step_name}': AGGREGATE pattern requires "
-            f"'input' parameter"
+            f"Step '{step_name}': action '{action}' groups cache entries, "
+            f"so an 'input' cache path is required"
         )
     if "output" not in step_inputs:
         errors.append(
-            f"Step '{step_name}': AGGREGATE pattern requires "
-            f"'output' parameter"
+            f"Step '{step_name}': action '{action}' groups cache entries "
+            f"into output entries, so an 'output' cache path is required"
         )
-    # Matrix can be explicit or derived from cache input
-    if not has_matrix and not has_cache_input:
+    if not has_matrix:
         errors.append(
-            f"Step '{step_name}': AGGREGATE pattern requires "
-            f"workflow 'matrix' definition or cache input"
+            f"Step '{step_name}': action '{action}' groups cache entries, "
+            f"so the workflow 'matrix' must name the grouping dimensions"
         )
     return errors
 
 
 _PATTERN_CHECKS = {
-    ActionPattern.CREATE: _check_create_pattern,
+    ActionPattern.PRODUCE: _check_produce_pattern,
+    ActionPattern.MAP: _check_map_pattern,
     ActionPattern.AGGREGATE: _check_aggregate_pattern,
 }
 
@@ -224,8 +254,10 @@ class ValidationMixin(WorkflowExecutorBase):
 
         Checks that each step's input/output/matrix configuration matches
         the declared pattern for its action:
-        - CREATE: output required, matrix required, cache input prohibited
-        - AGGREGATE: input required, output required, matrix required
+        - PRODUCE: output required, matrix required, cache input
+          prohibited
+        - MAP: input and output required, matrix optional
+        - AGGREGATE: input, output and matrix required
 
         Args:
             workflow: Parsed workflow dictionary

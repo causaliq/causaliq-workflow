@@ -1,8 +1,8 @@
 """Running one workflow step: action calls, skips and dry-run previews.
 
 The step-runner mixin turns a resolved step into an action call. It owns
-the conservative skip rules, the aggregation wiring and the CREATE /
-AGGREGATE dry-run preview, so the execution mixin only sequences steps.
+the conservative skip rules, the cache-entry wiring and the dry-run
+preview, so the execution mixin only sequences steps.
 """
 
 from typing import Any, Dict
@@ -37,7 +37,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         if self._skip_nocache_step(state, step, step_name, resolved_inputs):
             return False
 
-        self._apply_aggregation(state, step, resolved_inputs)
+        self._apply_aggregation(state, step, resolved_inputs, step_name)
         return self._run_create_step(
             state, step_name, action_name, resolved_inputs
         )
@@ -72,8 +72,17 @@ class StepRunnerMixin(WorkflowExecutorBase):
         state: _JobState,
         step: Dict[str, Any],
         resolved_inputs: Dict[str, Any],
+        step_name: str = "unnamed",
     ) -> None:
-        """Scan aggregation inputs and attach the matched entries."""
+        """Scan aggregation inputs and attach the matched entries.
+
+        A MAP step must match exactly one entry, so its arity is checked
+        before the action runs.
+
+        Raises:
+            WorkflowExecutionError: If a MAP step did not match exactly
+                one entry.
+        """
         matrix = state.workflow.get("matrix", {})
         agg_config = self._get_aggregation_config(step, matrix)
         if agg_config is None:
@@ -88,9 +97,11 @@ class StepRunnerMixin(WorkflowExecutorBase):
                 filter_expr=resolved_filter,
                 matrix_vars=agg_config.matrix_vars,
             )
-        resolved_inputs["_aggregation_entries"] = (
-            self._scan_aggregation_inputs(agg_config, state.job)
-        )
+        entries = self._scan_aggregation_inputs(agg_config, state.job)
+        error = self._map_arity_error(step_name, step, entries)
+        if error:
+            raise WorkflowExecutionError(error)
+        resolved_inputs["_aggregation_entries"] = entries
         # Remove 'aggregate' from resolved params (config only)
         resolved_inputs.pop("aggregate", None)
 
@@ -101,7 +112,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         action_name: str,
         resolved_inputs: Dict[str, Any],
     ) -> bool:
-        """Execute a CREATE/AGGREGATE step with step-level caching.
+        """Execute a cache-writing step with step-level caching.
 
         Only .db outputs are workflow caches; other outputs (like .csv or
         "-" for terminal) are handled directly by the action.
@@ -144,7 +155,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         output_path: Any,
         is_cache_output: bool,
     ) -> None:
-        """Preview a CREATE/AGGREGATE step without executing it."""
+        """Preview a cache-writing step without executing it."""
         would_skip = _cache_entry_exists(
             is_cache_output, output_path, state.context.matrix_values
         )

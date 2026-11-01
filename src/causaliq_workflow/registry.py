@@ -401,11 +401,13 @@ class ActionRegistry:
         provider_name: str,
         action_name: str,
     ) -> Optional[ActionPattern]:
-        """Get the declared execution pattern for an action.
+        """Get the declared cache-mapping pattern for an action.
 
-        Actions declare either ``CREATE`` (writes a workflow cache
-        without reading one) or ``AGGREGATE`` (reads a workflow cache and
-        writes one).
+        Actions declare how they map workflow cache entries: ``PRODUCE``
+        (writes entries without reading a cache), ``MAP`` (one entry in,
+        one entry out) or ``AGGREGATE`` (groups entries into one output
+        entry). An action that declares no pattern is treated as
+        undeclared and skips pattern validation.
 
         Args:
             provider_name: Provider name (e.g., 'causaliq-analysis')

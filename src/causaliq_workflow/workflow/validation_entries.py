@@ -37,7 +37,8 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
         Pattern-specific validation:
 
-        - CREATE: Expand matrix, validate each combination
+        - templating (PRODUCE or MAP): Expand matrix, validate each
+          combination
         - AGGREGATE: Expand matrix, scan entries, validate each combo
         - single-run step: validate once, without a matrix
 
@@ -52,8 +53,11 @@ class EntryValidationMixin(WorkflowExecutorBase):
         if cli_params is None:
             cli_params = {}
 
+        # Dispatch uses the declared matrix, as execution does, but the
+        # entries to validate come from the effective matrix so a map step
+        # that inherits its dimensions is validated against its own jobs.
         matrix = workflow.get("matrix", {})
-        jobs = self.expand_matrix(matrix)
+        jobs = self.expand_matrix(self._derive_workflow_matrix(workflow))
         errors: List[str] = _duplicate_step_name_errors(workflow)
         errors.extend(_parameter_errors(workflow, cli_params))
         errors.extend(self._missing_variable_errors(workflow, cli_params))
@@ -106,7 +110,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> List[str]:
-        """Validate CREATE pattern entries by expanding matrix.
+        """Validate templating step entries by expanding matrix.
 
         Validates parameters for each matrix combination.
 
@@ -147,7 +151,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> Optional[str]:
-        """Validate one CREATE entry, returning an error message or None."""
+        """Validate one templating entry, returning an error or None."""
         from causaliq_core import ActionValidationError
 
         variables = {**workflow, **job, **cli_params}
@@ -216,10 +220,13 @@ class EntryValidationMixin(WorkflowExecutorBase):
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> List[str]:
-        """Validate AGGREGATE pattern entries.
+        """Validate cache-reading step entries.
 
         Validates parameters for each matrix combination, scanning input
-        caches for matching entries.
+        caches for matching entries. A MAP step that matches more than one
+        entry is reported: the job is ambiguous whatever the cache holds.
+        An empty match is tolerated because an earlier step may not have
+        created the input cache yet.
 
         Args:
             step: Step configuration dictionary
@@ -248,12 +255,31 @@ class EntryValidationMixin(WorkflowExecutorBase):
             self._apply_aggregation_scan(
                 agg_config, resolved_inputs, job, step_name, fingerprints
             )
-            error = self._step_parameter_error(
-                str(step.get("uses", "")), resolved_inputs, step_name
+            errors.extend(
+                self._entry_validation_errors(step, step_name, resolved_inputs)
             )
-            if error:
-                errors.append(error)
 
+        return errors
+
+    def _entry_validation_errors(
+        self,
+        step: Dict[str, Any],
+        step_name: str,
+        resolved_inputs: Dict[str, Any],
+    ) -> List[str]:
+        """Return arity and parameter errors for one scanned entry set."""
+        errors: List[str] = []
+        entries = resolved_inputs.get("_aggregation_entries") or []
+        arity_error = self._map_arity_error(
+            step_name, step, entries, allow_empty=True
+        )
+        if arity_error:
+            errors.append(arity_error)
+        error = self._step_parameter_error(
+            str(step.get("uses", "")), resolved_inputs, step_name
+        )
+        if error:
+            errors.append(error)
         return errors
 
     def _apply_aggregation_scan(

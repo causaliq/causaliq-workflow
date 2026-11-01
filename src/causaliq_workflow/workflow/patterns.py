@@ -33,17 +33,17 @@ class PatternMixin(WorkflowExecutorBase):
         step: Dict[str, Any],
         workflow: Dict[str, Any],
     ) -> bool:
-        """Check if a step uses AGGREGATE pattern (for validation purposes).
+        """Check if a step groups input cache entries.
 
-        AGGREGATE pattern steps use matrix variables for grouping entries,
-        not for templating parameters.
+        An AGGREGATE step uses its matrix variables for grouping entries
+        rather than for templating parameters.
 
         Args:
             step: Step configuration dictionary
             workflow: Full workflow dictionary
 
         Returns:
-            True if step has .db input and is AGGREGATE pattern
+            True if step has .db input and a grouping action pattern
         """
         from causaliq_core import ActionPattern
 
@@ -53,19 +53,7 @@ class PatternMixin(WorkflowExecutorBase):
         if not _has_db_input(step_inputs.get("input")):
             return False
 
-        # Check if action declares AGGREGATE pattern
-        provider_name = step.get("uses")
-        action_name = step_inputs.get("action")
-        if not provider_name or not action_name:
-            return False
-
-        try:
-            pattern = self.action_registry.get_action_pattern(
-                provider_name, action_name
-            )
-            return pattern == ActionPattern.AGGREGATE
-        except Exception:
-            return False
+        return self._get_step_action_pattern(step) == ActionPattern.AGGREGATE
 
     def _get_step_action_pattern(
         self, step: Dict[str, Any]
@@ -100,19 +88,19 @@ class PatternMixin(WorkflowExecutorBase):
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
     ) -> bool:
-        """Check if a step should execute in aggregation mode.
+        """Check if a step should be given matched input cache entries.
 
-        Aggregation mode is activated when:
-        1. The workflow has a matrix definition AND step has cache input, OR
-        2. The action declares AGGREGATE pattern AND step has cache input
-           (matrix will be derived from input cache)
+        A step receives entries when it reads a workflow cache and either
+        declares a cache-reading pattern (MAP or AGGREGATE) or a matrix is
+        defined, in which case the entries for the current job are
+        selected.
 
         Args:
             step: Step configuration dictionary
             matrix: Workflow matrix definition
 
         Returns:
-            True if step should run in aggregation mode
+            True if the step should receive matched input entries
         """
         step_inputs = step.get("with", {})
 
@@ -120,7 +108,7 @@ class PatternMixin(WorkflowExecutorBase):
         if not _has_db_input(step_inputs.get("input")):
             return False
 
-        declared = self._aggregation_from_pattern(step, step_inputs)
+        declared = self._aggregation_from_pattern(step)
         if declared is not None:
             return declared
 
@@ -129,31 +117,61 @@ class PatternMixin(WorkflowExecutorBase):
         return bool(matrix)
 
     def _aggregation_from_pattern(
-        self,
-        step: Dict[str, Any],
-        step_inputs: Dict[str, Any],
+        self, step: Dict[str, Any]
     ) -> Optional[bool]:
-        """Return the aggregation decision implied by the action pattern.
+        """Return the entry-scan decision implied by the action pattern.
 
-        Returns True for an AGGREGATE pattern and None when no relevant
-        pattern is declared (or it cannot be determined).
+        Returns True for a MAP or AGGREGATE pattern and None when no
+        cache-reading pattern is declared (or it cannot be determined).
         """
         from causaliq_core import ActionPattern
 
-        provider_name = step.get("uses")
-        action_name = step_inputs.get("action")
-        if not provider_name or not action_name:
-            return None
-
-        try:
-            pattern = self.action_registry.get_action_pattern(
-                provider_name, action_name
-            )
-        except Exception:
-            return None
-
-        if pattern == ActionPattern.AGGREGATE:
+        pattern = self._get_step_action_pattern(step)
+        if pattern in (ActionPattern.MAP, ActionPattern.AGGREGATE):
             return True
+        return None
+
+    def _map_arity_error(
+        self,
+        step_name: str,
+        step: Dict[str, Any],
+        entries: List[Any],
+        allow_empty: bool = False,
+    ) -> Optional[str]:
+        """Return an error when a MAP step did not match one entry.
+
+        A MAP action maps one input entry to one output entry, so a job
+        must match exactly one. An empty match is tolerated when
+        ``allow_empty`` is set, because the validation pass runs before
+        an earlier step may have created the input cache.
+
+        Args:
+            step_name: Step name for the error message.
+            step: Step configuration dictionary.
+            entries: Cache entries matched for the current job.
+            allow_empty: Treat no matches as acceptable.
+
+        Returns:
+            An error message, or None when the match is acceptable.
+        """
+        from causaliq_core import ActionPattern
+
+        if self._get_step_action_pattern(step) != ActionPattern.MAP:
+            return None
+        if not entries:
+            if allow_empty:
+                return None
+            return (
+                f"Step '{step_name}': no input cache entry matches this "
+                f"job; check that the input cache exists and uses the "
+                f"same dimensions as the workflow matrix"
+            )
+        if len(entries) > 1:
+            return (
+                f"Step '{step_name}': this action maps one input entry to "
+                f"one output entry but matched {len(entries)}; add a matrix "
+                f"key to distinguish them"
+            )
         return None
 
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:

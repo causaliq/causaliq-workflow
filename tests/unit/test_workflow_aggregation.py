@@ -798,6 +798,213 @@ def test_execute_job_no_aggregation_without_matrix(
 
 
 # ============================================================================
+# MAP pattern tests: one input entry per output entry
+# ============================================================================
+
+
+def _map_provider(action_name="evaluate"):
+    """Return a stub action class that declares the MAP pattern."""
+    from causaliq_core import ActionPattern
+
+    captured: dict = {}
+
+    class MapAction:
+        name = "map-provider"
+        version = "1.0.0"
+        description = "Maps one entry to one entry"
+        action_patterns = {action_name: ActionPattern.MAP}
+
+        def run(self, action, parameters, **kwargs):
+            captured.update(parameters)
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    return MapAction, captured
+
+
+def _mapped_cache(tmp_path):
+    """Create an input cache whose entries differ outside the matrix."""
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "mapped.db"
+    with WorkflowCache(cache_path) as cache:
+        for seed in (1, 2):
+            entry = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+            cache.put({"network": "asia", "seed": seed}, entry)
+    return cache_path
+
+
+# Test _is_aggregation_step True for MAP pattern with cache input.
+def test_is_aggregation_step_map_pattern_with_cache(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {
+        "uses": "test_provider",
+        "with": {"action": "evaluate", "input": "cache.db"},
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.MAP,
+    )
+
+    # Empty matrix - the MAP pattern alone makes the step read entries
+    assert executor._is_aggregation_step(step, {}) is True
+
+
+# Test _map_arity_error accepts exactly one entry.
+def test_map_arity_error_accepts_single_entry(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {"uses": "p", "with": {"action": "evaluate", "input": "c.db"}}
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.MAP,
+    )
+
+    assert executor._map_arity_error("s", step, [{}]) is None
+
+
+# Test _map_arity_error rejects more than one entry.
+def test_map_arity_error_rejects_multiple_entries(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {"uses": "p", "with": {"action": "evaluate", "input": "c.db"}}
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.MAP,
+    )
+
+    error = executor._map_arity_error("s", step, [{}, {}])
+
+    assert error is not None
+    assert "matched 2" in error
+    assert "add a matrix key" in error
+
+
+# Test _map_arity_error rejects no entries at run time.
+def test_map_arity_error_rejects_no_entries(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {"uses": "p", "with": {"action": "evaluate", "input": "c.db"}}
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.MAP,
+    )
+
+    error = executor._map_arity_error("s", step, [])
+
+    assert error is not None
+    assert "no input cache entry matches" in error
+
+
+# Test _map_arity_error tolerates no entries during validation.
+def test_map_arity_error_allows_empty_for_validation(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {"uses": "p", "with": {"action": "evaluate", "input": "c.db"}}
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.MAP,
+    )
+
+    assert executor._map_arity_error("s", step, [], allow_empty=True) is None
+
+
+# Test _map_arity_error ignores steps that do not map entries.
+def test_map_arity_error_ignores_grouping_step(
+    executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from causaliq_core import ActionPattern
+
+    step = {"uses": "p", "with": {"action": "merge", "input": "c.db"}}
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
+    )
+
+    assert executor._map_arity_error("s", step, [{}, {}]) is None
+
+
+# Test a MAP step matching two entries fails before the action runs.
+def test_execute_job_map_step_ambiguous_raises(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    from causaliq_workflow.registry import WorkflowContext
+    from causaliq_workflow.workflow import WorkflowExecutionError
+
+    cache_path = _mapped_cache(tmp_path)
+    action_class, captured = _map_provider()
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["map-provider"] = action_class
+
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "map-step",
+                "uses": "map-provider",
+                "with": {"action": "evaluate", "input": str(cache_path)},
+            }
+        ],
+    }
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    with pytest.raises(WorkflowExecutionError) as exc_info:
+        executor._execute_job(workflow, {"network": "asia"}, context, {})
+
+    assert "map-step" in str(exc_info.value)
+    assert "matched 2" in str(exc_info.value)
+    assert captured == {}
+
+
+# Test the validation pass reports an ambiguous MAP step.
+def test_validate_entries_reports_ambiguous_map_step(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    cache_path = _mapped_cache(tmp_path)
+    action_class, _ = _map_provider()
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["map-provider"] = action_class
+
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "map-step",
+                "uses": "map-provider",
+                "with": {"action": "evaluate", "input": str(cache_path)},
+            }
+        ],
+    }
+
+    errors = executor._validate_all_entries(workflow)
+
+    assert any("matched 2" in error for error in errors)
+
+
+# ============================================================================
 # Matrix value normalisation tests (case-insensitive numeric suffixes)
 # ============================================================================
 
@@ -1149,8 +1356,8 @@ def test_derive_matrix_from_caches_nonexistent_path(tmp_path) -> None:
     assert matrix_dict["network"] == ["asia"]
 
 
-# Test _derive_workflow_matrix derives from AGGREGATE step cache.
-def test_derive_workflow_matrix_from_aggregate_step(
+# Test _derive_workflow_matrix derives from MAP step cache.
+def test_derive_workflow_matrix_from_map_step(
     executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1180,15 +1387,15 @@ def test_derive_workflow_matrix_from_aggregate_step(
     monkeypatch.setattr(
         executor.action_registry,
         "get_action_pattern",
-        lambda p, a: ActionPattern.AGGREGATE,
+        lambda p, a: ActionPattern.MAP,
     )
 
     matrix = executor._derive_workflow_matrix(workflow)
     assert set(matrix.keys()) == {"network", "seed"}
 
 
-# Test _derive_workflow_matrix skips non-AGGREGATE steps.
-def test_derive_workflow_matrix_skips_non_aggregate(
+# Test _derive_workflow_matrix skips PRODUCE steps.
+def test_derive_workflow_matrix_skips_produce_step(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1208,7 +1415,43 @@ def test_derive_workflow_matrix_skips_non_aggregate(
     monkeypatch.setattr(
         executor.action_registry,
         "get_action_pattern",
-        lambda p, a: ActionPattern.CREATE,
+        lambda p, a: ActionPattern.PRODUCE,
+    )
+
+    matrix = executor._derive_workflow_matrix(workflow)
+    assert matrix == {}
+
+
+# Test _derive_workflow_matrix skips AGGREGATE steps.
+def test_derive_workflow_matrix_skips_aggregate_step(
+    executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A grouping step must state its dimensions; it inherits none."""
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "group.db"
+    with WorkflowCache(cache_path) as cache:
+        e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
+        cache.put({"network": "asia"}, e)
+
+    workflow = {
+        "steps": [
+            {
+                "uses": "test_provider",
+                "with": {
+                    "action": "merge",
+                    "input": str(cache_path),
+                    "output": "out.db",
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda p, a: ActionPattern.AGGREGATE,
     )
 
     matrix = executor._derive_workflow_matrix(workflow)
@@ -1263,7 +1506,7 @@ def test_derive_workflow_matrix_from_db_input(
 
     from causaliq_workflow.cache import CacheEntry, WorkflowCache
 
-    cache_path = tmp_path / "agg.db"
+    cache_path = tmp_path / "mapped.db"
     with WorkflowCache(cache_path) as cache:
         e = CacheEntry(metadata={"prov": {"act": {"status": "ok"}}})
         cache.put({"network": "asia"}, e)
@@ -1273,7 +1516,7 @@ def test_derive_workflow_matrix_from_db_input(
             {
                 "uses": "test_provider",
                 "with": {
-                    "action": "merge",
+                    "action": "evaluate",
                     "input": str(cache_path),
                     "output": "out.db",
                 },
@@ -1283,7 +1526,7 @@ def test_derive_workflow_matrix_from_db_input(
     monkeypatch.setattr(
         executor.action_registry,
         "get_action_pattern",
-        lambda p, a: ActionPattern.AGGREGATE,
+        lambda p, a: ActionPattern.MAP,
     )
 
     matrix = executor._derive_workflow_matrix(workflow)
@@ -1310,7 +1553,7 @@ def test_derive_workflow_matrix_from_db_input_list(
             {
                 "uses": "test_provider",
                 "with": {
-                    "action": "merge",
+                    "action": "evaluate",
                     "input": [str(cache1), str(cache2)],
                     "output": "out.db",
                 },
@@ -1320,7 +1563,7 @@ def test_derive_workflow_matrix_from_db_input_list(
     monkeypatch.setattr(
         executor.action_registry,
         "get_action_pattern",
-        lambda p, a: ActionPattern.AGGREGATE,
+        lambda p, a: ActionPattern.MAP,
     )
 
     matrix = executor._derive_workflow_matrix(workflow)

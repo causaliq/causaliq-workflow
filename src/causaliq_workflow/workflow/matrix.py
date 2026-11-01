@@ -435,8 +435,10 @@ class MatrixMixin(WorkflowExecutorBase):
     ) -> Dict[str, List[Any]]:
         """Get effective matrix for workflow, deriving from cache if needed.
 
-        If the workflow has an explicit matrix, returns it. Otherwise, checks
-        for AGGREGATE pattern steps and derives matrix from their input caches.
+        If the workflow has an explicit matrix, returns it. Otherwise,
+        checks for MAP pattern steps and takes the matrix from their input
+        caches, because a MAP step gives one output entry per input entry
+        and so shares the input cache's dimensions.
 
         Args:
             workflow: Parsed workflow dictionary
@@ -449,27 +451,25 @@ class MatrixMixin(WorkflowExecutorBase):
         if explicit_matrix:
             return explicit_matrix
 
-        # Check for AGGREGATE steps that need derived matrix
+        # Check for MAP steps that inherit a matrix from their input cache
         for step in workflow.get("steps", []):
-            derived_matrix = self._aggregate_step_matrix(step)
+            derived_matrix = self._map_step_matrix(step)
             if derived_matrix:
                 return derived_matrix
 
         return {}
 
-    def _aggregate_step_matrix(
-        self, step: Dict[str, Any]
-    ) -> Dict[str, List[Any]]:
-        """Derive a matrix from an AGGREGATE step's input caches.
+    def _map_step_matrix(self, step: Dict[str, Any]) -> Dict[str, List[Any]]:
+        """Derive a matrix from a MAP step's input caches.
 
-        Returns an empty dictionary when the step is not an AGGREGATE
-        pattern step or has no cache input.
+        Returns an empty dictionary when the step is not a MAP pattern
+        step or has no cache input.
         """
         from causaliq_core import ActionPattern
 
         if not _has_cache_output(step):
             return {}
-        if self._get_step_action_pattern(step) != ActionPattern.AGGREGATE:
+        if self._get_step_action_pattern(step) != ActionPattern.MAP:
             return {}
 
         step_inputs = step.get("with", {})

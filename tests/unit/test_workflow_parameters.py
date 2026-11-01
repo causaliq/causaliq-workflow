@@ -320,7 +320,7 @@ class _RecordingProvider(CausalIQActionProvider):
     name = "recording-provider"
     version = "1.0.0"
     supported_actions = {"produce"}
-    action_patterns = {"produce": ActionPattern.CREATE}
+    action_patterns = {"produce": ActionPattern.PRODUCE}
 
     def _execute(
         self,

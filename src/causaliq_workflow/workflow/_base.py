@@ -108,7 +108,7 @@ class WorkflowExecutorBase:  # pragma: no cover
     def _is_aggregate_pattern_step(
         self, step: Dict[str, Any], workflow: Dict[str, Any]
     ) -> bool:
-        """Return True when a step declares the AGGREGATE pattern."""
+        """Return True when a step groups input cache entries."""
         raise NotImplementedError
 
     def _get_step_action_pattern(
@@ -120,7 +120,23 @@ class WorkflowExecutorBase:  # pragma: no cover
     def _is_aggregation_step(
         self, step: Dict[str, Any], matrix: Dict[str, List[Any]]
     ) -> bool:
-        """Return True when a step runs in aggregation mode."""
+        """Return True when a step is given matched cache entries."""
+        raise NotImplementedError
+
+    def _map_arity_error(
+        self,
+        step_name: str,
+        step: Dict[str, Any],
+        entries: List[Any],
+        allow_empty: bool = False,
+    ) -> Optional[str]:
+        """Return an error when a MAP step did not match exactly one entry."""
+        raise NotImplementedError
+
+    def _aggregation_from_pattern(
+        self, step: Dict[str, Any]
+    ) -> Optional[bool]:
+        """Return the entry-scan decision implied by the action pattern."""
         raise NotImplementedError
 
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
@@ -224,7 +240,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> List[str]:
-        """Validate CREATE pattern entries by expanding the matrix."""
+        """Validate templating step entries by expanding the matrix."""
         raise NotImplementedError
 
     def _validate_single_run_entries(
@@ -243,7 +259,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         workflow: Dict[str, Any],
         cli_params: Dict[str, Any],
     ) -> List[str]:
-        """Validate AGGREGATE pattern entries per matrix combo."""
+        """Validate cache-reading step entries per matrix combination."""
         raise NotImplementedError
 
     def _execute_jobs(

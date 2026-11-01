@@ -1,4 +1,4 @@
-"""AGGREGATE pattern configuration and input scanning."""
+"""Cache-entry scanning configuration for grouping and mapping steps."""
 
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -13,13 +13,12 @@ from causaliq_workflow.workflow.matrix import (
 
 @dataclass
 class AggregationConfig:
-    """Configuration for aggregation mode execution.
+    """Configuration for matching a step's job against input cache entries.
 
-    Aggregation mode is activated when a workflow step has:
-    - An `input` parameter specifying workflow cache(s)
-    - A matrix definition in the workflow
-
-    The matrix variables define the grouping dimensions for aggregation.
+    A step is given entries when it has an `input` parameter naming
+    workflow cache(s) and either declares a cache-reading pattern (MAP or
+    AGGREGATE) or the workflow defines a matrix. The matrix variables
+    select the entries for the current job.
     """
 
     input_caches: List[str] = field(default_factory=list)
@@ -43,17 +42,17 @@ class _AggregationScan:
 
 
 class AggregationMixin(WorkflowExecutorBase):
-    """AGGREGATE pattern methods for WorkflowExecutor."""
+    """Cache-entry scan methods for WorkflowExecutor."""
 
     def _get_aggregation_config(
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
     ) -> Optional[AggregationConfig]:
-        """Get aggregation configuration for a step.
+        """Get the entry-scan configuration for a step.
 
-        Returns None if the step is not an aggregation step.
-        If no explicit matrix is provided but the action is AGGREGATE pattern,
+        Returns None if the step reads no workflow cache. If no explicit
+        matrix is provided but the action maps or groups cache entries,
         matrix keys are derived from the input cache entries.
 
         Args:

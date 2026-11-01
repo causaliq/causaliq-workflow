@@ -113,10 +113,10 @@ def test_unknown_template_variables_rejected(executor, monkeypatch):
     """Test that unknown template variables are rejected."""
     from causaliq_core import ActionPattern
 
-    # Mock the registry to return CREATE pattern for test action
+    # Mock the registry to return PRODUCE pattern for test action
     def mock_get_action_pattern(provider_name, action_name):
         if provider_name == "test-provider" and action_name == "create_action":
-            return ActionPattern.CREATE
+            return ActionPattern.PRODUCE
         return None
 
     monkeypatch.setattr(
@@ -125,7 +125,7 @@ def test_unknown_template_variables_rejected(executor, monkeypatch):
         mock_get_action_pattern,
     )
 
-    # CREATE pattern workflow with unknown variable
+    # PRODUCE pattern workflow with unknown variable
     workflow = {
         "matrix": {"network": ["asia"]},
         "steps": [
@@ -178,7 +178,7 @@ def test_unused_matrix_variable_raises_error(executor, monkeypatch):
     from causaliq_core import ActionPattern
 
     def mock_get_action_pattern(provider_name, action_name):
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,
@@ -218,7 +218,7 @@ def test_all_matrix_variables_used_passes(executor, monkeypatch):
     from causaliq_core import ActionPattern
 
     def mock_get_action_pattern(provider_name, action_name):
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,
@@ -258,7 +258,7 @@ def test_matrix_variables_used_across_steps(executor, monkeypatch):
     from causaliq_core import ActionPattern
 
     def mock_get_action_pattern(provider_name, action_name):
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,
@@ -313,7 +313,7 @@ def test_aggregate_step_skips_matrix_usage_check(executor, monkeypatch):
     def mock_get_action_pattern(provider_name, action_name):
         if action_name == "merge_graphs":
             return ActionPattern.AGGREGATE
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,
@@ -348,13 +348,96 @@ def test_aggregate_step_skips_matrix_usage_check(executor, monkeypatch):
         ],
     }
 
-    # Should pass - network is used in CREATE step
+    # Should pass - network is used in the PRODUCE step
     try:
         executor._validate_template_variables(workflow)
     except Exception as e:
         pytest.fail(
             f"AGGREGATE step should not require matrix templating: {e}"
         )
+
+
+# Test MAP steps count as templating steps for matrix usage.
+def test_map_step_counts_as_templating_step(executor, monkeypatch):
+    """Test a MAP step templates matrix values, so unused keys are reported.
+
+    A MAP step shares its input cache's dimensions, so its matrix values
+    appear in ``{{variable}}`` templates rather than selecting entries.
+    """
+    from causaliq_core import ActionPattern
+
+    def mock_get_action_pattern(provider_name, action_name):
+        return ActionPattern.MAP
+
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        mock_get_action_pattern,
+    )
+
+    workflow = {
+        "matrix": {"network": ["asia"], "seed": [1]},
+        "steps": [
+            {
+                "name": "Evaluate",
+                "uses": "test-provider",
+                "with": {
+                    "action": "evaluate_graph",
+                    "input": "graphs.db",
+                    "output": "metrics.db",
+                    "reference": "networks/{{network}}/true.graphml",
+                },
+            },
+        ],
+    }
+
+    with pytest.raises(Exception) as exc_info:
+        executor._validate_template_variables(workflow)
+
+    # 'network' is templated by the MAP step; 'seed' is used by nothing
+    assert "seed" in str(exc_info.value)
+    assert "network" not in str(exc_info.value)
+
+
+# Test a MAP step's cache keys are available as template variables.
+def test_map_step_derives_template_variables_from_cache(
+    executor, monkeypatch, tmp_path
+):
+    """Test keys of an existing input cache supply a matrix-less MAP step."""
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "graphs.db"
+    with WorkflowCache(cache_path) as cache:
+        cache.put({"network": "asia"}, CacheEntry(metadata={}))
+
+    def mock_get_action_pattern(provider_name, action_name):
+        return ActionPattern.MAP
+
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        mock_get_action_pattern,
+    )
+
+    workflow = {
+        "steps": [
+            {
+                "name": "Evaluate",
+                "uses": "test-provider",
+                "with": {
+                    "action": "evaluate_graph",
+                    "input": str(cache_path),
+                    "output": "metrics.db",
+                    "reference": "networks/{{network}}/true.graphml",
+                },
+            },
+        ],
+    }
+
+    # No matrix declared: the input cache supplies the dimensions
+    executor._validate_template_variables(workflow)
 
 
 # Test _is_aggregate_pattern_step detection.
@@ -365,7 +448,7 @@ def test_is_aggregate_pattern_step_true(executor, monkeypatch):
     def mock_get_action_pattern(provider_name, action_name):
         if action_name == "merge_graphs":
             return ActionPattern.AGGREGATE
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,
@@ -443,7 +526,7 @@ def test_none_only_matrix_variable_exempt(executor, monkeypatch):
     from causaliq_core import ActionPattern
 
     def mock_get_action_pattern(provider_name, action_name):
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,
@@ -484,7 +567,7 @@ def test_mixed_none_matrix_variable_requires_usage(executor, monkeypatch):
     from causaliq_core import ActionPattern
 
     def mock_get_action_pattern(provider_name, action_name):
-        return ActionPattern.CREATE
+        return ActionPattern.PRODUCE
 
     monkeypatch.setattr(
         executor.action_registry,

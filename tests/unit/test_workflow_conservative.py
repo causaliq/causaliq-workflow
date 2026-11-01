@@ -9,7 +9,7 @@ from causaliq_workflow.workflow import WorkflowExecutor
 # ===========================================================================
 
 
-# Test conservative execution for CREATE pattern skips when entry exists.
+# Test conservative execution for PRODUCE pattern skips when entry exists.
 def test_create_pattern_conservative_skip_when_entry_exists(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -60,7 +60,7 @@ def test_create_pattern_conservative_skip_when_entry_exists(
     assert result["steps"]["create-step"]["status"] == "skipped"
 
 
-# Test conservative execution for CREATE pattern with logger.
+# Test conservative execution for PRODUCE pattern with logger.
 def test_create_pattern_conservative_skip_with_logger(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -261,7 +261,7 @@ def test_aggregate_pattern_conservative_skip_with_logger(
     )
 
 
-# Test CREATE pattern executes when no entry exists.
+# Test PRODUCE pattern executes when no entry exists.
 def test_create_pattern_executes_when_no_entry_exists(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -321,7 +321,7 @@ def test_create_pattern_executes_when_no_entry_exists(
 # ===========================================================================
 
 
-# Test force mode bypasses CREATE pattern conservative execution.
+# Test force mode bypasses PRODUCE pattern conservative execution.
 def test_force_mode_bypasses_create_conservative_skip(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:

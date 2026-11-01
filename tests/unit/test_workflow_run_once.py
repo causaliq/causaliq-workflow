@@ -23,7 +23,7 @@ class OutputActionProvider(CausalIQActionProvider):
     name = "output-provider"
     version = "1.0.0"
     supported_actions = {"produce"}
-    action_patterns = {"produce": ActionPattern.AGGREGATE}
+    action_patterns = {"produce": ActionPattern.MAP}
 
     def _execute(
         self,

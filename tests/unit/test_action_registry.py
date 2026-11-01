@@ -236,9 +236,9 @@ def test_get_action_pattern_returns_pattern(monkeypatch):
     original_patterns = action_class.action_patterns.copy()
 
     try:
-        action_class.action_patterns = {"test": ActionPattern.CREATE}
+        action_class.action_patterns = {"test": ActionPattern.PRODUCE}
         result = registry.get_action_pattern("test_action", "test")
-        assert result == ActionPattern.CREATE
+        assert result == ActionPattern.PRODUCE
     finally:
         action_class.action_patterns = original_patterns
 
