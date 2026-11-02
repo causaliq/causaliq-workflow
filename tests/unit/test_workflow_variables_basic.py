@@ -252,6 +252,54 @@ def test_all_matrix_variables_used_passes(executor, monkeypatch):
         pytest.fail(f"Validation should pass: {e}")
 
 
+# Test a matrix variable templated only by an aggregate step counts as used.
+def test_aggregate_step_template_counts_as_matrix_use(executor, monkeypatch):
+    """Test an aggregate step's templated parameter counts as a matrix use."""
+    from causaliq_core import ActionPattern
+
+    def mock_get_action_pattern(provider_name, action_name):
+        if action_name == "merge_action":
+            return ActionPattern.AGGREGATE
+        return ActionPattern.PRODUCE
+
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        mock_get_action_pattern,
+    )
+
+    workflow = {
+        "matrix": {
+            "network": ["asia", "alarm"],
+            "fusion_weights": [[0.5, 0.5], [0.25, 0.75]],
+        },
+        "steps": [
+            {
+                "name": "Create graphs",
+                "uses": "test-provider",
+                "with": {
+                    "action": "create_action",
+                    "network": "{{network}}",
+                    "output": "graphs.db",
+                },
+            },
+            {
+                "name": "Merge graphs at a weight",
+                "uses": "analysis-provider",
+                "with": {
+                    "action": "merge_action",
+                    "input": "graphs.db",
+                    "weights": "{{fusion_weights}}",
+                    "output": "merged.db",
+                },
+            },
+        ],
+    }
+
+    # Should not raise: fusion_weights is templated by the aggregate step.
+    executor._validate_template_variables(workflow)
+
+
 # Test matrix variables used across multiple steps passes validation.
 def test_matrix_variables_used_across_steps(executor, monkeypatch):
     """Test that matrix variables can be used across different steps."""
@@ -304,9 +352,10 @@ def test_matrix_variables_used_across_steps(executor, monkeypatch):
 
 # Test AGGREGATE steps don't require matrix variable usage.
 def test_aggregate_step_skips_matrix_usage_check(executor, monkeypatch):
-    """Test AGGREGATE pattern steps don't need to use matrix variables.
+    """Test untemplated matrix values are allowed when another step uses them.
 
-    AGGREGATE steps use matrix for grouping entries, not for templating.
+    AGGREGATE steps group entries by matrix values, and they may also
+    template parameters; the usage check is satisfied by any step.
     """
     from causaliq_core import ActionPattern
 

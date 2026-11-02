@@ -48,9 +48,9 @@ class TemplateMixin(WorkflowExecutorBase):
            (declared parameters, supplied parameter names, matrix
            variables, or keys derived from a cache-reading step's input
            cache). A variable with no value is a required parameter.
-        2. All matrix variables must be used in at least one templating
-           (PRODUCE or MAP) step's template. AGGREGATE steps use matrix
-           for grouping (not templating).
+        2. All matrix variables must be used in at least one step's
+           templates. A grouping (AGGREGATE) step templates parameters as
+           well as selecting entries, so its templates count as uses.
         3. A name may not be declared as both a parameter and a matrix
            variable.
         4. A declared parameter must be used as a ``{{placeholder}}``, and
@@ -167,17 +167,16 @@ class TemplateMixin(WorkflowExecutorBase):
     def _collect_templating_variables(
         self, workflow: Dict[str, Any]
     ) -> Set[str]:
-        """Collect template variables used by templating steps.
+        """Collect template variables used by any workflow step.
 
-        A grouping (AGGREGATE) step's matrix variables select entries
-        rather than template parameters, so they are excluded. MAP and
-        PRODUCE steps template their matrix values, so they are included.
+        A matrix variable is used when it appears in any step's templates.
+        A grouping (AGGREGATE) step templates parameters such as weights or
+        thresholds as well as selecting entries, so its templates count
+        too; the check only catches dimensions that do nothing at all.
         """
         templating_vars: Set[str] = set()
 
         for step in workflow.get("steps", []):
-            if self._is_aggregate_pattern_step(step, workflow):
-                continue
             step_vars: Set[str] = set()
             self._collect_template_variables(step, step_vars)
             templating_vars.update(step_vars)
@@ -387,5 +386,5 @@ def _raise_unused_matrix_variables(
     raise WorkflowExecutionError(
         f"Matrix variables not used in any step: {sorted(unused)}. "
         f"Each matrix variable must appear as a {{{{variable}}}} template "
-        f"in at least one step that creates or maps cache entries."
+        f"in at least one step."
     )
