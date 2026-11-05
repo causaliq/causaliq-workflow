@@ -113,7 +113,7 @@ def _derive_matrix_from_caches(
         WorkflowExecutionError: If caches have inconsistent matrix keys
     """
     all_keys: Optional[Set[str]] = None
-    value_sets: Dict[str, Set[Any]] = {}
+    value_sets: Dict[str, List[Any]] = {}
 
     for cache_path in cache_paths:
         all_keys, value_sets = _accumulate_cache_keys(
@@ -123,7 +123,9 @@ def _derive_matrix_from_caches(
     if all_keys is None:
         return [], {}
 
-    # Convert sets to sorted lists for deterministic ordering
+    # Convert the de-duplicated values to sorted lists for deterministic
+    # ordering. Values are compared for equality, so a list-valued matrix
+    # entry (such as a weight pair) is kept as written.
     matrix_keys = sorted(all_keys)
     matrix_dict = {k: sorted(value_sets[k], key=str) for k in matrix_keys}
 
@@ -133,8 +135,8 @@ def _derive_matrix_from_caches(
 def _accumulate_cache_keys(
     cache_path: str,
     all_keys: Optional[Set[str]],
-    value_sets: Dict[str, Set[Any]],
-) -> Tuple[Optional[Set[str]], Dict[str, Set[Any]]]:
+    value_sets: Dict[str, List[Any]],
+) -> Tuple[Optional[Set[str]], Dict[str, List[Any]]]:
     """Accumulate matrix keys and values from a single cache file."""
     from pathlib import Path
 
@@ -156,14 +158,14 @@ def _accumulate_cache_keys(
 def _merge_entry_keys(
     entry_matrix: Dict[str, Any],
     all_keys: Optional[Set[str]],
-    value_sets: Dict[str, Set[Any]],
+    value_sets: Dict[str, List[Any]],
     cache_path: str,
-) -> Tuple[Optional[Set[str]], Dict[str, Set[Any]]]:
-    """Merge one entry's matrix keys into the accumulated key/value sets."""
+) -> Tuple[Optional[Set[str]], Dict[str, List[Any]]]:
+    """Merge one entry's matrix keys into the accumulated key/value lists."""
     entry_keys = set(entry_matrix.keys())
 
     if all_keys is None:
-        value_sets = {k: set() for k in entry_keys}
+        value_sets = {k: [] for k in entry_keys}
     elif entry_keys != all_keys:
         raise WorkflowExecutionError(
             f"Input caches have inconsistent matrix keys. "
@@ -171,9 +173,11 @@ def _merge_entry_keys(
             f"found {sorted(entry_keys)} in '{cache_path}'"
         )
 
-    # Collect unique values for each key
+    # Collect unique values for each key. A list value is compared by
+    # equality rather than hashed, so a paired weight list is kept whole.
     for key, val in entry_matrix.items():
-        value_sets[key].add(val)
+        if val not in value_sets[key]:
+            value_sets[key].append(val)
 
     return entry_keys, value_sets
 

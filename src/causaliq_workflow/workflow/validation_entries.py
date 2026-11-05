@@ -1,7 +1,7 @@
 """Per-entry validation for the execution pass."""
 
 import warnings
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from causaliq_workflow.schema import _duplicate_step_name_errors
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -11,7 +11,10 @@ from causaliq_workflow.workflow.frames import (
     is_workflow_call_step,
 )
 from causaliq_workflow.workflow.matrix import _runs_once
-from causaliq_workflow.workflow.parameters import _parameter_errors
+from causaliq_workflow.workflow.parameters import (
+    _parameter_errors,
+    _token_names,
+)
 
 
 class EntryValidationMixin(WorkflowExecutorBase):
@@ -246,6 +249,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         # detect silent duplication (different combos producing
         # identical aggregation input sets).
         fingerprints: Dict[frozenset, Dict[str, Any]] = {}
+        templated = _token_names(step.get("with", {}))
 
         for job in jobs:
             variables = {**workflow, **job, **cli_params}
@@ -253,7 +257,12 @@ class EntryValidationMixin(WorkflowExecutorBase):
                 step.get("with", {}), variables
             )
             self._apply_aggregation_scan(
-                agg_config, resolved_inputs, job, step_name, fingerprints
+                agg_config,
+                resolved_inputs,
+                job,
+                step_name,
+                fingerprints,
+                templated,
             )
             errors.extend(
                 self._entry_validation_errors(step, step_name, resolved_inputs)
@@ -289,6 +298,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         job: Dict[str, Any],
         step_name: str,
         fingerprints: Dict[frozenset, Dict[str, Any]],
+        templated: Set[str],
     ) -> None:
         """Scan inputs for a matrix combo and record its fingerprint.
 
@@ -304,7 +314,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         resolved_inputs["_aggregation_entries"] = matching_entries
         resolved_inputs.pop("aggregate", None)
         _check_aggregation_fingerprint(
-            step_name, job, matching_entries, fingerprints
+            step_name, job, matching_entries, fingerprints, templated
         )
 
     def _scan_aggregation_for(
@@ -347,6 +357,7 @@ def _check_aggregation_fingerprint(
     job: Dict[str, Any],
     matching_entries: List[Dict[str, Any]],
     fingerprints: Dict[frozenset, Dict[str, Any]],
+    templated: Set[str],
 ) -> None:
     """Warn when different matrix combos select identical entries.
 
@@ -354,6 +365,10 @@ def _check_aggregation_fingerprint(
     skipped — the input cache may not exist yet (created by an earlier
     step). A repeated fingerprint warns that the differing dimension(s)
     may need a filter or should be removed from the matrix.
+
+    A dimension the step templates is skipped: it changes the action's
+    parameters even though the entry selection repeats, as in a weight
+    sweep that fuses the same two ensembles at different weights.
     """
     fp = frozenset(
         entry.get("entry_hash", id(entry)) for entry in matching_entries
@@ -368,6 +383,8 @@ def _check_aggregation_fingerprint(
     diff = {
         key: (prev[key], job[key]) for key in job if job[key] != prev.get(key)
     }
+    if set(diff) & templated:
+        return
     warnings.warn(
         f"Step '{step_name}': matrix combos"
         f" differ only in {diff} but"

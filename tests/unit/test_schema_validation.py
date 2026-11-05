@@ -132,6 +132,21 @@ def test_pre_validate_catches_unknown_keys():
 
 
 # Step results are recorded by name, so duplicate names are rejected.
+# Matrix entries may be scalars or lists of scalars.
+def test_validate_workflow_accepts_list_matrix_values():
+    """Test a list-valued matrix entry is accepted."""
+    workflow = {
+        "matrix": {
+            "network": ["asia"],
+            "weights": [[0.5, 0.5], [0.25, 0.75]],
+        },
+        "steps": [{"name": "Test", "uses": "test_action"}],
+    }
+
+    assert validate_workflow(workflow) is True
+
+
+# Step results are recorded by name, so duplicate names are rejected.
 def test_pre_validate_rejects_duplicate_step_names():
     """Test pre-validation rejects repeated step names."""
     invalid_workflow = {

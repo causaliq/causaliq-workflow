@@ -17,11 +17,28 @@
           "description": "Array of values for matrix variable",
           "minItems": 1,
           "items": {
-            "type": [
-              "string",
-              "number",
-              "boolean",
-              "null"
+            "oneOf": [
+              {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              {
+                "type": "array",
+                "description": "List value passed whole to a step parameter",
+                "minItems": 1,
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
             ]
           }
         }

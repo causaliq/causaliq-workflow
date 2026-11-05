@@ -1250,6 +1250,27 @@ def test_derive_matrix_from_caches(
     assert set(matrix_dict["sample_size"]) == {100, 500}
 
 
+# Test _derive_matrix_from_caches keeps list-valued matrix values.
+def test_derive_matrix_from_caches_list_values(tmp_path) -> None:
+    """A list-valued matrix entry is de-duplicated without hashing."""
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.workflow import _derive_matrix_from_caches
+
+    cache_path = tmp_path / "sweep.db"
+    with WorkflowCache(cache_path) as cache:
+        for weights in ([0.5, 0.5], [0.25, 0.75], [0.5, 0.5]):
+            cache.put(
+                {"network": "asia", "fusion_weights": weights},
+                CacheEntry(metadata={}),
+            )
+
+    keys, matrix_dict = _derive_matrix_from_caches([str(cache_path)])
+
+    assert keys == ["fusion_weights", "network"]
+    assert matrix_dict["network"] == ["asia"]
+    assert matrix_dict["fusion_weights"] == [[0.25, 0.75], [0.5, 0.5]]
+
+
 # Test _derive_matrix_from_caches with multiple caches having same keys.
 def test_derive_matrix_from_caches_multiple_consistent(
     executor: WorkflowExecutor, tmp_path
@@ -1861,6 +1882,71 @@ def test_validate_aggregation_entries_detects_duplicates(
     assert len(caught) == 1
     assert "identical aggregation" in str(caught[0].message)
     assert "extra_dim" in str(caught[0].message)
+
+
+# Test a templated sweep dimension is not reported as duplicated.
+def test_validate_aggregation_entries_skips_templated_dimension(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+) -> None:
+    """A dimension that templates a parameter may select identical entries."""
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        cache.put(
+            {"network": "asia"},
+            CacheEntry(metadata={}),
+        )
+
+    class StubAction:
+        name = "stub-action"
+        version = "1.0.0"
+        description = "Stub"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["stub-action"] = StubAction
+
+    step = {
+        "name": "merge",
+        "uses": "stub-action",
+        "with": {
+            "action": "merge",
+            "input": str(cache_path),
+            "output": "out-{{extra_dim}}.db",
+        },
+    }
+    workflow = {
+        "matrix": {
+            "network": ["asia"],
+            "extra_dim": [0, 1],
+        },
+        "steps": [step],
+    }
+    jobs = [
+        {"network": "asia", "extra_dim": 0},
+        {"network": "asia", "extra_dim": 1},
+    ]
+
+    import warnings
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        errors = executor._validate_aggregation_entries(
+            step,
+            jobs,
+            workflow,
+            {},
+        )
+
+    # The dimension changes the output path, so the repeat is expected.
+    assert errors == []
+    assert caught == []
 
 
 # Test _execute_job resolves filter templates in aggregation.
