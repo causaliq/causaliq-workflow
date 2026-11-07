@@ -45,7 +45,12 @@ CausalIQ Workflow requires a comprehensive logging and task status system to pro
 
 #### FR7: Progress Indication
 - **Requirement**: Real-time progress feedback during execution
-- **Implementation**: Click-based progress bars with estimated completion
+- **Implementation**: Each executed step reports a `RUNNING` line before the
+  action starts and its status with the elapsed time when it finishes; every
+  message is flushed as it is written (`causaliq_workflow.terminal`), and
+  standard output is line buffered for the run, so progress printed by an
+  action is never held until exit. Estimated-completion progress bars remain
+  planned for a later release
 - **Rationale**: User experience during long-running workflows
 
 ### Non-Functional Requirements

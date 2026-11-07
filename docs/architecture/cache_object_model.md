@@ -149,9 +149,9 @@ This provides clear provenance: which action created which object.
 
 ## Action Patterns
 
-### CREATE Actions
+### Produce Actions
 
-CREATE actions produce new cache entries with objects:
+Produce actions create new cache entries with objects:
 
 ```python
 # merge_graphs creates PDG from input DAGs
@@ -252,7 +252,7 @@ def get_object_by_type(self, obj_type: str) -> CacheObject | None:
 - [ ] Update `to_storage()` and `from_storage()` methods
 - [ ] Update action return format in all providers
 - [ ] Add output reference to action metadata
-- [ ] Confirm `best_graph` writes a single `dag` object (AGGREGATE)
+- [ ] Confirm `best_graph` writes a single `dag` object (MAP)
 - [ ] Update tests
 - [ ] Regenerate test caches
 

@@ -75,8 +75,9 @@ with:
 
 | Pattern | Output | Behaviour |
 |---------|--------|-----------|
-| Create | Required | New entries added to output cache |
-| Aggregate | Required | Aggregated entries added to output cache |
+| Produce | Required | New entries added to output cache |
+| Map | Required | One output entry per input entry |
+| Aggregate | Required | Grouped entries added to output cache |
 | Run once | Required file | One file written, outside matrix expansion |
 
 ## `filter` Parameter

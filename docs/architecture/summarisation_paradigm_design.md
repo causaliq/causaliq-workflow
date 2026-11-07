@@ -12,9 +12,11 @@ combined for analysis, model averaging, or comparison.
 
 Matrix variables serve different purposes depending on the action pattern:
 
-- **CREATE pattern**: Matrix variables must be used in `{{variable}}`
+- **Produce pattern**: Matrix variables must be used in `{{variable}}`
   templates to produce distinct action invocations.
-- **AGGREGATE pattern**: Matrix variables define grouping dimensions for
+- **Map pattern**: Matrix variables template parameters (or are inherited
+  from the input cache), because each input entry maps to one output entry.
+- **Aggregate pattern**: Matrix variables define grouping dimensions for
   entry selection. They are **not** required in parameter templates since
   they control which cache entries are passed to the action.
 - **Run-once steps**: A step writing a plain file runs once, so matrix
@@ -114,27 +116,37 @@ The scan runs once per matrix job, but each input cache is read only
 once per run:
 
 1. Build or reuse a **memoised scan index** for each input cache. The
-   index holds each entry's parsed matrix values and flattened metadata,
-   read via `WorkflowCache.list_entry_summaries()` without decompressing
-   object payloads (e.g. graphs).
-2. Apply the filter expression (if present) against the flattened
-   metadata; rejected entries are counted as `filtered`.
-3. Match surviving entries to the current matrix combination; non-matching
-   entries are skipped.
-4. Load only the **matched** entries in full (via `cache.get()`) and
+   index holds each entry's parsed matrix values and its compressed
+   metadata, read via `WorkflowCache.list_entry_records()` without
+   decompressing object payloads (e.g. graphs) or metadata.
+2. Match entries to the current matrix combination. A job that matches no
+   entry does not open the cache at all.
+3. Build the reporting view and apply the filter expression (if present)
+   for the matched entries only; rejected entries are counted as
+   `filtered`.
+4. Load only the **surviving** entries in full (via `cache.get()`) and
    return them with provenance.
 
-The `random()` filter population and the matching step both read from the
-same index, so a large cache is not re-read for every matrix combination.
-A cache's index is discarded whenever that cache is written (a step store
-or an UPDATE), so later scans observe new entries.
+Matching before filtering is what keeps a scan cheap: both predicates only
+narrow the candidate set, so the surviving entries are the same either way,
+but the filter then runs for the job's entries rather than for the whole
+cache.
+
+The `random()` filter population reads from the same index and answers from
+matrix values where it can, so resolving it decompresses metadata only when
+a random variable is not a matrix value. A cache's index is discarded
+whenever that cache is written, so later scans observe new entries.
 
 **Performance:**
 
 Scanning is O(cache entries) per input cache rather than
 O(matrix jobs × cache entries): the index is built once and reused across
-every matrix job and across the validation and execution passes. Only
+every matrix job and across the validation and execution passes, and entry
+metadata is decompressed lazily for the entries a job actually keeps. Only
 matched entries pay the cost of decompressing their object payloads.
+
+A run that skips every entry costs one indexed lookup per entry: the
+cached-output check happens before the input scan.
 
 #### Phase 2: Execute
 
@@ -288,7 +300,7 @@ Aggregation scan: scanned=45, filtered=3, matched=15
 ```
 
 - `scanned`: Total entries examined
-- `filtered`: Entries rejected by filter
+- `filtered`: Matrix-matching entries rejected by the filter
 - `matched`: Entries matching current matrix values
 
 ## Error Handling

@@ -50,6 +50,24 @@ Summary-level logging showing key status information and final results only. Def
 #### ALL
 Comprehensive logging including all task details and intermediate steps. Useful for debugging and detailed workflow analysis.
 
+## Immediate Output
+
+Workflow messages are never queued for the end of a run. Each line is
+written to the terminal and flushed as soon as it is produced, through the
+helpers in `causaliq_workflow.terminal`:
+
+- `configure_terminal_output()` - switches `sys.stdout` and `sys.stderr` to
+  line buffering for the duration of a run, so progress printed by an action
+  provider also appears immediately when the output is piped or captured
+
+- `flush_terminal()` - flushes both standard streams, ignoring the ones that
+  are already closed
+
+- `echo_line(message, err=False)` - writes one line and flushes it
+
+Combined with the per-step `RUNNING` and `EXECUTED` messages, a long run
+reports progress in real time instead of releasing its transcript at exit.
+
 ## Usage Examples
 
 ### Basic Logger Setup

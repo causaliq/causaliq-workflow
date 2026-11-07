@@ -13,11 +13,17 @@ names so existing imports keep resolving:
 - `templates` — template variable extraction, resolution and step-name
   expansion;
 - `patterns` — step pattern detection;
-- `filters` — shared reporting view construction and filter resolution;
-- `aggregation` — AGGREGATE pattern configuration and input scanning;
+- `filters` — filter literal rewriting before validation;
+- `aggregation` — cache-entry scanning configuration for grouping and
+  mapping steps;
 - `validation` / `validation_entries` — configuration and per-entry
   validation;
-- `execution` — parsing and job execution;
+- `job_state` — per-job execution state shared by the execution mixins;
+- `execution` — parsing, execution entry points and the job loop;
+- `step_runner` — running one step: action calls, skips and dry-run
+  previews;
+- `step_store` — storing step results and failures, and logging step
+  completion;
 - `subworkflow` / `frames` — calling another workflow;
 - `provenance` — provenance collection for cache entries;
 - `executor` — the composed `WorkflowExecutor`.
@@ -247,7 +253,7 @@ Three rules apply to declarations:
 |---------|-----------|---------|
 | Parameters | Declared top-level keys | `{{id}}`, `{{output_root}}` |
 | Matrix | User-defined matrix vars | `{{dataset}}`, `{{algorithm}}` |
-| AGGREGATE cache | Keys derived from input caches | `{{network}}` |
+| Cache keys | Keys derived from an input cache | `{{network}}` |
 
 A whole-value token may be written without quotes:
 `sample_size: {{sample_size}}` is valid. A value that is exactly one
@@ -298,10 +304,11 @@ steps:
 
 ### Matrix Variable Usage Requirement
 
-All matrix variables must be used in at least one **CREATE pattern** step's
-parameter templates. This ensures each matrix combination produces a distinct
-action invocation and prevents accidental matrix variable definitions that
-have no effect.
+All matrix variables must be used in at least one step's templates. A
+grouping (AGGREGATE) step can template parameters such as weights or
+thresholds as well as selecting entries, so its templates count as uses.
+This ensures each matrix combination produces a distinct action invocation
+and prevents accidental matrix variable definitions that have no effect.
 
 ```yaml
 # Valid: Both matrix variables are used
@@ -332,8 +339,8 @@ steps:
 
 **Exceptions:**
 
-- **AGGREGATE pattern steps** use matrix for grouping entries, not templating.
-  Matrix variables don't need to appear in AGGREGATE step parameters.
+- **Aggregate steps** use matrix for grouping entries, not templating.
+  Matrix variables don't need to appear in aggregate step parameters.
 
 ## Aggregation Processing
 

@@ -73,6 +73,32 @@ list and a `null` item are rejected. Because a list has no text form, a
 list parameter may only be a whole step parameter value — see
 [Core Concepts](core_concepts.md#workflow-parameters).
 
+## List-Valued Matrix Entries
+
+A matrix entry may itself be a list of scalars. Each entry is still one job
+value, and it is delivered whole to any parameter that templates the
+dimension:
+
+```yaml
+matrix:
+  network: [asia]
+  fusion_weights:
+    - [0.5, 0.5]
+    - [0.25, 0.75]
+
+steps:
+  - name: Fuse the ensembles
+    uses: causaliq-analysis
+    with:
+      action: merge_graphs
+      weights: "{{fusion_weights}}"   # the whole pair, as a list
+      output: results/fused.db
+```
+
+This is how a sweep supplies a multi-value parameter, such as a pair of
+complementary weights. The list is part of the cache key, so every entry
+produces a distinct job.
+
 ## When to Quote
 
 Quote a value only when YAML would otherwise read it as syntax or as a

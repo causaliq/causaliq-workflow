@@ -1,21 +1,27 @@
 # Action Patterns
 
-CausalIQ workflow actions follow one of two patterns, determined by whether
-they read a workflow cache: **Create** writes entries without reading a
-cache, and **Aggregate** reads entries from a cache and writes new ones.
-Actions that write a plain file instead of a cache run **once**, outside
-matrix expansion.
+A workflow step reads from and writes to the workflow cache in one of three
+ways. The pattern decides whether the workflow `matrix` is required, whether
+matrix values template parameters or group entries, and how many cache entries
+the action receives.
 
-## Pattern Summary
+| Pattern | Reads from the cache | Writes | `matrix` |
+|---------|----------------------|--------|----------|
+| **Produce** | nothing | a cache entry per combination | required |
+| **Map** | one entry per job | one cache entry per job | optional |
+| **Aggregate** | one or more entries per job | a cache entry, or a report file | required (grouping) |
 
-| Pattern | Input | Output | Matrix | Purpose |
-|---------|-------|--------|--------|---------|
-| **Create** | action-specific | required | required | Generate new cache entries |
-| **Aggregate** | required | required | required | Combine entries into summaries |
+Steps that write a plain file instead of a cache run **once**, outside matrix
+expansion.
 
-## Pattern 1: Create
+The action declares its own pattern, so you rarely need to name it. Refer to
+the action's own documentation for which case it follows; the sections below
+explain what each case requires of your workflow.
 
-**Create actions generate new entries in an output cache.**
+## Pattern 1: Produce
+
+**Produce actions generate new entries in an output cache without reading a
+cache.**
 
 | Parameter | Requirement |
 |-----------|-------------|
@@ -47,6 +53,50 @@ This creates 4 entries (2 networks × 2 sample sizes) in `graphs.db`.
 
 An entry is created only if it does not already exist. If an entry with
 matching matrix values exists, the action is skipped for that combination.
+
+## Pattern 2: Map
+
+**Map actions read one cache entry and write one cache entry.**
+
+| Parameter | Requirement |
+|-----------|-------------|
+| `input` | Required (workflow cache path) |
+| `output` | Required (workflow cache path) |
+| `matrix` | Optional — taken from the input cache |
+
+Each job receives exactly one input entry and produces the output entry with
+the same matrix values, so the two caches share their dimensions. A job that
+matches more than one input entry is an error: add a matrix key to tell the
+entries apart.
+
+A job that matches **no** input entry is skipped, with the reason recorded in
+the step results. A cache may legitimately lack a combination — for example
+when one learning run failed for a network — and the rest of the sweep should
+still finish. This applies to every cache-reading step, so a merge that finds
+nothing for a combination is skipped too, rather than aborting the run. If the
+input cache itself is missing, the job is an error instead, because that
+points at a step that did not run.
+
+```yaml
+steps:
+  - name: "Evaluate Graphs"
+    uses: "causaliq-analysis"
+    with:
+      action: "evaluate_graph"
+      input: "results/graphs.db"          # one entry per job
+      reference: "networks/{{network}}/true.graphml"
+      output: "results/metrics.db"
+```
+
+### Inheriting the Matrix
+
+Because the output dimensions equal the input dimensions, a map step does not
+need the workflow to declare a matrix: the keys of the input cache are used
+instead, and their values become available to the step's templates. The
+example above relies on this — `{{network}}` comes from `graphs.db`.
+
+Declare a matrix when you want to fix a dimension to a constant, as in a
+daughter workflow, or to narrow the run to a subset of the cache's entries.
 
 ## Run-once Steps
 
@@ -83,18 +133,18 @@ steps:
       output: "results/f1.png"
 ```
 
-## Pattern 2: Aggregate
+## Pattern 3: Aggregate
 
-**Aggregate actions combine multiple entries into summary entries.**
+**Aggregate actions group entries into a summary entry or a report.**
 
 | Parameter | Requirement |
 |-----------|-------------|
 | `input` | Required (workflow cache path) |
-| `output` | Required (workflow cache path) |
-| `matrix` | Required |
+| `output` | Required (workflow cache path or report file) |
+| `matrix` | Required (the grouping dimensions) |
 
-The `matrix` controls the **output dimensionality** — input entries are grouped
-by matrix values and aggregated into new entries in the output cache.
+The `matrix` controls the **output dimensionality** — input entries are
+grouped by matrix values and written to new entries in the output cache.
 
 ```yaml
 matrix:
@@ -112,11 +162,15 @@ steps:
 If `graphs.db` contains entries for multiple sample sizes per network, this
 produces 2 entries in `merged.db` — one merged result per network.
 
+The matrix is **never inherited** for a grouping step: grouping by the input
+cache's own keys would match one entry per group and copy the input rather
+than summarise it. State the dimensions you want to keep.
+
 ### Entry Grouping
 
-Entries from the input cache are automatically grouped by current matrix
-values. For each matrix combination, all matching entries are passed to the
-action for aggregation.
+Entries from the input cache are automatically matched against the current
+matrix values. For each matrix combination, all matching entries are passed to
+the action.
 
 A `null` value on either side (target or entry) is treated as a wildcard
 and always matches. A **missing key** on the entry side (dimension absent
@@ -126,7 +180,7 @@ for the full matching rules.
 
 ### Filtering Entries
 
-Use the `filter` parameter to restrict which entries are aggregated:
+Use the `filter` parameter to restrict which entries a step reads:
 
 ```yaml
 steps:
@@ -177,16 +231,16 @@ expression syntax.
 An output entry is created only if it does not already exist in the output
 cache.
 
-## Choosing the Right Pattern
+## Which Case Is My Step?
 
-| You want to... | Use pattern |
-|----------------|-------------|
-| Generate graphs from data | Create |
-| Evaluate graphs and store metrics | Aggregate |
-| Merge multiple graphs into one | Aggregate |
-| Compute statistics across experiments | Aggregate |
-| Convert file formats | Create |
-| Plot results to an image | Run once (file output) |
+| You want to... | Pattern | Example action |
+|----------------|---------|----------------|
+| Generate graphs from data | Produce | `learn_graph`, `generate_graph` |
+| Convert file formats into a cache | Produce | `migrate_trace` |
+| Evaluate or transform each entry on its own | Map | `evaluate_graph`, `best_graph` |
+| Merge multiple graphs into one | Aggregate | `merge_graphs` |
+| Compute statistics across experiments | Aggregate | `summarise` |
+| Plot results to an image | Run once (file output) | `plot` |
 
 ## Force Mode
 

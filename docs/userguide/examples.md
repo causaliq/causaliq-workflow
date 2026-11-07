@@ -85,12 +85,12 @@ steps:
       output: "results/{{id}}/graphs.db"
 ```
 
-## Create Pattern
+## Produce Pattern
 
 Generate new cache entries (requires matrix and output):
 
 ```yaml
-# create_pattern.yml
+# produce_pattern.yml
 matrix:
   network: [asia, cancer]
   sample_size: [100, 1000]
@@ -126,7 +126,8 @@ steps:
 
 ## Aggregate Pattern
 
-Combine entries into summaries (requires input, output, and matrix):
+Combine entries into summaries (requires input, output, and a grouping
+matrix):
 
 ```yaml
 # aggregate_pattern.yml
@@ -143,6 +144,23 @@ steps:
 ```
 
 Entries are grouped by matrix values; one output entry per network.
+
+## Map Pattern
+
+Evaluate one cache entry at a time (requires input and output; the matrix is
+taken from the input cache when it is omitted):
+
+```yaml
+# map_pattern.yml
+steps:
+  - name: "Evaluate Graphs"
+    uses: "causaliq-analysis"
+    with:
+      action: "evaluate_graph"
+      input: "results/graphs.db"
+      reference: "networks/{{network}}/true.graphml"
+      output: "results/metrics.db"
+```
 
 ## Multi-Step Workflow
 
@@ -169,6 +187,7 @@ steps:
       action: "evaluate_graph"
       input: "results/graphs.db"
       reference: "networks/{{network}}/true.graphml"
+      output: "results/metrics.db"
 ```
 
 ## Filtering Entries

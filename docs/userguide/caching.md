@@ -122,6 +122,11 @@ already been completed:
 - **Aggregate steps**: Skip if output entry with matching key exists
 - **Run-once steps**: Execute on the first job only
 
+A cached aggregate step is skipped **before** its input caches are scanned,
+so resuming a large sweep costs one cache lookup per entry rather than a
+scan of every input entry. The step is recorded as skipped with the reason
+`cached`.
+
 This enables:
 
 - **Resumable workflows**: Restart interrupted workflows without re-running

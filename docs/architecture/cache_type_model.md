@@ -98,22 +98,30 @@ One workflow file can write to several typed caches, so the number of
 caches scales with the number of object types rather than with pipeline
 stages.
 
-### 8. CREATE and AGGREGATE only
+### 8. Produce, map and aggregate
 
-Two behavioural patterns remain, and they are distinguished by whether the
-step reads a workflow cache:
+The behavioural patterns are distinguished by the shape of the cache
+mapping, and there are three:
 
-| Pattern | Cache input (`input` points at `.db`) | Requirement |
-|---------|---------------------------------------|-------------|
-| CREATE | No | `output` cache and `matrix` |
-| AGGREGATE | Yes | `input` cache(s); `output` optional |
+| Pattern | Cache input | Requirement | Entries per job |
+|---------|-------------|-------------|-----------------|
+| PRODUCE | No | `output` cache and `matrix` | none |
+| MAP | Yes | `input` and `output`; `matrix` optional, taken from the input cache | exactly one |
+| AGGREGATE | Yes | `input`, `output` and a grouping `matrix` | one or more |
 
-`UPDATE` and `NOCACHES` are removed. `plot` becomes AGGREGATE because it
-reads a metrics cache rather than a CSV file.
+`UPDATE` and `NOCACHES` are removed. `plot` is AGGREGATE because it groups
+a metrics cache into a report rather than reading a CSV file.
 
-`ActionPattern` is retained as a two-value enum for explicit declaration and
-validation, while the executor may also derive AGGREGATE from the presence
-of a `.db` cache input.
+MAP exists because `evaluate_graph` and `best_graph` map one entry to one
+entry: declaring them AGGREGATE described a grouping that never happened,
+and forced them to state a matrix they merely inherited. Matrix inheritance
+belongs to MAP alone. A grouping step must state its dimensions, because
+inheriting them would match one entry per group and copy the input rather
+than summarise it.
+
+`ActionPattern` is retained as the declaration the executor validates
+against, and the executor may also derive entry scanning from the presence
+of a `.db` cache input when an action declares no pattern.
 
 ### 9. `learn_graph` graph and trace caches
 

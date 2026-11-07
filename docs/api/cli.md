@@ -49,8 +49,8 @@ Options:
 
 - `--mode` - Execution mode: `dry-run` (default), `run`, or `force`
 - `--log-depth` - Maximum workflow nesting depth to report: `0` is
-  silent, `1` reports the top-level summary (default), `2` adds the
-  top-level steps, `3` also adds first-level sub-workflow steps, and so
+  silent, `1` reports the top-level summary, `2` adds the top-level
+  steps (default), `3` also adds first-level sub-workflow steps, and so
   on. `CAUSALIQ_LOG_DEPTH` supplies the default
 - `--param NAME=VALUE` / `-p` - Workflow parameter, repeatable. A name
   matching a matrix entry replaces that entry; other names override a
@@ -68,7 +68,7 @@ value above `1` adds one more level of workflow nesting:
 |-------|----------|
 | `0` | Nothing |
 | `1` | Loading, validation, execution and the final summary |
-| `2` | Also the top-level steps, including the `CALLING` and `COMPLETED` boundaries of workflows they call |
+| `2` | Also the top-level steps, including the `CALLING` and `COMPLETED` boundaries of workflows they call (default) |
 | `3` | Also the steps of those called workflows, indented by two spaces |
 | `3+` | Each further level adds the next level of sub-workflow messages |
 
@@ -78,7 +78,8 @@ following statuses:
 
 | Status | Dry-run Equivalent | Description |
 |--------|-------------------|-------------|
-| **EXECUTED** | WOULD EXECUTE | Job processed successfully |
+| **RUNNING** | - | The action has started; the line is written before it runs |
+| **EXECUTED** | WOULD EXECUTE | Job processed successfully, with its elapsed time |
 | **FORCED** | - | Job processed in force mode (bypasses conservative execution) |
 | **SKIPPED** | WOULD SKIP | Conservative skip - entry already exists |
 | **IGNORED** | WOULD IGNORE | Job filtered out by `filter` expression (never executes) |
@@ -90,13 +91,24 @@ Example output with `--log-depth=3`:
 
 ```
 2026-03-11 14:23:01 [./hc_std.yml] CALLING Run bnlearn hc with standard ordering
-2026-03-11 14:23:01   [learn_graph] EXECUTED eval-step [network=asia]
-2026-03-11 14:23:02 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
+2026-03-11 14:23:01   [learn_graph] RUNNING eval-step [network=asia]
+2026-03-11 14:23:13   [learn_graph] EXECUTED eval-step [network=asia] (12.4s)
+2026-03-11 14:23:14 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
 ```
 
 The two spaces before a message mark its call depth, so the entry and
 exit of each sub-workflow are visible. The `COMPLETED` line counts the
 steps performed by the called workflow **and** any workflows it called.
+
+#### Immediate Output
+
+Every message is written and flushed as soon as it is produced, so a long
+run reports progress instead of releasing the whole transcript when it
+ends. Standard output is also switched to line buffering for the duration
+of a run, so progress printed by an action provider appears immediately
+too - even when the CLI output is piped to a file or captured by another
+program. Use `causaliq_workflow.terminal` for the same behaviour in
+embedded callers.
 
 **Note**: The `filter` parameter excludes entries from processing entirely
 (IGNORED), whilst conservative execution skips entries that have already been

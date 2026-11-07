@@ -74,8 +74,8 @@ messages. Each level above the default adds one layer:
 | Depth | Description |
 |-------|-------------|
 | `0` | No output |
-| `1` | Top-level summary only (default) |
-| `2` | Adds the top-level steps and their `CALLING`/`COMPLETED` call boundaries |
+| `1` | Top-level summary only |
+| `2` | Adds the top-level steps and their `CALLING`/`COMPLETED` call boundaries (default) |
 | `3` | Adds first-level sub-workflow steps, indented by two spaces |
 | `3+` | Each further level adds the next level of sub-workflow messages |
 
@@ -84,13 +84,22 @@ messages. Each level above the default adds one layer:
 cqflow run workflow.yml --mode=run --log-depth=2
 ```
 
+### Immediate Output
+
+Messages are flushed as soon as they are written, so a long run reports
+progress in real time rather than printing everything when it finishes.
+The run also switches standard output to line buffering, so progress
+printed by an action appears immediately even when the output is piped to
+a file.
+
 ### Status Messages
 
 With `--log-depth=2` or higher, each entry displays a status:
 
 | Status | Dry-run Equivalent | Description |
 |--------|-------------------|-------------|
-| EXECUTED | WOULD EXECUTE | Entry processed successfully |
+| RUNNING | — | The action has started; printed before it runs |
+| EXECUTED | WOULD EXECUTE | Entry processed successfully, with its elapsed time |
 | FORCED | — | Entry processed (force mode) |
 | SKIPPED | WOULD SKIP | Already completed (conservative execution) |
 | IGNORED | WOULD IGNORE | Excluded by filter expression |
@@ -102,8 +111,9 @@ Example output:
 
 ```
 2026-03-15 14:23:01 [./hc_std.yml] CALLING Run bnlearn hc with standard ordering
-2026-03-15 14:23:01   [evaluate] EXECUTED eval-step [network=asia]
-2026-03-15 14:23:02 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
+2026-03-15 14:23:01   [evaluate] RUNNING eval-step [network=asia]
+2026-03-15 14:23:13   [evaluate] EXECUTED eval-step [network=asia] (12.4s)
+2026-03-15 14:23:14 [./hc_std.yml] COMPLETED Run bnlearn hc with standard ordering (1 steps: 1 executed)
 ```
 
 Messages from a sub-workflow are indented by two spaces per call level.

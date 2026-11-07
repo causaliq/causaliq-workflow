@@ -187,9 +187,9 @@ with:
   output: "results/merged.db"
 ```
 
-Actions follow one of two patterns — create or aggregate — determined by
-whether the step reads a workflow cache. Steps that write plain files run
-once. See [Action Patterns](action_patterns.md).
+Actions follow one of three patterns — produce, map or aggregate —
+determined by what the step reads from the workflow cache. Steps that write
+plain files run once. See [Action Patterns](action_patterns.md).
 
 ## Matrix Expansion
 
@@ -374,8 +374,8 @@ A workflow that is called from another workflow also sees the caller's
 parameter names, and the CLI passes `--param` names to the parser, so a
 template may reference a value that is supplied at run time.
 
-AGGREGATE steps also see the matrix keys derived from their input caches, so
-`{{network}}` resolves from a learned graph cache even when the workflow
-declares no matrix. When an input cache does not exist yet — it may be
-produced by an earlier step — that step's variables are resolved at runtime
-instead.
+Steps that read a cache also see the matrix keys derived from their input
+caches, so `{{network}}` resolves from a learned graph cache even when the
+workflow declares no matrix. When an input cache does not exist yet — it may
+be produced by an earlier step — that step's variables are resolved at
+runtime instead.

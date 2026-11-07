@@ -27,12 +27,13 @@ The workflow cache imports the following from causaliq-core:
         - put
         - put_typed
         - put_failure
-        - put_from_action
         - get
         - exists
         - entry_count
         - list_entries
         - list_entry_summaries
+        - list_entry_records
+        - decompress_metadata
         - export
         - import_entries
 
@@ -142,7 +143,9 @@ with WorkflowCache(":memory:") as cache:
 ### Matrix Schema Validation
 
 Once a cache contains entries, all subsequent entries must use the same
-matrix variable names:
+matrix variable names. The names are pinned in the cache config on the first
+write, so later writes compare against that record instead of scanning the
+cache:
 
 ```python
 from causaliq_workflow.cache import WorkflowCache, CacheEntry, MatrixSchemaError
@@ -158,6 +161,21 @@ with WorkflowCache(":memory:") as cache:
         cache.put({"method": "pc", "dataset": "asia"}, entry)
     except MatrixSchemaError as e:
         print(f"Schema error: {e}")
+```
+
+### Scanning Entries Without Objects
+
+`list_entry_records()` returns each entry's matrix values with its metadata
+still compressed, so a scan can match on matrix values first and decompress
+metadata only for the entries it keeps:
+
+```python
+with WorkflowCache("cache.db") as cache:
+    for record in cache.list_entry_records():
+        if record["matrix_values"]["network"] != "asia":
+            continue
+        metadata = cache.decompress_metadata(record["metadata_blob"])
+        print(metadata)
 ```
 
 ### Export and Import

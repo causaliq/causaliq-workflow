@@ -99,6 +99,11 @@ matrix:
 This constraint keeps the implementation simple. Future versions may support
 schema migration if needed.
 
+The variable names are **pinned in the cache config** when the first entry
+is written, so validating a write is a comparison against that record rather
+than a scan of every entry. A cache written before pinning takes one read to
+learn its key names; the write path then reports a mismatch in the same way.
+
 #### Key Derivation
 
 The cache key is a SHA-256 hash (truncated to 16 hex characters) of the
@@ -238,7 +243,7 @@ def put(self, key_data: dict, data: dict[str, bytes], metadata: dict) -> None:
     seq = 0
     for row_seq, row_key_json in rows:
         if row_key_json == key_json:
-            # Exact match - update existing entry
+            # Exact match - replace the existing entry
             seq = row_seq
             self._delete_entry(hash, seq)  # Remove old data blobs
             break
@@ -294,26 +299,19 @@ handles them correctly when they occur.
 
 New types can be added by implementing `EntryEncoder` - no schema changes.
 
-## Metadata Mutability and Cache Queries
+## Entry Replacement and Cache Queries
 
-### Mutable Metadata
+### Entries are replaced, never mutated
 
-While **matrix keys are immutable** (they define entry identity), **metadata
-can be updated** after entry creation. This enables analysis workflows that
-enrich cached results:
+Matrix keys define entry identity and are immutable. An entry is also
+written as a whole: one action produces one entry holding its version 2
+metadata and at most one typed object, and a later write for the same key
+replaces it. Metadata is never merged into an existing entry, so the
+latest run wins, including when a failure replaces a successful result.
 
-```python
-# Update metadata for an existing entry
-cache.update_metadata(
-    key={"algorithm": "pc", "network": "asia"},
-    metadata_updates={"bic_score": -1523.4, "evaluated_at": "2026-02-04"}
-)
-```
-
-**Use cases:**
-- Scoring workflows that evaluate cached graphs
-- Adding benchmark results to existing entries
-- Annotating entries with review status or notes
+A step that records a second kind of result writes to its own typed
+cache. For example, `evaluate_graph` writes a `metrics` object to a
+metrics cache rather than annotating the discovery cache.
 
 ### Cache as Workflow Input
 
@@ -331,7 +329,7 @@ steps:
         algorithm: [pc, ges]
         # Metadata predicates (may require scan)
         bic_score: null            # Not yet scored
-    cache_output: "results/discovery_cache.db"  # Update same cache
+    cache_output: "results/scored.db"   # Write scored metrics
 ```
 
 ### Entry Selection Predicates
@@ -496,6 +494,12 @@ if cache.exists(context.matrix_values):
     return cache.get(context.matrix_values, "graph")
 ```
 
+In `run` mode the check happens **before** a step's input caches are
+scanned, so a resumed sweep costs one indexed lookup per entry instead of a
+scan of the step's inputs. The step's stored status is `skipped` with reason
+`cached`. `force` runs such steps anyway, and `dry-run` reports
+`would_skip` after its scan.
+
 ## Aggregation Mode
 
 Aggregation mode enables workflow steps to consume entries from multiple cache
@@ -541,12 +545,22 @@ steps:
 The `_scan_aggregation_inputs()` method scans a memoised per-cache index
 rather than re-reading the cache for every matrix job:
 
-1. Build or reuse an index of each entry's matrix values and reporting view
-   (`WorkflowCache.list_entry_summaries()`, which does not decompress object
-   payloads)
-2. Apply the filter expression (if present)
-3. Match entries against the current matrix values
-4. Load only matched entries in full and return them as entry dictionaries
+1. Build or reuse an index of each entry's matrix values and compressed
+   metadata (`WorkflowCache.list_entry_records()`, which does not decompress
+   object payloads or metadata)
+2. Match entries against the current matrix values
+3. Build the reporting view and apply the filter expression (if present)
+   for the matched entries only
+4. Load only the surviving entries in full and return them as entry
+   dictionaries
+
+The matrix comparison runs first because both predicates only narrow the
+candidate set: the surviving entries are the same either way, but a filter
+is then evaluated for the job's entries rather than for the whole cache.
+Metadata is decompressed lazily, and a job that matches no entry does not
+open the cache at all. A `random()` population is resolved from the whole
+index and reads matrix values directly, so an unresolvable name is the only
+case that decompresses metadata for every entry.
 
 The index is held on the executor and invalidated whenever the cache is
 written, so results stay consistent within a run while avoiding repeated
@@ -556,6 +570,9 @@ full-cache reads.
 # Scan statistics logged during execution
 # "Aggregation scan: scanned=100, filtered=20, matched=8"
 ```
+
+`scanned` counts indexed entries, `filtered` counts matrix-matching entries
+rejected by the filter, and `matched` counts entries handed to the action.
 
 ### Filter Expressions
 

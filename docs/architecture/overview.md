@@ -423,16 +423,23 @@ Workflow engine sub-package:
 - `workflow/matrix.py` — matrix expansion, derivation and value matching.
 - `workflow/templates.py` — template variable extraction, resolution and
   step-name expansion.
-- `workflow/patterns.py` — step pattern (CREATE and AGGREGATE) detection.
-- `workflow/filters.py` — shared reporting view construction for filter
-  evaluation.
+- `workflow/patterns.py` — step pattern (produce, map and aggregate)
+  detection.
+- `workflow/filters.py` — filter literal rewriting before validation.
 - `workflow/provenance.py` — provenance collection for cache entries.
-- `workflow/aggregation.py` — AGGREGATE pattern configuration and input
+- `workflow/aggregation.py` — cache-entry scan configuration and input
   scanning (`AggregationConfig`).
 - `workflow/validation.py` — workflow and action configuration validation.
 - `workflow/validation_entries.py` — per-entry validation for the execution
   pass.
-- `workflow/execution.py` — workflow parsing and job execution entry points.
+- `workflow/job_state.py` — per-job execution state shared by the execution
+  mixins.
+- `workflow/execution.py` — workflow parsing, execution entry points and the
+  job loop.
+- `workflow/step_runner.py` — running one step: action calls, conservative
+  skips, aggregation wiring and dry-run previews.
+- `workflow/step_store.py` — storing step results and failures, and logging
+  step completion.
 - `workflow/executor.py` — composes the mixins into `WorkflowExecutor`.
 
 The command-line interface was reduced in the same way: result reporting now

@@ -1,24 +1,13 @@
-# Review ActionPattern definitions
+# Improve workflow validation and execution performance
 
-Please review the current action patterns: CREATE and AGGREGATE:
+I am running @causaliq-research/papers/pdg-merge/workflows2/bnsl-pdgs.yml and performance seems very poor.
 
-- is this the correct distinction to make?
-- do we need this concept?
-- are existing actions being assigned to the correct pattern?
-- even if the distinction is relevant, do we need to expose the end-user to this distinction in the userguide?
+Despite the input cache having perhaps a few thousand entries, and the output cache having only 12 entries
+which should all be skipped, it is taking 2-3 seconds to skip each output entry whereas one would hope it would be nearly instantaneous.
 
-I am beginning to think (maybe incorrectly) that the two fundamental patterns are:
+Validation of this relatively simple workflow is also slow at 10 seconds.
 
-- AGGREGATE - where there is a need to aggregate entries from input caches in some way to
-get different dimensions in the output (be that a workflow cache matrix definition, or plot or summarisation dimensions) - might also be thought of as a GROUP-BY
-  - examples are: `merge_graph`, `plot` and `summarise` 
-- NON-AGGREGATE - where there is no need to aggregate input entries: either because there is no
-input cache (`learn_graph`, `generate_graph` or `migrate_trace`) or the inputs and the
-outputs have the same dimension (`best_graph` and `evaluate_graph`)
-
-We also have a convention that, in some cases at least, it is possible to omit
-the matrix definition and the one from the input cache is used silently - for example,
-with `evaluate_graph`. Maybe this can apply to all NON-AGGREGATE actions.
+Please investigate and suggest a plan to improve matters.
 
 
 ## Further work which is out of scope for this task
@@ -66,3 +55,5 @@ These are deliberately outside this task:
 - `has_action_metadata` / `serialise_objects` retirement
 - `store_failure_result` → `put_failure`
 - splitting the legacy `test_workflow.py` /test_workflow_shell_and_edge_cases.py` suites
+- fold `_aggregation_from_pattern` into `_is_aggregation_step`, rename the "aggregation" vocabulary in `aggregation.py`/`_apply_aggregation`, retire the now-redundant `len(entries) != 1` checks inside `evaluate_graph`/`best_graph`
+
