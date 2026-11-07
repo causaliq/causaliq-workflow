@@ -1,5 +1,7 @@
 """Unit tests for WorkflowExecutor - aggregation functionality."""
 
+from typing import Any, List
+
 import pytest
 import pytest_mock
 
@@ -7,6 +9,7 @@ from causaliq_workflow.workflow import (
     AggregationConfig,
     WorkflowExecutor,
 )
+from causaliq_workflow.workflow.aggregation import _db_cache_paths
 
 # ============================================================================
 # Aggregation mode detection tests
@@ -160,6 +163,78 @@ def test_get_aggregation_config_input_list_filters_db(
     assert config is not None
     # Only .db files should be in input_caches
     assert config.input_caches == ["cache.db"]
+
+
+# Test _db_cache_paths keeps only workflow-cache paths.
+@pytest.mark.parametrize(
+    "input_param, expected",
+    [
+        (None, []),
+        ("", []),
+        ("cache.db", ["cache.db"]),
+        ("data.graphml", []),
+        (["a.db", "b.graphml", "c.db"], ["a.db", "c.db"]),
+    ],
+)
+def test_db_cache_paths_filters_db(
+    input_param: Any, expected: List[str]
+) -> None:
+    assert _db_cache_paths(input_param) == expected
+
+
+# Test the scan config substitutes templated input and filter values.
+def test_resolved_config_substitutes_templated_values(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {
+        "uses": "action",
+        "with": {
+            "input": "{{cache_dir}}/pdgs.db",
+            "filter": "sample_size == '{{sample_size}}'",
+        },
+    }
+    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    assert config is not None
+    resolved = {
+        "input": "results/caches/pdgs.db",
+        "filter": "sample_size == '10K'",
+    }
+
+    scan_config = executor._resolved_aggregation_config(config, resolved)
+
+    assert scan_config.input_caches == ["results/caches/pdgs.db"]
+    assert scan_config.filter_expr == "sample_size == '10K'"
+    assert scan_config.matrix_vars == ["network"]
+
+
+# Test an untemplated step keeps its original scan configuration.
+def test_resolved_config_keeps_untemplated_values(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"input": "cache.db"}}
+    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    assert config is not None
+
+    scan_config = executor._resolved_aggregation_config(
+        config, {"input": "cache.db"}
+    )
+
+    assert scan_config is config
+
+
+# Test the scan config keeps only .db paths from a resolved input list.
+def test_resolved_config_filters_non_db_paths(
+    executor: WorkflowExecutor,
+) -> None:
+    step = {"uses": "action", "with": {"input": "{{cache_dir}}/pdgs.db"}}
+    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    assert config is not None
+
+    scan_config = executor._resolved_aggregation_config(
+        config, {"input": ["graph.graphml", "pdgs.db"]}
+    )
+
+    assert scan_config.input_caches == ["pdgs.db"]
 
 
 # Test AggregationConfig dataclass defaults.

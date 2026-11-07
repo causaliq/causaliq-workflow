@@ -160,6 +160,14 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Scan input caches for entries matching matrix values."""
         raise NotImplementedError
 
+    def _resolved_aggregation_config(
+        self,
+        config: "AggregationConfig",
+        resolved_inputs: Dict[str, Any],
+    ) -> "AggregationConfig":
+        """Return the scan config with step templates substituted."""
+        raise NotImplementedError
+
     def _missing_variable_errors(
         self, workflow: Dict[str, Any], parameters: Any = None
     ) -> List[str]:

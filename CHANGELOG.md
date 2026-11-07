@@ -119,6 +119,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Templated aggregation inputs** - a cache-reading step whose `input`
+  path holds a template such as `{{cache_dir}}/pdgs.db` now scans the
+  resolved path and filter, so the matched entries reach the action
+  instead of the step failing with "No cache entries matched"
 - **Duplicate step names** - a repeated step name is now rejected at
   validation; step results are recorded by name, so a duplicate silently
   overwrote the earlier step's result and made the completion summary

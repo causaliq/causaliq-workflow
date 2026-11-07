@@ -107,6 +107,30 @@ def test_scan_matches_filter_first_reference(
     assert len(results) == 2
 
 
+# Test a templated input reads the cache its resolved path names.
+def test_scan_uses_resolved_input_path(
+    executor: WorkflowExecutor,
+    tmp_path: pytest.TempPathFactory,  # type: ignore[name-defined]
+) -> None:
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    _write_entries(
+        cache_path,
+        [{"network": "asia", "seed": seed} for seed in range(2)],
+    )
+    step = {"uses": "action", "with": {"input": "{{cache_dir}}/input.db"}}
+    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    assert config is not None
+    resolved = executor._resolve_template_variables(
+        step["with"], {"cache_dir": str(tmp_path)}
+    )
+
+    entries = executor._scan_aggregation_for(
+        config, resolved, {"network": "asia"}
+    )
+
+    assert len(entries) == 2
+
+
 # Test a job with no matrix match does not open the cache at all.
 def test_scan_skips_cache_open_without_matrix_match(
     executor: WorkflowExecutor,

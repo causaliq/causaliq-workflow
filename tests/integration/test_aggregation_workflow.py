@@ -304,3 +304,55 @@ def test_aggregation_scan_logging(
     assert "scanned=5" in log_messages[0]
     assert "filtered=2" in log_messages[0]
     assert "matched=3" in log_messages[0]
+
+
+# Test a {{cache_dir}} input reads the cache its resolved path names.
+def test_aggregation_with_templated_input_path(
+    tmp_path: pytest.TempPathFactory,  # type: ignore[name-defined]
+) -> None:
+    """A templated cache input must reach the action's entries."""
+    input_cache = tmp_path / "graphs.db"  # type: ignore[operator]
+    with WorkflowCache(input_cache) as cache:
+        for seed in [1, 2, 3]:
+            entry = CacheEntry(metadata={"network": "asia", "seed": seed})
+            cache.put({"network": "asia", "seed": seed}, entry)
+
+    captured_entries: list = []
+
+    class ListAction:
+        name = "list-action"
+        version = "1.0.0"
+        description = "Test aggregation entry listing"
+
+        def run(self, action, parameters, **kwargs):
+            entries = parameters.get("_aggregation_entries", [])
+            captured_entries.extend(entries)
+            return ("success", {"count": len(entries)}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["list-action"] = ListAction
+
+    workflow = {
+        "cache_dir": str(tmp_path),
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "summarise",
+                "uses": "list-action",
+                "with": {
+                    "action": "model_average",
+                    "input": "{{cache_dir}}/graphs.db",
+                },
+            }
+        ],
+    }
+
+    executor.execute_workflow(workflow, mode="run")
+
+    # Every asia entry in the templated cache reaches the action
+    assert len(captured_entries) == 3
+    for entry in captured_entries:
+        assert entry["matrix_values"]["network"] == "asia"

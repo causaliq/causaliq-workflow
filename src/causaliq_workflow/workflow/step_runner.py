@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
-from causaliq_workflow.workflow.aggregation import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.frames import is_workflow_call_step
 from causaliq_workflow.workflow.job_state import _JobState
@@ -141,15 +140,11 @@ class StepRunnerMixin(WorkflowExecutorBase):
         if agg_config is None:
             return None
 
-        # Use the resolved filter (with template variables substituted)
-        # instead of the raw filter from the step definition.
-        resolved_filter = resolved_inputs.get("filter")
-        if resolved_filter != agg_config.filter_expr:
-            agg_config = AggregationConfig(
-                input_caches=agg_config.input_caches,
-                filter_expr=resolved_filter,
-                matrix_vars=agg_config.matrix_vars,
-            )
+        # The step definition still holds {{placeholders}}; scan the cache
+        # paths and filter the action actually receives.
+        agg_config = self._resolved_aggregation_config(
+            agg_config, resolved_inputs
+        )
         entries = self._scan_aggregation_inputs(agg_config, state.job)
         if not entries and _all_input_caches_exist(agg_config.input_caches):
             return "no-matching-input-entry"

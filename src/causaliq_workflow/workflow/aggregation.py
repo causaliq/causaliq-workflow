@@ -117,22 +117,7 @@ class AggregationMixin(WorkflowExecutorBase):
             return None
 
         step_inputs = step.get("with", {})
-
-        # Get cache paths from 'input' parameter (.db files only)
-        input_param = step_inputs.get("input")
-
-        # Collect cache paths (.db files only)
-        input_caches: List[str] = []
-        if input_param:
-            inputs = (
-                [input_param]
-                if isinstance(input_param, str)
-                else (list(input_param) if input_param else [])
-            )
-            # Filter to only .db files for cache scanning
-            input_caches = [
-                str(p) for p in inputs if str(p).lower().endswith(".db")
-            ]
+        input_caches = _db_cache_paths(step_inputs.get("input"))
 
         # Determine matrix variables
         if matrix:
@@ -146,6 +131,39 @@ class AggregationMixin(WorkflowExecutorBase):
             input_caches=input_caches,
             filter_expr=step_inputs.get("filter"),
             matrix_vars=matrix_vars,
+        )
+
+    def _resolved_aggregation_config(
+        self,
+        agg_config: AggregationConfig,
+        resolved_inputs: Dict[str, Any],
+    ) -> AggregationConfig:
+        """Return the scan config rebuilt from resolved step inputs.
+
+        The config built from the step definition holds the raw ``input``
+        and ``filter`` values, so their ``{{placeholder}}`` templates are
+        not yet substituted. The scan must read the cache paths and
+        compare with the filter the action actually receives.
+
+        Args:
+            agg_config: Configuration built from the raw step definition.
+            resolved_inputs: Step parameters with templates substituted.
+
+        Returns:
+            The original configuration when nothing changed, otherwise a
+            configuration carrying the resolved caches and filter.
+        """
+        input_caches = _db_cache_paths(resolved_inputs.get("input"))
+        filter_expr = resolved_inputs.get("filter")
+        if (
+            input_caches == agg_config.input_caches
+            and filter_expr == agg_config.filter_expr
+        ):
+            return agg_config
+        return AggregationConfig(
+            input_caches=input_caches,
+            filter_expr=filter_expr,
+            matrix_vars=agg_config.matrix_vars,
         )
 
     def _scan_aggregation_inputs(
@@ -314,6 +332,24 @@ class AggregationMixin(WorkflowExecutorBase):
                 candidates, resolved_filter, extra_names, scan
             ):
                 _append_matched_entry(scan, cache, cache_path, entry)
+
+
+def _db_cache_paths(input_param: Any) -> List[str]:
+    """Return the workflow-cache paths named by an ``input`` parameter.
+
+    Args:
+        input_param: Value of a step's ``input`` parameter, either one
+            path or a list of paths.
+
+    Returns:
+        The paths that name a workflow cache (.db), in the order given.
+    """
+    if not input_param:
+        return []
+    inputs = (
+        [input_param] if isinstance(input_param, str) else list(input_param)
+    )
+    return [str(p) for p in inputs if str(p).lower().endswith(".db")]
 
 
 def _matrix_candidates(

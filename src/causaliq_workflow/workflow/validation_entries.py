@@ -323,15 +323,14 @@ class EntryValidationMixin(WorkflowExecutorBase):
         resolved_inputs: Dict[str, Any],
         job: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
-        """Scan aggregation inputs using the resolved filter expression."""
-        resolved_filter = resolved_inputs.get("filter")
-        scan_config = agg_config
-        if resolved_filter != agg_config.filter_expr:
-            scan_config = AggregationConfig(
-                input_caches=agg_config.input_caches,
-                filter_expr=resolved_filter,
-                matrix_vars=agg_config.matrix_vars,
-            )
+        """Scan aggregation inputs using the resolved step inputs.
+
+        The matched entries feed validation and the fingerprint check, so
+        they must be the entries the step will receive at execution.
+        """
+        scan_config = self._resolved_aggregation_config(
+            agg_config, resolved_inputs
+        )
         return self._scan_aggregation_inputs(scan_config, job)
 
     def _step_parameter_error(
