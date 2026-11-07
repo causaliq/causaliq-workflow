@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from pytest_mock import MockerFixture
 
 from causaliq_workflow.workflow import (
     WorkflowExecutionError,
@@ -96,3 +97,106 @@ def test_execute_workflow_dry_run_skips_existing_cache_entry(
     results = executor.execute_workflow(workflow, mode="dry-run")
 
     assert results[0]["steps"]["Test Step"]["status"] == "would_skip"
+
+
+def _write_cached_output(db_path: Path, matrix_values: dict) -> None:
+    """Write one typed entry to an output cache."""
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    with WorkflowCache(str(db_path)) as cache:
+        entry = CacheEntry()
+        entry.add_object("dag", "graphml", "<graphml/>", "learn_graph")
+        cache.put_typed(matrix_values, entry)
+
+
+# Test run mode skips a cached entry before scanning its inputs.
+def test_run_skips_cached_entry_before_scanning_inputs(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    mocker: MockerFixture,
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    input_path = tmp_path / "in.db"
+    output_path = tmp_path / "out.db"
+    with WorkflowCache(str(input_path)) as cache:
+        cache.put({"dataset": "asia"}, CacheEntry(metadata={}))
+    _write_cached_output(output_path, {"dataset": "asia"})
+
+    spy = mocker.spy(WorkflowExecutor, "_scan_aggregation_inputs")
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                "with": {
+                    "action": "test",
+                    "input": str(input_path),
+                    "output": str(output_path),
+                },
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run", validate=False)
+
+    assert results[0]["steps"]["Test Step"] == {
+        "status": "skipped",
+        "reason": "cached",
+    }
+    assert spy.call_count == 0
+
+
+# Test run mode executes a step whose output entry is absent.
+def test_run_executes_step_without_cached_entry(
+    executor: WorkflowExecutor,
+    tmp_path: Path,
+    mocker: MockerFixture,
+) -> None:
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    input_path = tmp_path / "in.db"
+    with WorkflowCache(str(input_path)) as cache:
+        cache.put({"dataset": "asia"}, CacheEntry(metadata={}))
+
+    spy = mocker.spy(WorkflowExecutor, "_scan_aggregation_inputs")
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                "with": {
+                    "action": "test",
+                    "input": str(input_path),
+                    "output": str(tmp_path / "out.db"),
+                },
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="run", validate=False)
+
+    assert results[0]["steps"]["Test Step"]["status"] != "skipped"
+    assert spy.call_count == 1
+
+
+# Test force mode runs a step whose output entry already exists.
+def test_force_runs_cached_entry(
+    executor: WorkflowExecutor, tmp_path: Path
+) -> None:
+    output_path = tmp_path / "out.db"
+    _write_cached_output(output_path, {"dataset": "asia"})
+
+    workflow = {
+        "matrix": {"dataset": ["asia"]},
+        "steps": [
+            {
+                "uses": "mock_workflow_action",
+                "name": "Test Step",
+                "with": {"action": "test", "output": str(output_path)},
+            }
+        ],
+    }
+    results = executor.execute_workflow(workflow, mode="force", validate=False)
+
+    assert results[0]["steps"]["Test Step"]["status"] != "skipped"

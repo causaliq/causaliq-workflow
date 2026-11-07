@@ -824,3 +824,137 @@ def test_has_action_metadata_false_for_empty_metadata() -> None:
             "evaluate_graph",
         )
         assert result is False
+
+
+# ============================================================================
+# Write-path schema pinning and config caching
+# ============================================================================
+
+
+# Test the matrix keys are pinned in the cache config on the first write.
+def test_matrix_keys_pinned_on_first_write() -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.put({"algo": "pc"}, CacheEntry())
+
+        assert cache._get_config()["matrix_keys"] == ["algo"]
+        assert cache.entry_count() == 1
+
+
+# Test a write validates against the pin instead of scanning the cache.
+def test_validate_matrix_keys_does_not_scan_entries(
+    mocker: MockerFixture,
+) -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.put({"algo": "pc"}, CacheEntry())
+        spy = mocker.spy(cache.token_cache, "list_entries")
+
+        for algo in ("ges", "fci"):
+            cache.put({"algo": algo}, CacheEntry())
+
+        assert spy.call_count == 0
+
+
+# Test a cache without a pin is read once to learn its matrix keys.
+def test_validate_matrix_keys_reads_legacy_cache_once(
+    tmp_path: pytest.TempPathFactory,  # type: ignore[name-defined]
+    mocker: MockerFixture,
+) -> None:
+    db_path = tmp_path / "legacy.db"  # type: ignore[operator]
+    with WorkflowCache(str(db_path)) as cache:
+        cache.token_cache.put_data(
+            hash=cache.compute_hash({"algo": "pc"}),
+            data={},
+            metadata={},
+            key_json=cache._key_json({"algo": "pc"}),
+        )
+
+    with WorkflowCache(str(db_path)) as cache:
+        spy = mocker.spy(cache.token_cache, "list_entries")
+        cache.validate_matrix_keys({"algo": "ges"})
+        cache.validate_matrix_keys({"algo": "fci"})
+
+        assert spy.call_count == 1
+        with pytest.raises(MatrixSchemaError, match="Matrix keys mismatch"):
+            cache.validate_matrix_keys({"method": "pc"})
+
+
+# Test an empty cache pins the schema instead of storing a config-only state.
+def test_validate_matrix_keys_pins_empty_cache() -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.validate_matrix_keys({"algo": "pc", "data": "asia"})
+
+        assert cache._get_config()["matrix_keys"] == ["algo", "data"]
+        assert cache.entry_count() == 0
+
+
+# Test matrix keys are derived from an entry stored without a key.
+def test_matrix_keys_from_entry_without_key() -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.token_cache.put_data("abc", {"dag": {}})
+
+        assert cache._recorded_matrix_keys() == set()
+
+
+# Test the decoded config is read from the cache only once.
+def test_config_is_read_once(mocker: MockerFixture) -> None:
+    with WorkflowCache(":memory:") as cache:
+        spy = mocker.spy(cache.token_cache, "get_data_with_metadata")
+
+        cache.get_matrix_key_order()
+        cache.get_matrix_key_order()
+
+        assert spy.call_count == 1
+
+
+# Test a config entry that is not a mapping is treated as empty.
+def test_config_ignores_non_mapping_entry() -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.token_cache.put_data(
+            hash=WorkflowCache.CONFIG_HASH,
+            data=[1, 2],
+            key_json=WorkflowCache.CONFIG_HASH,
+        )
+
+        assert cache._get_config() == {}
+
+
+# Test storing the same matrix key order twice writes the config once.
+def test_set_matrix_key_order_skips_unchanged_write(
+    mocker: MockerFixture,
+) -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.set_matrix_key_order(["algo"])
+        spy = mocker.spy(cache.token_cache, "put_data")
+
+        cache.set_matrix_key_order(["algo"])
+        assert spy.call_count == 0
+
+        cache.set_matrix_key_order(["algo", "data"])
+        assert spy.call_count == 1
+
+
+# Test re-pinning the same object type writes the config once.
+def test_set_cache_type_skips_unchanged_write(
+    mocker: MockerFixture,
+) -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.set_cache_type("dag")
+        spy = mocker.spy(cache.token_cache, "put_data")
+
+        assert cache.set_cache_type("dag") == "dag"
+        assert spy.call_count == 0
+
+
+# Test list_entry_records keeps metadata compressed until asked.
+def test_list_entry_records_exposes_metadata_blob() -> None:
+    with WorkflowCache(":memory:") as cache:
+        cache.put({"algo": "pc"}, CacheEntry(metadata={"status": "ok"}))
+
+        records = cache.list_entry_records()
+
+        assert records[0]["matrix_values"] == {"algo": "pc"}
+        assert isinstance(records[0]["metadata_blob"], bytes)
+        assert cache.decompress_metadata(records[0]["metadata_blob"]) == {
+            "status": "ok"
+        }
+        assert cache.decompress_metadata(None) == {}

@@ -442,7 +442,7 @@ def test_scan_index_memoised_and_invalidated(
     with WorkflowCache(cache_path) as cache:
         cache.put({"network": "asia"}, CacheEntry(metadata={}))
 
-    spy = mocker.spy(WorkflowCache, "list_entry_summaries")
+    spy = mocker.spy(WorkflowCache, "list_entry_records")
     config = AggregationConfig(
         input_caches=[str(cache_path)],
         matrix_vars=["network"],
@@ -674,9 +674,11 @@ def test_scan_aggregation_inputs_filter_logging(
         logger=log_messages.append,
     )
 
-    # Log should include filter stats
+    # The alarm entry is excluded by its matrix values, so only the asia
+    # entry reaches the filter and no entry is filtered out.
     assert len(log_messages) == 1
-    assert "filtered=1" in log_messages[0]
+    assert "matched=1" in log_messages[0]
+    assert "filtered=0" in log_messages[0]
 
 
 # Test aggregation entries passed to action in _execute_job.
@@ -2019,3 +2021,172 @@ def test_execute_job_aggregation_resolves_filter_template(
     entries = captured_params["_aggregation_entries"]
     assert len(entries) == 1
     assert entries[0]["matrix_values"]["llm_model"] == "claude"
+
+
+# Test a MAP job whose cache lacks its entry is skipped, not fatal.
+def test_execute_job_skips_map_job_without_matching_entry(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An existing cache that lacks the job's entry skips the step."""
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        cache.put({"network": "asia"}, CacheEntry(metadata={}))
+
+    captured: dict = {}
+
+    class CaptureAction:
+        name = "capture-action"
+        version = "1.0.0"
+        description = "Captures parameters"
+
+        def run(self, action, parameters, **kwargs):
+            captured.update(parameters)
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["capture-action"] = CaptureAction
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda provider, action: ActionPattern.MAP,
+    )
+
+    workflow = {
+        "matrix": {"network": ["asia", "sachs"]},
+        "steps": [
+            {
+                "name": "analyse",
+                "uses": "capture-action",
+                "with": {"action": "evaluate", "input": str(cache_path)},
+            }
+        ],
+    }
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "sachs"},
+    )
+
+    executor._execute_job(workflow, {"network": "sachs"}, context, {})
+
+    # The action never ran for the job with no matching entry.
+    assert captured == {}
+
+
+# Test an AGGREGATE job whose cache lacks its entries is skipped.
+def test_execute_job_skips_aggregate_job_without_entries(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An existing cache that lacks the job's entries skips the merge."""
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+    from causaliq_workflow.registry import WorkflowContext
+
+    cache_path = tmp_path / "input.db"  # type: ignore[operator]
+    with WorkflowCache(cache_path) as cache:
+        cache.put({"network": "asia"}, CacheEntry(metadata={}))
+
+    captured: dict = {}
+
+    class CaptureAction:
+        name = "capture-action"
+        version = "1.0.0"
+        description = "Captures parameters"
+
+        def run(self, action, parameters, **kwargs):
+            captured.update(parameters)
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["capture-action"] = CaptureAction
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda provider, action: ActionPattern.AGGREGATE,
+    )
+
+    workflow = {
+        "matrix": {"network": ["asia", "sachs"]},
+        "steps": [
+            {
+                "name": "merge",
+                "uses": "capture-action",
+                "with": {"action": "merge", "input": str(cache_path)},
+            }
+        ],
+    }
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "sachs"},
+    )
+
+    executor._execute_job(workflow, {"network": "sachs"}, context, {})
+
+    assert captured == {}
+
+
+# Test a MAP job whose input cache is missing still raises.
+def test_execute_job_errors_when_map_input_cache_missing(
+    tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A missing input cache is still reported as a configuration error."""
+    from causaliq_core import ActionPattern
+
+    from causaliq_workflow.registry import WorkflowContext
+
+    class CaptureAction:
+        name = "capture-action"
+        version = "1.0.0"
+        description = "Captures parameters"
+
+        def run(self, action, parameters, **kwargs):
+            return ("success", {}, [])
+
+        def get_action_schema(self, action):
+            return {}
+
+    executor = WorkflowExecutor()
+    executor.action_registry._actions["capture-action"] = CaptureAction
+    monkeypatch.setattr(
+        executor.action_registry,
+        "get_action_pattern",
+        lambda provider, action: ActionPattern.MAP,
+    )
+
+    missing = tmp_path / "absent.db"  # type: ignore[operator]
+    workflow = {
+        "matrix": {"network": ["asia"]},
+        "steps": [
+            {
+                "name": "analyse",
+                "uses": "capture-action",
+                "with": {"action": "evaluate", "input": str(missing)},
+            }
+        ],
+    }
+    context = WorkflowContext(
+        mode="run",
+        matrix=workflow["matrix"],
+        matrix_values={"network": "asia"},
+    )
+
+    with pytest.raises(Exception) as exc_info:
+        executor._execute_job(workflow, {"network": "asia"}, context, {})
+
+    assert "no input cache entry matches" in str(exc_info.value)

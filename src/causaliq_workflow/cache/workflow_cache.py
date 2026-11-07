@@ -87,6 +87,11 @@ class WorkflowCache:
         """
         self.db_path = str(db_path)
         self._token_cache: TokenCache | None = None
+        # Decoded config entry and pinned matrix key names, both read at
+        # most once per open connection (see _get_config).
+        self._config: dict[str, Any] | None = None
+        self._matrix_keys: set[str] | None = None
+        self._matrix_keys_known = False
 
     @property
     def token_cache(self) -> TokenCache:
@@ -128,9 +133,16 @@ class WorkflowCache:
 
     def close(self) -> None:
         """Close the database connection."""
+        self._reset_cached_config()
         if self._token_cache is not None:
             self._token_cache.close()
             self._token_cache = None
+
+    def _reset_cached_config(self) -> None:
+        """Forget the cached config and matrix schema."""
+        self._config = None
+        self._matrix_keys = None
+        self._matrix_keys_known = False
 
     def __enter__(self) -> WorkflowCache:
         """Context manager entry - opens connection."""
@@ -209,6 +221,8 @@ class WorkflowCache:
             ...     cache.set_matrix_key_order(["network", "N", "seeds"])
         """
         config = self._get_config()
+        if config.get("matrix_key_order") == keys:
+            return
         config["matrix_key_order"] = keys
         self._put_config(config)
 
@@ -222,17 +236,24 @@ class WorkflowCache:
         return config.get("matrix_key_order")
 
     def _get_config(self) -> dict[str, Any]:
-        """Get cache configuration from reserved entry."""
-        result = self.token_cache.get_data_with_metadata(
-            hash=self.CONFIG_HASH,
-            key_json=self.CONFIG_HASH,
-        )
-        if result is None:
-            return {}
-        data, _ = result
-        if isinstance(data, dict):
-            return data
-        return {}
+        """Get cache configuration, reading the reserved entry once.
+
+        The decoded configuration is kept for the lifetime of the open
+        connection, so repeated reads do not decompress the entry again.
+        Callers may mutate the returned mapping before storing it with
+        ``_put_config``.
+
+        Returns:
+            Mutable configuration mapping, empty when none is stored.
+        """
+        if self._config is None:
+            result = self.token_cache.get_data_with_metadata(
+                hash=self.CONFIG_HASH,
+                key_json=self.CONFIG_HASH,
+            )
+            data = result[0] if result else None
+            self._config = data if isinstance(data, dict) else {}
+        return self._config
 
     def _put_config(self, config: dict[str, Any]) -> None:
         """Store cache configuration in reserved entry."""
@@ -242,6 +263,7 @@ class WorkflowCache:
             metadata={},
             key_json=self.CONFIG_HASH,
         )
+        self._config = config
 
     # ========================================================================
     # Cache operations
@@ -392,6 +414,8 @@ class WorkflowCache:
         """
         config = self._get_config()
         pinned = pin_cache_type(config.get("cache_type"), cache_type)
+        if config.get("cache_type") == pinned:
+            return pinned
         config["cache_type"] = pinned
         self._put_config(config)
         return pinned
@@ -537,16 +561,46 @@ class WorkflowCache:
             ...     summaries[0].get("matrix_values")
             {'algorithm': 'pc'}
         """
-        token_cache = self.token_cache
-        compressor = token_cache.get_compressor()
-        summaries: list[dict[str, Any]] = []
-        for row in token_cache.list_entries():
-            if row["hash"] == self.CONFIG_HASH:
-                continue
-            summaries.append(
-                _build_entry_summary(row, compressor, token_cache)
-            )
-        return summaries
+        return [
+            {
+                "hash": record["hash"],
+                "matrix_values": record["matrix_values"],
+                "metadata": self.decompress_metadata(record["metadata_blob"]),
+            }
+            for record in self.list_entry_records()
+        ]
+
+    def list_entry_records(self) -> list[dict[str, Any]]:
+        """List entries with matrix values and compressed metadata.
+
+        The metadata is returned as stored, so a caller can match on
+        matrix values first and decompress metadata only for the entries
+        it keeps. Use :meth:`decompress_metadata` for that step while the
+        cache is open.
+
+        Returns:
+            List of entry dictionaries with keys: hash, matrix_values
+            (dict) and metadata_blob (bytes or None). The internal config
+            entry is excluded.
+        """
+        records: list[dict[str, Any]] = []
+        for row in self.token_cache.list_entries():
+            if row["hash"] != self.CONFIG_HASH:
+                records.append(_entry_record(row))
+        return records
+
+    def decompress_metadata(self, blob: bytes | None) -> dict[str, Any]:
+        """Decompress an entry metadata blob, returning {} when absent.
+
+        Args:
+            blob: Stored metadata blob from :meth:`list_entry_records`.
+
+        Returns:
+            Decompressed metadata mapping.
+        """
+        return _decompress_entry_metadata(
+            self.token_cache.get_compressor(), self.token_cache, blob
+        )
 
     def token_count(self) -> int:
         """Count tokens in the shared dictionary.
@@ -599,11 +653,12 @@ class WorkflowCache:
         return set(first_schema)
 
     def validate_matrix_keys(self, key_data: dict[str, Any]) -> None:
-        """Validate that key_data matches the existing matrix schema.
+        """Validate that key_data matches the cache's matrix schema.
 
-        If the cache already contains entries, the keys in key_data must
-        exactly match the keys used in existing entries. This ensures
-        cache consistency across workflow executions.
+        The schema is recorded in the cache config on the first write, so a
+        write compares against that record instead of scanning the cache.
+        A cache written by an earlier version is read once to learn its keys
+        and is then recorded in the same way.
 
         Args:
             key_data: Dictionary of matrix variable values to validate.
@@ -617,17 +672,48 @@ class WorkflowCache:
             ...     cache.validate_matrix_keys({"algo": "ges"})  # OK
             ...     cache.validate_matrix_keys({"method": "pc"})  # Raises
         """
-        existing_schema = self.get_matrix_schema()
-        if existing_schema is None:
-            # Empty cache - any schema is valid
-            return
-
         new_schema = set(key_data.keys())
+        existing_schema = self._matrix_schema()
+        if existing_schema is None:
+            self._store_matrix_keys(new_schema)
+            return
+        if self._get_config().get("matrix_keys") is None:
+            self._store_matrix_keys(existing_schema)
         if new_schema != existing_schema:
             raise MatrixSchemaError(
                 f"Matrix keys mismatch: got {sorted(new_schema)}, "
                 f"expected {sorted(existing_schema)}"
             )
+
+    def _matrix_schema(self) -> set[str] | None:
+        """Return the cache's matrix key names, reading them once.
+
+        Returns:
+            Set of matrix variable names, or None when the cache is empty.
+        """
+        if not self._matrix_keys_known:
+            self._matrix_keys = self._recorded_matrix_keys()
+            self._matrix_keys_known = True
+        return self._matrix_keys
+
+    def _recorded_matrix_keys(self) -> set[str] | None:
+        """Return the recorded matrix keys, or read them from the cache.
+
+        Returns:
+            Set of matrix variable names, or None when the cache is empty.
+        """
+        pinned = self._get_config().get("matrix_keys")
+        if isinstance(pinned, list):
+            return {str(key) for key in pinned}
+        return self.get_matrix_schema()
+
+    def _store_matrix_keys(self, keys: set[str]) -> None:
+        """Record the matrix key names in the cache config."""
+        config = self._get_config()
+        config["matrix_keys"] = sorted(keys)
+        self._put_config(config)
+        self._matrix_keys = set(keys)
+        self._matrix_keys_known = True
 
     # ========================================================================
     # Export operations
@@ -707,19 +793,13 @@ class WorkflowCache:
         return import_entries(self, input_path)
 
 
-def _build_entry_summary(
-    row: dict[str, Any],
-    compressor: Compressor | None,
-    token_cache: TokenCache,
-) -> dict[str, Any]:
-    """Build an entry summary (hash, matrix values, metadata) from a row."""
+def _entry_record(row: dict[str, Any]) -> dict[str, Any]:
+    """Build a scan record (matrix values plus metadata blob) from a row."""
     key_json = row["key_json"]
     return {
         "hash": row["hash"],
         "matrix_values": json.loads(key_json) if key_json else {},
-        "metadata": _decompress_entry_metadata(
-            compressor, token_cache, row["metadata"]
-        ),
+        "metadata_blob": row["metadata"],
     }
 
 
