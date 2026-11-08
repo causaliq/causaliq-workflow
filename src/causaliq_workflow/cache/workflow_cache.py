@@ -16,7 +16,6 @@ from typing import Any
 
 from causaliq_core.cache import TokenCache
 from causaliq_core.cache.compressors import Compressor, JsonCompressor
-from causaliq_core.metadata import split_metadata
 
 from causaliq_workflow.cache.contract import (
     pin_cache_type,
@@ -441,6 +440,7 @@ class WorkflowCache:
         key_data: dict[str, Any],
         metadata: dict[str, Any],
         cache_type: str | None = None,
+        matrix_key_order: list[str] | None = None,
     ) -> str:
         """Store a failure: version 2 metadata and no object.
 
@@ -448,55 +448,18 @@ class WorkflowCache:
             key_data: Dictionary of matrix variable values (cache key).
             metadata: Version 2 metadata envelope recording the failure.
             cache_type: Object type to pin when the cache is unpinned.
+            matrix_key_order: Ordered list of matrix variable names for the
+                export directory structure. If provided and not already
+                set in the cache, stores this order.
 
         Returns:
             The hash key used for storage.
-
-        Raises:
-            CacheTypeError: If the cache type is unknown.
         """
+        if matrix_key_order is not None:
+            from causaliq_workflow.cache.export import _pin_matrix_key_order
+
+            _pin_matrix_key_order(self, matrix_key_order)
         return store_failure_entry(self, key_data, metadata, cache_type)
-
-    def has_action_metadata(
-        self,
-        key_data: dict[str, Any],
-        provider_name: str,
-        action_name: str,
-    ) -> bool:
-        """Check if entry has metadata from a specific action.
-
-        Used for conservative execution - skip entries that have already
-        been processed by an action.
-
-        Args:
-            key_data: Dictionary of matrix variable values (cache key).
-            provider_name: Provider name (e.g., 'causaliq-analysis').
-            action_name: Action name (e.g., 'evaluate_graph').
-
-        Returns:
-            True if entry exists and has metadata for provider/action.
-
-        Example:
-            >>> with WorkflowCache(":memory:") as cache:
-            ...     cache.has_action_metadata(
-            ...         {"algo": "pc"},
-            ...         "causaliq-analysis",
-            ...         "evaluate_graph"
-            ...     )
-            False
-        """
-        entry = self.get(key_data)
-        if entry is None:
-            return False
-
-        parts = split_metadata(entry.metadata)
-        provenance = parts.provenance
-        if (
-            provenance.get("provider") == provider_name
-            and provenance.get("action") == action_name
-        ):
-            return True
-        return f"{provider_name}.{action_name}" in parts.history
 
     # ========================================================================
     # Statistics and listing

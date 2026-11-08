@@ -1,18 +1,26 @@
-# Improve workflow validation and execution performance
+# Code tidy-up
 
-I am running @causaliq-research/papers/pdg-merge/workflows2/bnsl-pdgs.yml and performance seems very poor.
+Please draw up a (staged?) plan for the following "Hat-2" refactor / tidy ups
+if they remain relevant and sensible to do:
 
-Despite the input cache having perhaps a few thousand entries, and the output cache having only 12 entries
-which should all be skipped, it is taking 2-3 seconds to skip each output entry whereas one would hope it would be nearly instantaneous.
-
-Validation of this relatively simple workflow is also slow at 10 seconds.
-
-Please investigate and suggest a plan to improve matters.
+- `has_action_metadata` / `serialise_objects` retirement
+- `store_failure_result` → `put_failure`
+- splitting the legacy `test_workflow.py` /test_workflow_shell_and_edge_cases.py` suites
+- fold `_aggregation_from_pattern` into `_is_aggregation_step`
+- rename the "aggregation" vocabulary in `aggregation.py`/`_apply_aggregation`,
 
 
 ## Further work which is out of scope for this task
 
 These are deliberately outside this task:
+
+0. __dry run fails with non-existent input caches__
+
+0a. __more hat2__
+
+- `tests/unit/test_workflow_aggregation.py` is still the last oversize legacy suite (93 tests / ~1800 lines) — same split treatment would apply.
+
+- Legacy `put` remains permissive (`test_legacy_put_accepts_multiple_objects`) and `store_action_result` still accepts `cache=None`; both are candidates for a future contract tidy.
 
 1. __Values audit__
 
@@ -50,10 +58,4 @@ These are deliberately outside this task:
 - Improve exported `evaluate_graph` metrics JSON readability with line feeds.
 - Clarify metrics for failed/empty input graphs so they are not presented as evaluation failures.
 
-7. __Hat 2 tasks__
-
-- `has_action_metadata` / `serialise_objects` retirement
-- `store_failure_result` → `put_failure`
-- splitting the legacy `test_workflow.py` /test_workflow_shell_and_edge_cases.py` suites
-- fold `_aggregation_from_pattern` into `_is_aggregation_step`, rename the "aggregation" vocabulary in `aggregation.py`/`_apply_aggregation`, retire the now-redundant `len(entries) != 1` checks inside `evaluate_graph`/`best_graph`
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from causaliq_workflow.registry import ActionRegistry
-from causaliq_workflow.workflow.aggregation import AggregationMixin
+from causaliq_workflow.workflow.entry_scan import EntryScanMixin
 from causaliq_workflow.workflow.execution import ExecutionMixin
 from causaliq_workflow.workflow.matrix import MatrixMixin
 from causaliq_workflow.workflow.patterns import PatternMixin
@@ -23,7 +23,7 @@ class WorkflowExecutor(
     TemplateMixin,
     PatternMixin,
     SubWorkflowMixin,
-    AggregationMixin,
+    EntryScanMixin,
     StepRunnerMixin,
     StepStoreMixin,
     ValidationMixin,
@@ -50,7 +50,7 @@ class WorkflowExecutor(
     def _invalidate_scan_index(self, cache: Any) -> None:
         """Drop the memoised scan index for a cache that was written.
 
-        The aggregation scan caches each input cache's entry summaries
+        The entry scan caches each input cache's entry summaries
         for the duration of a run. Writing new entries invalidates that
         cache so any later scan observes the update.
 

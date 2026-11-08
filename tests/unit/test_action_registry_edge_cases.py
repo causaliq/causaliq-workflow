@@ -11,6 +11,8 @@ from typing import Any, Dict
 from causaliq_core import ActionResult, CausalIQActionProvider
 
 from causaliq_workflow.registry import ActionRegistry
+from causaliq_workflow.workflow import WorkflowExecutor
+from tests.functional.fixtures.test_action import ActionProvider
 
 
 class MockActionProvider(CausalIQActionProvider):
@@ -140,3 +142,67 @@ def test_discovery_skips_stdlib_submodules():
     finally:
         sys.modules.clear()
         sys.modules.update(original_modules)
+
+
+# Test registry get_actions_by_package edge cases
+def test_registry_get_actions_by_package_edge_cases():
+    executor = WorkflowExecutor()
+
+    # Test with actions from different module hierarchies
+
+    # Create mock actions with different module structures
+    class MockActionNoModule(ActionProvider):
+        name = "no-module-action"
+        version = "1.0.0"
+        description = "Action with no module"
+
+        def run(self, action: str, parameters: dict, **kwargs) -> dict:
+            return {"status": "success"}
+
+    # Simulate an action with empty module parts
+    MockActionNoModule.__module__ = ""
+
+    class MockActionDeepModule(ActionProvider):
+        name = "deep-module-action"
+        version = "1.0.0"
+        description = "Action with deep module hierarchy"
+
+        def run(self, action: str, parameters: dict, **kwargs) -> dict:
+            return {"status": "success"}
+
+    MockActionDeepModule.__module__ = "very.deep.package.structure.action"
+
+    # Add to registry
+    executor.action_registry._actions["no_module_action"] = MockActionNoModule
+    executor.action_registry._actions["deep_module_action"] = (
+        MockActionDeepModule
+    )
+
+    # Test package grouping
+    packages = executor.action_registry.list_actions_by_package()
+
+    # Check that actions are grouped by root package name
+    assert (
+        "" in packages
+    )  # For action with empty module (becomes empty string)
+    assert "very" in packages  # Root of deep module hierarchy
+
+    assert "no_module_action" in packages[""]
+    assert "deep_module_action" in packages["very"]
+
+
+# Test package grouping with existing registry actions
+def test_registry_package_grouping_existing_actions():
+    executor = WorkflowExecutor()
+
+    packages = executor.action_registry.list_actions_by_package()
+
+    # Should have packages for test actions
+    assert isinstance(packages, dict)
+
+    # All package values should be lists of action names
+    for package_name, action_names in packages.items():
+        assert isinstance(package_name, str)
+        assert isinstance(action_names, list)
+        for action_name in action_names:
+            assert isinstance(action_name, str)

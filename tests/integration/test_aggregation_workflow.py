@@ -263,11 +263,11 @@ def test_aggregation_matrix_grouping(
     assert results_by_network == {"asia": 2, "alarm": 2, "sachs": 2}
 
 
-# Test aggregation scan statistics logging.
+# Test entry scan statistics logging.
 def test_aggregation_scan_logging(
     tmp_path: pytest.TempPathFactory,  # type: ignore[name-defined]
 ) -> None:
-    """Test that aggregation scan logs correct statistics."""
+    """Test that the input entry scan logs correct statistics."""
     input_cache = tmp_path / "graphs.db"  # type: ignore[operator]
     with WorkflowCache(input_cache) as cache:
         # 5 entries: 3 completed, 2 failed
@@ -292,7 +292,7 @@ def test_aggregation_scan_logging(
     )
 
     log_messages: list = []
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,

@@ -8,7 +8,7 @@ helpers imported by tests so existing imports keep resolving.
 """
 
 from causaliq_workflow.schema import load_workflow_file, validate_workflow
-from causaliq_workflow.workflow.aggregation import AggregationConfig
+from causaliq_workflow.workflow.entry_scan import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.executor import WorkflowExecutor
 from causaliq_workflow.workflow.matrix import (

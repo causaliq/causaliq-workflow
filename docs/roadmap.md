@@ -1,6 +1,6 @@
 # CausalIQ Workflow - Development Roadmap
 
-**Last updated**: November 1, 2026
+**Last updated**: November 8, 2026
 
 This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.org/projects/ecosystem_roadmap/)
 
@@ -27,7 +27,8 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 1. ✅ Refactor to meet project coding policies
 1. ✅ Flush log messages immediately
 1. ✅ Review Action Patterns
-1. ✅ [Improve workflow performance](current_task.md)
+1. ✅ Improve workflow performance
+1. ✅ [Code tidy-up: retire dead cache API, single failure-write path, split legacy test suites, entry-scan vocabulary](current_task.md)
 1. 🛣️ Metadata propagation, values audit and reporting capabilities
 1. 🛣️ Action metadata catalogue with generated documentation and CLI discovery
 1. 🛣️ Support Python 3.10-14, with 3.12 as default, and badge as [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)

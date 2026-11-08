@@ -3,8 +3,9 @@
 Implements the simplified cache model in which a cache holds a single
 object type and every entry holds provenance metadata plus exactly one
 typed object. These helpers are the enforcement points used by the typed
-write API (``WorkflowCache.put_typed`` and ``WorkflowCache.put_failure``);
-the legacy ``put`` path remains permissive during the transition.
+write API (``WorkflowCache.put_typed`` and ``WorkflowCache.put_failure``).
+A failure entry holds no object, so it pins the cache type only when one
+is already known.
 
 See ``docs/architecture/cache_type_model.md`` for the full design.
 """
@@ -22,7 +23,6 @@ __all__ = [
     "TypedCache",
     "build_failure_entry",
     "pin_cache_type",
-    "resolve_cache_type",
     "single_object_type",
     "store_failure_entry",
     "store_typed_entry",
@@ -116,30 +116,6 @@ class TypedCache(Protocol):
         ...  # pragma: no cover - protocol declaration
 
 
-def resolve_cache_type(
-    existing: Optional[str],
-    explicit: Optional[str],
-) -> str:
-    """Resolve the cache type to use, preferring an explicit value.
-
-    Args:
-        existing: Type already pinned to the cache, or None if unpinned.
-        explicit: Type supplied by the caller, or None.
-
-    Returns:
-        The resolved type.
-
-    Raises:
-        CacheTypeError: If neither an existing nor explicit type is known.
-    """
-    resolved = explicit or existing
-    if resolved is None:
-        raise CacheTypeError(
-            "Cannot record a failure before the cache type is known"
-        )
-    return resolved
-
-
 def store_typed_entry(
     cache: TypedCache,
     key_data: Dict[str, Any],
@@ -172,6 +148,11 @@ def store_failure_entry(
 ) -> str:
     """Store a failure: version 2 metadata and no object.
 
+    A failure entry holds no object, so it carries no object type of its
+    own. The cache type is pinned only when it is already known, either
+    from the cache or from ``cache_type``; a failure recorded before the
+    cache's first successful write leaves the cache unpinned.
+
     Args:
         cache: Cache receiving the failure entry.
         key_data: Dictionary of matrix variable values (cache key).
@@ -180,11 +161,9 @@ def store_failure_entry(
 
     Returns:
         The hash key used for storage.
-
-    Raises:
-        CacheTypeError: If the cache type is unknown.
     """
-    resolved = resolve_cache_type(cache.get_cache_type(), cache_type)
-    cache.set_cache_type(resolved)
+    resolved = cache_type or cache.get_cache_type()
+    if resolved is not None:
+        cache.set_cache_type(resolved)
     entry = build_failure_entry(metadata)
     return cache.put(key_data, entry)

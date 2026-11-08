@@ -42,7 +42,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         if self._skip_cached_output(state, step_name, resolved_inputs):
             return False
 
-        skip_reason = self._apply_aggregation(
+        skip_reason = self._attach_input_entries(
             state, step, resolved_inputs, step_name
         )
         if skip_reason:
@@ -90,7 +90,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
     ) -> bool:
         """Skip a run-mode cache-reading step that already has its entry.
 
-        The check runs before the aggregation scan, so a resumed sweep
+        The check runs before the entry scan, so a resumed sweep
         does no work at all for entries that already exist: it costs one
         indexed lookup instead of scanning the step's input caches.
         """
@@ -113,14 +113,14 @@ class StepRunnerMixin(WorkflowExecutorBase):
         }
         return True
 
-    def _apply_aggregation(
+    def _attach_input_entries(
         self,
         state: _JobState,
         step: Dict[str, Any],
         resolved_inputs: Dict[str, Any],
         step_name: str = "unnamed",
     ) -> Optional[str]:
-        """Scan aggregation inputs and attach the matched entries.
+        """Scan the input caches and attach the matched entries.
 
         A MAP step must match exactly one entry, so its arity is checked
         before the action runs. Any cache-reading step whose input caches
@@ -136,16 +136,16 @@ class StepRunnerMixin(WorkflowExecutorBase):
                 one entry.
         """
         matrix = state.workflow.get("matrix", {})
-        agg_config = self._get_aggregation_config(step, matrix)
+        agg_config = self._get_entry_scan_config(step, matrix)
         if agg_config is None:
             return None
 
         # The step definition still holds {{placeholders}}; scan the cache
         # paths and filter the action actually receives.
-        agg_config = self._resolved_aggregation_config(
+        agg_config = self._resolved_entry_scan_config(
             agg_config, resolved_inputs
         )
-        entries = self._scan_aggregation_inputs(agg_config, state.job)
+        entries = self._scan_input_entries(agg_config, state.job)
         if not entries and _all_input_caches_exist(agg_config.input_caches):
             return "no-matching-input-entry"
         error = self._map_arity_error(step_name, step, entries)

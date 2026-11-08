@@ -123,7 +123,7 @@ def test_run_skips_cached_entry_before_scanning_inputs(
         cache.put({"dataset": "asia"}, CacheEntry(metadata={}))
     _write_cached_output(output_path, {"dataset": "asia"})
 
-    spy = mocker.spy(WorkflowExecutor, "_scan_aggregation_inputs")
+    spy = mocker.spy(WorkflowExecutor, "_scan_input_entries")
     workflow = {
         "matrix": {"dataset": ["asia"]},
         "steps": [
@@ -159,7 +159,7 @@ def test_run_executes_step_without_cached_entry(
     with WorkflowCache(str(input_path)) as cache:
         cache.put({"dataset": "asia"}, CacheEntry(metadata={}))
 
-    spy = mocker.spy(WorkflowExecutor, "_scan_aggregation_inputs")
+    spy = mocker.spy(WorkflowExecutor, "_scan_input_entries")
     workflow = {
         "matrix": {"dataset": ["asia"]},
         "steps": [

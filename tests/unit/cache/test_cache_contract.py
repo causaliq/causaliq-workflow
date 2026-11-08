@@ -179,11 +179,28 @@ def test_put_typed_rejects_conflicting_type() -> None:
             cache.put_typed({"algo": "ges"}, dag_entry)
 
 
-# Test put_failure requires a known cache type.
-def test_put_failure_requires_known_type() -> None:
+# Test put_failure leaves an unpinned cache unpinned.
+def test_put_failure_leaves_unpinned_cache_unpinned() -> None:
+    """A failure recorded first pins nothing: it holds no typed object."""
     with WorkflowCache(":memory:") as cache:
-        with pytest.raises(CacheTypeError, match="before the cache"):
-            cache.put_failure({"algo": "pc"}, _failure_metadata())
+        cache.put_failure({"algo": "pc"}, _failure_metadata())
+        assert cache.get_cache_type() is None
+        result = cache.get({"algo": "pc"})
+        assert result is not None
+        assert result.objects == {}
+
+
+# Test a typed write after a failure pins the type.
+def test_typed_write_after_failure_pins_type() -> None:
+    """The first successful write declares the cache type."""
+    with WorkflowCache(":memory:") as cache:
+        cache.put_failure({"algo": "pc"}, _failure_metadata())
+
+        entry = CacheEntry()
+        entry.add_object("dag", "graphml", "<g/>")
+        cache.put_typed({"algo": "ges"}, entry)
+
+        assert cache.get_cache_type() == "dag"
 
 
 # Test put_failure stores metadata only.

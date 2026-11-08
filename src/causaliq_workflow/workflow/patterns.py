@@ -83,7 +83,7 @@ class PatternMixin(WorkflowExecutorBase):
         except Exception:
             return None
 
-    def _is_aggregation_step(
+    def _is_entry_scan_step(
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
@@ -108,28 +108,15 @@ class PatternMixin(WorkflowExecutorBase):
         if not _has_db_input(step_inputs.get("input")):
             return False
 
-        declared = self._aggregation_from_pattern(step)
-        if declared is not None:
-            return declared
-
-        # If matrix is provided with cache input and no explicit
-        # pattern, treat as aggregation (legacy behaviour)
-        return bool(matrix)
-
-    def _aggregation_from_pattern(
-        self, step: Dict[str, Any]
-    ) -> Optional[bool]:
-        """Return the entry-scan decision implied by the action pattern.
-
-        Returns True for a MAP or AGGREGATE pattern and None when no
-        cache-reading pattern is declared (or it cannot be determined).
-        """
         from causaliq_core import ActionPattern
 
         pattern = self._get_step_action_pattern(step)
         if pattern in (ActionPattern.MAP, ActionPattern.AGGREGATE):
             return True
-        return None
+
+        # If matrix is provided with cache input and no explicit
+        # pattern, treat as aggregation (legacy behaviour)
+        return bool(matrix)
 
     def _map_arity_error(
         self,

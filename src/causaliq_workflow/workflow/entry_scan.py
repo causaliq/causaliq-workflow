@@ -1,4 +1,4 @@
-"""Cache-entry scanning configuration for grouping and mapping steps."""
+"""Input cache-entry scanning for grouping and mapping steps."""
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
@@ -33,8 +33,8 @@ class AggregationConfig:
 
 
 @dataclass
-class _AggregationScan:
-    """Mutable accumulator for an aggregation input scan."""
+class _EntryScan:
+    """Mutable accumulator for an input cache-entry scan."""
 
     matching_entries: List[Dict[str, Any]] = field(default_factory=list)
     scanned: int = 0
@@ -92,10 +92,10 @@ class _PopulationEntry(Mapping[str, Any]):
         return view
 
 
-class AggregationMixin(WorkflowExecutorBase):
+class EntryScanMixin(WorkflowExecutorBase):
     """Cache-entry scan methods for WorkflowExecutor."""
 
-    def _get_aggregation_config(
+    def _get_entry_scan_config(
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
@@ -111,9 +111,9 @@ class AggregationMixin(WorkflowExecutorBase):
             matrix: Workflow matrix definition
 
         Returns:
-            AggregationConfig if aggregation mode, None otherwise
+            AggregationConfig if the step reads cache entries, else None
         """
-        if not self._is_aggregation_step(step, matrix):
+        if not self._is_entry_scan_step(step, matrix):
             return None
 
         step_inputs = step.get("with", {})
@@ -133,7 +133,7 @@ class AggregationMixin(WorkflowExecutorBase):
             matrix_vars=matrix_vars,
         )
 
-    def _resolved_aggregation_config(
+    def _resolved_entry_scan_config(
         self,
         agg_config: AggregationConfig,
         resolved_inputs: Dict[str, Any],
@@ -166,7 +166,7 @@ class AggregationMixin(WorkflowExecutorBase):
             matrix_vars=agg_config.matrix_vars,
         )
 
-    def _scan_aggregation_inputs(
+    def _scan_input_entries(
         self,
         config: AggregationConfig,
         matrix_values: Dict[str, Any],
@@ -174,7 +174,7 @@ class AggregationMixin(WorkflowExecutorBase):
     ) -> List[Dict[str, Any]]:
         """Scan input caches and collect entries matching matrix values.
 
-        This is the first phase of aggregation execution. It:
+        This is the first phase of input cache scanning. It:
         1. Opens each input cache
         2. Iterates all entries
         3. Applies the filter expression (if any)
@@ -182,7 +182,7 @@ class AggregationMixin(WorkflowExecutorBase):
         5. Returns entries matching the current matrix combination
 
         Args:
-            config: Aggregation configuration
+            config: Entry-scan configuration
             matrix_values: Current matrix variable values to match
             logger: Optional logging function for statistics
 
@@ -198,7 +198,7 @@ class AggregationMixin(WorkflowExecutorBase):
         Note:
             Entries without all matrix variables in metadata are skipped.
         """
-        scan = _AggregationScan()
+        scan = _EntryScan()
         resolved_filter, extra_names = self._resolve_scan_filter(config)
 
         for cache_path in config.input_caches:
@@ -281,7 +281,7 @@ class AggregationMixin(WorkflowExecutorBase):
 
     def _scan_one_cache(
         self,
-        scan: _AggregationScan,
+        scan: _EntryScan,
         config: AggregationConfig,
         matrix_values: Dict[str, Any],
         cache_path: str,
@@ -310,7 +310,7 @@ class AggregationMixin(WorkflowExecutorBase):
 
     def _scan_open_cache(
         self,
-        scan: _AggregationScan,
+        scan: _EntryScan,
         config: AggregationConfig,
         matrix_values: Dict[str, Any],
         cache_path: str,
@@ -404,7 +404,7 @@ def _filtered_candidates(
     candidates: List[Dict[str, Any]],
     resolved_filter: Optional[str],
     extra_names: Dict[str, Any],
-    scan: _AggregationScan,
+    scan: _EntryScan,
 ) -> List[Dict[str, Any]]:
     """Return the candidates that satisfy the filter expression."""
     if not resolved_filter:
@@ -412,7 +412,7 @@ def _filtered_candidates(
 
     kept: List[Dict[str, Any]] = []
     for entry in candidates:
-        if _aggregation_filter_skip(
+        if _entry_filter_skip(
             resolved_filter, extra_names, entry["flat_meta"]
         ):
             scan.filtered += 1
@@ -422,7 +422,7 @@ def _filtered_candidates(
 
 
 def _append_matched_entry(
-    scan: _AggregationScan,
+    scan: _EntryScan,
     cache: Any,
     cache_path: str,
     entry: Dict[str, Any],
@@ -433,7 +433,7 @@ def _append_matched_entry(
         return
     scan.matched += 1
     scan.matching_entries.append(
-        _aggregated_entry(
+        _scanned_entry(
             entry["matrix_values"],
             full_entry,
             cache_path,
@@ -448,12 +448,12 @@ def _warn(logger: Optional[Callable[[str], None]], message: str) -> None:
         logger(message)
 
 
-def _aggregation_filter_skip(
+def _entry_filter_skip(
     resolved_filter: str,
     extra_names: Dict[str, Any],
     flat_meta: Dict[str, Any],
 ) -> bool:
-    """Return True when the entry is filtered out of the aggregation.
+    """Return True when the entry is filtered out of the input scan.
 
     The caller only invokes this with a resolved filter expression.
     """
@@ -467,13 +467,13 @@ def _aggregation_filter_skip(
         return True
 
 
-def _aggregated_entry(
+def _scanned_entry(
     entry_matrix: Dict[str, Any],
     full_entry: Any,
     cache_path: str,
     entry_info: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Build the aggregation entry dictionary for one matched entry."""
+    """Build the scan record for one matched entry."""
     objects_content = {
         name: obj.content for name, obj in full_entry.objects.items()
     }
@@ -489,16 +489,16 @@ def _aggregated_entry(
 
 def _log_scan_summary(
     config: AggregationConfig,
-    scan: _AggregationScan,
+    scan: _EntryScan,
     logger: Optional[Callable[[str], None]],
 ) -> None:
-    """Log the aggregation scan statistics when a logger is provided."""
+    """Log the entry-scan statistics when a logger is provided."""
     if not logger:
         return
     filter_info = ""
     if config.filter_expr:
         filter_info = f", filtered={scan.filtered}"
     logger(
-        f"Aggregation scan: scanned={scan.scanned}"
+        f"Entry scan: scanned={scan.scanned}"
         f"{filter_info}, matched={scan.matched}"
     )

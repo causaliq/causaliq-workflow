@@ -9,57 +9,57 @@ from causaliq_workflow.workflow import (
     AggregationConfig,
     WorkflowExecutor,
 )
-from causaliq_workflow.workflow.aggregation import _db_cache_paths
+from causaliq_workflow.workflow.entry_scan import _db_cache_paths
 
 # ============================================================================
 # Aggregation mode detection tests
 # ============================================================================
 
 
-# _is_aggregation_step returns False when no matrix and no AGGREGATE pattern.
-def test_is_aggregation_step_no_matrix(executor: WorkflowExecutor) -> None:
+# _is_entry_scan_step returns False when no matrix and no AGGREGATE pattern.
+def test_is_entry_scan_step_no_matrix(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"input": "cache.db"}}
-    assert executor._is_aggregation_step(step, {}) is False
+    assert executor._is_entry_scan_step(step, {}) is False
 
 
-# Test _is_aggregation_step returns False when no .db input.
-def test_is_aggregation_step_no_db_input(executor: WorkflowExecutor) -> None:
+# Test _is_entry_scan_step returns False when no .db input.
+def test_is_entry_scan_step_no_db_input(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"other": "value"}}
     matrix = {"network": ["asia"]}
-    assert executor._is_aggregation_step(step, matrix) is False
+    assert executor._is_entry_scan_step(step, matrix) is False
 
 
-# Test _is_aggregation_step returns True when matrix and .db input present.
-def test_is_aggregation_step_true(executor: WorkflowExecutor) -> None:
+# Test _is_entry_scan_step returns True when matrix and .db input present.
+def test_is_entry_scan_step_true(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"input": "cache.db"}}
     matrix = {"network": ["asia"]}
-    assert executor._is_aggregation_step(step, matrix) is True
+    assert executor._is_entry_scan_step(step, matrix) is True
 
 
-# Test _is_aggregation_step returns False when no with block.
-def test_is_aggregation_step_no_with_block(executor: WorkflowExecutor) -> None:
+# Test _is_entry_scan_step returns False when no with block.
+def test_is_entry_scan_step_no_with_block(executor: WorkflowExecutor) -> None:
     step = {"uses": "action"}
     matrix = {"network": ["asia"]}
-    assert executor._is_aggregation_step(step, matrix) is False
+    assert executor._is_entry_scan_step(step, matrix) is False
 
 
-# Test _get_aggregation_config returns None for non-aggregation step.
-def test_get_aggregation_config_not_aggregation(
+# Test _get_entry_scan_config returns None for non-aggregation step.
+def test_get_entry_scan_config_not_aggregation(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"other": "value"}}
     matrix = {"network": ["asia"]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
     assert config is None
 
 
-# Test _get_aggregation_config with single .db input cache.
-def test_get_aggregation_config_single_db_input(
+# Test _get_entry_scan_config with single .db input cache.
+def test_get_entry_scan_config_single_db_input(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"input": "cache.db"}}
     matrix = {"network": ["asia", "alarm"], "sample_size": [100, 500]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
 
     assert config is not None
     assert isinstance(config, AggregationConfig)
@@ -68,8 +68,8 @@ def test_get_aggregation_config_single_db_input(
     assert set(config.matrix_vars) == {"network", "sample_size"}
 
 
-# Test _get_aggregation_config with list of .db input caches.
-def test_get_aggregation_config_multiple_db_inputs(
+# Test _get_entry_scan_config with list of .db input caches.
+def test_get_entry_scan_config_multiple_db_inputs(
     executor: WorkflowExecutor,
 ) -> None:
     step = {
@@ -77,14 +77,14 @@ def test_get_aggregation_config_multiple_db_inputs(
         "with": {"input": ["cache1.db", "cache2.db"]},
     }
     matrix = {"network": ["asia"]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
 
     assert config is not None
     assert config.input_caches == ["cache1.db", "cache2.db"]
 
 
-# Test _get_aggregation_config with filter expression.
-def test_get_aggregation_config_with_filter(
+# Test _get_entry_scan_config with filter expression.
+def test_get_entry_scan_config_with_filter(
     executor: WorkflowExecutor,
 ) -> None:
     step = {
@@ -95,62 +95,62 @@ def test_get_aggregation_config_with_filter(
         },
     }
     matrix = {"network": ["asia"]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
 
     assert config is not None
     assert config.filter_expr == "action.status == 'completed'"
 
 
-# Test _get_aggregation_config returns None for non-.db input.
-def test_get_aggregation_config_non_db_input(
+# Test _get_entry_scan_config returns None for non-.db input.
+def test_get_entry_scan_config_non_db_input(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"input": 123}}
     matrix = {"network": ["asia"]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
 
     # Non-.db input should result in no aggregation config
     assert config is None
 
 
-# Test _is_aggregation_step returns True when input contains .db file.
-def test_is_aggregation_step_with_input_db(executor: WorkflowExecutor) -> None:
+# Test _is_entry_scan_step returns True when input contains .db file.
+def test_is_entry_scan_step_with_input_db(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"input": "results.db"}}
     matrix = {"network": ["asia"]}
-    assert executor._is_aggregation_step(step, matrix) is True
+    assert executor._is_entry_scan_step(step, matrix) is True
 
 
-# Test _is_aggregation_step with input list containing .db file.
-def test_is_aggregation_step_with_input_db_list(
+# Test _is_entry_scan_step with input list containing .db file.
+def test_is_entry_scan_step_with_input_db_list(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"input": ["data.json", "cache.db"]}}
     matrix = {"network": ["asia"]}
-    assert executor._is_aggregation_step(step, matrix) is True
+    assert executor._is_entry_scan_step(step, matrix) is True
 
 
-# Test _is_aggregation_step returns False when input has no .db files.
-def test_is_aggregation_step_input_no_db(executor: WorkflowExecutor) -> None:
+# Test _is_entry_scan_step returns False when input has no .db files.
+def test_is_entry_scan_step_input_no_db(executor: WorkflowExecutor) -> None:
     step = {"uses": "action", "with": {"input": "data.graphml"}}
     matrix = {"network": ["asia"]}
-    assert executor._is_aggregation_step(step, matrix) is False
+    assert executor._is_entry_scan_step(step, matrix) is False
 
 
-# Test _get_aggregation_config with implicit aggregation from input .db.
-def test_get_aggregation_config_implicit_from_input(
+# Test _get_entry_scan_config with implicit aggregation from input .db.
+def test_get_entry_scan_config_implicit_from_input(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"input": "results.db"}}
     matrix = {"network": ["asia"], "seed": [1, 2]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
 
     assert config is not None
     assert config.input_caches == ["results.db"]
     assert set(config.matrix_vars) == {"network", "seed"}
 
 
-# Test _get_aggregation_config with input list filters to .db only.
-def test_get_aggregation_config_input_list_filters_db(
+# Test _get_entry_scan_config with input list filters to .db only.
+def test_get_entry_scan_config_input_list_filters_db(
     executor: WorkflowExecutor,
 ) -> None:
     step = {
@@ -158,7 +158,7 @@ def test_get_aggregation_config_input_list_filters_db(
         "with": {"input": ["data.graphml", "cache.db", "other.json"]},
     }
     matrix = {"network": ["asia"]}
-    config = executor._get_aggregation_config(step, matrix)
+    config = executor._get_entry_scan_config(step, matrix)
 
     assert config is not None
     # Only .db files should be in input_caches
@@ -193,14 +193,14 @@ def test_resolved_config_substitutes_templated_values(
             "filter": "sample_size == '{{sample_size}}'",
         },
     }
-    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    config = executor._get_entry_scan_config(step, {"network": ["asia"]})
     assert config is not None
     resolved = {
         "input": "results/caches/pdgs.db",
         "filter": "sample_size == '10K'",
     }
 
-    scan_config = executor._resolved_aggregation_config(config, resolved)
+    scan_config = executor._resolved_entry_scan_config(config, resolved)
 
     assert scan_config.input_caches == ["results/caches/pdgs.db"]
     assert scan_config.filter_expr == "sample_size == '10K'"
@@ -212,10 +212,10 @@ def test_resolved_config_keeps_untemplated_values(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"input": "cache.db"}}
-    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    config = executor._get_entry_scan_config(step, {"network": ["asia"]})
     assert config is not None
 
-    scan_config = executor._resolved_aggregation_config(
+    scan_config = executor._resolved_entry_scan_config(
         config, {"input": "cache.db"}
     )
 
@@ -227,10 +227,10 @@ def test_resolved_config_filters_non_db_paths(
     executor: WorkflowExecutor,
 ) -> None:
     step = {"uses": "action", "with": {"input": "{{cache_dir}}/pdgs.db"}}
-    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    config = executor._get_entry_scan_config(step, {"network": ["asia"]})
     assert config is not None
 
-    scan_config = executor._resolved_aggregation_config(
+    scan_config = executor._resolved_entry_scan_config(
         config, {"input": ["graph.graphml", "pdgs.db"]}
     )
 
@@ -258,12 +258,12 @@ def test_aggregation_config_with_values() -> None:
 
 
 # ============================================================================
-# Aggregation scan phase tests
+# Entry scan phase tests
 # ============================================================================
 
 
-# Test _scan_aggregation_inputs with in-memory cache.
-def test_scan_aggregation_inputs_basic(
+# Test _scan_input_entries with in-memory cache.
+def test_scan_input_entries_basic(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -293,7 +293,7 @@ def test_scan_aggregation_inputs_basic(
     )
 
     # Scan for asia/100 entries
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia", "sample_size": 100},
     )
@@ -305,8 +305,8 @@ def test_scan_aggregation_inputs_basic(
     }
 
 
-# Test _scan_aggregation_inputs with filter expression.
-def test_scan_aggregation_inputs_with_filter(
+# Test _scan_input_entries with filter expression.
+def test_scan_input_entries_with_filter(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -331,7 +331,7 @@ def test_scan_aggregation_inputs_with_filter(
     )
 
     # Scan for asia - should match filter
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
     )
@@ -339,15 +339,15 @@ def test_scan_aggregation_inputs_with_filter(
     assert results[0]["matrix_values"]["network"] == "asia"
 
     # Scan for alarm - should be filtered out
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "alarm"},
     )
     assert len(results) == 0
 
 
-# Test _scan_aggregation_inputs with random() filter.
-def test_scan_aggregation_inputs_with_random_filter(
+# Test _scan_input_entries with random() filter.
+def test_scan_input_entries_with_random_filter(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -371,7 +371,7 @@ def test_scan_aggregation_inputs_with_random_filter(
         matrix_vars=["network"],
     )
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
     )
@@ -405,7 +405,7 @@ def test_scan_aggregation_random_skips_missing_cache(
         matrix_vars=["network"],
     )
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
     )
@@ -442,15 +442,15 @@ def test_scan_aggregation_random_handles_bad_cache(
         matrix_vars=["network"],
     )
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
     )
     assert len(results) == 3
 
 
-# Test _scan_aggregation_inputs logs statistics.
-def test_scan_aggregation_inputs_logging(
+# Test _scan_input_entries logs statistics.
+def test_scan_input_entries_logging(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -467,7 +467,7 @@ def test_scan_aggregation_inputs_logging(
     )
 
     log_messages: list = []
-    executor._scan_aggregation_inputs(
+    executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,
@@ -479,7 +479,7 @@ def test_scan_aggregation_inputs_logging(
 
 
 # Test scanning an existing but empty cache returns no matches.
-def test_scan_aggregation_inputs_empty_cache(
+def test_scan_input_entries_empty_cache(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -495,7 +495,7 @@ def test_scan_aggregation_inputs_empty_cache(
     )
 
     log_messages: list = []
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,
@@ -523,19 +523,19 @@ def test_scan_index_memoised_and_invalidated(
         matrix_vars=["network"],
     )
 
-    first = executor._scan_aggregation_inputs(config, {"network": "asia"})
-    executor._scan_aggregation_inputs(config, {"network": "asia"})
+    first = executor._scan_input_entries(config, {"network": "asia"})
+    executor._scan_input_entries(config, {"network": "asia"})
 
     assert len(first) == 1
     assert spy.call_count == 1
 
     executor._invalidate_scan_index(WorkflowCache(str(cache_path)))
-    executor._scan_aggregation_inputs(config, {"network": "asia"})
+    executor._scan_input_entries(config, {"network": "asia"})
     assert spy.call_count == 2
 
 
-# Test _scan_aggregation_inputs with missing cache.
-def test_scan_aggregation_inputs_missing_cache(
+# Test _scan_input_entries with missing cache.
+def test_scan_input_entries_missing_cache(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -548,7 +548,7 @@ def test_scan_aggregation_inputs_missing_cache(
     )
 
     log_messages: list = []
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,
@@ -560,8 +560,8 @@ def test_scan_aggregation_inputs_missing_cache(
     assert "Warning" in log_messages[0]
 
 
-# Test _scan_aggregation_inputs wildcards entries missing a matrix var.
-def test_scan_aggregation_inputs_wildcards_incomplete_entries(
+# Test _scan_input_entries wildcards entries missing a matrix var.
+def test_scan_input_entries_wildcards_incomplete_entries(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -584,7 +584,7 @@ def test_scan_aggregation_inputs_wildcards_incomplete_entries(
         matrix_vars=["network", "sample_size"],
     )
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia", "sample_size": 100},
     )
@@ -595,7 +595,7 @@ def test_scan_aggregation_inputs_wildcards_incomplete_entries(
 
 
 # Test missing matrix var in entry treated as wildcard.
-def test_scan_aggregation_inputs_missing_var_wildcard(
+def test_scan_input_entries_missing_var_wildcard(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -618,7 +618,7 @@ def test_scan_aggregation_inputs_missing_var_wildcard(
         matrix_vars=["network", "fuse_seed"],
     )
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia", "fuse_seed": 0},
     )
@@ -628,8 +628,8 @@ def test_scan_aggregation_inputs_missing_var_wildcard(
     assert len(results) == 2
 
 
-# Test _scan_aggregation_inputs handles cache.get returning None.
-def test_scan_aggregation_inputs_get_returns_none(
+# Test _scan_input_entries handles cache.get returning None.
+def test_scan_input_entries_get_returns_none(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
     mocker: "pytest_mock.MockerFixture",  # type: ignore[name-defined]
@@ -649,7 +649,7 @@ def test_scan_aggregation_inputs_get_returns_none(
     # Mock cache.get to return None
     mocker.patch.object(WorkflowCache, "get", return_value=None)
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
     )
@@ -658,8 +658,8 @@ def test_scan_aggregation_inputs_get_returns_none(
     assert results == []
 
 
-# Test _scan_aggregation_inputs handles filter evaluation errors.
-def test_scan_aggregation_inputs_filter_error(
+# Test _scan_input_entries handles filter evaluation errors.
+def test_scan_input_entries_filter_error(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -678,7 +678,7 @@ def test_scan_aggregation_inputs_filter_error(
     )
 
     log_messages: list = []
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,
@@ -689,8 +689,8 @@ def test_scan_aggregation_inputs_filter_error(
     assert "filtered=1" in log_messages[0]
 
 
-# Test _scan_aggregation_inputs handles cache read exception.
-def test_scan_aggregation_inputs_cache_exception(
+# Test _scan_input_entries handles cache read exception.
+def test_scan_input_entries_cache_exception(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -704,7 +704,7 @@ def test_scan_aggregation_inputs_cache_exception(
     )
 
     log_messages: list = []
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,
@@ -717,8 +717,8 @@ def test_scan_aggregation_inputs_cache_exception(
     assert "Failed to read cache" in log_messages[0]
 
 
-# Test _scan_aggregation_inputs logs filter statistics.
-def test_scan_aggregation_inputs_filter_logging(
+# Test _scan_input_entries logs filter statistics.
+def test_scan_input_entries_filter_logging(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -743,7 +743,7 @@ def test_scan_aggregation_inputs_filter_logging(
     )
 
     log_messages: list = []
-    executor._scan_aggregation_inputs(
+    executor._scan_input_entries(
         config,
         {"network": "asia"},
         logger=log_messages.append,
@@ -913,8 +913,8 @@ def _mapped_cache(tmp_path):
     return cache_path
 
 
-# Test _is_aggregation_step True for MAP pattern with cache input.
-def test_is_aggregation_step_map_pattern_with_cache(
+# Test _is_entry_scan_step True for MAP pattern with cache input.
+def test_is_entry_scan_step_map_pattern_with_cache(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -930,7 +930,7 @@ def test_is_aggregation_step_map_pattern_with_cache(
     )
 
     # Empty matrix - the MAP pattern alone makes the step read entries
-    assert executor._is_aggregation_step(step, {}) is True
+    assert executor._is_entry_scan_step(step, {}) is True
 
 
 # Test _map_arity_error accepts exactly one entry.
@@ -1222,8 +1222,8 @@ def test_matrix_values_match_missing_key_wildcards() -> None:
 # ============================================================================
 
 
-# Test _is_aggregation_step True for AGGREGATE pattern with cache input.
-def test_is_aggregation_step_aggregate_pattern_with_cache(
+# Test _is_entry_scan_step True for AGGREGATE pattern with cache input.
+def test_is_entry_scan_step_aggregate_pattern_with_cache(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1243,11 +1243,11 @@ def test_is_aggregation_step_aggregate_pattern_with_cache(
         lambda p, a: ActionPattern.AGGREGATE,
     )
     # Empty matrix - should still return True due to AGGREGATE pattern
-    assert executor._is_aggregation_step(step, {}) is True
+    assert executor._is_entry_scan_step(step, {}) is True
 
 
-# Test _is_aggregation_step returns False for AGGREGATE without cache input.
-def test_is_aggregation_step_aggregate_pattern_no_cache(
+# Test _is_entry_scan_step returns False for AGGREGATE without cache input.
+def test_is_entry_scan_step_aggregate_pattern_no_cache(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1266,11 +1266,11 @@ def test_is_aggregation_step_aggregate_pattern_no_cache(
         lambda p, a: ActionPattern.AGGREGATE,
     )
     # Non-cache input - returns False
-    assert executor._is_aggregation_step(step, {}) is False
+    assert executor._is_entry_scan_step(step, {}) is False
 
 
-# Test _get_aggregation_config derives matrix_vars from cache.
-def test_get_aggregation_config_derives_matrix_from_cache(
+# Test _get_entry_scan_config derives matrix_vars from cache.
+def test_get_entry_scan_config_derives_matrix_from_cache(
     executor: WorkflowExecutor, tmp_path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from causaliq_core import ActionPattern
@@ -1300,7 +1300,7 @@ def test_get_aggregation_config_derives_matrix_from_cache(
     )
 
     # No explicit matrix - should derive from cache
-    config = executor._get_aggregation_config(step, {})
+    config = executor._get_entry_scan_config(step, {})
 
     assert config is not None
     assert config.input_caches == [str(cache_path)]
@@ -1668,8 +1668,8 @@ def test_derive_workflow_matrix_from_db_input_list(
     assert "network" in matrix
 
 
-# Test _is_aggregation_step handles pattern lookup exception.
-def test_is_aggregation_step_pattern_exception(
+# Test _is_entry_scan_step handles pattern lookup exception.
+def test_is_entry_scan_step_pattern_exception(
     executor: WorkflowExecutor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     step = {
@@ -1685,7 +1685,7 @@ def test_is_aggregation_step_pattern_exception(
     )
 
     # Should handle exception and return False
-    assert executor._is_aggregation_step(step, {}) is False
+    assert executor._is_entry_scan_step(step, {}) is False
 
 
 # ============================================================================
@@ -1738,7 +1738,7 @@ def test_matrix_values_match_rejects_mismatch_with_nulls() -> None:
 
 
 # Test null entry values wildcard against concrete targets.
-def test_scan_aggregation_inputs_null_entry_wildcard(
+def test_scan_input_entries_null_entry_wildcard(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -1774,7 +1774,7 @@ def test_scan_aggregation_inputs_null_entry_wildcard(
     )
 
     # Both entries match: null dimensions wildcard.
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {
             "network": "asia",
@@ -1791,7 +1791,7 @@ def test_scan_aggregation_inputs_null_entry_wildcard(
 
 
 # Test aggregation uses resolved filter with template variables.
-def test_scan_aggregation_inputs_resolved_filter(
+def test_scan_input_entries_resolved_filter(
     executor: WorkflowExecutor,
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
@@ -1820,7 +1820,7 @@ def test_scan_aggregation_inputs_resolved_filter(
         matrix_vars=["network"],
     )
 
-    results = executor._scan_aggregation_inputs(
+    results = executor._scan_input_entries(
         config,
         {"network": "asia"},
     )
@@ -1834,8 +1834,8 @@ def test_scan_aggregation_inputs_resolved_filter(
 # ============================================================================
 
 
-# Test _validate_aggregation_entries resolves filter templates.
-def test_validate_aggregation_entries_resolves_filter_template(
+# Test _validate_entry_scan_entries resolves filter templates.
+def test_validate_entry_scan_entries_resolves_filter_template(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
     from causaliq_workflow.cache import CacheEntry, WorkflowCache
@@ -1889,12 +1889,12 @@ def test_validate_aggregation_entries_resolves_filter_template(
 
     # Template filter is resolved before scanning so the filter
     # evaluates correctly and no errors are returned.
-    errors = executor._validate_aggregation_entries(step, jobs, workflow, {})
+    errors = executor._validate_entry_scan_entries(step, jobs, workflow, {})
     assert errors == []
 
 
-# Test duplicate detection in _validate_aggregation_entries.
-def test_validate_aggregation_entries_detects_duplicates(
+# Test duplicate detection in _validate_entry_scan_entries.
+def test_validate_entry_scan_entries_detects_duplicates(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
     from causaliq_workflow.cache import CacheEntry, WorkflowCache
@@ -1947,7 +1947,7 @@ def test_validate_aggregation_entries_detects_duplicates(
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        errors = executor._validate_aggregation_entries(
+        errors = executor._validate_entry_scan_entries(
             step,
             jobs,
             workflow,
@@ -1962,7 +1962,7 @@ def test_validate_aggregation_entries_detects_duplicates(
 
 
 # Test a templated sweep dimension is not reported as duplicated.
-def test_validate_aggregation_entries_skips_templated_dimension(
+def test_validate_entry_scan_entries_skips_templated_dimension(
     tmp_path: "pytest.TempPathFactory",  # type: ignore[name-defined]
 ) -> None:
     """A dimension that templates a parameter may select identical entries."""
@@ -2014,7 +2014,7 @@ def test_validate_aggregation_entries_skips_templated_dimension(
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        errors = executor._validate_aggregation_entries(
+        errors = executor._validate_entry_scan_entries(
             step,
             jobs,
             workflow,

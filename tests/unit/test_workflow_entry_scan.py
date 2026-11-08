@@ -1,4 +1,4 @@
-"""Tests for aggregation scan ordering and lazy reporting views.
+"""Tests for entry-scan ordering and lazy reporting views.
 
 The scan matches matrix values before it evaluates a filter expression,
 and it builds reporting views only for the entries it keeps. These tests
@@ -16,7 +16,7 @@ from causaliq_workflow.cache.reporting import (
     evaluate_entry_filter,
 )
 from causaliq_workflow.workflow import WorkflowExecutor
-from causaliq_workflow.workflow.aggregation import (
+from causaliq_workflow.workflow.entry_scan import (
     AggregationConfig,
     _fill_views,
     _PopulationEntry,
@@ -77,7 +77,7 @@ def test_scan_filters_only_matrix_matching_entries(
         "causaliq_workflow.cache.reporting.evaluate_entry_filter",
         wraps=evaluate_entry_filter,
     )
-    results = executor._scan_aggregation_inputs(config, {"network": "asia"})
+    results = executor._scan_input_entries(config, {"network": "asia"})
 
     assert len(results) == 1
     assert spy.call_count == 2
@@ -100,7 +100,7 @@ def test_scan_matches_filter_first_reference(
         matrix_vars=["network"],
     )
 
-    results = executor._scan_aggregation_inputs(config, {"network": "alarm"})
+    results = executor._scan_input_entries(config, {"network": "alarm"})
     found = {entry["entry_hash"] for entry in results}
 
     assert found == _reference_hashes(cache_path, config, {"network": "alarm"})
@@ -118,15 +118,13 @@ def test_scan_uses_resolved_input_path(
         [{"network": "asia", "seed": seed} for seed in range(2)],
     )
     step = {"uses": "action", "with": {"input": "{{cache_dir}}/input.db"}}
-    config = executor._get_aggregation_config(step, {"network": ["asia"]})
+    config = executor._get_entry_scan_config(step, {"network": ["asia"]})
     assert config is not None
     resolved = executor._resolve_template_variables(
         step["with"], {"cache_dir": str(tmp_path)}
     )
 
-    entries = executor._scan_aggregation_for(
-        config, resolved, {"network": "asia"}
-    )
+    entries = executor._scan_entries_for(config, resolved, {"network": "asia"})
 
     assert len(entries) == 2
 
@@ -144,10 +142,10 @@ def test_scan_skips_cache_open_without_matrix_match(
         matrix_vars=["network"],
     )
 
-    executor._scan_aggregation_inputs(config, {"network": "asia"})
+    executor._scan_input_entries(config, {"network": "asia"})
     spy = mocker.spy(WorkflowCache, "open")
 
-    results = executor._scan_aggregation_inputs(config, {"network": "sachs"})
+    results = executor._scan_input_entries(config, {"network": "sachs"})
     assert results == []
     assert spy.call_count == 0
 
@@ -172,7 +170,7 @@ def test_scan_decompresses_metadata_for_candidates_only(
     executor._scan_index_for(str(cache_path))
     spy = mocker.spy(WorkflowCache, "decompress_metadata")
 
-    results = executor._scan_aggregation_inputs(config, {"network": "asia"})
+    results = executor._scan_input_entries(config, {"network": "asia"})
     assert len(results) == 3
     assert spy.call_count == 3
 
@@ -198,7 +196,7 @@ def test_random_population_reads_matrix_values(
     executor._scan_index_for(str(cache_path))
     spy = mocker.spy(WorkflowCache, "decompress_metadata")
 
-    results = executor._scan_aggregation_inputs(config, {"network": "asia"})
+    results = executor._scan_input_entries(config, {"network": "asia"})
     selected = {entry["matrix_values"]["seed"] for entry in results}
     assert selected <= {0, 1, 2}
     assert 1 <= len(selected) <= 2
@@ -226,7 +224,7 @@ def test_random_population_falls_back_to_metadata(
     executor._scan_index_for(str(cache_path))
     spy = mocker.spy(WorkflowCache, "decompress_metadata")
 
-    results = executor._scan_aggregation_inputs(config, {"network": "asia"})
+    results = executor._scan_input_entries(config, {"network": "asia"})
     assert len(results) == 2
     assert spy.call_count == 5
 

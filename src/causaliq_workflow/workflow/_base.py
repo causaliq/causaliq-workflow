@@ -1,7 +1,7 @@
 """Shared type surface for the WorkflowExecutor functional mixins.
 
 ``WorkflowExecutor`` is composed from single-responsibility mixins (matrix,
-templates, patterns, filters, aggregation, step runner, step store,
+templates, patterns, filters, entry scan, step runner, step store,
 validation and execution). Each mixin calls methods and attributes provided
 by the others; this base declares that shared surface so every mixin
 type-checks on its own. The declarations are never executed at runtime (the
@@ -26,7 +26,7 @@ from causaliq_workflow.registry import ActionRegistry
 from causaliq_workflow.reporting import StepLogger
 
 if TYPE_CHECKING:  # pragma: no cover
-    from causaliq_workflow.workflow.aggregation import AggregationConfig
+    from causaliq_workflow.workflow.entry_scan import AggregationConfig
     from causaliq_workflow.workflow.frames import WorkflowFrame
 
 _StepLogger = Optional[StepLogger]
@@ -117,7 +117,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Return the action pattern for a step, or None."""
         raise NotImplementedError
 
-    def _is_aggregation_step(
+    def _is_entry_scan_step(
         self, step: Dict[str, Any], matrix: Dict[str, List[Any]]
     ) -> bool:
         """Return True when a step is given matched cache entries."""
@@ -133,25 +133,19 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Return an error when a MAP step did not match exactly one entry."""
         raise NotImplementedError
 
-    def _aggregation_from_pattern(
-        self, step: Dict[str, Any]
-    ) -> Optional[bool]:
-        """Return the entry-scan decision implied by the action pattern."""
-        raise NotImplementedError
-
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
         """Return True when step inputs name any cache (.db) file."""
         raise NotImplementedError
 
-    def _get_aggregation_config(
+    def _get_entry_scan_config(
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
     ) -> Optional["AggregationConfig"]:
-        """Return the aggregation config for a step, or None."""
+        """Return the entry-scan config for a step, or None."""
         raise NotImplementedError
 
-    def _scan_aggregation_inputs(
+    def _scan_input_entries(
         self,
         config: "AggregationConfig",
         matrix_values: Dict[str, Any],
@@ -160,7 +154,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Scan input caches for entries matching matrix values."""
         raise NotImplementedError
 
-    def _resolved_aggregation_config(
+    def _resolved_entry_scan_config(
         self,
         config: "AggregationConfig",
         resolved_inputs: Dict[str, Any],
@@ -260,7 +254,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Validate single-run step entries once, without a matrix."""
         raise NotImplementedError
 
-    def _validate_aggregation_entries(
+    def _validate_entry_scan_entries(
         self,
         step: Dict[str, Any],
         jobs: List[Dict[str, Any]],

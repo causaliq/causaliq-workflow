@@ -33,7 +33,7 @@ class StrictAggregateProvider(CausalIQActionProvider):
 
 
 # Test AGGREGATE pattern validation catches errors.
-def test_validate_aggregation_entries_missing_params(tmp_path) -> None:
+def test_validate_entry_scan_entries_missing_params(tmp_path) -> None:
     """AGGREGATE validation catches missing params per matrix combo."""
     cache_path = tmp_path / "test.db"
     with WorkflowCache(cache_path) as cache:

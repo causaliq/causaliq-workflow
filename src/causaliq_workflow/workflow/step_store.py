@@ -5,7 +5,7 @@ completion log line, so the execution and step-runner mixins stay within
 the module and method limits.
 """
 
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from causaliq_workflow.reporting import format_elapsed
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -14,6 +14,9 @@ from causaliq_workflow.workflow.provenance import (
     build_result_metadata,
     collect_environment,
 )
+
+if TYPE_CHECKING:  # pragma: no cover
+    from causaliq_workflow.cache import WorkflowCache
 
 
 class StepStoreMixin(WorkflowExecutorBase):
@@ -39,11 +42,12 @@ class StepStoreMixin(WorkflowExecutorBase):
         reason), replacing any prior entry for the key so the latest run
         wins and the failure is exported as _meta.json.
         """
-        if state.context.cache is None:
+        cache = state.context.cache
+        if cache is None:
             return
 
         if step_result.get("status") == "error":
-            self._store_failure(state, step_result, provenance)
+            self._store_failure(state, cache, step_result, provenance)
             return
 
         successful = step_result.get(
@@ -57,20 +61,23 @@ class StepStoreMixin(WorkflowExecutorBase):
     def _store_failure(
         self,
         state: _JobState,
+        cache: "WorkflowCache",
         step_result: Dict[str, Any],
         provenance: Dict[str, Any],
     ) -> None:
-        """Record a failed step as provenance only."""
-        from causaliq_workflow.cache import store_failure_result
+        """Record a failed step as provenance only.
 
+        Failure entries hold no object, so the cache type is pinned only
+        when it is already known: a failed first write leaves the cache
+        unpinned for the next successful write to declare the type.
+        """
         metadata = build_result_metadata(provenance, step_result)
-        store_failure_result(
-            cache=state.context.cache,
-            context=state.context,
-            metadata=metadata,
+        cache.put_failure(
+            state.context.matrix_values,
+            metadata,
             matrix_key_order=list(state.context.matrix.keys()),
         )
-        self._invalidate_scan_index(state.context.cache)
+        self._invalidate_scan_index(cache)
 
     def _store_action_result(
         self,

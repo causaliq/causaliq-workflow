@@ -20,10 +20,7 @@ from causaliq_workflow.cache.entry import (
 )
 from causaliq_workflow.cache.export import (
     export_entries,
-    get_extension_for_type,
-    serialise_objects,
     store_action_result,
-    store_failure_result,
 )
 from causaliq_workflow.cache.import_ import import_entries
 from causaliq_workflow.cache.workflow_cache import (
@@ -39,9 +36,6 @@ __all__ = [
     "MatrixSchemaError",
     "WorkflowCache",
     "export_entries",
-    "get_extension_for_type",
     "import_entries",
-    "serialise_objects",
     "store_action_result",
-    "store_failure_result",
 ]

@@ -28,9 +28,6 @@ FORMAT_EXTENSIONS: dict[str, str] = {
     "json": ".json",
 }
 
-# Legacy alias for backward compatibility with import_.py
-TYPE_EXTENSIONS: dict[str, str] = FORMAT_EXTENSIONS
-
 WINDOWS_RESERVED_NAMES: set[str] = {
     "CON",
     "PRN",
@@ -100,20 +97,6 @@ def get_extension_for_format(obj_format: str) -> str:
         File extension including dot (e.g., '.graphml', '.json').
     """
     return FORMAT_EXTENSIONS.get(obj_format, ".dat")
-
-
-def get_extension_for_type(obj_type: str) -> str:
-    """Get file extension for an object type (legacy).
-
-    Deprecated: Use get_extension_for_format() instead.
-
-    Args:
-        obj_type: Object type identifier.
-
-    Returns:
-        File extension including dot.
-    """
-    return FORMAT_EXTENSIONS.get(obj_type, ".dat")
 
 
 def build_entry_path(
@@ -394,12 +377,19 @@ def store_action_result(
     if cache is None:
         return None
 
-    if matrix_key_order is not None and cache.get_matrix_key_order() is None:
-        cache.set_matrix_key_order(matrix_key_order)
+    _pin_matrix_key_order(cache, matrix_key_order)
 
     entry = CacheEntry(metadata=normalise_metadata(metadata))
     _add_entry_objects(entry, objects)
     return cache.put_typed(context.matrix_values, entry)
+
+
+def _pin_matrix_key_order(
+    cache: "WorkflowCache", matrix_key_order: list[str] | None
+) -> None:
+    """Pin the export directory order on the cache's first write."""
+    if matrix_key_order is not None and cache.get_matrix_key_order() is None:
+        cache.set_matrix_key_order(matrix_key_order)
 
 
 def _add_entry_objects(
@@ -415,68 +405,3 @@ def _add_entry_objects(
             obj.get("content"),
             obj.get("action", "unknown"),
         )
-
-
-def store_failure_result(
-    cache: "WorkflowCache | None",
-    context: Any,
-    metadata: dict[str, Any],
-    matrix_key_order: list[str] | None = None,
-) -> str | None:
-    """Record a failed step as provenance only.
-
-    A failed run writes provenance (status and failure reason) and no
-    object: an object would be indistinguishable from the result of a
-    successful run and could be scored. The entry replaces any prior entry
-    for the key, so the latest run wins.
-
-    Args:
-        cache: WorkflowCache instance to store into, or None.
-        context: WorkflowContext with matrix_values for the cache key.
-        metadata: Version 2 metadata envelope recording the failure.
-        matrix_key_order: Optional ordered list of matrix variable names
-            for export directory structure.
-
-    Returns:
-        Hash key used for storage, or None if no cache is available.
-    """
-    if cache is None:
-        return None
-
-    if matrix_key_order is not None and cache.get_matrix_key_order() is None:
-        cache.set_matrix_key_order(matrix_key_order)
-
-    return cache.put(
-        context.matrix_values,
-        CacheEntry(metadata=normalise_metadata(metadata)),
-    )
-
-
-def serialise_objects(
-    data: Any,
-    objects_spec: list[dict[str, Any]],
-) -> dict[str, str]:
-    """Extract content from objects array for export (legacy).
-
-    Args:
-        data: Unused.
-        objects_spec: List of object specifications.
-
-    Returns:
-        Dictionary mapping filename to content string.
-    """
-    _ = data
-    result: dict[str, str] = {}
-
-    for obj in objects_spec:
-        obj_type = obj.get("type")
-        name = obj.get("name", obj_type)
-        content = obj.get("content")
-
-        if not obj_type or not content:
-            continue
-
-        ext = get_extension_for_type(obj_type)
-        result[f"{name}{ext}"] = content
-
-    return result

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from causaliq_workflow.schema import _duplicate_step_name_errors
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
-from causaliq_workflow.workflow.aggregation import AggregationConfig
+from causaliq_workflow.workflow.entry_scan import AggregationConfig
 from causaliq_workflow.workflow.frames import (
     WorkflowFrame,
     is_workflow_call_step,
@@ -96,8 +96,8 @@ class EntryValidationMixin(WorkflowExecutorBase):
         if not step_inputs.get("action"):
             return [f"Step '{step_name}': Missing 'action' parameter"]
 
-        if self._is_aggregation_step(step, matrix):
-            return self._validate_aggregation_entries(
+        if self._is_entry_scan_step(step, matrix):
+            return self._validate_entry_scan_entries(
                 step, jobs, workflow, cli_params
             )
         if _runs_once(step, matrix):
@@ -216,7 +216,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
         return errors
 
-    def _validate_aggregation_entries(
+    def _validate_entry_scan_entries(
         self,
         step: Dict[str, Any],
         jobs: List[Dict[str, Any]],
@@ -243,11 +243,11 @@ class EntryValidationMixin(WorkflowExecutorBase):
         errors: List[str] = []
         step_name = step.get("name", "unnamed")
         matrix = workflow.get("matrix", {})
-        agg_config = self._get_aggregation_config(step, matrix)
+        agg_config = self._get_entry_scan_config(step, matrix)
 
         # Track entry fingerprints per output matrix combo to
         # detect silent duplication (different combos producing
-        # identical aggregation input sets).
+        # identical input entry sets).
         fingerprints: Dict[frozenset, Dict[str, Any]] = {}
         templated = _token_names(step.get("with", {}))
 
@@ -256,7 +256,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
             resolved_inputs = self._resolve_template_variables(
                 step.get("with", {}), variables
             )
-            self._apply_aggregation_scan(
+            self._apply_entry_scan(
                 agg_config,
                 resolved_inputs,
                 job,
@@ -291,7 +291,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
             errors.append(error)
         return errors
 
-    def _apply_aggregation_scan(
+    def _apply_entry_scan(
         self,
         agg_config: Optional[AggregationConfig],
         resolved_inputs: Dict[str, Any],
@@ -308,30 +308,30 @@ class EntryValidationMixin(WorkflowExecutorBase):
         """
         if agg_config is None:  # pragma: no cover - always set here
             return
-        matching_entries = self._scan_aggregation_for(
+        matching_entries = self._scan_entries_for(
             agg_config, resolved_inputs, job
         )
         resolved_inputs["_aggregation_entries"] = matching_entries
         resolved_inputs.pop("aggregate", None)
-        _check_aggregation_fingerprint(
+        _check_entry_fingerprint(
             step_name, job, matching_entries, fingerprints, templated
         )
 
-    def _scan_aggregation_for(
+    def _scan_entries_for(
         self,
         agg_config: AggregationConfig,
         resolved_inputs: Dict[str, Any],
         job: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
-        """Scan aggregation inputs using the resolved step inputs.
+        """Scan the step's input caches using the resolved step inputs.
 
         The matched entries feed validation and the fingerprint check, so
         they must be the entries the step will receive at execution.
         """
-        scan_config = self._resolved_aggregation_config(
+        scan_config = self._resolved_entry_scan_config(
             agg_config, resolved_inputs
         )
-        return self._scan_aggregation_inputs(scan_config, job)
+        return self._scan_input_entries(scan_config, job)
 
     def _step_parameter_error(
         self,
@@ -351,7 +351,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         return None
 
 
-def _check_aggregation_fingerprint(
+def _check_entry_fingerprint(
     step_name: str,
     job: Dict[str, Any],
     matching_entries: List[Dict[str, Any]],

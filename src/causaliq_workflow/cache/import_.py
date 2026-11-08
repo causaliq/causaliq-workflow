@@ -15,13 +15,13 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 from causaliq_core.metadata import normalise_metadata
 
 from causaliq_workflow.cache.entry import CacheEntry, CacheObject
-from causaliq_workflow.cache.export import TYPE_EXTENSIONS
+from causaliq_workflow.cache.export import FORMAT_EXTENSIONS
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_workflow.cache.workflow_cache import WorkflowCache
 
 # Reverse mapping: extension to type
-EXTENSION_TYPES: dict[str, str] = {v: k for k, v in TYPE_EXTENSIONS.items()}
+EXTENSION_TYPES: dict[str, str] = {v: k for k, v in FORMAT_EXTENSIONS.items()}
 
 
 def get_type_for_extension(ext: str) -> str:
