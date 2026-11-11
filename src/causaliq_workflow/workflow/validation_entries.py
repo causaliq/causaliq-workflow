@@ -14,6 +14,7 @@ from causaliq_workflow.workflow.matrix import _runs_once
 from causaliq_workflow.workflow.parameters import (
     _parameter_errors,
     _token_names,
+    _workflow_variables,
 )
 
 
@@ -60,7 +61,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
         # entries to validate come from the effective matrix so a map step
         # that inherits its dimensions is validated against its own jobs.
         matrix = workflow.get("matrix", {})
-        jobs = self.expand_matrix(self._derive_workflow_matrix(workflow))
+        jobs = self.expand_matrix(
+            self._derive_workflow_matrix(workflow, cli_params)
+        )
         errors: List[str] = _duplicate_step_name_errors(workflow)
         errors.extend(_parameter_errors(workflow, cli_params))
         errors.extend(self._missing_variable_errors(workflow, cli_params))
@@ -96,7 +99,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
         if not step_inputs.get("action"):
             return [f"Step '{step_name}': Missing 'action' parameter"]
 
-        if self._is_entry_scan_step(step, matrix):
+        if self._is_entry_scan_step(
+            step, matrix, _workflow_variables(workflow, cli_params)
+        ):
             return self._validate_entry_scan_entries(
                 step, jobs, workflow, cli_params
             )
@@ -243,7 +248,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
         errors: List[str] = []
         step_name = step.get("name", "unnamed")
         matrix = workflow.get("matrix", {})
-        agg_config = self._get_entry_scan_config(step, matrix)
+        agg_config = self._get_entry_scan_config(
+            step, matrix, _workflow_variables(workflow, cli_params)
+        )
 
         # Track entry fingerprints per output matrix combo to
         # detect silent duplication (different combos producing

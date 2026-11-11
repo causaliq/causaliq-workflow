@@ -90,6 +90,52 @@ def _declared_parameters(workflow: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _supplied_parameter_values(parameters: Any) -> Dict[str, Any]:
+    """Return supplied parameter values from a mapping or a name set.
+
+    Some callers hold resolved values (the CLI, a workflow call) while
+    others only know the names (structural validation of a called
+    workflow). Treating a name-only collection as an empty value map
+    keeps the same helper usable by both.
+    """
+    return dict(parameters) if isinstance(parameters, dict) else {}
+
+
+def _supplied_parameter_names(parameters: Any) -> Set[str]:
+    """Return the names supplied by a caller or the CLI."""
+    if isinstance(parameters, dict):
+        return set(parameters)
+    return set(parameters or ())
+
+
+def _workflow_variables(
+    workflow: Dict[str, Any], parameters: Any = None
+) -> Dict[str, Any]:
+    """Return template values available before a job is expanded.
+
+    Declared parameter defaults are overridden by supplied parameter
+    values. Null-valued parameters are omitted: they have no value, so a
+    path that uses one keeps its ``{{name}}`` token rather than gaining
+    the text ``None``.
+
+    Matrix variables are intentionally absent. A MAP step's matrix is
+    derived from its input cache, so a value that depends on a matrix
+    dimension stays unresolved until a job supplies it.
+
+    Args:
+        workflow: Parsed workflow dictionary.
+        parameters: Supplied parameter names or values.
+
+    Returns:
+        Variable name to value mapping.
+    """
+    variables = _declared_parameters(workflow)
+    variables.update(_supplied_parameter_values(parameters))
+    return {
+        name: value for name, value in variables.items() if value is not None
+    }
+
+
 def _used_parameter_names(workflow: Dict[str, Any]) -> Set[str]:
     """Return the names a step uses as ``{{name}}`` tokens.
 

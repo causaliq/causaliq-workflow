@@ -1,14 +1,12 @@
-# Code tidy-up
+# ensure MAP actions work when `input:` value contains placeholder
 
-Please draw up a (staged?) plan for the following "Hat-2" refactor / tidy ups
-if they remain relevant and sensible to do:
+The workflow engine is not generating the implict matrix for MAP actions
+when the input parameter value contains a placeholder e.g.
 
-- `has_action_metadata` / `serialise_objects` retirement
-- `store_failure_result` → `put_failure`
-- splitting the legacy `test_workflow.py` /test_workflow_shell_and_edge_cases.py` suites
-- fold `_aggregation_from_pattern` into `_is_aggregation_step`
-- rename the "aggregation" vocabulary in `aggregation.py`/`_apply_aggregation`,
+`input: {{cache_dir}}/04_weighting/weighting-dags.db`
 
+The engine must resolve this into a literal path before determining
+the implicit matrix.
 
 ## Further work which is out of scope for this task
 

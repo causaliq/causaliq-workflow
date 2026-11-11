@@ -56,7 +56,9 @@ class WorkflowExecutorBase:  # pragma: no cover
         raise NotImplementedError
 
     def _derive_workflow_matrix(
-        self, workflow: Dict[str, Any]
+        self,
+        workflow: Dict[str, Any],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, List[Any]]:
         """Return the effective matrix for a workflow."""
         raise NotImplementedError
@@ -91,6 +93,12 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Resolve template variables in a workflow object."""
         raise NotImplementedError
 
+    def _resolved_step_inputs(
+        self, step: Dict[str, Any], variables: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Return a step's inputs with known templates resolved."""
+        raise NotImplementedError
+
     def _resolve_step_name(
         self,
         step: Dict[str, Any],
@@ -118,7 +126,10 @@ class WorkflowExecutorBase:  # pragma: no cover
         raise NotImplementedError
 
     def _is_entry_scan_step(
-        self, step: Dict[str, Any], matrix: Dict[str, List[Any]]
+        self,
+        step: Dict[str, Any],
+        matrix: Dict[str, List[Any]],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """Return True when a step is given matched cache entries."""
         raise NotImplementedError
@@ -141,6 +152,7 @@ class WorkflowExecutorBase:  # pragma: no cover
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> Optional["AggregationConfig"]:
         """Return the entry-scan config for a step, or None."""
         raise NotImplementedError

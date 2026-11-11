@@ -136,7 +136,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
                 one entry.
         """
         matrix = state.workflow.get("matrix", {})
-        agg_config = self._get_entry_scan_config(step, matrix)
+        agg_config = self._get_entry_scan_config(step, matrix, state.variables)
         if agg_config is None:
             return None
 

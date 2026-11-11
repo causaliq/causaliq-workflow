@@ -7,7 +7,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.frames import is_workflow_call_step
-from causaliq_workflow.workflow.parameters import _call_parameters_vary
+from causaliq_workflow.workflow.parameters import (
+    _call_parameters_vary,
+    _workflow_variables,
+)
 
 
 def _normalise_matrix_value(value: Any) -> Any:
@@ -436,6 +439,7 @@ class MatrixMixin(WorkflowExecutorBase):
     def _derive_workflow_matrix(
         self,
         workflow: Dict[str, Any],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, List[Any]]:
         """Get effective matrix for workflow, deriving from cache if needed.
 
@@ -446,6 +450,10 @@ class MatrixMixin(WorkflowExecutorBase):
 
         Args:
             workflow: Parsed workflow dictionary
+            variables: Values supplied by a caller or the CLI. Declared
+                parameter defaults are applied here, so a path such as
+                ``{{cache_dir}}/dags.db`` is resolved before the cache is
+                inspected.
 
         Returns:
             Effective matrix dictionary (may be empty for non-matrix workflows)
@@ -455,28 +463,37 @@ class MatrixMixin(WorkflowExecutorBase):
         if explicit_matrix:
             return explicit_matrix
 
+        variables = _workflow_variables(workflow, variables)
+
         # Check for MAP steps that inherit a matrix from their input cache
         for step in workflow.get("steps", []):
-            derived_matrix = self._map_step_matrix(step)
+            derived_matrix = self._map_step_matrix(step, variables)
             if derived_matrix:
                 return derived_matrix
 
         return {}
 
-    def _map_step_matrix(self, step: Dict[str, Any]) -> Dict[str, List[Any]]:
+    def _map_step_matrix(
+        self,
+        step: Dict[str, Any],
+        variables: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, List[Any]]:
         """Derive a matrix from a MAP step's input caches.
 
-        Returns an empty dictionary when the step is not a MAP pattern
-        step or has no cache input.
+        The step's ``with`` values are resolved with the workflow's
+        parameter defaults and supplied values first, so an input such as
+        ``{{cache_dir}}/dags.db`` is inspected at its real path. Returns
+        an empty dictionary when the step is not a MAP pattern step, has
+        no cache input, or when its input cache does not exist yet.
         """
         from causaliq_core import ActionPattern
 
-        if not _has_cache_output(step):
+        step_inputs = self._resolved_step_inputs(step, variables)
+        if not _has_cache_output({"with": step_inputs}):
             return {}
         if self._get_step_action_pattern(step) != ActionPattern.MAP:
             return {}
 
-        step_inputs = step.get("with", {})
         cache_paths = _cache_input_paths(step_inputs.get("input"))
         if not cache_paths:
             return {}

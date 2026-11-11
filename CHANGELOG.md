@@ -123,6 +123,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   path holds a template such as `{{cache_dir}}/pdgs.db` now scans the
   resolved path and filter, so the matched entries reach the action
   instead of the step failing with "No cache entries matched"
+- **Templated MAP matrices** - a MAP step whose `input` path holds a
+  template now resolves the workflow's parameter defaults and the values
+  supplied by a caller or `--param` before deriving its matrix from the
+  cache. Without this, a workflow that declared no matrix ran as a single
+  job, matched every entry, and failed with "this action maps one input
+  entry to one output entry but matched N"; the cache's keys now expand
+  into one job per entry, exactly as they do for a literal input path
 - **Duplicate step names** - a repeated step name is now rejected at
   validation; step results are recorded by name, so a duplicate silently
   overwrote the earlier step's result and made the completion summary

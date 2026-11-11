@@ -15,7 +15,9 @@ from causaliq_workflow.workflow.parameters import (
     _parameter_declaration_errors,
     _single_token,
     _substitute_text,
+    _supplied_parameter_names,
     _token_names,
+    _workflow_variables,
 )
 
 
@@ -70,11 +72,14 @@ class TemplateMixin(WorkflowExecutorBase):
                 a parameter declaration is ineffective, or matrix
                 variables are not used in any templating step
         """
-        parameters = set(parameters or ())
+        parameter_names = _supplied_parameter_names(parameters)
+        variables = _workflow_variables(workflow, parameters)
         matrix_vars = set(workflow.get("matrix", {}).keys())
-        derived_vars, deferred_vars = self._aggregate_template_scope(workflow)
+        derived_vars, deferred_vars = self._aggregate_template_scope(
+            workflow, variables
+        )
         available = _collect_available_variables(
-            workflow, matrix_vars, parameters
+            workflow, matrix_vars, parameter_names
         )
         available.update(derived_vars)
         all_vars, has_templating_steps = self._scan_step_variables(workflow)
@@ -106,10 +111,12 @@ class TemplateMixin(WorkflowExecutorBase):
             One error listing every unresolved variable, or an empty
             list.
         """
+        parameter_names = _supplied_parameter_names(parameters)
+        variables = _workflow_variables(workflow, parameters)
         matrix_vars = set(workflow.get("matrix", {}).keys())
-        derived, deferred = self._aggregate_template_scope(workflow)
+        derived, deferred = self._aggregate_template_scope(workflow, variables)
         available = _collect_available_variables(
-            workflow, matrix_vars, set(parameters or ())
+            workflow, matrix_vars, parameter_names
         )
         available.update(derived)
         all_vars, _ = self._scan_step_variables(workflow)
@@ -119,15 +126,20 @@ class TemplateMixin(WorkflowExecutorBase):
         return [_missing_variables_message(missing, available)]
 
     def _aggregate_template_scope(
-        self, workflow: Dict[str, Any]
+        self,
+        workflow: Dict[str, Any],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> Tuple[Set[str], Set[str]]:
         """Return (matrix keys taken from caches, deferred variables).
 
         A cache-reading step without an explicit matrix takes its
-        dimensionality from the entries of its input caches. When a cache
-        exists its keys are known now, so templates using them are
-        validated strictly; when no cache exists yet the step's variables
-        are deferred to runtime resolution.
+        dimensionality from the entries of its input caches. Templated
+        cache paths are resolved first from the workflow's parameter
+        defaults and supplied values, so a cache reached through
+        ``{{cache_dir}}`` contributes its keys. When a cache exists its
+        keys are known now, so templates using them are validated
+        strictly; when no cache exists yet the step's variables are
+        deferred to runtime resolution.
         """
         derived: Set[str] = set()
         deferred: Set[str] = set()
@@ -135,7 +147,8 @@ class TemplateMixin(WorkflowExecutorBase):
         for step in workflow.get("steps", []):
             if not self._reads_cache_entries(step):
                 continue
-            matrix_keys = _cached_matrix_keys(step)
+            step_inputs = self._resolved_step_inputs(step, variables)
+            matrix_keys = _cached_matrix_keys(step_inputs)
             if matrix_keys:
                 derived.update(matrix_keys)
             else:
@@ -245,6 +258,31 @@ class TemplateMixin(WorkflowExecutorBase):
             return self._substitute_variables(obj, variables)
         return obj
 
+    def _resolved_step_inputs(
+        self, step: Dict[str, Any], variables: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Return a step's ``with`` block with known templates resolved.
+
+        Cache introspection runs before a job exists, so it needs the
+        workflow's parameter defaults and the values a caller or the CLI
+        supplies. An empty context leaves the block unchanged, which
+        keeps the raw-definition behaviour for callers without values.
+
+        Args:
+            step: Step configuration dictionary.
+            variables: Values available before matrix expansion.
+
+        Returns:
+            The step's ``with`` values, resolved where possible.
+        """
+        step_inputs: Dict[str, Any] = step.get("with", {})
+        if not variables:
+            return step_inputs
+        resolved: Dict[str, Any] = self._resolve_template_variables(
+            step_inputs, variables
+        )
+        return resolved
+
     def _substitute_variables(
         self, text: str, variables: Dict[str, Any]
     ) -> Any:
@@ -337,13 +375,13 @@ def _raise_parameter_errors(workflow: Dict[str, Any]) -> None:
     raise WorkflowExecutionError("; ".join(errors))
 
 
-def _cached_matrix_keys(step: Dict[str, Any]) -> Set[str]:
-    """Return matrix keys derivable from a step's input caches.
+def _cached_matrix_keys(step_inputs: Dict[str, Any]) -> Set[str]:
+    """Return matrix keys derivable from resolved step inputs.
 
     Returns an empty set when the step names no cache input or when none of
     its input caches exist yet.
     """
-    cache_paths = _cache_input_paths(step.get("with", {}).get("input"))
+    cache_paths = _cache_input_paths(step_inputs.get("input"))
     matrix_keys, _ = _derive_matrix_from_caches(cache_paths)
     return set(matrix_keys)
 

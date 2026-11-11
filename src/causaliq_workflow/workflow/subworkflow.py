@@ -7,7 +7,7 @@ block become parameters of the called workflow; see
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from causaliq_workflow.reporting import count_results, format_counts
 from causaliq_workflow.schema import (
@@ -68,7 +68,7 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         parameters = self._resolve_parameter_values(
             step.get("with", {}), state.variables
         )
-        child = self._load_child_workflow(target, step_name, set(parameters))
+        child = self._load_child_workflow(target, step_name, parameters)
         child, variables = _bind_parameters(child, parameters)
         results = self._execute_child_workflow(child, target, state, variables)
         _log_call_end(state, step, step_name, results)
@@ -174,15 +174,17 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         self,
         target: Path,
         step_name: str,
-        parameter_names: Optional[Set[str]] = None,
+        parameters: Any = None,
     ) -> Dict[str, Any]:
         """Load and structurally validate a called workflow.
 
         Args:
             target: Canonical path of the called workflow.
             step_name: Step name used in error messages.
-            parameter_names: Parameter names the caller supplies, which
-                the child may reference in its templates.
+            parameters: Parameter names or values the caller supplies,
+                which the child may reference in its templates. Values
+                let the child resolve a templated input path before it
+                derives its matrix.
 
         Returns:
             Parsed and validated child workflow.
@@ -193,11 +195,9 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         """
         try:
             child = load_workflow_file(target)
-            child = relax_step_filter_literals(child, parameter_names or ())
+            child = relax_step_filter_literals(child, parameters or ())
             validate_workflow(child)
-            self._validate_template_variables(
-                child, set(parameter_names or ())
-            )
+            self._validate_template_variables(child, parameters or {})
             self._validate_workflow_actions(child, "validate")
         except (WorkflowValidationError, WorkflowExecutionError) as e:
             raise WorkflowExecutionError(
@@ -237,12 +237,12 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         raw = step.get("with", {})
         try:
             target = self._workflow_call_target(step, step_name, frames)
-            child = self._load_child_workflow(target, step_name, set(raw))
+            parameters = self._resolve_call_parameters(
+                raw, jobs, workflow, cli_params
+            )
+            child = self._load_child_workflow(target, step_name, parameters)
         except WorkflowExecutionError as exc:
             return [str(exc)]
-        parameters = self._resolve_call_parameters(
-            raw, jobs, workflow, cli_params
-        )
         errors = _call_parameter_errors(
             step_name, target.name, parameters, child
         )

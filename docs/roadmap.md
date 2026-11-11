@@ -28,7 +28,8 @@ This project roadmap fits into the [overall ecosystem roadmap](https://causaliq.
 1. ✅ Flush log messages immediately
 1. ✅ Review Action Patterns
 1. ✅ Improve workflow performance
-1. ✅ [Code tidy-up: retire dead cache API, single failure-write path, split legacy test suites, entry-scan vocabulary](current_task.md)
+1. ✅ Code tidy-up: retire dead cache API, single failure-write path, split legacy test suites, entry-scan vocabulary
+1. ✅ [ensure MAP actions work when `input:` value contains placeholder](current_task.md)
 1. 🛣️ Metadata propagation, values audit and reporting capabilities
 1. 🛣️ Action metadata catalogue with generated documentation and CLI discovery
 1. 🛣️ Support Python 3.10-14, with 3.12 as default, and badge as [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)

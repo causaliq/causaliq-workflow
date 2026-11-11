@@ -31,6 +31,14 @@ class AggregationConfig:
     matrix_vars: List[str] = field(default_factory=list)
     """Matrix variables defining grouping dimensions."""
 
+    derive_matrix_vars: bool = False
+    """True when ``matrix_vars`` were derived from the input cache.
+
+    Resolving a templated cache path can reveal a different cache, so a
+    scan configuration built before template resolution is re-derived
+    from the resolved paths before entries are matched.
+    """
+
 
 @dataclass
 class _EntryScan:
@@ -99,6 +107,7 @@ class EntryScanMixin(WorkflowExecutorBase):
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> Optional[AggregationConfig]:
         """Get the entry-scan configuration for a step.
 
@@ -109,28 +118,33 @@ class EntryScanMixin(WorkflowExecutorBase):
         Args:
             step: Step configuration dictionary
             matrix: Workflow matrix definition
+            variables: Values available before matrix expansion, used to
+                resolve a templated ``input`` path and filter
 
         Returns:
             AggregationConfig if the step reads cache entries, else None
         """
-        if not self._is_entry_scan_step(step, matrix):
+        if not self._is_entry_scan_step(step, matrix, variables):
             return None
 
-        step_inputs = step.get("with", {})
+        step_inputs = self._resolved_step_inputs(step, variables)
         input_caches = _db_cache_paths(step_inputs.get("input"))
 
         # Determine matrix variables
         if matrix:
             # Use explicit matrix keys
             matrix_vars = list(matrix.keys())
+            derive_matrix_vars = False
         else:
             # Derive matrix keys from input caches
             matrix_vars, _ = _derive_matrix_from_caches(input_caches)
+            derive_matrix_vars = True
 
         return AggregationConfig(
             input_caches=input_caches,
             filter_expr=step_inputs.get("filter"),
             matrix_vars=matrix_vars,
+            derive_matrix_vars=derive_matrix_vars,
         )
 
     def _resolved_entry_scan_config(
@@ -145,6 +159,10 @@ class EntryScanMixin(WorkflowExecutorBase):
         not yet substituted. The scan must read the cache paths and
         compare with the filter the action actually receives.
 
+        When the matrix keys were derived from the input cache, a
+        resolved path may reach a different cache, so the keys are
+        derived again from the resolved paths.
+
         Args:
             agg_config: Configuration built from the raw step definition.
             resolved_inputs: Step parameters with templates substituted.
@@ -155,15 +173,23 @@ class EntryScanMixin(WorkflowExecutorBase):
         """
         input_caches = _db_cache_paths(resolved_inputs.get("input"))
         filter_expr = resolved_inputs.get("filter")
+        matrix_vars = agg_config.matrix_vars
+        if (
+            agg_config.derive_matrix_vars
+            and input_caches != agg_config.input_caches
+        ):
+            matrix_vars, _ = _derive_matrix_from_caches(input_caches)
         if (
             input_caches == agg_config.input_caches
             and filter_expr == agg_config.filter_expr
+            and matrix_vars == agg_config.matrix_vars
         ):
             return agg_config
         return AggregationConfig(
             input_caches=input_caches,
             filter_expr=filter_expr,
-            matrix_vars=agg_config.matrix_vars,
+            matrix_vars=matrix_vars,
+            derive_matrix_vars=agg_config.derive_matrix_vars,
         )
 
     def _scan_input_entries(
@@ -218,14 +244,33 @@ class EntryScanMixin(WorkflowExecutorBase):
     def _resolve_scan_filter(
         self, config: AggregationConfig
     ) -> Tuple[Optional[str], Dict[str, Any]]:
-        """Pre-resolve ``random()`` calls across all input caches."""
+        """Pre-resolve ``random()`` calls across all input caches.
+
+        An input cache that an earlier step has not created yet holds no
+        population, so ``random()`` cannot be sampled. Nothing can satisfy a
+        selection drawn from an empty population, so the filter resolves to
+        one that matches nothing; the scan that runs once the cache exists
+        resolves the selection normally. That keeps a workflow that ingests
+        and then derives valid in validation, dry-run and run alike.
+
+        Any other sampling failure — asking for more distinct values than
+        the cache holds, for example — is a real error and propagates.
+        """
         if not config.filter_expr or "random(" not in config.filter_expr:
             return config.filter_expr, {}
 
-        from causaliq_core.utils import resolve_random_calls
+        from causaliq_core.utils import (
+            FilterExpressionError,
+            resolve_random_calls,
+        )
 
         all_meta = self._collect_scan_metadata(config.input_caches)
-        return resolve_random_calls(config.filter_expr, all_meta)
+        try:
+            return resolve_random_calls(config.filter_expr, all_meta)
+        except FilterExpressionError as exc:
+            if not _is_empty_population_error(exc):
+                raise
+            return "False", {}
 
     def _collect_scan_metadata(
         self, cache_paths: List[str]
@@ -502,3 +547,20 @@ def _log_scan_summary(
         f"Entry scan: scanned={scan.scanned}"
         f"{filter_info}, matched={scan.matched}"
     )
+
+
+def _is_empty_population_error(exc: Exception) -> bool:
+    """Return True when a filter scan had no population to sample.
+
+    ``resolve_random_calls`` wraps ``random_set``'s empty-population
+    ``ValueError`` in a ``FilterExpressionError``. That case is not a fault
+    in the workflow: it is what an input cache not yet written by an earlier
+    step looks like.
+
+    Args:
+        exc: Exception raised while resolving a filter's ``random()`` calls.
+
+    Returns:
+        True when the failure is the empty-population case.
+    """
+    return "requires a non-empty population" in str(exc)

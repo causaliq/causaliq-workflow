@@ -4,11 +4,15 @@ Tests the validation pass that runs before workflow execution to catch
 semantic errors like undefined filter variables.
 """
 
+from pathlib import Path
+
 import pytest
 from causaliq_core import ActionValidationError, CausalIQActionProvider
+from causaliq_core.utils import FilterExpressionError
 
 from causaliq_workflow.registry import ActionRegistry
 from causaliq_workflow.workflow import WorkflowExecutionError, WorkflowExecutor
+from causaliq_workflow.workflow.entry_scan import AggregationConfig
 
 
 class MockActionProvider(CausalIQActionProvider):
@@ -410,3 +414,42 @@ def test_validate_workflow_actions_dry_run_skip(
         ]
     }
     executor._validate_workflow_actions(workflow, "dry-run")
+
+
+# A random() filter over a cache an earlier step has not written yet has an
+# empty population. Nothing can satisfy a selection drawn from it, so the scan
+# yields no entries instead of failing: validation, dry-run and run all treat
+# "cache not created yet" the same way.
+def test_scan_input_entries_tolerates_uncreated_input_cache() -> None:
+    """An uncreated input cache yields no entries rather than an error."""
+    executor = WorkflowExecutor()
+    config = AggregationConfig(
+        input_caches=["missing.db"],
+        filter_expr="seed in random(5, 0)",
+    )
+
+    assert executor._scan_input_entries(config, {"network": "asia"}) == []
+
+
+# Asking for more distinct seeds than the cache holds is a real error.
+def test_scan_input_entries_reraises_insufficient_population(
+    tmp_path: Path,
+) -> None:
+    """A populated cache that is too small still fails loudly."""
+    from causaliq_workflow.cache import CacheEntry, WorkflowCache
+
+    cache_path = tmp_path / "source.db"
+    with WorkflowCache(str(cache_path)) as cache:
+        cache.put({"network": "asia", "seed": 0}, CacheEntry())
+        cache.put({"network": "asia", "seed": 1}, CacheEntry())
+
+    executor = WorkflowExecutor()
+    config = AggregationConfig(
+        input_caches=[str(cache_path)],
+        filter_expr="seed in random(5, 0)",
+    )
+
+    with pytest.raises(
+        FilterExpressionError, match=r"random\(\) for variable"
+    ):
+        executor._scan_input_entries(config, {"network": "asia"})

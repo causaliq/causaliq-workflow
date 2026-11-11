@@ -51,7 +51,7 @@ class ExecutionMixin(WorkflowExecutorBase):
                 parameters or (),
             )
             _workflow_module.validate_workflow(workflow)
-            self._validate_template_variables(workflow, set(parameters or ()))
+            self._validate_template_variables(workflow, parameters or {})
 
             # Validate all actions exist and can run
             self._validate_workflow_actions(workflow, mode)
@@ -162,7 +162,7 @@ class ExecutionMixin(WorkflowExecutorBase):
     ) -> List[Dict[str, Any]]:
         """Execute every matrix job and collect the results."""
         # Derive matrix from explicit definition or from input caches
-        matrix = self._derive_workflow_matrix(workflow)
+        matrix = self._derive_workflow_matrix(workflow, cli_params)
         jobs = self.expand_matrix(matrix)
         total_jobs = len(jobs)
         results = []

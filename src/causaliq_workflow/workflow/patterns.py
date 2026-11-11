@@ -87,6 +87,7 @@ class PatternMixin(WorkflowExecutorBase):
         self,
         step: Dict[str, Any],
         matrix: Dict[str, List[Any]],
+        variables: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """Check if a step should be given matched input cache entries.
 
@@ -98,11 +99,13 @@ class PatternMixin(WorkflowExecutorBase):
         Args:
             step: Step configuration dictionary
             matrix: Workflow matrix definition
+            variables: Values available before matrix expansion, used to
+                resolve a templated ``input`` path before checking it
 
         Returns:
             True if the step should receive matched input entries
         """
-        step_inputs = step.get("with", {})
+        step_inputs = self._resolved_step_inputs(step, variables)
 
         # Check if step has cache input (.db files in input parameter)
         if not _has_db_input(step_inputs.get("input")):
