@@ -231,10 +231,12 @@ class EntryValidationMixin(WorkflowExecutorBase):
         """Validate cache-reading step entries.
 
         Validates parameters for each matrix combination, scanning input
-        caches for matching entries. A MAP step that matches more than one
-        entry is reported: the job is ambiguous whatever the cache holds.
-        An empty match is tolerated because an earlier step may not have
-        created the input cache yet.
+        caches for matching entries. A MAP step whose input caches use
+        different matrix keys is reported once, because such a job can
+        never match exactly one entry. A MAP step that matches more than
+        one entry is reported per job: the job is ambiguous whatever the
+        cache holds. An empty match is tolerated because an earlier step
+        may not have created the input cache yet.
 
         Args:
             step: Step configuration dictionary
@@ -251,6 +253,13 @@ class EntryValidationMixin(WorkflowExecutorBase):
         agg_config = self._get_entry_scan_config(
             step, matrix, _workflow_variables(workflow, cli_params)
         )
+
+        # A MAP step maps one entry to one entry, so its input caches must
+        # agree on their key names. Only the names are compared, so a job
+        # narrowed by a filter stays valid.
+        key_error = self._map_input_key_error(step_name, step, agg_config)
+        if key_error:
+            return [key_error]
 
         # Track entry fingerprints per output matrix combo to
         # detect silent duplication (different combos producing

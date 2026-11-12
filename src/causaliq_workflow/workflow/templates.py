@@ -6,7 +6,7 @@ from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.matrix import (
     _cache_input_paths,
-    _derive_matrix_from_caches,
+    _collect_matrix_keys,
     _has_db_input,
 )
 from causaliq_workflow.workflow.parameters import (
@@ -378,12 +378,14 @@ def _raise_parameter_errors(workflow: Dict[str, Any]) -> None:
 def _cached_matrix_keys(step_inputs: Dict[str, Any]) -> Set[str]:
     """Return matrix keys derivable from resolved step inputs.
 
-    Returns an empty set when the step names no cache input or when none of
-    its input caches exist yet.
+    The keys of every input cache are collected, so caches holding
+    different dimensions contribute all of their names: a step may read a
+    cache keyed by (network, fusion_weights) alongside one keyed by
+    network alone. Returns an empty set when the step names no cache
+    input or when none of its input caches exist yet.
     """
     cache_paths = _cache_input_paths(step_inputs.get("input"))
-    matrix_keys, _ = _derive_matrix_from_caches(cache_paths)
-    return set(matrix_keys)
+    return _collect_matrix_keys(cache_paths)
 
 
 def _missing_variables_message(

@@ -135,6 +135,51 @@ def _derive_matrix_from_caches(
     return matrix_keys, matrix_dict
 
 
+def _cache_matrix_keys(cache_path: str) -> Set[str]:
+    """Return the matrix key names present in one input cache.
+
+    Args:
+        cache_path: Path to a workflow cache file (.db).
+
+    Returns:
+        Set of matrix variable names, empty when the cache is absent or
+        holds no entries yet.
+    """
+    from pathlib import Path
+
+    from causaliq_workflow.cache import WorkflowCache
+
+    if not Path(cache_path).exists():
+        return set()
+
+    keys: Set[str] = set()
+    with WorkflowCache(cache_path) as cache:
+        for entry_info in cache.list_entries():
+            keys.update((entry_info.get("matrix_values") or {}).keys())
+    return keys
+
+
+def _collect_matrix_keys(cache_paths: List[str]) -> Set[str]:
+    """Return the union of matrix key names across the input caches.
+
+    Naming the template variables an input offers does not need the
+    caches to agree: an entry that lacks a dimension wildcards it when it
+    is matched, which is what lets a broader matrix consume a cache that
+    holds fewer dimensions. ``_derive_matrix_from_caches`` stays strict,
+    because the dimensions it returns become the grouping of every input.
+
+    Args:
+        cache_paths: Paths to workflow cache files (.db).
+
+    Returns:
+        Union of the matrix variable names found in the caches.
+    """
+    keys: Set[str] = set()
+    for cache_path in cache_paths:
+        keys.update(_cache_matrix_keys(cache_path))
+    return keys
+
+
 def _accumulate_cache_keys(
     cache_path: str,
     all_keys: Optional[Set[str]],

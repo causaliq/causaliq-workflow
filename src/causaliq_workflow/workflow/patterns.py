@@ -1,12 +1,27 @@
 """Step pattern detection helpers."""
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    FrozenSet,
+    List,
+    Optional,
+    Set,
+    Tuple,
+)
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
-from causaliq_workflow.workflow.matrix import _has_db_input, _runs_once
+from causaliq_workflow.workflow.matrix import (
+    _cache_matrix_keys,
+    _has_db_input,
+    _runs_once,
+)
 
 if TYPE_CHECKING:  # pragma: no cover
     from causaliq_core import ActionPattern
+
+    from causaliq_workflow.workflow.entry_scan import AggregationConfig
 
 
 class PatternMixin(WorkflowExecutorBase):
@@ -163,6 +178,59 @@ class PatternMixin(WorkflowExecutorBase):
                 f"key to distinguish them"
             )
         return None
+
+    def _map_input_key_error(
+        self,
+        step_name: str,
+        step: Dict[str, Any],
+        agg_config: Optional["AggregationConfig"],
+    ) -> Optional[str]:
+        """Return an error when a MAP step reads differently-keyed caches.
+
+        A MAP action maps one input entry to one output entry, so its
+        input caches must use the same matrix keys: an entry that lacks a
+        dimension matches every value of that dimension, so the job would
+        match several entries from the cache that holds it. Aggregation
+        steps are exempt, because a dimension the step does not name is
+        collapsed there by design.
+
+        Only the key names are compared, never their values, so a job
+        narrowed by a filter stays valid. A cache an earlier step has not
+        written yet is skipped; the arity check decides it at run time.
+
+        Args:
+            step_name: Step name for the error message.
+            step: Step configuration dictionary.
+            agg_config: Entry-scan configuration carrying the resolved
+                input cache paths, or None when the step reads no cache.
+
+        Returns:
+            An error message, or None when the dimension names agree.
+        """
+        from causaliq_core import ActionPattern
+
+        if agg_config is None:
+            return None
+        if self._get_step_action_pattern(step) != ActionPattern.MAP:
+            return None
+
+        schemas: Set[FrozenSet[str]] = set()
+        compared: List[Tuple[str, str]] = []
+        for cache_path in agg_config.input_caches:
+            keys = _cache_matrix_keys(str(cache_path))
+            if not keys:
+                continue
+            schemas.add(frozenset(keys))
+            compared.append((str(cache_path), ", ".join(sorted(keys))))
+        if len(schemas) <= 1:
+            return None
+
+        found = "; ".join(f"[{keys}] in '{path}'" for path, keys in compared)
+        return (
+            f"Step '{step_name}': this action maps one input entry to one "
+            f"output entry, so its input caches must use the same matrix "
+            f"keys; found {found}"
+        )
 
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
         """Check if step inputs include cache file (.db) inputs.

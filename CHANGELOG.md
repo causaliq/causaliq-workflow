@@ -52,6 +52,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Matrix matching** - a number and its text spelling compare equal
   when an input cache is matched, so derived and explicit matrix values
   agree
+- **Aggregation over differently-keyed caches** - a step may read input
+  caches whose entries carry different dimensions when the workflow
+  matrix names the dimensions they share; every key an input offers is
+  available as a template variable, and a dimension the matrix does not
+  name is collapsed by the grouping. A MAP step still requires its input
+  caches to use the same matrix keys, which is reported once during
+  validation instead of failing inside matrix derivation
 - **Dependency** - requires `causaliq-core>=0.8.0.dev10` for
   `relax_filter_literals()`
 - **Metadata block rename** - the action metadata block `inputs` is now

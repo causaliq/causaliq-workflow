@@ -12,6 +12,7 @@ from causaliq_workflow.workflow.entry_scan import AggregationConfig
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
 from causaliq_workflow.workflow.executor import WorkflowExecutor
 from causaliq_workflow.workflow.matrix import (
+    _collect_matrix_keys,
     _derive_matrix_from_caches,
     _matrix_values_match,
     _normalise_matrix_value,
@@ -23,6 +24,7 @@ __all__ = [
     "WorkflowExecutor",
     "load_workflow_file",
     "validate_workflow",
+    "_collect_matrix_keys",
     "_derive_matrix_from_caches",
     "_matrix_values_match",
     "_normalise_matrix_value",

@@ -144,6 +144,15 @@ class WorkflowExecutorBase:  # pragma: no cover
         """Return an error when a MAP step did not match exactly one entry."""
         raise NotImplementedError
 
+    def _map_input_key_error(
+        self,
+        step_name: str,
+        step: Dict[str, Any],
+        agg_config: Optional["AggregationConfig"],
+    ) -> Optional[str]:
+        """Return an error when a MAP step input caches disagree on keys."""
+        raise NotImplementedError
+
     def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
         """Return True when step inputs name any cache (.db) file."""
         raise NotImplementedError
