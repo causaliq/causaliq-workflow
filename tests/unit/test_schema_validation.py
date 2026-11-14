@@ -302,6 +302,36 @@ def test_valid_workflow_with_parameters():
     assert result is True
 
 
+# Test a null list item is accepted as an action parameter.
+def test_valid_workflow_with_null_parameter_item():
+    """Test a null list item is accepted in with parameters."""
+    workflow = {
+        "steps": [
+            {
+                "name": "Test",
+                "uses": "test_action",
+                "with": {"format": ["", None, ".3f"]},
+            }
+        ],
+    }
+    assert validate_workflow(workflow) is True
+
+
+# Test a null scalar action parameter is accepted.
+def test_valid_workflow_with_null_parameter():
+    """Test a null scalar is accepted in with parameters."""
+    workflow = {
+        "steps": [
+            {
+                "name": "Test",
+                "uses": "test_action",
+                "with": {"optional": None},
+            }
+        ],
+    }
+    assert validate_workflow(workflow) is True
+
+
 # Test workflow validation with all new features combined
 def test_valid_workflow_with_all_features():
     """Test validation passes with all new schema features."""

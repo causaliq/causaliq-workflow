@@ -80,7 +80,7 @@
           },
           "with": {
             "type": "object",
-            "description": "Input parameters for the action",
+            "description": "Input parameters for the action: scalars, lists of scalars, or null",
             "patternProperties": {
               "^[a-zA-Z_][a-zA-Z0-9_]*$": {
                 "oneOf": [
@@ -88,7 +88,8 @@
                     "type": [
                       "string",
                       "number",
-                      "boolean"
+                      "boolean",
+                      "null"
                     ]
                   },
                   {
@@ -97,7 +98,8 @@
                       "type": [
                         "string",
                         "number",
-                        "boolean"
+                        "boolean",
+                        "null"
                       ]
                     }
                   }
