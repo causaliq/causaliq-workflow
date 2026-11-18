@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Cache description command** - `cqflow describe-cache` reports a
+  cache's file path and size, object type, possible/present/object entry
+  counts and per-variable matrix coverage, plus one example entry, without
+  exporting the cache
 - **Predictable workflow values** - workflow YAML now uses a restricted
   scalar schema: `no`, `yes`, `on`, `off`, `01`, `0x10`, `1_000`,
   `10:30` and `2020-01-01` are text, while `true`, `false`, `null`,

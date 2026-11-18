@@ -13,6 +13,10 @@ Built on causaliq-core's TokenCache with workflow-specific features:
 """
 
 from causaliq_workflow.cache.contract import CacheTypeError
+from causaliq_workflow.cache.describe import (
+    describe_cache,
+    format_description,
+)
 from causaliq_workflow.cache.entry import (
     EMPTY_FORMAT,
     CacheEntry,
@@ -35,7 +39,9 @@ __all__ = [
     "CacheTypeError",
     "MatrixSchemaError",
     "WorkflowCache",
+    "describe_cache",
     "export_entries",
+    "format_description",
     "import_entries",
     "store_action_result",
 ]

@@ -1,59 +1,46 @@
-# ensure MAP actions work when `input:` value contains placeholder
+# Add describe-cache CLI command
 
-The workflow engine is not generating the implict matrix for MAP actions
-when the input parameter value contains a placeholder e.g.
+Add a new `describe-cache` CLI command which provides some basic
+information about the specified cache. This should prove useful especially
+when caches are partitioned into different kinds of intermediate results.
 
-`input: {{cache_dir}}/04_weighting/weighting-dags.db`
+The command syntax is:
 
-The engine must resolve this into a literal path before determining
-the implicit matrix.
+```bash
+cqflow describe-cache -i <cache-path>
+```
+
+Initially this writes output to the terminal (although later it might be
+useful to draw plots or write to caches as part of a workflow). The output
+contains:
+
+- full path name of the file and its size on disk in K/M/GByte
+- object type of the cache (PDG, DAG, metrics etc)
+- number of entries in cache total possible/total with an entry/total with
+  an object
+- then, for each variable in the key schema:
+
+  - name and type of the variable
+  - list of possible values for the variable, and for each value a count
+    of total possible/total with an entry/total with an object
+
+- an example entry, ideally with an object
 
 ## Further work which is out of scope for this task
 
 These are deliberately outside this task:
 
-0. __dry run fails with non-existent input caches__
+1. __Declared matrix values__
 
-0a. __more hat2__
+   - Accept a declared matrix so "possible" counts include values that
+     were never attempted, not only those observed in the cache.
 
-- `tests/unit/test_workflow_aggregation.py` is still the last oversize legacy suite (93 tests / ~1800 lines) — same split treatment would apply.
+1. __Object presence without decompression__
 
-- Legacy `put` remains permissive (`test_legacy_put_accepts_multiple_objects`) and `store_action_result` still accepts `cache=None`; both are candidates for a future contract tidy.
+   - Add a `WorkflowCache` API that reports which entries hold an object
+     without decompressing their payloads, so very large graph caches can
+     be described quickly.
 
-1. __Values audit__
+1. __Description as a workflow output__
 
-   - For discovery, knowledge and analysis actions, move input-like fields out of `result` into `parameters`.
-   - Check completeness and usefulness of each action’s metadata.
-   - Update action contract tests and API metadata documentation.
-   - This is the step that turns `inputs: {}` into the real effective-parameter record.
-
-2. __Metadata catalogue and generated documentation__
-
-   - Add a central catalogue of each action’s inputs, results and provenance expectations.
-   - Generate API documentation and CLI discovery from it.
-   - Add contract tests that every registered action is catalogued.
-
-3. __`history` step parameter__
-
-   - Support `standard`, a list of field paths, or `all`.
-   - Populate `history` for one-to-one aggregate steps.
-   - Add workflow/cache tests and user-guide documentation.
-
-4. __Reporting capabilities__
-
-   - Add `filter` support to the analysis `plot` action.
-   - Add categorical group-by support to `summarise`.
-   - Reuse the shared reporting view and update analysis/workflow docs and tests.
-
-5. __`merge_graphs` many-to-one metadata__
-
-   - Define action-specific reductions for n:1 merges.
-   - Generic history copying is not sufficient for many-to-one actions.
-   - Add tests and document the reduction rules.
-
-6. __Smaller metadata backlog__
-
-- Improve exported `evaluate_graph` metrics JSON readability with line feeds.
-- Clarify metrics for failed/empty input graphs so they are not presented as evaluation failures.
-
-
+   - Write the description to a cache, or plot it, as part of a workflow.

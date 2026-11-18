@@ -88,6 +88,7 @@ def cli(ctx: click.Context) -> None:
     Use 'cqwork run' to execute workflows.
     Use 'cqwork export-cache' to export cache entries.
     Use 'cqwork import-cache' to import cache entries.
+    Use 'cqwork describe-cache' to inspect cache entries and coverage.
     """
     configure_terminal_output()
     if ctx.invoked_subcommand is None:
@@ -429,6 +430,63 @@ def _import_cache_entries(
     except Exception as e:
         _log_cli_error(f"Import failed: {e}")
         sys.exit(1)
+
+
+# ============================================================================
+# Cache describe command
+# ============================================================================
+
+
+@cli.command(name="describe-cache")
+@click.option(
+    "--input",
+    "-i",
+    "cache_file",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Path to WorkflowCache database file (.db) to describe.",
+)
+def describe_cache_command(cache_file: Path) -> None:
+    """Describe a workflow cache's entries, objects and matrix coverage.
+
+    Reports the cache file's path and size, the object type it holds,
+    how many entries and objects it contains, the possible values of
+    each matrix variable with their fill counts, and one example entry.
+
+    Examples:
+
+        cqflow describe-cache -i results/metrics.db
+
+        cqflow describe-cache -i results/graphs.db
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    echo_line(
+        f"{timestamp} [causaliq-workflow] DESCRIBING cache: {cache_file}"
+    )
+    try:
+        lines = _describe_cache_report(cache_file)
+    except KeyboardInterrupt:
+        _log_cli_error("Description interrupted by user")
+        sys.exit(130)
+    except Exception as e:
+        _log_cli_error(f"Failed to describe cache: {e}")
+        sys.exit(1)
+    for line in lines:
+        echo_line(line)
+
+
+def _describe_cache_report(cache_file: Path) -> list[str]:
+    """Return the report lines for one cache file."""
+    from causaliq_workflow.cache import WorkflowCache
+    from causaliq_workflow.cache.describe import (
+        describe_cache,
+        format_description,
+    )
+
+    with WorkflowCache(cache_file) as cache:
+        description = describe_cache(cache)
+    size_bytes = cache_file.stat().st_size
+    return format_description(description, cache_file.resolve(), size_bytes)
 
 
 def main() -> None:
