@@ -89,9 +89,20 @@ where = ["src"]
 [tool.setuptools.package-data]
 causaliq_workflow = ["schemas/*.json"]
 
+[tool.causaliq]
+distribution = "causaliq-workflow"
+package = "causaliq_workflow"
+python_versions = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+default_python = "3.11"
+dev_extras = ["dev", "test", "docs"]
+testpaths = ["tests/unit", "tests/functional", "tests/integration"]
+fast_testpaths = ["tests/unit", "tests/functional"]
+slow_marker = "slow"
+extra_steps = []
+
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers --cov=causaliq_workflow --cov-report=term-missing --cov-report=html"
+addopts = "-ra -q --strict-markers"
 testpaths = [
     "tests",
 ]
