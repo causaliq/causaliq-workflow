@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Single metadata splitter** - the action registry and the provenance
   layer now share `causaliq_workflow.action_metadata.split_action_metadata`
   instead of duplicating the "unwrap `result`, flat is result" rule
+- Python 3.14 is now supported and tested in CI, and the default development
+  interpreter is Python 3.12
 
 ### Deprecated
 
@@ -127,6 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `provenance.finished_at` from the metadata envelope
 - Empty placeholder objects for failed runs; failures are recorded as
   metadata only
+- Python 3.9 support: `requires-python` is now `>=3.10`, and the development
+  environments, CI matrix and generated scripts cover Python 3.10 to 3.14
 
 ### Fixed
 

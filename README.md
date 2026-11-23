@@ -1,7 +1,7 @@
 
 # causaliq-workflow
 
-![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
+![Python Versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
@@ -125,7 +125,7 @@ tbc
 ```
 
 ### Prerequisites
-- Python 3.9-3.13
+- Python 3.10-3.14
 - Git
 
 ### Installation
@@ -178,6 +178,6 @@ This repository is part of the CausalIQ ecosystem. For development setup:
 
 ---
 
-**Supported Python Versions**: 3.9, 3.10, 3.11, 3.12, 3.13
-**Default Python Version**: 3.11  
+**Supported Python Versions**: 3.10, 3.11, 3.12, 3.13, 3.14
+**Default Python Version**: 3.12  
 **License**: MIT
