@@ -5,11 +5,13 @@ management capabilities.
 
 ## Command Overview
 
-causaliq-workflow provides three main commands:
+causaliq-workflow provides four main commands:
 
 - **cqflow run** - Execute workflow files
 - **cqflow export-cache** - Export cache entries to directory or zip file
 - **cqflow import-cache** - Import cache entries from directory or zip file
+- **cqflow describe-cache** - Inspect a cache's entries, objects and
+  matrix coverage
 
 `cqflow` is an alias for `causaliq-workflow`.
 
@@ -160,6 +162,26 @@ Options:
 
 - `-i, --input` - Path to exported directory or .zip file
 - `-o, --output` - Destination WorkflowCache database file (.db)
+
+### Describe Cache Command
+
+Report the contents and matrix coverage of a cache:
+
+```bash
+cqflow describe-cache -i results.db
+```
+
+The report contains the cache file's full path and size, the object type
+it holds, the number of possible, present and object-bearing entries, the
+possible values of each matrix variable with their counts, and one
+example entry. "Possible" counts are the Cartesian product of the matrix
+values observed in the cache; a value that was never attempted is not
+counted. Counting objects decompresses the entries, so a large graph
+cache takes longer to describe than an empty one.
+
+Options:
+
+- `-i, --input` - Path to WorkflowCache database file (.db)
 
 ## CI/CD Integration
 

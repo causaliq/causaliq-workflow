@@ -542,7 +542,7 @@ steps:
 
 ### Entry Scanning Flow
 
-The `_scan_aggregation_inputs()` method scans a memoised per-cache index
+The `_scan_input_entries()` method scans a memoised per-cache index
 rather than re-reading the cache for every matrix job:
 
 1. Build or reuse an index of each entry's matrix values and compressed
@@ -568,7 +568,7 @@ full-cache reads.
 
 ```python
 # Scan statistics logged during execution
-# "Aggregation scan: scanned=100, filtered=20, matched=8"
+# "Entry scan: scanned=100, filtered=20, matched=8"
 ```
 
 `scanned` counts indexed entries, `filtered` counts matrix-matching entries

@@ -10,6 +10,7 @@ for executing workflows and managing caches.
 | `cqflow run` | Execute a workflow file |
 | `cqflow export-cache` | Export cache to directory or zip |
 | `cqflow import-cache` | Import cache from export |
+| `cqflow describe-cache` | Describe a cache's entries, objects and coverage |
 
 ## Running Workflows
 
@@ -150,6 +151,48 @@ cqflow import-cache -i ./exported -o results/restored.db
 # Import from zip file
 cqflow import-cache -i results.zip -o results/restored.db
 ```
+
+### Describe Cache
+
+Inspect a cache without exporting it:
+
+```bash
+cqflow describe-cache -i results/metrics.db
+```
+
+The report shows the full path and size of the file, the object type the
+cache holds, how many entries and objects it contains, and the possible
+values of each matrix variable with their fill counts:
+
+```text
+Cache description
+
+  File        : C:\work\results\metrics.db
+  Size        : 1.2 MByte (1,258,291 Bytes)
+  Object type : metrics
+  Entries     : 8 possible / 6 with an entry / 5 with an object
+
+Key schema (possible / entry / object):
+
+  network (str)            8 / 6 / 5
+    asia                   4 / 3 / 3
+    cancer                 4 / 3 / 2
+
+Example entry:
+
+  key      : {"network": "asia", "seed": 1}
+  object   : type=metrics, format=json, action=evaluate_graph, 2.1 KByte
+  metadata : ...
+```
+
+"Possible" is the Cartesian product of the matrix values found in the
+cache, because a cache does not record the matrix it was produced from.
+A partitioned cache therefore shows a higher possible count than entry
+count when combinations are missing. Values that were never attempted
+are not known to the command.
+
+Counting objects decompresses every entry, so a very large graph cache
+takes longer to describe than an empty one.
 
 ## Workflow File Conventions
 

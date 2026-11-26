@@ -376,6 +376,9 @@ template may reference a value that is supplied at run time.
 
 Steps that read a cache also see the matrix keys derived from their input
 caches, so `{{network}}` resolves from a learned graph cache even when the
-workflow declares no matrix. When an input cache does not exist yet — it may
-be produced by an earlier step — that step's variables are resolved at
+workflow declares no matrix. A templated cache path is resolved first from
+the workflow's declared parameter defaults and the values supplied by the
+caller or `--param`, so `input: {{cache_dir}}/graphs.db` derives the same
+keys as a literal path. When an input cache does not exist yet — it may be
+produced by an earlier step — that step's variables are resolved at
 runtime instead.

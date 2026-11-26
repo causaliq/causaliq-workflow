@@ -163,6 +163,34 @@ with WorkflowCache(":memory:") as cache:
         print(f"Schema error: {e}")
 ```
 
+### Recording a Failure
+
+A failed run is recorded as provenance only: the entry holds the metadata
+envelope and no object, so it can never be mistaken for a result. The entry
+replaces any prior entry for the key, so the latest run wins.
+
+```python
+from causaliq_core.metadata import build_metadata
+
+from causaliq_workflow.cache import WorkflowCache
+
+failure = build_metadata(
+    "causaliq-discovery",
+    "learn_graph",
+    {},
+    {"status": "input_error", "error": "variable asia has too few levels"},
+)
+
+with WorkflowCache("results/graphs.db") as cache:
+    cache.put_failure({"network": "asia"}, failure)
+```
+
+A failure entry declares no object type, so `put_failure` pins the cache
+type only when it is already known: a failure recorded before the cache's
+first successful write leaves the cache unpinned, and the first typed write
+pins it. Pass `cache_type` to pin an explicit type. See
+[Cache Type Model](../architecture/cache_type_model.md) for the rule.
+
 ### Scanning Entries Without Objects
 
 `list_entry_records()` returns each entry's matrix values with its metadata
@@ -222,6 +250,41 @@ with WorkflowCache(":memory:") as cache:
     cache.put({"key": "value"}, entry)
     assert cache.entry_count() == 1
 # Cache automatically closed and discarded
+```
+
+## Describing a Cache
+
+`describe_cache()` scans an open cache and returns its object type, entry
+and object counts, per-variable value coverage and an example entry.
+`format_description()` turns that mapping into the terminal report printed
+by `cqflow describe-cache`.
+
+::: causaliq_workflow.cache.describe.describe_cache
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 3
+
+::: causaliq_workflow.cache.describe.format_description
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 3
+
+```python
+from pathlib import Path
+
+from causaliq_workflow.cache import describe_cache, WorkflowCache
+from causaliq_workflow.cache.describe import format_description
+
+with WorkflowCache("results/graphs.db") as cache:
+    description = describe_cache(cache)
+print(description["cache_type"], description["entry_count"])
+
+lines = format_description(
+    description, Path("results/graphs.db").resolve(), 1_048_576
+)
+print("\n".join(lines))
 ```
 
 ## Architecture Notes

@@ -69,6 +69,12 @@ the same matrix values, so the two caches share their dimensions. A job that
 matches more than one input entry is an error: add a matrix key to tell the
 entries apart.
 
+A MAP step's input caches must use the same matrix keys. A dimension missing
+from a cache wildcards, so the job could not tell that cache's entries apart;
+the mismatch is reported once during validation. Aggregation steps are
+exempt, because they collapse the dimensions the workflow matrix does not
+name.
+
 A job that matches **no** input entry is skipped, with the reason recorded in
 the step results. A cache may legitimately lack a combination — for example
 when one learning run failed for a network — and the rest of the sweep should
@@ -94,6 +100,11 @@ Because the output dimensions equal the input dimensions, a map step does not
 need the workflow to declare a matrix: the keys of the input cache are used
 instead, and their values become available to the step's templates. The
 example above relies on this — `{{network}}` comes from `graphs.db`.
+
+A templated input path is resolved before the cache is read: the workflow's
+declared parameter defaults and the values supplied by the caller or
+`--param` fill the placeholders, so `input: {{cache_dir}}/graphs.db` inherits
+the same dimensions as a literal path.
 
 Declare a matrix when you want to fix a dimension to a constant, as in a
 daughter workflow, or to narrow the run to a subset of the cache's entries.

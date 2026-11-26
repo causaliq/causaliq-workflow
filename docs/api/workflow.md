@@ -14,7 +14,7 @@ names so existing imports keep resolving:
   expansion;
 - `patterns` — step pattern detection;
 - `filters` — filter literal rewriting before validation;
-- `aggregation` — cache-entry scanning configuration for grouping and
+- `entry_scan` — input cache-entry scanning configuration for grouping and
   mapping steps;
 - `validation` / `validation_entries` — configuration and per-entry
   validation;

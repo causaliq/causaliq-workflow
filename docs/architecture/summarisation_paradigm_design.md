@@ -60,7 +60,7 @@ Aggregation mode is automatically activated when a step has:
 2. An `input` parameter with `.db` cache file(s)
 
 ```python
-def _is_aggregation_step(
+def _is_entry_scan_step(
     self,
     step: Dict[str, Any],
     matrix: Dict[str, List[Any]],
@@ -101,7 +101,7 @@ Aggregation execution has two phases:
 The scan phase reads input caches, applies filters, and groups entries:
 
 ```python
-def _scan_aggregation_inputs(
+def _scan_input_entries(
     self,
     config: AggregationConfig,
     matrix_values: Dict[str, Any],
@@ -154,9 +154,9 @@ The execute phase passes grouped entries to the action:
 
 ```python
 # In _execute_job:
-agg_config = self._get_aggregation_config(step, matrix)
+agg_config = self._get_entry_scan_config(step, matrix)
 if agg_config is not None:
-    matching_entries = self._scan_aggregation_inputs(
+    matching_entries = self._scan_input_entries(
         agg_config,
         job,  # Current matrix values
     )
@@ -296,7 +296,7 @@ Actions receive entries as dictionaries:
 Aggregation operations log statistics:
 
 ```
-Aggregation scan: scanned=45, filtered=3, matched=15
+Entry scan: scanned=45, filtered=3, matched=15
 ```
 
 - `scanned`: Total entries examined

@@ -73,6 +73,12 @@ are recorded only in metadata. The entry replaces any prior entry for the
 key: the latest run wins, including when a failure replaces a previously
 successful result.
 
+A failure entry holds no object, so it declares no object type: the cache
+type is pinned only when it is already known. A failure recorded before the
+cache's first successful write therefore leaves the cache unpinned, and the
+type is pinned by the first typed write that follows. The executor records
+every failure through `WorkflowCache.put_failure`.
+
 Consumers propagate failures rather than hiding them: `evaluate_graph` does
 not compute metrics from a failed input, but writes a provenance-only entry
 to the metrics cache (`status: input_failed` with the upstream error), so

@@ -229,7 +229,7 @@ The design focus for workflow caches is speed and compactness, and because of th
  - `serialise(data_type, data)` which converts internal data objects to open-standard format strings such as GraphML.
  - `deserialise(data_type, content)` which converts open-standard format strings back to internal data objects.
 
-The `causaliq-workflow` CLI provides an `export-cache` command which exports the whole contents of a workflow cache to a directory structure of standard-format files which are human-readable and processable by third party tools. It is this open-standards export of the workflow cache that would be stored on Zenodo for example. Similarly, an `import-cache` command provides the capability to convert these open-standard format files back into workflow caches, ready to participate in CausalIQ workflows.
+The `causaliq-workflow` CLI provides an `export-cache` command which exports the whole contents of a workflow cache to a directory structure of standard-format files which are human-readable and processable by third party tools. It is this open-standards export of the workflow cache that would be stored on Zenodo for example. Similarly, an `import-cache` command provides the capability to convert these open-standard format files back into workflow caches, ready to participate in CausalIQ workflows. A `describe-cache` command reports a cache's object type, entry and object counts and matrix coverage without exporting it, so a partitioned cache can be inspected before it is aggregated.
 
 Importantly, the `serialise` and `deserialise` methods work with string content rather than files, which provides the means by which ActionProviders can read workflow cache entries *without understanding the compressed internal format of the entry cache*. Third-parties writing actions therefore need only be able to process standards-based formats as inputs, and need not, for example, use any CausalIQ code, as long as they implement the BaseActionProvider interface.
 
@@ -427,7 +427,7 @@ Workflow engine sub-package:
   detection.
 - `workflow/filters.py` — filter literal rewriting before validation.
 - `workflow/provenance.py` — provenance collection for cache entries.
-- `workflow/aggregation.py` — cache-entry scan configuration and input
+- `workflow/entry_scan.py` — input cache-entry scan configuration and
   scanning (`AggregationConfig`).
 - `workflow/validation.py` — workflow and action configuration validation.
 - `workflow/validation_entries.py` — per-entry validation for the execution
@@ -437,7 +437,7 @@ Workflow engine sub-package:
 - `workflow/execution.py` — workflow parsing, execution entry points and the
   job loop.
 - `workflow/step_runner.py` — running one step: action calls, conservative
-  skips, aggregation wiring and dry-run previews.
+  skips, entry-scan wiring and dry-run previews.
 - `workflow/step_store.py` — storing step results and failures, and logging
   step completion.
 - `workflow/executor.py` — composes the mixins into `WorkflowExecutor`.

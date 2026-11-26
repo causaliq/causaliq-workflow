@@ -200,6 +200,17 @@ cqflow export-cache -i results/graphs.db -o results.zip
 cqflow import-cache -i ./exported -o results/restored.db
 ```
 
+## Describing a Cache
+
+`cqflow describe-cache` reports the object type a cache holds, how many
+entries and objects it contains, and how its matrix values cover the
+possible combinations. It is read-only and is useful before exporting or
+aggregating a partitioned cache:
+
+```bash
+cqflow describe-cache -i results/graphs.db
+```
+
 Exported format uses:
 
 - **JSON** for metadata

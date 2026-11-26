@@ -491,7 +491,7 @@ for workflow_id, results in runner.results.items():
 
 ```dockerfile
 # Dockerfile
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
