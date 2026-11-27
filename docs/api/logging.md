@@ -205,11 +205,11 @@ Actions will receive the logger as an optional parameter for task-level logging:
 def run(
     self,
     action: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     mode: str = "dry-run",
     context=None,
     logger=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if logger:
         # Log task execution details
         logger.info(f"Executing action: {action}")

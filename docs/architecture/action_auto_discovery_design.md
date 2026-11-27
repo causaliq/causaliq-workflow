@@ -206,13 +206,7 @@ class ActionRegistry:
 
     def _discover_entry_points(self) -> None:
         """Discover entry points WITHOUT importing them."""
-        # Python 3.10+ API
-        if sys.version_info >= (3, 10):
-            eps = entry_points(group="causaliq.actions")
-        else:
-            # Python 3.9 compatibility
-            all_eps = entry_points()
-            eps = all_eps.get("causaliq.actions", [])
+        eps = entry_points(group="causaliq.actions")
 
         for ep in eps:
             # Store metadata only - no imports yet!

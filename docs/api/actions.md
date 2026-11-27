@@ -118,10 +118,10 @@ class MyStructureLearnerAction(CausalIQActionProvider):
     def run(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str = "dry-run",
-        context: Optional[Any] = None,
-        logger: Optional[Any] = None,
+        context: Any | None = None,
+        logger: Any | None = None,
     ) -> ActionResult:
         """Execute the structure learning algorithm.
 

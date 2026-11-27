@@ -137,11 +137,11 @@ Actions will report their execution status using TaskStatus values:
 def run(
     self,
     action: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     mode: str = "dry-run",
     context=None,
     logger=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if mode == "dry-run":
         if self._outputs_exist(parameters):
             return {"status": TaskStatus.WOULD_SKIP}

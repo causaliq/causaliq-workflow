@@ -220,11 +220,11 @@ class PCAlgorithmAction(BaseActionProvider):
     def run(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str = "dry-run",
         context=None,
         logger=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute PC algorithm."""
         try:
             # Load data
@@ -273,11 +273,11 @@ class NetworkAnalysisAction(BaseActionProvider):
     def run(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str = "dry-run",
         context=None,
         logger=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Analyse network structure."""
         try:
             # Load structure
