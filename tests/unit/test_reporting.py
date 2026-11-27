@@ -1,6 +1,6 @@
 """Unit tests for workflow run reporting."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -16,12 +16,12 @@ from causaliq_workflow.reporting import (
 )
 
 
-def _child(name: str, status: str, **extra: Any) -> Dict[str, Any]:
+def _child(name: str, status: str, **extra: Any) -> dict[str, Any]:
     """Return one child step summary."""
     return {"name": name, "status": status, **extra}
 
 
-def _call(steps: List[Dict[str, Any]], **extra: Any) -> Dict[str, Any]:
+def _call(steps: list[dict[str, Any]], **extra: Any) -> dict[str, Any]:
     """Return a workflow-call step summary wrapping child steps."""
     return {
         "status": "success",

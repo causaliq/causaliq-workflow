@@ -5,7 +5,7 @@ declared, else the output cache keys, else a single job when the step
 writes no workflow cache.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from causaliq_core import (
     ActionPattern,
@@ -28,10 +28,10 @@ class OutputActionProvider(CausalIQActionProvider):
     def _execute(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
-        context: Optional[Any],
-        logger: Optional[Any],
+        context: Any | None,
+        logger: Any | None,
     ) -> Any:
         """Execute the mock action."""
         return ("success", {"ran": True}, [])
@@ -46,10 +46,10 @@ def _make_executor() -> WorkflowExecutor:
 
 def _workflow(
     output: str = "out.png",
-    matrix: Optional[Dict[str, List[Any]]] = None,
-) -> Dict[str, Any]:
+    matrix: dict[str, list[Any]] | None = None,
+) -> dict[str, Any]:
     """Return a workflow containing one produce step."""
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "steps": [
             {
                 "name": "produce-step",
@@ -125,7 +125,7 @@ def test_run_once_step_skipped_on_later_jobs(tmp_path: Any) -> None:
             cache.put({"network": network}, CacheEntry())
 
     executor = _make_executor()
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "steps": [
             {
                 "name": "aggregate-step",
@@ -167,7 +167,7 @@ class StrictOutputActionProvider(OutputActionProvider):
     name = "strict-output-provider"
 
     def validate_parameters(
-        self, action: str, parameters: Dict[str, Any]
+        self, action: str, parameters: dict[str, Any]
     ) -> None:
         """Require the required_param parameter."""
         super().validate_parameters(action, parameters)
@@ -182,7 +182,7 @@ def test_run_once_step_reports_validation_error() -> None:
     executor.action_registry._actions["strict-output-provider"] = (
         StrictOutputActionProvider
     )
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "steps": [
             {
                 "name": "strict-step",
@@ -200,7 +200,7 @@ def test_run_once_step_reports_validation_error() -> None:
 def test_derive_matrix_skips_step_without_cache_input() -> None:
     """An aggregate step with a cache output but no cache input."""
     executor = _make_executor()
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "steps": [
             {
                 "name": "produce-step",

@@ -4,7 +4,7 @@ Provides an 'echo' action for testing workflow execution, cache storage,
 and export/import functionality without external dependencies.
 """
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Set
 
 from causaliq_core import (
     ActionInput,
@@ -72,7 +72,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
     }
 
     def validate_parameters(
-        self, action: str, parameters: Dict[str, Any]
+        self, action: str, parameters: dict[str, Any]
     ) -> None:
         """Validate action and parameters.
 
@@ -99,7 +99,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
             )
 
     def _dry_run_result(
-        self, action: str, parameters: Dict[str, Any]
+        self, action: str, parameters: dict[str, Any]
     ) -> ActionResult:
         """Return dry-run result with estimated output metadata.
 
@@ -126,10 +126,10 @@ class WorkflowActionProvider(CausalIQActionProvider):
     def _execute(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
-        context: Optional[Any],
-        logger: Optional[Any],
+        context: Any | None,
+        logger: Any | None,
     ) -> ActionResult:
         """Execute the specified action.
 
@@ -153,7 +153,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
 
     def _run_echo(
         self,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
     ) -> ActionResult:
         """Execute the echo action.
@@ -173,7 +173,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
         edges = [(node_names[i], node_names[i + 1]) for i in range(nodes - 1)]
 
         # Build metadata
-        metadata: Dict[str, Any] = {
+        metadata: dict[str, Any] = {
             "message": message,
             "node_count": nodes,
             "edge_count": len(edges),
@@ -187,7 +187,7 @@ class WorkflowActionProvider(CausalIQActionProvider):
         graphml_content = self._build_graphml_content(node_names, edges)
 
         # Build objects list
-        objects: List[Dict[str, Any]] = [
+        objects: list[dict[str, Any]] = [
             {
                 "type": "json",
                 "name": "echo_data",
@@ -205,8 +205,8 @@ class WorkflowActionProvider(CausalIQActionProvider):
     def _build_json_content(
         self,
         message: str,
-        nodes: List[str],
-        edges: List[tuple],
+        nodes: list[str],
+        edges: list[tuple],
     ) -> str:
         """Build JSON content for echo action.
 
@@ -229,8 +229,8 @@ class WorkflowActionProvider(CausalIQActionProvider):
 
     def _build_graphml_content(
         self,
-        nodes: List[str],
-        edges: List[tuple],
+        nodes: list[str],
+        edges: list[tuple],
     ) -> str:
         """Build GraphML content for echo action.
 

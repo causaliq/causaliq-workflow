@@ -1,6 +1,6 @@
 """Template variable extraction, resolution and validation."""
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Set
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
@@ -39,7 +39,7 @@ class TemplateMixin(WorkflowExecutorBase):
 
     def _validate_template_variables(
         self,
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         parameters: Any = None,
     ) -> None:
         """Validate template variables in workflow.
@@ -93,8 +93,8 @@ class TemplateMixin(WorkflowExecutorBase):
             )
 
     def _missing_variable_errors(
-        self, workflow: Dict[str, Any], parameters: Any = None
-    ) -> List[str]:
+        self, workflow: dict[str, Any], parameters: Any = None
+    ) -> list[str]:
         """Return errors for template variables that have no value.
 
         A ``{{name}}`` token that is not a declared parameter, matrix
@@ -127,9 +127,9 @@ class TemplateMixin(WorkflowExecutorBase):
 
     def _aggregate_template_scope(
         self,
-        workflow: Dict[str, Any],
-        variables: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Set[str], Set[str]]:
+        workflow: dict[str, Any],
+        variables: dict[str, Any] | None = None,
+    ) -> tuple[Set[str], Set[str]]:
         """Return (matrix keys taken from caches, deferred variables).
 
         A cache-reading step without an explicit matrix takes its
@@ -156,7 +156,7 @@ class TemplateMixin(WorkflowExecutorBase):
 
         return derived, deferred
 
-    def _reads_cache_entries(self, step: Dict[str, Any]) -> bool:
+    def _reads_cache_entries(self, step: dict[str, Any]) -> bool:
         """Return True when a step reads entries from a workflow cache.
 
         MAP and AGGREGATE steps take their dimensionality from an input
@@ -171,14 +171,14 @@ class TemplateMixin(WorkflowExecutorBase):
             ActionPattern.AGGREGATE,
         ) and _has_db_input(step_inputs.get("input"))
 
-    def _step_template_variables(self, step: Dict[str, Any]) -> Set[str]:
+    def _step_template_variables(self, step: dict[str, Any]) -> Set[str]:
         """Return the template variables used by a single step."""
         step_vars: Set[str] = set()
         self._collect_template_variables(step, step_vars)
         return step_vars
 
     def _collect_templating_variables(
-        self, workflow: Dict[str, Any]
+        self, workflow: dict[str, Any]
     ) -> Set[str]:
         """Collect template variables used by any workflow step.
 
@@ -197,8 +197,8 @@ class TemplateMixin(WorkflowExecutorBase):
         return templating_vars
 
     def _scan_step_variables(
-        self, workflow: Dict[str, Any]
-    ) -> Tuple[Set[str], bool]:
+        self, workflow: dict[str, Any]
+    ) -> tuple[Set[str], bool]:
         """Collect template variables and detect templating steps.
 
         Returns a tuple of (all_vars, has_templating_steps). A templating
@@ -233,7 +233,7 @@ class TemplateMixin(WorkflowExecutorBase):
         used_variables.update(_token_names(obj))
 
     def _resolve_template_variables(
-        self, obj: Any, variables: Dict[str, Any]
+        self, obj: Any, variables: dict[str, Any]
     ) -> Any:
         """Recursively resolve template variables in workflow object.
 
@@ -259,8 +259,8 @@ class TemplateMixin(WorkflowExecutorBase):
         return obj
 
     def _resolved_step_inputs(
-        self, step: Dict[str, Any], variables: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, step: dict[str, Any], variables: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Return a step's ``with`` block with known templates resolved.
 
         Cache introspection runs before a job exists, so it needs the
@@ -275,16 +275,16 @@ class TemplateMixin(WorkflowExecutorBase):
         Returns:
             The step's ``with`` values, resolved where possible.
         """
-        step_inputs: Dict[str, Any] = step.get("with", {})
+        step_inputs: dict[str, Any] = step.get("with", {})
         if not variables:
             return step_inputs
-        resolved: Dict[str, Any] = self._resolve_template_variables(
+        resolved: dict[str, Any] = self._resolve_template_variables(
             step_inputs, variables
         )
         return resolved
 
     def _substitute_variables(
-        self, text: str, variables: Dict[str, Any]
+        self, text: str, variables: dict[str, Any]
     ) -> Any:
         """Substitute known ``{{variable}}`` tokens in a single string.
 
@@ -311,10 +311,10 @@ class TemplateMixin(WorkflowExecutorBase):
 
     def _resolve_step_name(
         self,
-        step: Dict[str, Any],
-        variables: Dict[str, Any],
+        step: dict[str, Any],
+        variables: dict[str, Any],
         index: int,
-        recorded: Optional[Dict[str, Any]] = None,
+        recorded: dict[str, Any] | None = None,
     ) -> str:
         """Return a step's name with its template tokens expanded as text.
 
@@ -352,7 +352,7 @@ class TemplateMixin(WorkflowExecutorBase):
 
 
 def _collect_available_variables(
-    workflow: Dict[str, Any],
+    workflow: dict[str, Any],
     matrix_vars: Set[str],
     parameters: Set[str],
 ) -> Set[str]:
@@ -367,7 +367,7 @@ def _collect_available_variables(
     return available
 
 
-def _raise_parameter_errors(workflow: Dict[str, Any]) -> None:
+def _raise_parameter_errors(workflow: dict[str, Any]) -> None:
     """Raise when a parameter declaration is invalid or ineffective."""
     errors = _parameter_declaration_errors(workflow)
     if not errors:
@@ -375,7 +375,7 @@ def _raise_parameter_errors(workflow: Dict[str, Any]) -> None:
     raise WorkflowExecutionError("; ".join(errors))
 
 
-def _cached_matrix_keys(step_inputs: Dict[str, Any]) -> Set[str]:
+def _cached_matrix_keys(step_inputs: dict[str, Any]) -> Set[str]:
     """Return matrix keys derivable from resolved step inputs.
 
     The keys of every input cache are collected, so caches holding
@@ -413,7 +413,7 @@ def _raise_unknown_variables(used_vars: Set[str], available: Set[str]) -> None:
 def _raise_unused_matrix_variables(
     matrix_vars: Set[str],
     templating_vars: Set[str],
-    matrix_def: Dict[str, Any],
+    matrix_def: dict[str, Any],
 ) -> None:
     """Raise when matrix variables are unused by any templating step."""
     unused = {

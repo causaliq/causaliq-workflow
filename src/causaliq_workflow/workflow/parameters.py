@@ -20,7 +20,7 @@ value does not invalidate existing entries.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Set
 
 from causaliq_workflow.schema import _RESERVED_KEYS
 
@@ -52,7 +52,7 @@ def _token_names(obj: Any) -> Set[str]:
     return _extract_tokens(obj)
 
 
-def _single_token(text: Any) -> Optional[str]:
+def _single_token(text: Any) -> str | None:
     """Return the name when a value is exactly one ``{{name}}`` token."""
     if not isinstance(text, str):
         return None
@@ -60,7 +60,7 @@ def _single_token(text: Any) -> Optional[str]:
     return match.group(1) if match else None
 
 
-def _substitute_text(text: str, variables: Dict[str, Any]) -> str:
+def _substitute_text(text: str, variables: dict[str, Any]) -> str:
     """Return text with every known ``{{name}}`` token expanded as text.
 
     The value's text form is used, so a step name always stays a string
@@ -81,7 +81,7 @@ def _substitute_text(text: str, variables: Dict[str, Any]) -> str:
     return result
 
 
-def _declared_parameters(workflow: Dict[str, Any]) -> Dict[str, Any]:
+def _declared_parameters(workflow: dict[str, Any]) -> dict[str, Any]:
     """Return a workflow's declared parameter defaults."""
     return {
         key: value
@@ -90,7 +90,7 @@ def _declared_parameters(workflow: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _supplied_parameter_values(parameters: Any) -> Dict[str, Any]:
+def _supplied_parameter_values(parameters: Any) -> dict[str, Any]:
     """Return supplied parameter values from a mapping or a name set.
 
     Some callers hold resolved values (the CLI, a workflow call) while
@@ -109,8 +109,8 @@ def _supplied_parameter_names(parameters: Any) -> Set[str]:
 
 
 def _workflow_variables(
-    workflow: Dict[str, Any], parameters: Any = None
-) -> Dict[str, Any]:
+    workflow: dict[str, Any], parameters: Any = None
+) -> dict[str, Any]:
     """Return template values available before a job is expanded.
 
     Declared parameter defaults are overridden by supplied parameter
@@ -136,7 +136,7 @@ def _workflow_variables(
     }
 
 
-def _used_parameter_names(workflow: Dict[str, Any]) -> Set[str]:
+def _used_parameter_names(workflow: dict[str, Any]) -> Set[str]:
     """Return the names a step uses as ``{{name}}`` tokens.
 
     A token counts wherever a step can show it: in the ``with`` block or
@@ -157,7 +157,7 @@ def _used_parameter_names(workflow: Dict[str, Any]) -> Set[str]:
     return used
 
 
-def _parameter_names(workflow: Dict[str, Any]) -> Set[str]:
+def _parameter_names(workflow: dict[str, Any]) -> Set[str]:
     """Return the parameter names a caller may bind for a workflow.
 
     A name is accepted when it is a declared parameter, a matrix
@@ -177,10 +177,10 @@ def _parameter_names(workflow: Dict[str, Any]) -> Set[str]:
 
 
 def _unknown_parameter_errors(
-    parameters: Dict[str, Any],
-    workflow: Dict[str, Any],
+    parameters: dict[str, Any],
+    workflow: dict[str, Any],
     workflow_label: str = "",
-) -> List[str]:
+) -> list[str]:
     """Return one error per parameter the workflow does not accept.
 
     Args:
@@ -203,7 +203,7 @@ def _unknown_parameter_errors(
     ]
 
 
-def _null_default_names(workflow: Dict[str, Any]) -> Set[str]:
+def _null_default_names(workflow: dict[str, Any]) -> Set[str]:
     """Return the names of parameters declared with a null default."""
     return {
         name
@@ -212,7 +212,7 @@ def _null_default_names(workflow: Dict[str, Any]) -> Set[str]:
     }
 
 
-def _list_default_names(workflow: Dict[str, Any]) -> Set[str]:
+def _list_default_names(workflow: dict[str, Any]) -> Set[str]:
     """Return the names of parameters declared with a list default."""
     return {
         name
@@ -256,7 +256,7 @@ def _null_parameter_names(
     return set()
 
 
-def _unused_parameter_errors(workflow: Dict[str, Any]) -> List[str]:
+def _unused_parameter_errors(workflow: dict[str, Any]) -> list[str]:
     """Return errors for declared parameters no step references.
 
     A default only affects a step that uses the name as a
@@ -280,11 +280,11 @@ def _unused_parameter_errors(workflow: Dict[str, Any]) -> List[str]:
 
 def _null_usage_step_errors(
     step_name: str,
-    values: Dict[str, Any],
+    values: dict[str, Any],
     null_names: Set[str],
-) -> List[str]:
+) -> list[str]:
     """Return errors for null-default parameters misused by one step."""
-    errors: List[str] = []
+    errors: list[str] = []
     for value in values.values():
         for name in sorted(_null_parameter_names(value, null_names)):
             errors.append(
@@ -295,10 +295,10 @@ def _null_usage_step_errors(
     return errors
 
 
-def _null_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
+def _null_parameter_usage_errors(workflow: dict[str, Any]) -> list[str]:
     """Return errors for null-default parameters used as partial values."""
     null_names = _null_default_names(workflow)
-    errors: List[str] = []
+    errors: list[str] = []
     for step in workflow.get("steps", []):
         step_name = step.get("name", "unnamed")
         errors.extend(
@@ -310,10 +310,10 @@ def _null_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
 
 
 def _list_usage_step_errors(
-    step_name: str, values: Dict[str, Any], list_names: Set[str]
-) -> List[str]:
+    step_name: str, values: dict[str, Any], list_names: Set[str]
+) -> list[str]:
     """Return errors for list-default parameters used as partial values."""
-    errors: List[str] = []
+    errors: list[str] = []
     for value in values.values():
         for name in sorted(_null_parameter_names(value, list_names)):
             errors.append(
@@ -324,7 +324,7 @@ def _list_usage_step_errors(
     return errors
 
 
-def _list_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
+def _list_parameter_usage_errors(workflow: dict[str, Any]) -> list[str]:
     """Return errors for list-default parameters used as partial values.
 
     A list default has no text form, so interpolating it into a longer
@@ -339,7 +339,7 @@ def _list_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
         value is meaningful.
     """
     list_names = _list_default_names(workflow)
-    errors: List[str] = []
+    errors: list[str] = []
     for step in workflow.get("steps", []):
         step_name = step.get("name", "unnamed")
         errors.extend(
@@ -351,15 +351,15 @@ def _list_parameter_usage_errors(workflow: Dict[str, Any]) -> List[str]:
 
 
 def _parameter_errors(
-    workflow: Dict[str, Any], parameters: Dict[str, Any]
-) -> List[str]:
+    workflow: dict[str, Any], parameters: dict[str, Any]
+) -> list[str]:
     """Return declaration and unknown-name parameter errors."""
     errors = _parameter_declaration_errors(workflow)
     errors.extend(_unknown_parameter_errors(parameters, workflow))
     return errors
 
 
-def _parameter_matrix_clash_errors(workflow: Dict[str, Any]) -> List[str]:
+def _parameter_matrix_clash_errors(workflow: dict[str, Any]) -> list[str]:
     """Return errors for names declared as both parameter and matrix."""
     clash = set(_declared_parameters(workflow))
     clash &= set(workflow.get("matrix", {}))
@@ -370,7 +370,7 @@ def _parameter_matrix_clash_errors(workflow: Dict[str, Any]) -> List[str]:
     ]
 
 
-def _parameter_declaration_errors(workflow: Dict[str, Any]) -> List[str]:
+def _parameter_declaration_errors(workflow: dict[str, Any]) -> list[str]:
     """Return clash, unused-declaration and usage errors.
 
     Args:
@@ -387,7 +387,7 @@ def _parameter_declaration_errors(workflow: Dict[str, Any]) -> List[str]:
 
 
 def _call_parameters_vary(
-    step: Dict[str, Any], matrix: Dict[str, Any]
+    step: dict[str, Any], matrix: dict[str, Any]
 ) -> bool:
     """Return True when a call step's parameters differ per matrix job.
 

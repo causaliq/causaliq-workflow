@@ -18,7 +18,7 @@ steps:
 
 import csv
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from causaliq_core import ActionResult, CausalIQActionProvider
 
@@ -36,7 +36,7 @@ class ActionProvider(CausalIQActionProvider):
         """Initialise analysis action."""
         super().__init__()
 
-    def run(self, inputs: Dict[str, Any], **kwargs) -> ActionResult:
+    def run(self, inputs: dict[str, Any], **kwargs) -> ActionResult:
         """Execute the simple analysis action."""
 
         # Get input parameters

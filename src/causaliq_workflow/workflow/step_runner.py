@@ -6,7 +6,7 @@ preview, so the execution mixin only sequences steps.
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
@@ -23,7 +23,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
     """Executing a single workflow step for WorkflowExecutor."""
 
     def _run_action_step(
-        self, state: _JobState, step: Dict[str, Any], step_name: str
+        self, state: _JobState, step: dict[str, Any], step_name: str
     ) -> bool:
         """Execute an action ('uses') or workflow-call step.
 
@@ -60,9 +60,9 @@ class StepRunnerMixin(WorkflowExecutorBase):
     def _skip_nocache_step(
         self,
         state: _JobState,
-        step: Dict[str, Any],
+        step: dict[str, Any],
         step_name: str,
-        resolved_inputs: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
     ) -> bool:
         """Skip single-run steps on every matrix job after the first.
 
@@ -86,7 +86,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         self,
         state: _JobState,
         step_name: str,
-        resolved_inputs: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
     ) -> bool:
         """Skip a run-mode cache-reading step that already has its entry.
 
@@ -116,10 +116,10 @@ class StepRunnerMixin(WorkflowExecutorBase):
     def _attach_input_entries(
         self,
         state: _JobState,
-        step: Dict[str, Any],
-        resolved_inputs: Dict[str, Any],
+        step: dict[str, Any],
+        resolved_inputs: dict[str, Any],
         step_name: str = "unnamed",
-    ) -> Optional[str]:
+    ) -> str | None:
         """Scan the input caches and attach the matched entries.
 
         A MAP step must match exactly one entry, so its arity is checked
@@ -161,7 +161,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         state: _JobState,
         step_name: str,
         action_name: str,
-        resolved_inputs: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
     ) -> bool:
         """Execute a cache-writing step with step-level caching.
 
@@ -200,7 +200,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         self,
         state: _JobState,
         step_name: str,
-        resolved_inputs: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
         output_path: Any,
         is_cache_output: bool,
     ) -> None:
@@ -218,7 +218,7 @@ class StepRunnerMixin(WorkflowExecutorBase):
         self,
         state: _JobState,
         step_name: str,
-        resolved_inputs: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
         output_path: Any,
         is_cache_output: bool,
     ) -> bool:
@@ -257,8 +257,8 @@ class StepRunnerMixin(WorkflowExecutorBase):
         state: _JobState,
         step_name: str,
         action_name: str,
-        resolved_inputs: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        resolved_inputs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Execute the action, then store, check and log its result."""
         try:
             _log_step_status(state, step_name, resolved_inputs, "RUNNING")
@@ -302,8 +302,8 @@ def _is_cache_output(output_path: Any) -> bool:
 def _raise_unstored_objects(
     state: _JobState,
     step_name: str,
-    resolved_inputs: Dict[str, Any],
-    step_result: Dict[str, Any],
+    resolved_inputs: dict[str, Any],
+    step_result: dict[str, Any],
 ) -> None:
     """Raise when a step produced objects with no cache to store them."""
     if state.context.cache is not None:
@@ -323,7 +323,7 @@ def _raise_unstored_objects(
 
 
 def _record_step_outputs(
-    state: _JobState, step_name: str, step_result: Dict[str, Any]
+    state: _JobState, step_name: str, step_result: dict[str, Any]
 ) -> None:
     """Expose a step's outputs to later steps via template variables."""
     if "outputs" in step_result:
@@ -342,7 +342,7 @@ def _all_input_caches_exist(cache_paths: Any) -> bool:
 def _log_step_status(
     state: _JobState,
     step_name: str,
-    resolved_inputs: Dict[str, Any],
+    resolved_inputs: dict[str, Any],
     status: str,
 ) -> None:
     """Log a step status when a step logger is present."""

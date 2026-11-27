@@ -1,6 +1,6 @@
 """Unit tests for bare filter literals in workflows."""
 
-from typing import Any, Dict
+from typing import Any
 
 from causaliq_workflow.workflow import WorkflowExecutor
 from causaliq_workflow.workflow.filters import (
@@ -93,21 +93,21 @@ def test_invalid_filter_is_untouched() -> None:
 
 # A non-list steps value is ignored.
 def test_non_list_steps_is_ignored() -> None:
-    workflow: Dict[str, Any] = {"steps": "bad"}
+    workflow: dict[str, Any] = {"steps": "bad"}
     relax_step_filter_literals(workflow)
     assert workflow["steps"] == "bad"
 
 
 # A step or with block of the wrong shape is ignored.
 def test_malformed_step_is_ignored() -> None:
-    workflow: Dict[str, Any] = {"steps": ["bad", {"name": "s", "with": "bad"}]}
+    workflow: dict[str, Any] = {"steps": ["bad", {"name": "s", "with": "bad"}]}
     relax_step_filter_literals(workflow)
     assert workflow["steps"][0] == "bad"
 
 
 # A non-dictionary matrix is ignored when collecting reserved names.
 def test_non_dict_matrix_is_ignored() -> None:
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "matrix": "bad",
         "steps": [{"name": "s", "with": {"filter": "a == b"}}],
     }
@@ -126,7 +126,7 @@ def test_relaxation_is_idempotent() -> None:
 
 # Parsing a workflow relaxes its filters before validation.
 def test_parse_workflow_relaxes_filters(monkeypatch) -> None:
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "description": "text",
         "matrix": {"network": ["asia"]},
         "steps": [
@@ -163,7 +163,7 @@ def test_parse_workflow_relaxes_filters(monkeypatch) -> None:
 
 # Executing a workflow dictionary relaxes its filters too.
 def test_execute_workflow_relaxes_filters(monkeypatch) -> None:
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def fake_execute(
         workflow, mode, cli_params, step_logger, frames, **kwargs

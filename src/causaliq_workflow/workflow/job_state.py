@@ -6,7 +6,7 @@ rather than on one another.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from causaliq_workflow.registry import WorkflowContext
 from causaliq_workflow.reporting import StepLogger
@@ -17,12 +17,12 @@ from causaliq_workflow.workflow.frames import WorkflowFrame
 class _JobState:
     """Mutable state for executing a single job's steps."""
 
-    workflow: Dict[str, Any]
-    job: Dict[str, Any]
+    workflow: dict[str, Any]
+    job: dict[str, Any]
     context: WorkflowContext
-    cli_params: Dict[str, Any]
-    step_logger: Optional[StepLogger]
-    variables: Dict[str, Any]
-    step_results: Dict[str, Any] = field(default_factory=dict)
-    frames: Tuple[WorkflowFrame, ...] = ()
+    cli_params: dict[str, Any]
+    step_logger: StepLogger | None
+    variables: dict[str, Any]
+    step_results: dict[str, Any] = field(default_factory=dict)
+    frames: tuple[WorkflowFrame, ...] = ()
     depth: int = 0

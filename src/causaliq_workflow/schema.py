@@ -6,7 +6,7 @@ Uses standard JSON Schema validation with the jsonschema library.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Set, Union
 
 import yaml
 
@@ -30,8 +30,8 @@ class WorkflowValidationError(Exception):
 
 
 def load_schema(
-    schema_path: Optional[Union[str, Path]] = None,
-) -> Dict[str, Any]:
+    schema_path: Union[str, Path] | None = None,
+) -> dict[str, Any]:
     """Load CausalIQ workflow JSON Schema.
 
     Args:
@@ -65,7 +65,7 @@ def load_schema(
         raise WorkflowValidationError(f"Invalid JSON in schema: {e}")
 
 
-def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
+def _pre_validate_workflow(workflow: dict[str, Any]) -> None:
     """Pre-validate workflow for common issues with clear error messages.
 
     This runs before JSON Schema validation to provide clearer errors
@@ -100,7 +100,7 @@ def _pre_validate_workflow(workflow: Dict[str, Any]) -> None:
         _pre_validate_step(step)
 
 
-def _duplicate_step_name_errors(workflow: Dict[str, Any]) -> List[str]:
+def _duplicate_step_name_errors(workflow: dict[str, Any]) -> list[str]:
     """Return one error per repeated step name.
 
     Step results are recorded by name, so a repeated name silently
@@ -137,7 +137,7 @@ def _duplicate_step_name_errors(workflow: Dict[str, Any]) -> List[str]:
 _SCALAR_DEFAULT_TYPES = (str, int, float, bool)
 
 
-def _check_list_default(key: str, values: List[Any]) -> None:
+def _check_list_default(key: str, values: list[Any]) -> None:
     """Reject a list parameter default whose items are not scalars.
 
     A list default is a single value that a workflow may pass on, so it
@@ -203,7 +203,7 @@ def _pre_validate_step(step: Any) -> None:
 
 
 def validate_workflow(
-    workflow: Dict[str, Any], schema_path: Optional[Union[str, Path]] = None
+    workflow: dict[str, Any], schema_path: Union[str, Path] | None = None
 ) -> bool:
     """Validate workflow against CausalIQ JSON Schema.
 
@@ -241,7 +241,7 @@ def validate_workflow(
         )
 
 
-def load_workflow_file(file_path: Union[str, Path]) -> Dict[str, Any]:
+def load_workflow_file(file_path: Union[str, Path]) -> dict[str, Any]:
     """Load workflow from YAML file.
 
     Args:

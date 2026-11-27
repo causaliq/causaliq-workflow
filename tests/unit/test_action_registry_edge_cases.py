@@ -6,7 +6,7 @@ Tests edge cases, error paths, and discovery scenarios.
 
 import sys
 from types import ModuleType
-from typing import Any, Dict
+from typing import Any
 
 from causaliq_core import ActionResult, CausalIQActionProvider
 
@@ -22,7 +22,7 @@ class MockActionProvider(CausalIQActionProvider):
     version = "1.0.0"
     description = "Mock action for testing"
 
-    def run(self, inputs: Dict[str, Any], **kwargs) -> ActionResult:
+    def run(self, inputs: dict[str, Any], **kwargs) -> ActionResult:
         return ("success", {}, [])
 
 

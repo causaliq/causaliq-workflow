@@ -21,7 +21,7 @@ steps:
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 from causaliq_core import (
     ActionExecutionError,
@@ -82,7 +82,7 @@ class ActionProvider(CausalIQActionProvider):
         super().__init__()
 
     def _dry_run_result(
-        self, action: str, parameters: Dict[str, Any]
+        self, action: str, parameters: dict[str, Any]
     ) -> ActionResult:
         """Return dry-run preview without executing.
 
@@ -113,10 +113,10 @@ class ActionProvider(CausalIQActionProvider):
     def _execute(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
-        context: Optional["WorkflowContext"],
-        logger: Optional[Any],
+        context: "WorkflowContext | None",
+        logger: Any | None,
     ) -> ActionResult:
         """Execute test action.
 

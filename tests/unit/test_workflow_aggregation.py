@@ -1,6 +1,6 @@
 """Unit tests for WorkflowExecutor - aggregation functionality."""
 
-from typing import Any, List
+from typing import Any
 
 import pytest
 import pytest_mock
@@ -177,7 +177,7 @@ def test_get_entry_scan_config_input_list_filters_db(
     ],
 )
 def test_db_cache_paths_filters_db(
-    input_param: Any, expected: List[str]
+    input_param: Any, expected: list[str]
 ) -> None:
     assert _db_cache_paths(input_param) == expected
 

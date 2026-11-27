@@ -3,12 +3,8 @@
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     FrozenSet,
-    List,
-    Optional,
     Set,
-    Tuple,
 )
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -27,7 +23,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class PatternMixin(WorkflowExecutorBase):
     """Step pattern detection methods for WorkflowExecutor."""
 
-    def _runs_once(self, step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
+    def _runs_once(self, step: dict[str, Any], matrix: dict[str, Any]) -> bool:
         """Return True when a step runs once rather than per matrix job.
 
         A step that writes a file rather than a workflow cache has no
@@ -45,8 +41,8 @@ class PatternMixin(WorkflowExecutorBase):
 
     def _is_aggregate_pattern_step(
         self,
-        step: Dict[str, Any],
-        workflow: Dict[str, Any],
+        step: dict[str, Any],
+        workflow: dict[str, Any],
     ) -> bool:
         """Check if a step groups input cache entries.
 
@@ -71,8 +67,8 @@ class PatternMixin(WorkflowExecutorBase):
         return self._get_step_action_pattern(step) == ActionPattern.AGGREGATE
 
     def _get_step_action_pattern(
-        self, step: Dict[str, Any]
-    ) -> Optional["ActionPattern"]:
+        self, step: dict[str, Any]
+    ) -> "ActionPattern | None":
         """Get the action pattern for a step, if determinable.
 
         This method checks only the action pattern, ignoring workflow context
@@ -100,9 +96,9 @@ class PatternMixin(WorkflowExecutorBase):
 
     def _is_entry_scan_step(
         self,
-        step: Dict[str, Any],
-        matrix: Dict[str, List[Any]],
-        variables: Optional[Dict[str, Any]] = None,
+        step: dict[str, Any],
+        matrix: dict[str, list[Any]],
+        variables: dict[str, Any] | None = None,
     ) -> bool:
         """Check if a step should be given matched input cache entries.
 
@@ -139,10 +135,10 @@ class PatternMixin(WorkflowExecutorBase):
     def _map_arity_error(
         self,
         step_name: str,
-        step: Dict[str, Any],
-        entries: List[Any],
+        step: dict[str, Any],
+        entries: list[Any],
         allow_empty: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Return an error when a MAP step did not match one entry.
 
         A MAP action maps one input entry to one output entry, so a job
@@ -182,9 +178,9 @@ class PatternMixin(WorkflowExecutorBase):
     def _map_input_key_error(
         self,
         step_name: str,
-        step: Dict[str, Any],
-        agg_config: Optional["AggregationConfig"],
-    ) -> Optional[str]:
+        step: dict[str, Any],
+        agg_config: "AggregationConfig | None",
+    ) -> str | None:
         """Return an error when a MAP step reads differently-keyed caches.
 
         A MAP action maps one input entry to one output entry, so its
@@ -215,7 +211,7 @@ class PatternMixin(WorkflowExecutorBase):
             return None
 
         schemas: Set[FrozenSet[str]] = set()
-        compared: List[Tuple[str, str]] = []
+        compared: list[tuple[str, str]] = []
         for cache_path in agg_config.input_caches:
             keys = _cache_matrix_keys(str(cache_path))
             if not keys:
@@ -232,7 +228,7 @@ class PatternMixin(WorkflowExecutorBase):
             f"keys; found {found}"
         )
 
-    def _has_cache_input(self, step_inputs: Dict[str, Any]) -> bool:
+    def _has_cache_input(self, step_inputs: dict[str, Any]) -> bool:
         """Check if step inputs include cache file (.db) inputs.
 
         Args:

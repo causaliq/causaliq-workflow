@@ -11,7 +11,7 @@ import json
 import logging
 import sys
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Type
 
 from causaliq_core import (
     ActionExecutionError,
@@ -51,9 +51,9 @@ class WorkflowContext:
     """
 
     mode: str
-    matrix: Dict[str, List[Any]]
-    matrix_values: Dict[str, Any] = field(default_factory=dict)
-    cache: Optional["WorkflowCache"] = None
+    matrix: dict[str, list[Any]]
+    matrix_values: dict[str, Any] = field(default_factory=dict)
+    cache: "WorkflowCache | None" = None
     job_index: int = 0
     total_jobs: int = 1
 
@@ -121,7 +121,7 @@ class ActionRegistry:
         _discovery_errors: List of errors encountered during action discovery
     """
 
-    _instance: Optional["ActionRegistry"] = None
+    _instance: "ActionRegistry | None" = None
 
     def __init__(self) -> None:
         """Initialise registry and discover available action providers.
@@ -131,9 +131,9 @@ class ActionRegistry:
             _entry_points: Dictionary of entry points for lazy loading
             _discovery_errors: List to collect any discovery errors
         """
-        self._actions: Dict[str, Type[CausalIQActionProvider]] = {}
-        self._entry_points: Dict[str, Any] = {}  # Lazy-loaded entry points
-        self._discovery_errors: List[str] = []
+        self._actions: dict[str, Type[CausalIQActionProvider]] = {}
+        self._entry_points: dict[str, Any] = {}  # Lazy-loaded entry points
+        self._discovery_errors: list[str] = []
         self._discover_actions()
 
     def _discover_actions(self) -> None:
@@ -154,15 +154,9 @@ class ActionRegistry:
         action packages until execution time.
         """
         try:
-            if sys.version_info >= (3, 10):
-                from importlib.metadata import entry_points
+            from importlib.metadata import entry_points
 
-                eps = entry_points(group="causaliq.actions")
-            else:
-                from importlib.metadata import entry_points
-
-                all_eps = entry_points()
-                eps = all_eps.get("causaliq.actions", [])
+            eps = entry_points(group="causaliq.actions")
 
             for ep in eps:
                 # Just record the entry point, don't load it yet
@@ -177,7 +171,7 @@ class ActionRegistry:
 
     def _load_entry_point(
         self, name: str
-    ) -> Optional[Type[CausalIQActionProvider]]:
+    ) -> Type[CausalIQActionProvider] | None:
         """Load an entry point on demand.
 
         Args:
@@ -202,7 +196,7 @@ class ActionRegistry:
 
     def _register_entry_point(
         self, name: str, action_class: Any
-    ) -> Optional[Type[CausalIQActionProvider]]:
+    ) -> Type[CausalIQActionProvider] | None:
         """Cache a loaded entry point class when it is a valid provider."""
         if not (
             inspect.isclass(action_class)
@@ -316,7 +310,7 @@ class ActionRegistry:
             f"Registered action: {package_name} -> {action_class.__name__}"
         )
 
-    def get_available_actions(self) -> Dict[str, Type[CausalIQActionProvider]]:
+    def get_available_actions(self) -> dict[str, Type[CausalIQActionProvider]]:
         """Get dictionary of available action names to classes.
 
         Note: Entry points that haven't been loaded yet will not appear
@@ -329,7 +323,7 @@ class ActionRegistry:
         """
         return self._actions.copy()
 
-    def get_available_action_names(self) -> List[str]:
+    def get_available_action_names(self) -> list[str]:
         """Get list of all available action names.
 
         Includes both loaded actions and lazy-loadable entry points.
@@ -341,7 +335,7 @@ class ActionRegistry:
         names.update(self._entry_points.keys())
         return sorted(names)
 
-    def get_discovery_errors(self) -> List[str]:
+    def get_discovery_errors(self) -> list[str]:
         """Get list of errors encountered during action discovery.
 
         Returns:
@@ -400,7 +394,7 @@ class ActionRegistry:
         self,
         provider_name: str,
         action_name: str,
-    ) -> Optional[ActionPattern]:
+    ) -> ActionPattern | None:
         """Get the declared cache-mapping pattern for an action.
 
         Actions declare how they map workflow cache entries: ``PRODUCE``
@@ -425,9 +419,9 @@ class ActionRegistry:
     def execute_action(
         self,
         name: str,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         context: WorkflowContext,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute action with inputs and workflow context.
 
         Extracts the 'action' key from inputs and passes it separately
@@ -476,7 +470,7 @@ class ActionRegistry:
             # metadata dict (including its status/error fields) is
             # preserved under "_action_metadata" so workflow cache
             # storage can record the full outcome.
-            result: Dict[str, Any] = {
+            result: dict[str, Any] = {
                 "status": status,
                 **{
                     k: v
@@ -497,7 +491,7 @@ class ActionRegistry:
     def validate_action_parameters(
         self,
         name: str,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
     ) -> None:
         """Validate action parameters without executing.
 
@@ -545,7 +539,7 @@ class ActionRegistry:
                 f"Parameter validation for '{name}' failed: {e}"
             ) from e
 
-    def validate_workflow_actions(self, workflow: Dict[str, Any]) -> List[str]:
+    def validate_workflow_actions(self, workflow: dict[str, Any]) -> list[str]:
         """Validate all actions in workflow exist and can run.
 
         Args:
@@ -566,7 +560,7 @@ class ActionRegistry:
 
         return errors
 
-    def _unknown_provider_errors(self, step: Dict[str, Any]) -> List[str]:
+    def _unknown_provider_errors(self, step: dict[str, Any]) -> list[str]:
         """Return errors for a step referencing an unknown provider."""
         if "uses" not in step:
             return []
@@ -578,14 +572,14 @@ class ActionRegistry:
             f"Unknown provider '{action_name}'"
         ]
 
-    def list_actions_by_package(self) -> Dict[str, List[str]]:
+    def list_actions_by_package(self) -> dict[str, list[str]]:
         """Group actions by source package for documentation.
 
         Returns:
             Dictionary mapping package names to action lists
 
         """
-        packages: Dict[str, List[str]] = {}
+        packages: dict[str, list[str]] = {}
 
         for action_name, action_class in self._actions.items():
             # Extract package name from module
@@ -606,8 +600,8 @@ class ActionRegistry:
 def _effective_parameters(
     action_instance: Any,
     action_name: str,
-    inputs: Dict[str, Any],
-) -> Dict[str, Any]:
+    inputs: dict[str, Any],
+) -> dict[str, Any]:
     """Return effective parameters for one action, without the action name.
 
     Supplied values win. Declared defaults fill parameters that were not

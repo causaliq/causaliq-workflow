@@ -177,36 +177,6 @@ def test_registry_lines_64_76_256(monkeypatch):
     assert result is None
 
 
-# Test Python < 3.10 entry point discovery branch (lines 104-107).
-def test_entry_point_discovery_python_39_branch(monkeypatch):
-    """Test the Python < 3.10 entry point discovery code path."""
-
-    # Mock sys.version_info to simulate Python 3.9
-    monkeypatch.setattr(sys, "version_info", (3, 9, 0))
-
-    # Create a mock entry point
-    class MockEntryPoint:
-        def __init__(self, name: str):
-            self.name = name
-
-    # Create mock entry_points function that returns dict-like object
-    def mock_entry_points_legacy():
-        return {"causaliq.actions": [MockEntryPoint("test-legacy")]}
-
-    monkeypatch.setattr(
-        "importlib.metadata.entry_points", mock_entry_points_legacy
-    )
-
-    registry = ActionRegistry()
-    registry._entry_points = {}  # Clear any existing
-
-    # Force re-discovery
-    registry._discover_entry_points()
-
-    # Should have discovered the entry point
-    assert "test-legacy" in registry._entry_points
-
-
 # Test entry point discovery exception handling (lines 117-118).
 def test_entry_point_discovery_exception(monkeypatch):
     """Test that entry point discovery exceptions are logged and ignored."""

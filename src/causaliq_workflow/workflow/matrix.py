@@ -2,7 +2,7 @@
 
 import itertools
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Set
 
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
 from causaliq_workflow.workflow.errors import WorkflowExecutionError
@@ -55,9 +55,9 @@ def _canonical_scalar(value: Any) -> str:
 
 
 def _matrix_values_match(
-    entry_values: Dict[str, Any],
-    target_values: Dict[str, Any],
-    matrix_vars: List[str],
+    entry_values: dict[str, Any],
+    target_values: dict[str, Any],
+    matrix_vars: list[str],
 ) -> bool:
     """Check if entry matrix values match target values.
 
@@ -96,8 +96,8 @@ def _matrix_values_match(
 
 
 def _derive_matrix_from_caches(
-    cache_paths: List[str],
-) -> Tuple[List[str], Dict[str, List[Any]]]:
+    cache_paths: list[str],
+) -> tuple[list[str], dict[str, list[Any]]]:
     """Derive matrix keys and values from input caches.
 
     Scans all input caches, extracts matrix keys from entries, and validates
@@ -115,8 +115,8 @@ def _derive_matrix_from_caches(
     Raises:
         WorkflowExecutionError: If caches have inconsistent matrix keys
     """
-    all_keys: Optional[Set[str]] = None
-    value_sets: Dict[str, List[Any]] = {}
+    all_keys: Set[str] | None = None
+    value_sets: dict[str, list[Any]] = {}
 
     for cache_path in cache_paths:
         all_keys, value_sets = _accumulate_cache_keys(
@@ -159,7 +159,7 @@ def _cache_matrix_keys(cache_path: str) -> Set[str]:
     return keys
 
 
-def _collect_matrix_keys(cache_paths: List[str]) -> Set[str]:
+def _collect_matrix_keys(cache_paths: list[str]) -> Set[str]:
     """Return the union of matrix key names across the input caches.
 
     Naming the template variables an input offers does not need the
@@ -182,9 +182,9 @@ def _collect_matrix_keys(cache_paths: List[str]) -> Set[str]:
 
 def _accumulate_cache_keys(
     cache_path: str,
-    all_keys: Optional[Set[str]],
-    value_sets: Dict[str, List[Any]],
-) -> Tuple[Optional[Set[str]], Dict[str, List[Any]]]:
+    all_keys: Set[str] | None,
+    value_sets: dict[str, list[Any]],
+) -> tuple[Set[str] | None, dict[str, list[Any]]]:
     """Accumulate matrix keys and values from a single cache file."""
     from pathlib import Path
 
@@ -204,11 +204,11 @@ def _accumulate_cache_keys(
 
 
 def _merge_entry_keys(
-    entry_matrix: Dict[str, Any],
-    all_keys: Optional[Set[str]],
-    value_sets: Dict[str, List[Any]],
+    entry_matrix: dict[str, Any],
+    all_keys: Set[str] | None,
+    value_sets: dict[str, list[Any]],
     cache_path: str,
-) -> Tuple[Optional[Set[str]], Dict[str, List[Any]]]:
+) -> tuple[Set[str] | None, dict[str, list[Any]]]:
     """Merge one entry's matrix keys into the accumulated key/value lists."""
     entry_keys = set(entry_matrix.keys())
 
@@ -233,7 +233,7 @@ def _merge_entry_keys(
 def _cache_entry_exists(
     is_cache_output: bool,
     output_path: Any,
-    matrix_values: Dict[str, Any],
+    matrix_values: dict[str, Any],
 ) -> bool:
     """Return True when a .db output cache already holds the entry."""
     from pathlib import Path
@@ -246,7 +246,7 @@ def _cache_entry_exists(
         return cache.exists(matrix_values)
 
 
-def _has_cache_output(step: Dict[str, Any]) -> bool:
+def _has_cache_output(step: dict[str, Any]) -> bool:
     """Return True when a step writes a workflow cache (``.db`` output).
 
     A step's output cache is what gives it a matrix dimensionality: one
@@ -265,7 +265,7 @@ def _has_cache_output(step: Dict[str, Any]) -> bool:
     return str(output).lower().endswith(".db")
 
 
-def _has_file_output(step: Dict[str, Any]) -> bool:
+def _has_file_output(step: dict[str, Any]) -> bool:
     """Return True when a step writes a file rather than a workflow cache.
 
     Args:
@@ -280,7 +280,7 @@ def _has_file_output(step: Dict[str, Any]) -> bool:
     return not str(output).lower().endswith(".db")
 
 
-def _dimension_values(value: Any) -> List[Any]:
+def _dimension_values(value: Any) -> list[Any]:
     """Return a matrix dimension's value list for a parameter value."""
     if isinstance(value, list):
         return list(value)
@@ -288,8 +288,8 @@ def _dimension_values(value: Any) -> List[Any]:
 
 
 def _matrix_overrides(
-    parameters: Dict[str, Any], matrix: Dict[str, Any]
-) -> Dict[str, List[Any]]:
+    parameters: dict[str, Any], matrix: dict[str, Any]
+) -> dict[str, list[Any]]:
     """Return the parameter values that replace matrix dimensions."""
     return {
         name: _dimension_values(value)
@@ -299,8 +299,8 @@ def _matrix_overrides(
 
 
 def _bind_parameters(
-    workflow: Dict[str, Any], parameters: Dict[str, Any]
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    workflow: dict[str, Any], parameters: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Bind parameters to a workflow's matrix and variables.
 
     A parameter that names a matrix dimension replaces that dimension's
@@ -325,7 +325,7 @@ def _bind_parameters(
     return {**workflow, "matrix": {**matrix, **overrides}}, variables
 
 
-def _runs_once(step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
+def _runs_once(step: dict[str, Any], matrix: dict[str, Any]) -> bool:
     """Return True when a step runs once, outside matrix expansion.
 
     A step that writes a file rather than a workflow cache has no output
@@ -358,7 +358,7 @@ def _runs_once(step: Dict[str, Any], matrix: Dict[str, Any]) -> bool:
     return _has_file_output(step)
 
 
-def _cache_input_paths(input_param: Any) -> List[Any]:
+def _cache_input_paths(input_param: Any) -> list[Any]:
     """Return the cache (.db) paths named by a step input parameter."""
     if not input_param:
         return []
@@ -381,7 +381,7 @@ def _has_db_input(input_param: Any) -> bool:
     return any(str(p).lower().endswith(".db") for p in inputs)
 
 
-def _parse_range(value: str) -> Optional[List[Any]]:
+def _parse_range(value: str) -> list[Any] | None:
     """Return the integers spanned by a 'start-end' range, or None."""
     parts = value.split("-")
     if len(parts) != 2:
@@ -399,7 +399,7 @@ def _parse_range(value: str) -> Optional[List[Any]]:
 class MatrixMixin(WorkflowExecutorBase):
     """Matrix expansion and derivation for WorkflowExecutor."""
 
-    def _expand_range_value(self, value: Any) -> List[Any]:
+    def _expand_range_value(self, value: Any) -> list[Any]:
         """Expand a range string to a list of integers.
 
         Detects strings like "0-24" and expands them to [0, 1, 2, ..., 24].
@@ -420,7 +420,7 @@ class MatrixMixin(WorkflowExecutorBase):
             return [value]
         return expanded
 
-    def _expand_matrix_values(self, values: List[Any]) -> List[Any]:
+    def _expand_matrix_values(self, values: list[Any]) -> list[Any]:
         """Expand range strings in a list of matrix values.
 
         Args:
@@ -429,14 +429,14 @@ class MatrixMixin(WorkflowExecutorBase):
         Returns:
             Expanded list with ranges converted to individual values
         """
-        expanded: List[Any] = []
+        expanded: list[Any] = []
         for value in values:
             expanded.extend(self._expand_range_value(value))
         return expanded
 
     def expand_matrix(
-        self, matrix: Dict[str, List[Any]]
-    ) -> List[Dict[str, Any]]:
+        self, matrix: dict[str, list[Any]]
+    ) -> list[dict[str, Any]]:
         """Expand matrix variables into individual job configurations.
 
         Generates all combinations from matrix variables using cartesian
@@ -483,9 +483,9 @@ class MatrixMixin(WorkflowExecutorBase):
 
     def _derive_workflow_matrix(
         self,
-        workflow: Dict[str, Any],
-        variables: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, List[Any]]:
+        workflow: dict[str, Any],
+        variables: dict[str, Any] | None = None,
+    ) -> dict[str, list[Any]]:
         """Get effective matrix for workflow, deriving from cache if needed.
 
         If the workflow has an explicit matrix, returns it. Otherwise,
@@ -504,7 +504,7 @@ class MatrixMixin(WorkflowExecutorBase):
             Effective matrix dictionary (may be empty for non-matrix workflows)
         """
         # If explicit matrix exists, use it
-        explicit_matrix: Dict[str, List[Any]] = workflow.get("matrix", {})
+        explicit_matrix: dict[str, list[Any]] = workflow.get("matrix", {})
         if explicit_matrix:
             return explicit_matrix
 
@@ -520,9 +520,9 @@ class MatrixMixin(WorkflowExecutorBase):
 
     def _map_step_matrix(
         self,
-        step: Dict[str, Any],
-        variables: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, List[Any]]:
+        step: dict[str, Any],
+        variables: dict[str, Any] | None = None,
+    ) -> dict[str, list[Any]]:
         """Derive a matrix from a MAP step's input caches.
 
         The step's ``with`` values are resolved with the workflow's

@@ -1,7 +1,7 @@
 """Workflow and action configuration validation."""
 
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Set
 
 from causaliq_core import ActionPattern
 
@@ -14,9 +14,7 @@ from causaliq_workflow.workflow.frames import (
 from causaliq_workflow.workflow.matrix import _runs_once
 
 
-def _check_filter_expression(
-    step_name: str, filter_expr: Any
-) -> Optional[str]:
+def _check_filter_expression(step_name: str, filter_expr: Any) -> str | None:
     """Validate a filter expression, returning an error message or None."""
     from causaliq_core.utils import FilterSyntaxError, validate_filter
 
@@ -31,7 +29,7 @@ def _add_unique_error(
     error: str,
     pattern: re.Pattern[str],
     seen: Set[tuple[str, str]],
-    result: List[str],
+    result: list[str],
 ) -> None:
     """Append an error to result unless it duplicates an earlier one."""
     match = pattern.match(error)
@@ -49,13 +47,13 @@ def _add_unique_error(
 
 def _check_produce_pattern(
     step_name: str,
-    step_inputs: Dict[str, Any],
+    step_inputs: dict[str, Any],
     has_matrix: bool,
     has_cache_input: bool,
-) -> List[str]:
+) -> list[str]:
     """Return PRODUCE pattern validation errors for one step."""
     action = step_inputs.get("action")
-    errors: List[str] = []
+    errors: list[str] = []
     if "output" not in step_inputs:
         errors.append(
             f"Step '{step_name}': action '{action}' creates cache entries, "
@@ -77,10 +75,10 @@ def _check_produce_pattern(
 
 def _check_map_pattern(
     step_name: str,
-    step_inputs: Dict[str, Any],
+    step_inputs: dict[str, Any],
     has_matrix: bool,
     has_cache_input: bool,
-) -> List[str]:
+) -> list[str]:
     """Return MAP pattern validation errors for one step.
 
     A MAP action gives one output entry per input entry, so its matrix is
@@ -88,7 +86,7 @@ def _check_map_pattern(
     cache.
     """
     action = step_inputs.get("action")
-    errors: List[str] = []
+    errors: list[str] = []
     if "input" not in step_inputs:
         errors.append(
             f"Step '{step_name}': action '{action}' maps one cache entry "
@@ -104,13 +102,13 @@ def _check_map_pattern(
 
 def _check_aggregate_pattern(
     step_name: str,
-    step_inputs: Dict[str, Any],
+    step_inputs: dict[str, Any],
     has_matrix: bool,
     has_cache_input: bool,
-) -> List[str]:
+) -> list[str]:
     """Return AGGREGATE pattern validation errors for one step."""
     action = step_inputs.get("action")
-    errors: List[str] = []
+    errors: list[str] = []
     if "input" not in step_inputs:
         errors.append(
             f"Step '{step_name}': action '{action}' groups cache entries, "
@@ -136,7 +134,7 @@ _PATTERN_CHECKS = {
 }
 
 
-def _action_steps(workflow: Dict[str, Any]) -> Dict[str, Any]:
+def _action_steps(workflow: dict[str, Any]) -> dict[str, Any]:
     """Return the workflow's action steps, excluding workflow calls.
 
     Args:
@@ -153,7 +151,7 @@ def _action_steps(workflow: Dict[str, Any]) -> Dict[str, Any]:
     return {**workflow, "steps": steps}
 
 
-def _call_syntax_errors(workflow: Dict[str, Any]) -> List[str]:
+def _call_syntax_errors(workflow: dict[str, Any]) -> list[str]:
     """Return errors for workflow files without a relative prefix.
 
     Args:
@@ -163,7 +161,7 @@ def _call_syntax_errors(workflow: Dict[str, Any]) -> List[str]:
         One error per ``uses`` value that names a workflow file but is
         not a ``./`` or ``../`` path.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     for step in workflow.get("steps", []):
         uses = step.get("uses")
         if is_workflow_call_step(step) or not looks_like_workflow_file(uses):
@@ -176,7 +174,7 @@ def _call_syntax_errors(workflow: Dict[str, Any]) -> List[str]:
     return errors
 
 
-def _null_parameter_errors(workflow: Dict[str, Any]) -> List[str]:
+def _null_parameter_errors(workflow: dict[str, Any]) -> list[str]:
     """Return errors for parameters declared with a literal null value.
 
     A literal ``null`` in a step's ``with`` block is ambiguous: omitting
@@ -191,7 +189,7 @@ def _null_parameter_errors(workflow: Dict[str, Any]) -> List[str]:
     Returns:
         One error per literal null parameter value.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     for step in workflow.get("steps", []):
         step_name = step.get("name", "unnamed")
         values = step.get("with")
@@ -211,7 +209,7 @@ class ValidationMixin(WorkflowExecutorBase):
     """Configuration validation for WorkflowExecutor."""
 
     def _validate_workflow_actions(
-        self, workflow: Dict[str, Any], mode: str
+        self, workflow: dict[str, Any], mode: str
     ) -> None:
         """Validate all actions in workflow.
 
@@ -249,7 +247,7 @@ class ValidationMixin(WorkflowExecutorBase):
                 f"Filter validation failed: {'; '.join(filter_errors)}"
             )
 
-    def _validate_action_patterns(self, workflow: Dict[str, Any]) -> List[str]:
+    def _validate_action_patterns(self, workflow: dict[str, Any]) -> list[str]:
         """Validate action patterns against workflow configuration.
 
         Checks that each step's input/output/matrix configuration matches
@@ -265,7 +263,7 @@ class ValidationMixin(WorkflowExecutorBase):
         Returns:
             List of validation error messages (empty if valid)
         """
-        errors: List[str] = []
+        errors: list[str] = []
         matrix = workflow.get("matrix", {})
 
         for step in workflow.get("steps", []):
@@ -274,8 +272,8 @@ class ValidationMixin(WorkflowExecutorBase):
         return errors
 
     def _validate_step_pattern(
-        self, step: Dict[str, Any], matrix: Dict[str, Any]
-    ) -> List[str]:
+        self, step: dict[str, Any], matrix: dict[str, Any]
+    ) -> list[str]:
         """Validate one step's configuration against its action pattern."""
         step_name = step.get("name", "unnamed")
         step_inputs = step.get("with", {})
@@ -298,8 +296,8 @@ class ValidationMixin(WorkflowExecutorBase):
         )
 
     def _step_pattern(
-        self, provider_name: Optional[str], action_name: Optional[str]
-    ) -> Optional[ActionPattern]:
+        self, provider_name: str | None, action_name: str | None
+    ) -> ActionPattern | None:
         """Return the declared action pattern, or None if indeterminable."""
         if not provider_name or not action_name:
             return None
@@ -307,7 +305,7 @@ class ValidationMixin(WorkflowExecutorBase):
             provider_name, action_name
         )
 
-    def _validate_step_filters(self, workflow: Dict[str, Any]) -> List[str]:
+    def _validate_step_filters(self, workflow: dict[str, Any]) -> list[str]:
         """Validate filter expressions in workflow steps.
 
         Checks that filter expressions are syntactically valid before
@@ -320,7 +318,7 @@ class ValidationMixin(WorkflowExecutorBase):
         Returns:
             List of validation error messages (empty if all valid).
         """
-        errors: List[str] = []
+        errors: list[str] = []
 
         for step in workflow.get("steps", []):
             if is_workflow_call_step(step):
@@ -337,7 +335,7 @@ class ValidationMixin(WorkflowExecutorBase):
 
         return errors
 
-    def _deduplicate_errors(self, errors: List[str]) -> List[str]:
+    def _deduplicate_errors(self, errors: list[str]) -> list[str]:
         """Deduplicate validation errors by grouping similar messages.
 
         Groups errors that have the same core message (after the step
@@ -355,7 +353,7 @@ class ValidationMixin(WorkflowExecutorBase):
 
         # Track unique (step_name, message) pairs
         seen: Set[tuple[str, str]] = set()
-        result: List[str] = []
+        result: list[str] = []
 
         for error in errors:
             _add_unique_error(error, pattern, seen, result)

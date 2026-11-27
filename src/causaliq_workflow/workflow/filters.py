@@ -1,6 +1,6 @@
 """Filter literal rewriting for workflow filter expressions."""
 
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Iterable, Set
 
 from causaliq_core.utils import FilterSyntaxError, relax_filter_literals
 
@@ -8,7 +8,7 @@ from causaliq_workflow.schema import _RESERVED_KEYS
 
 
 def _reserved_filter_names(
-    workflow: Dict[str, Any], supplied_names: Iterable[str]
+    workflow: dict[str, Any], supplied_names: Iterable[str]
 ) -> Set[str]:
     """Return names that must stay field references in filters.
 
@@ -33,8 +33,8 @@ def _relax_filter(filter_expr: str, reserved: Set[str]) -> str:
 
 
 def relax_step_filter_literals(
-    workflow: Dict[str, Any], supplied_names: Iterable[str] = ()
-) -> Dict[str, Any]:
+    workflow: dict[str, Any], supplied_names: Iterable[str] = ()
+) -> dict[str, Any]:
     """Rewrite bare filter values as string literals in place.
 
     Rewriting happens once, before validation, so every consumer sees

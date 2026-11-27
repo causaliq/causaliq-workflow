@@ -12,7 +12,7 @@ validation error.
 """
 
 import re
-from typing import Any, Dict, FrozenSet, List, Optional
+from typing import Any, FrozenSet
 
 _TRUE_VALUES = frozenset({"true", "yes", "on", "1"})
 
@@ -27,7 +27,7 @@ _FLOAT_PATTERN = re.compile(
 )
 
 
-def _hint_alternatives(type_hint: str) -> List[str]:
+def _hint_alternatives(type_hint: str) -> list[str]:
     """Return the alternatives declared by a type hint."""
     normalised = type_hint.replace("|", " or ").lower()
     return [part.strip() for part in normalised.split(" or ") if part.strip()]
@@ -62,7 +62,7 @@ def _coerce_scalar(value: str, kinds: FrozenSet[str]) -> Any:
     return value
 
 
-def _list_element_kind(type_hint: str) -> Optional[str]:
+def _list_element_kind(type_hint: str) -> str | None:
     """Return the element type declared for a list parameter."""
     lowered = type_hint.lower()
     for kind in ("int", "float", "bool"):
@@ -71,7 +71,7 @@ def _list_element_kind(type_hint: str) -> Optional[str]:
     return None
 
 
-def _coerce_list(values: List[Any], kind: Optional[str]) -> List[Any]:
+def _coerce_list(values: list[Any], kind: str | None) -> list[Any]:
     """Coerce the string elements of a list parameter."""
     if kind is None:
         return values
@@ -93,8 +93,8 @@ def _coerce_value(value: Any, spec: Any) -> Any:
 
 
 def coerce_action_parameters(
-    provider: Any, parameters: Dict[str, Any]
-) -> Dict[str, Any]:
+    provider: Any, parameters: dict[str, Any]
+) -> dict[str, Any]:
     """Return parameters with unambiguous values coerced for the action.
 
     Args:

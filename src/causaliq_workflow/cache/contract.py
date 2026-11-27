@@ -12,7 +12,7 @@ See ``docs/architecture/cache_type_model.md`` for the full design.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Protocol
 
 from causaliq_core.metadata import normalise_metadata
 
@@ -80,7 +80,7 @@ def single_object_type(entry: CacheEntry) -> str:
     return next(iter(entry.objects))
 
 
-def build_failure_entry(metadata: Dict[str, Any]) -> CacheEntry:
+def build_failure_entry(metadata: dict[str, Any]) -> CacheEntry:
     """Build a failure entry: version 2 metadata and no object.
 
     A failure entry records provenance only. An object would be
@@ -99,11 +99,11 @@ def build_failure_entry(metadata: Dict[str, Any]) -> CacheEntry:
 class TypedCache(Protocol):
     """Minimal cache surface used by the typed write helpers."""
 
-    def validate_matrix_keys(self, key_data: Dict[str, Any]) -> None:
+    def validate_matrix_keys(self, key_data: dict[str, Any]) -> None:
         """Validate key names against the cache's matrix schema."""
         ...  # pragma: no cover - protocol declaration
 
-    def get_cache_type(self) -> Optional[str]:
+    def get_cache_type(self) -> str | None:
         """Return the pinned object type, or None when unpinned."""
         ...  # pragma: no cover - protocol declaration
 
@@ -111,14 +111,14 @@ class TypedCache(Protocol):
         """Pin the object type, raising on a conflict."""
         ...  # pragma: no cover - protocol declaration
 
-    def put(self, key_data: Dict[str, Any], entry: CacheEntry) -> str:
+    def put(self, key_data: dict[str, Any], entry: CacheEntry) -> str:
         """Store an entry, returning its hash key."""
         ...  # pragma: no cover - protocol declaration
 
 
 def store_typed_entry(
     cache: TypedCache,
-    key_data: Dict[str, Any],
+    key_data: dict[str, Any],
     entry: CacheEntry,
 ) -> str:
     """Store an entry, enforcing one object of the cache's type.
@@ -142,9 +142,9 @@ def store_typed_entry(
 
 def store_failure_entry(
     cache: TypedCache,
-    key_data: Dict[str, Any],
-    metadata: Dict[str, Any],
-    cache_type: Optional[str] = None,
+    key_data: dict[str, Any],
+    metadata: dict[str, Any],
+    cache_type: str | None = None,
 ) -> str:
     """Store a failure: version 2 metadata and no object.
 

@@ -9,7 +9,7 @@ convention for local reusable workflows.
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Union
 
 WORKFLOW_SUFFIXES = (".yml", ".yaml")
 
@@ -102,8 +102,8 @@ def workflow_frame(path: Union[str, Path]) -> WorkflowFrame:
 
 
 def root_frames(
-    source_path: Optional[Union[str, Path]],
-) -> Tuple[WorkflowFrame, ...]:
+    source_path: Union[str, Path] | None,
+) -> tuple[WorkflowFrame, ...]:
     """Return the initial call stack for a top-level workflow.
 
     Args:
@@ -117,7 +117,7 @@ def root_frames(
     return (workflow_frame(source_path),)
 
 
-def call_base_dir(frames: Tuple[WorkflowFrame, ...]) -> Path:
+def call_base_dir(frames: tuple[WorkflowFrame, ...]) -> Path:
     """Return the directory relative workflow calls resolve against.
 
     Args:
@@ -130,7 +130,7 @@ def call_base_dir(frames: Tuple[WorkflowFrame, ...]) -> Path:
     return frames[-1].source_dir if frames else Path.cwd()
 
 
-def resolve_call_target(uses: str, frames: Tuple[WorkflowFrame, ...]) -> Path:
+def resolve_call_target(uses: str, frames: tuple[WorkflowFrame, ...]) -> Path:
     """Resolve a workflow call target against the current call stack.
 
     Args:
@@ -157,8 +157,8 @@ def canonical_key(path: Path) -> str:
 
 
 def find_recursive_frame(
-    target: Path, frames: Tuple[WorkflowFrame, ...]
-) -> Optional[WorkflowFrame]:
+    target: Path, frames: tuple[WorkflowFrame, ...]
+) -> WorkflowFrame | None:
     """Return the frame that already holds a target workflow.
 
     Args:
@@ -175,7 +175,7 @@ def find_recursive_frame(
     return None
 
 
-def format_call_chain(frames: Tuple[WorkflowFrame, ...], target: Path) -> str:
+def format_call_chain(frames: tuple[WorkflowFrame, ...], target: Path) -> str:
     """Format the call chain leading to a recursive target.
 
     Args:

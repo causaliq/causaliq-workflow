@@ -1,7 +1,7 @@
 """Unit tests for workflow parameter binding."""
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from causaliq_core import ActionPattern, CausalIQActionProvider
@@ -19,7 +19,7 @@ from causaliq_workflow.workflow.parameters import (
     _unused_parameter_errors,
 )
 
-_CHILD: Dict[str, Any] = {
+_CHILD: dict[str, Any] = {
     "sample_size": 1000,
     "seed": None,
     "matrix": {"variant": ["one", "two"]},
@@ -271,7 +271,7 @@ def test_validate_template_variables_rejects_unused_declaration(
     ],
 )
 def test_call_parameters_vary(
-    step: Dict[str, Any], matrix: Dict[str, Any], expected: bool
+    step: dict[str, Any], matrix: dict[str, Any], expected: bool
 ) -> None:
     assert _call_parameters_vary(step, matrix) is expected
 
@@ -325,7 +325,7 @@ class _RecordingProvider(CausalIQActionProvider):
     def _execute(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
         context: Any,
         logger: Any,
@@ -421,7 +421,7 @@ def test_single_token_detection() -> None:
     assert _single_token(1000) is None
 
 
-def _matrix_workflow() -> Dict[str, Any]:
+def _matrix_workflow() -> dict[str, Any]:
     """Return a one-step workflow with a two-value matrix."""
     return {
         "matrix": {"dataset": ["asia", "cancer"]},

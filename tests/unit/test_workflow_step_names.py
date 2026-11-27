@@ -1,7 +1,7 @@
 """Unit tests for template placeholders in workflow step names."""
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -12,7 +12,7 @@ from causaliq_workflow.workflow import (
 from causaliq_workflow.workflow.parameters import _unused_parameter_errors
 
 
-def _single_step(name: str, **parameters: Any) -> Dict[str, Any]:
+def _single_step(name: str, **parameters: Any) -> dict[str, Any]:
     """Return a one-step workflow whose step uses a single token name."""
     return {
         **parameters,
@@ -151,13 +151,13 @@ def test_step_name_unknown_token_still_rejected(
 def test_step_logger_receives_expanded_step_name(
     executor: WorkflowExecutor,
 ) -> None:
-    logged: List[str] = []
+    logged: list[str] = []
 
     def step_logger(
         action: str,
         name: str,
         status: str,
-        values: Dict[str, Any],
+        values: dict[str, Any],
         **_: object,
     ) -> None:
         logged.append(name)

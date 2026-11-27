@@ -7,7 +7,7 @@ containing metadata and typed objects (e.g., dag, pdg, trace).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict
+from typing import Any
 
 # Format marker identifying an empty placeholder object. Failure entries
 # carry an empty object of the cache's type so the cache shape is preserved.
@@ -43,7 +43,7 @@ class CacheObject:
     action: str
     content: Any
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialisation.
 
         Returns:
@@ -56,7 +56,7 @@ class CacheObject:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> CacheObject:
+    def from_dict(cls, data: dict[str, Any]) -> CacheObject:
         """Create from dictionary.
 
         Args:
@@ -110,8 +110,8 @@ class CacheEntry:
         >>> entry.add_object("trace", "json", '{"iterations": [...]}')
     """
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    objects: Dict[str, CacheObject] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    objects: dict[str, CacheObject] = field(default_factory=dict)
 
     def add_object(
         self,
@@ -182,7 +182,7 @@ class CacheEntry:
         """
         return list(self.objects.keys())
 
-    def to_storage(self) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    def to_storage(self) -> tuple[dict[str, Any], dict[str, Any]]:
         """Convert to storage format for TokenCache.
 
         Returns:
@@ -198,8 +198,8 @@ class CacheEntry:
     @classmethod
     def from_storage(
         cls,
-        data: Dict[str, Any] | None,
-        metadata: Dict[str, Any] | None,
+        data: dict[str, Any] | None,
+        metadata: dict[str, Any] | None,
     ) -> CacheEntry:
         """Create from TokenCache storage format.
 
@@ -223,8 +223,8 @@ class CacheEntry:
     @classmethod
     def from_action_result(
         cls,
-        metadata: Dict[str, Any],
-        objects: list[Dict[str, Any]],
+        metadata: dict[str, Any],
+        objects: list[dict[str, Any]],
     ) -> CacheEntry:
         """Create from action result format.
 
@@ -258,7 +258,7 @@ class CacheEntry:
 
         return entry
 
-    def to_action_result(self) -> tuple[Dict[str, Any], list[Dict[str, Any]]]:
+    def to_action_result(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Convert to action result format.
 
         Returns:

@@ -1,7 +1,7 @@
 """Composition of the WorkflowExecutor from its functional mixins."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from causaliq_workflow.registry import ActionRegistry
 from causaliq_workflow.workflow.entry_scan import EntryScanMixin
@@ -42,10 +42,10 @@ class WorkflowExecutor(
     def __init__(self) -> None:
         """Initialize workflow executor with action registry."""
         self.action_registry = ActionRegistry()
-        self._scan_index: Dict[str, List[Dict[str, Any]]] = {}
-        self._environment: Optional[Dict[str, Any]] = None
+        self._scan_index: dict[str, list[dict[str, Any]]] = {}
+        self._environment: dict[str, Any] | None = None
         self._environment_ready = False
-        self._source_path: Optional[Path] = None
+        self._source_path: Path | None = None
 
     def _invalidate_scan_index(self, cache: Any) -> None:
         """Drop the memoised scan index for a cache that was written.

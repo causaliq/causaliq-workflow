@@ -3,7 +3,7 @@
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 import click
 import yaml
@@ -33,7 +33,7 @@ def _log_cli_error(message: str) -> None:
     echo_line(f"{timestamp} [causaliq-workflow] ERROR {message}", err=True)
 
 
-def _split_cli_parameter(item: str) -> Tuple[str, Any]:
+def _split_cli_parameter(item: str) -> tuple[str, Any]:
     """Split a ``NAME=VALUE`` CLI parameter into a name and typed value."""
     from causaliq_workflow.workflow.parameters import _is_parameter_name
 
@@ -61,9 +61,9 @@ def _parse_cli_value(text: str) -> Any:
     return value
 
 
-def _parse_cli_parameters(raw_params: Tuple[str, ...]) -> Dict[str, Any]:
+def _parse_cli_parameters(raw_params: tuple[str, ...]) -> dict[str, Any]:
     """Parse repeatable ``NAME=VALUE`` CLI parameters into a dictionary."""
-    parameters: Dict[str, Any] = {}
+    parameters: dict[str, Any] = {}
     for item in raw_params:
         name, value = _split_cli_parameter(item)
         if name in parameters:
@@ -138,7 +138,7 @@ def run_workflow(
     workflow_file: Path,
     mode: str,
     log_depth: int,
-    raw_params: Tuple[str, ...],
+    raw_params: tuple[str, ...],
 ) -> None:
     """Execute a CausalIQ workflow file.
 
@@ -179,8 +179,8 @@ def run_workflow(
 def _parse_workflow_file(
     executor: "WorkflowExecutor",
     workflow_file: Path,
-    parameters: Dict[str, Any],
-) -> Dict[str, Any]:
+    parameters: dict[str, Any],
+) -> dict[str, Any]:
     """Parse the workflow file, exiting with a message on failure."""
     from causaliq_workflow.workflow import WorkflowExecutionError
 
@@ -208,9 +208,9 @@ def _log_parse_error(error: Exception) -> None:
 
 def _validate_workflow(
     executor: "WorkflowExecutor",
-    workflow: Dict[str, Any],
+    workflow: dict[str, Any],
     log_depth: int,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
 ) -> None:
     """Validate the parsed workflow, exiting with a message on failure."""
     _log_cli_message(log_depth, "VALIDATING workflow syntax and parameters...")
@@ -226,11 +226,11 @@ def _validate_workflow(
 
 def _run_workflow_jobs(
     executor: "WorkflowExecutor",
-    workflow: Dict[str, Any],
+    workflow: dict[str, Any],
     mode: str,
     log_depth: int,
-    parameters: Dict[str, Any],
-) -> List[Dict[str, Any]]:
+    parameters: dict[str, Any],
+) -> list[dict[str, Any]]:
     """Execute the workflow in the requested mode, exiting on failure."""
     step_logger = _make_step_logger(log_depth)
     _log_cli_message(log_depth, f"EXECUTING workflow in {mode} mode...")
@@ -254,7 +254,7 @@ def _make_step_logger(log_depth: int) -> StepLogger:
         action_method: str,
         step_name: str,
         status: str,
-        matrix_values: Dict[str, Any],
+        matrix_values: dict[str, Any],
         *,
         depth: int = 0,
         detail: str = "",

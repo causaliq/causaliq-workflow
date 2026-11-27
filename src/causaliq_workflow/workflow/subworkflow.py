@@ -7,7 +7,7 @@ block become parameters of the called workflow; see
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 
 from causaliq_workflow.reporting import count_results, format_counts
 from causaliq_workflow.schema import (
@@ -43,7 +43,7 @@ class SubWorkflowMixin(WorkflowExecutorBase):
     """Workflow-call steps for WorkflowExecutor."""
 
     def _run_workflow_call_step(
-        self, state: "_JobState", step: Dict[str, Any], step_name: str
+        self, state: "_JobState", step: dict[str, Any], step_name: str
     ) -> bool:
         """Execute a called workflow and record its summary.
 
@@ -79,8 +79,8 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         return True
 
     def _resolve_parameter_values(
-        self, values: Dict[str, Any], variables: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, values: dict[str, Any], variables: dict[str, Any]
+    ) -> dict[str, Any]:
         """Resolve a call step's ``with`` values in the caller's context.
 
         A value that is exactly one ``{{name}}`` token keeps the bound
@@ -100,7 +100,7 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         }
 
     def _resolve_parameter_value(
-        self, value: Any, variables: Dict[str, Any]
+        self, value: Any, variables: dict[str, Any]
     ) -> Any:
         """Resolve one parameter value in the caller's context."""
         token = _single_token(value)
@@ -110,11 +110,11 @@ class SubWorkflowMixin(WorkflowExecutorBase):
 
     def _execute_child_workflow(
         self,
-        child: Dict[str, Any],
+        child: dict[str, Any],
         target: Path,
         state: "_JobState",
-        variables: Dict[str, Any],
-    ) -> List[Dict[str, Any]]:
+        variables: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         """Execute a called workflow's jobs with an extended call stack.
 
         Args:
@@ -138,9 +138,9 @@ class SubWorkflowMixin(WorkflowExecutorBase):
 
     def _workflow_call_target(
         self,
-        step: Dict[str, Any],
+        step: dict[str, Any],
         step_name: str,
-        frames: Tuple[WorkflowFrame, ...],
+        frames: tuple[WorkflowFrame, ...],
     ) -> Path:
         """Resolve a call step's target and reject recursive calls.
 
@@ -175,7 +175,7 @@ class SubWorkflowMixin(WorkflowExecutorBase):
         target: Path,
         step_name: str,
         parameters: Any = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Load and structurally validate a called workflow.
 
         Args:
@@ -207,13 +207,13 @@ class SubWorkflowMixin(WorkflowExecutorBase):
 
     def _validate_workflow_call_step(
         self,
-        step: Dict[str, Any],
+        step: dict[str, Any],
         step_name: str,
-        frames: Tuple[WorkflowFrame, ...] = (),
-        jobs: Optional[List[Dict[str, Any]]] = None,
-        workflow: Optional[Dict[str, Any]] = None,
-        cli_params: Optional[Dict[str, Any]] = None,
-    ) -> List[str]:
+        frames: tuple[WorkflowFrame, ...] = (),
+        jobs: list[dict[str, Any]] | None = None,
+        workflow: dict[str, Any] | None = None,
+        cli_params: dict[str, Any] | None = None,
+    ) -> list[str]:
         """Validate a call step, recursing into the called workflow.
 
         The call's ``with`` values are resolved in the caller's context
@@ -252,11 +252,11 @@ class SubWorkflowMixin(WorkflowExecutorBase):
 
     def _resolve_call_parameters(
         self,
-        raw: Dict[str, Any],
-        jobs: Optional[List[Dict[str, Any]]],
-        workflow: Optional[Dict[str, Any]],
-        cli_params: Optional[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        raw: dict[str, Any],
+        jobs: list[dict[str, Any]] | None,
+        workflow: dict[str, Any] | None,
+        cli_params: dict[str, Any] | None,
+    ) -> dict[str, Any]:
         """Resolve a call's parameters as the first job will pass them.
 
         Args:
@@ -274,11 +274,11 @@ class SubWorkflowMixin(WorkflowExecutorBase):
 
     def _validate_bound_child(
         self,
-        child: Dict[str, Any],
-        parameters: Dict[str, Any],
+        child: dict[str, Any],
+        parameters: dict[str, Any],
         target: Path,
-        frames: Tuple[WorkflowFrame, ...],
-    ) -> List[str]:
+        frames: tuple[WorkflowFrame, ...],
+    ) -> list[str]:
         """Validate a called workflow as the call will bind it."""
         bound, variables = _bind_parameters(child, parameters)
         child_frames = frames + (workflow_frame(target),)
@@ -288,9 +288,9 @@ class SubWorkflowMixin(WorkflowExecutorBase):
 def _call_parameter_errors(
     step_name: str,
     target_name: str,
-    parameters: Dict[str, Any],
-    child: Dict[str, Any],
-) -> List[str]:
+    parameters: dict[str, Any],
+    child: dict[str, Any],
+) -> list[str]:
     """Return parameter binding errors for a call step.
 
     A child placeholder that the caller does not satisfy is reported
@@ -313,8 +313,8 @@ def _call_parameter_errors(
 
 
 def _reserved_parameter_errors(
-    step: Dict[str, Any], step_name: str
-) -> List[str]:
+    step: dict[str, Any], step_name: str
+) -> list[str]:
     """Return errors for parameters reserved by the executor.
 
     Args:
@@ -334,19 +334,19 @@ def _reserved_parameter_errors(
 
 
 def _collect_child_steps(
-    results: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+    results: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
     """Collect a summary of every step run by the child workflow."""
-    steps: List[Dict[str, Any]] = []
+    steps: list[dict[str, Any]] = []
     for result in results:
         steps.extend(_job_step_summaries(result))
     return steps
 
 
-def _job_step_summaries(result: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _job_step_summaries(result: dict[str, Any]) -> list[dict[str, Any]]:
     """Return one job's step summaries, tagged with its matrix values."""
     matrix_values = result.get("job") or {}
-    summaries: List[Dict[str, Any]] = []
+    summaries: list[dict[str, Any]] = []
     for name, step in result.get("steps", {}).items():
         summary = {"name": name, **_step_summary(step)}
         if matrix_values:
@@ -355,7 +355,7 @@ def _job_step_summaries(result: Dict[str, Any]) -> List[Dict[str, Any]]:
     return summaries
 
 
-def _step_summary(step: Dict[str, Any]) -> Dict[str, Any]:
+def _step_summary(step: dict[str, Any]) -> dict[str, Any]:
     """Return the reporting fields of a child step result.
 
     A nested call step keeps its ``workflow`` marker and its own
@@ -365,7 +365,7 @@ def _step_summary(step: Dict[str, Any]) -> Dict[str, Any]:
     return {key: step[key] for key in fields if key in step}
 
 
-def _call_errors(steps: List[Dict[str, Any]]) -> List[str]:
+def _call_errors(steps: list[dict[str, Any]]) -> list[str]:
     """Return failure messages from child step results."""
     return [
         f"{step.get('name')}: {step.get('reason', 'failed')}"
@@ -374,14 +374,14 @@ def _call_errors(steps: List[Dict[str, Any]]) -> List[str]:
     ]
 
 
-def _dry_run_status(steps: List[Dict[str, Any]]) -> str:
+def _dry_run_status(steps: list[dict[str, Any]]) -> str:
     """Return the dry-run status implied by child step results."""
     statuses = {step.get("status") for step in steps}
     return "would_execute" if "would_execute" in statuses else "would_skip"
 
 
 def _call_status(
-    steps: List[Dict[str, Any]], errors: List[str], mode: str
+    steps: list[dict[str, Any]], errors: list[str], mode: str
 ) -> str:
     """Return the overall status of a workflow call step."""
     if errors:
@@ -393,10 +393,10 @@ def _call_status(
 
 def _summarise_call(
     target: Path,
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
     mode: str,
-    parameters: Dict[str, Any],
-) -> Dict[str, Any]:
+    parameters: dict[str, Any],
+) -> dict[str, Any]:
     """Build the step result recorded for a workflow call.
 
     Args:
@@ -410,7 +410,7 @@ def _summarise_call(
     """
     steps = _collect_child_steps(results)
     errors = _call_errors(steps)
-    summary: Dict[str, Any] = {
+    summary: dict[str, Any] = {
         "status": _call_status(steps, errors, mode),
         "workflow": str(target),
         "jobs": len(results),
@@ -424,7 +424,7 @@ def _summarise_call(
 
 
 def _log_call_start(
-    state: "_JobState", step: Dict[str, Any], step_name: str
+    state: "_JobState", step: dict[str, Any], step_name: str
 ) -> None:
     """Announce a workflow call before its steps are logged."""
     if not state.step_logger:
@@ -440,9 +440,9 @@ def _log_call_start(
 
 def _log_call_end(
     state: "_JobState",
-    step: Dict[str, Any],
+    step: dict[str, Any],
     step_name: str,
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
 ) -> None:
     """Announce a workflow call's cumulative totals as it returns.
 

@@ -11,7 +11,7 @@ dictionaries produced by :mod:`causaliq_workflow.workflow.execution`.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Protocol
+from typing import Any, Protocol
 
 MAX_REPORTED_ERRORS = 10
 """Maximum number of messages listed in a run's error summary."""
@@ -36,7 +36,7 @@ class StepLogger(Protocol):
         action_method: str,
         step_name: str,
         status: str,
-        matrix_values: Dict[str, Any],
+        matrix_values: dict[str, Any],
         *,
         depth: int = 0,
         detail: str = "",
@@ -56,7 +56,7 @@ class StepCounts:
     would_skip: int = 0
     failed: int = 0
     new_entries: int = 0
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -71,7 +71,7 @@ class StepCounts:
         )
 
 
-def format_matrix_values(matrix_values: Dict[str, Any]) -> str:
+def format_matrix_values(matrix_values: dict[str, Any]) -> str:
     """Format matrix values as ``' [key=value, ...]'`` (empty when none)."""
     if not matrix_values:
         return ""
@@ -93,7 +93,7 @@ def format_elapsed(seconds: float) -> str:
     return f"{seconds:.1f}s"
 
 
-def count_results(results: List[Dict[str, Any]], mode: str) -> StepCounts:
+def count_results(results: list[dict[str, Any]], mode: str) -> StepCounts:
     """Aggregate step statuses across job results at every call depth.
 
     A workflow-call step reports the steps it ran, so those are counted
@@ -117,7 +117,7 @@ def count_results(results: List[Dict[str, Any]], mode: str) -> StepCounts:
 
 def format_summary(counts: StepCounts, mode: str) -> str:
     """Format the completed-steps summary fragment."""
-    parts: List[str] = []
+    parts: list[str] = []
     if mode == "dry-run":
         _append_if_positive(parts, counts.would_execute, "would execute")
         _append_if_positive(parts, counts.would_skip, "would skip")
@@ -156,8 +156,8 @@ def format_counts(counts: StepCounts, mode: str) -> str:
 
 
 def limit_errors(
-    messages: List[str], limit: int = MAX_REPORTED_ERRORS
-) -> List[str]:
+    messages: list[str], limit: int = MAX_REPORTED_ERRORS
+) -> list[str]:
     """Return at most ``limit`` error lines plus an omitted-count note.
 
     Args:
@@ -178,9 +178,9 @@ def limit_errors(
 def _count_step(
     counts: StepCounts,
     step_name: str,
-    step_result: Dict[str, Any],
+    step_result: dict[str, Any],
     mode: str,
-    matrix_values: Dict[str, Any],
+    matrix_values: dict[str, Any],
 ) -> None:
     """Fold one step result into the aggregate counts."""
     if step_result.get("workflow"):
@@ -191,7 +191,7 @@ def _count_step(
 
 def _count_called_steps(
     counts: StepCounts,
-    step_result: Dict[str, Any],
+    step_result: dict[str, Any],
     mode: str,
 ) -> None:
     """Count a called workflow's steps in place of the call step."""
@@ -208,9 +208,9 @@ def _count_called_steps(
 def _count_by_status(
     counts: StepCounts,
     step_name: str,
-    step_result: Dict[str, Any],
+    step_result: dict[str, Any],
     mode: str,
-    matrix_values: Dict[str, Any],
+    matrix_values: dict[str, Any],
 ) -> None:
     """Fold one action step's status into the aggregate counts."""
     status = step_result.get("status", "unknown")
@@ -248,8 +248,8 @@ def _count_would_execute(counts: StepCounts) -> None:
 def _count_failure(
     counts: StepCounts,
     step_name: str,
-    step_result: Dict[str, Any],
-    matrix_values: Dict[str, Any],
+    step_result: dict[str, Any],
+    matrix_values: dict[str, Any],
 ) -> None:
     """Fold a failed step result and its messages into the counts."""
     counts.failed += 1
@@ -262,7 +262,7 @@ def _count_failure(
         counts.errors.append(f"  {step_name}{matrix_part}: {message}")
 
 
-def _append_if_positive(parts: List[str], count: int, label: str) -> None:
+def _append_if_positive(parts: list[str], count: int, label: str) -> None:
     """Append 'N label' to parts when the count is positive."""
     if count > 0:
         parts.append(f"{count} {label}")

@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable
 
 from causaliq_workflow.cache.reporting import build_entry_view
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -22,13 +22,13 @@ class AggregationConfig:
     select the entries for the current job.
     """
 
-    input_caches: List[str] = field(default_factory=list)
+    input_caches: list[str] = field(default_factory=list)
     """List of input workflow cache paths."""
 
-    filter_expr: Optional[str] = None
+    filter_expr: str | None = None
     """Optional filter expression to restrict input entries."""
 
-    matrix_vars: List[str] = field(default_factory=list)
+    matrix_vars: list[str] = field(default_factory=list)
     """Matrix variables defining grouping dimensions."""
 
     derive_matrix_vars: bool = False
@@ -44,7 +44,7 @@ class AggregationConfig:
 class _EntryScan:
     """Mutable accumulator for an input cache-entry scan."""
 
-    matching_entries: List[Dict[str, Any]] = field(default_factory=list)
+    matching_entries: list[dict[str, Any]] = field(default_factory=list)
     scanned: int = 0
     filtered: int = 0
     matched: int = 0
@@ -63,8 +63,8 @@ class _PopulationEntry(Mapping[str, Any]):
     def __init__(
         self,
         cache_path: str,
-        record: Dict[str, Any],
-        index: List[Dict[str, Any]],
+        record: dict[str, Any],
+        index: list[dict[str, Any]],
     ) -> None:
         """Store the entry's cache path, record and sibling index."""
         self._cache_path = cache_path
@@ -92,11 +92,11 @@ class _PopulationEntry(Mapping[str, Any]):
         """Return the number of names in the full reporting view."""
         return len(self._view())
 
-    def _view(self) -> Dict[str, Any]:
+    def _view(self) -> dict[str, Any]:
         """Return the entry's reporting view, building it on demand."""
         if self._record["flat_meta"] is None:
             _fill_views(self._cache_path, self._index)
-        view: Dict[str, Any] = self._record["flat_meta"]
+        view: dict[str, Any] = self._record["flat_meta"]
         return view
 
 
@@ -105,10 +105,10 @@ class EntryScanMixin(WorkflowExecutorBase):
 
     def _get_entry_scan_config(
         self,
-        step: Dict[str, Any],
-        matrix: Dict[str, List[Any]],
-        variables: Optional[Dict[str, Any]] = None,
-    ) -> Optional[AggregationConfig]:
+        step: dict[str, Any],
+        matrix: dict[str, list[Any]],
+        variables: dict[str, Any] | None = None,
+    ) -> AggregationConfig | None:
         """Get the entry-scan configuration for a step.
 
         Returns None if the step reads no workflow cache. If no explicit
@@ -150,7 +150,7 @@ class EntryScanMixin(WorkflowExecutorBase):
     def _resolved_entry_scan_config(
         self,
         agg_config: AggregationConfig,
-        resolved_inputs: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
     ) -> AggregationConfig:
         """Return the scan config rebuilt from resolved step inputs.
 
@@ -195,9 +195,9 @@ class EntryScanMixin(WorkflowExecutorBase):
     def _scan_input_entries(
         self,
         config: AggregationConfig,
-        matrix_values: Dict[str, Any],
-        logger: Optional[Callable[[str], None]] = None,
-    ) -> List[Dict[str, Any]]:
+        matrix_values: dict[str, Any],
+        logger: Callable[[str], None] | None = None,
+    ) -> list[dict[str, Any]]:
         """Scan input caches and collect entries matching matrix values.
 
         This is the first phase of input cache scanning. It:
@@ -243,7 +243,7 @@ class EntryScanMixin(WorkflowExecutorBase):
 
     def _resolve_scan_filter(
         self, config: AggregationConfig
-    ) -> Tuple[Optional[str], Dict[str, Any]]:
+    ) -> tuple[str | None, dict[str, Any]]:
         """Pre-resolve ``random()`` calls across all input caches.
 
         An input cache that an earlier step has not created yet holds no
@@ -273,15 +273,15 @@ class EntryScanMixin(WorkflowExecutorBase):
             return "False", {}
 
     def _collect_scan_metadata(
-        self, cache_paths: List[str]
-    ) -> List[_PopulationEntry]:
+        self, cache_paths: list[str]
+    ) -> list[_PopulationEntry]:
         """Collect population entries from every entry in the caches."""
-        all_meta: List[_PopulationEntry] = []
+        all_meta: list[_PopulationEntry] = []
         for cache_path in cache_paths:
             all_meta.extend(self._safe_scan_metadata(cache_path))
         return all_meta
 
-    def _safe_scan_metadata(self, cache_path: str) -> List[_PopulationEntry]:
+    def _safe_scan_metadata(self, cache_path: str) -> list[_PopulationEntry]:
         """Return lazy population entries for one cache, ignoring errors."""
         try:
             index = self._scan_index_for(cache_path)
@@ -289,7 +289,7 @@ class EntryScanMixin(WorkflowExecutorBase):
             return []
         return [_PopulationEntry(cache_path, entry, index) for entry in index]
 
-    def _scan_index_for(self, cache_path: str) -> List[Dict[str, Any]]:
+    def _scan_index_for(self, cache_path: str) -> list[dict[str, Any]]:
         """Return the memoised entry index for one input cache.
 
         The index (matrix values plus flattened metadata per entry) is
@@ -302,13 +302,13 @@ class EntryScanMixin(WorkflowExecutorBase):
         if key in self._scan_index:
             return self._scan_index[key]
 
-        index: List[Dict[str, Any]] = []
+        index: list[dict[str, Any]] = []
         if Path(cache_path).exists():
             index = self._build_scan_index(cache_path)
         self._scan_index[key] = index
         return index
 
-    def _build_scan_index(self, cache_path: str) -> List[Dict[str, Any]]:
+    def _build_scan_index(self, cache_path: str) -> list[dict[str, Any]]:
         """Read entry records and index them for matching.
 
         Records hold the entry's matrix values and its compressed
@@ -317,7 +317,7 @@ class EntryScanMixin(WorkflowExecutorBase):
         """
         from causaliq_workflow.cache import WorkflowCache
 
-        index: List[Dict[str, Any]] = []
+        index: list[dict[str, Any]] = []
         with WorkflowCache(cache_path) as cache:
             for record in cache.list_entry_records():
                 record["flat_meta"] = None
@@ -328,11 +328,11 @@ class EntryScanMixin(WorkflowExecutorBase):
         self,
         scan: _EntryScan,
         config: AggregationConfig,
-        matrix_values: Dict[str, Any],
+        matrix_values: dict[str, Any],
         cache_path: str,
-        resolved_filter: Optional[str],
-        extra_names: Dict[str, Any],
-        logger: Optional[Callable[[str], None]],
+        resolved_filter: str | None,
+        extra_names: dict[str, Any],
+        logger: Callable[[str], None] | None,
     ) -> None:
         """Scan one cache, skipping missing or unreadable caches."""
         from pathlib import Path
@@ -357,10 +357,10 @@ class EntryScanMixin(WorkflowExecutorBase):
         self,
         scan: _EntryScan,
         config: AggregationConfig,
-        matrix_values: Dict[str, Any],
+        matrix_values: dict[str, Any],
         cache_path: str,
-        resolved_filter: Optional[str],
-        extra_names: Dict[str, Any],
+        resolved_filter: str | None,
+        extra_names: dict[str, Any],
     ) -> None:
         """Scan a cache's memoised index, loading only matched entries."""
         from causaliq_workflow.cache import WorkflowCache
@@ -379,7 +379,7 @@ class EntryScanMixin(WorkflowExecutorBase):
                 _append_matched_entry(scan, cache, cache_path, entry)
 
 
-def _db_cache_paths(input_param: Any) -> List[str]:
+def _db_cache_paths(input_param: Any) -> list[str]:
     """Return the workflow-cache paths named by an ``input`` parameter.
 
     Args:
@@ -398,10 +398,10 @@ def _db_cache_paths(input_param: Any) -> List[str]:
 
 
 def _matrix_candidates(
-    index: List[Dict[str, Any]],
+    index: list[dict[str, Any]],
     config: AggregationConfig,
-    matrix_values: Dict[str, Any],
-) -> List[Dict[str, Any]]:
+    matrix_values: dict[str, Any],
+) -> list[dict[str, Any]]:
     """Return indexed entries whose matrix values match this job.
 
     The matrix comparison runs before the filter expression because both
@@ -418,7 +418,7 @@ def _matrix_candidates(
     ]
 
 
-def _view_records(cache: Any, records: List[Dict[str, Any]]) -> None:
+def _view_records(cache: Any, records: list[dict[str, Any]]) -> None:
     """Build missing reporting views for records using an open cache."""
     for record in records:
         if record["flat_meta"] is not None:
@@ -429,7 +429,7 @@ def _view_records(cache: Any, records: List[Dict[str, Any]]) -> None:
         )
 
 
-def _fill_views(cache_path: str, records: List[Dict[str, Any]]) -> None:
+def _fill_views(cache_path: str, records: list[dict[str, Any]]) -> None:
     """Build missing reporting views for records of one cache.
 
     The views are built in a single pass with the cache open once, so a
@@ -446,16 +446,16 @@ def _fill_views(cache_path: str, records: List[Dict[str, Any]]) -> None:
 
 
 def _filtered_candidates(
-    candidates: List[Dict[str, Any]],
-    resolved_filter: Optional[str],
-    extra_names: Dict[str, Any],
+    candidates: list[dict[str, Any]],
+    resolved_filter: str | None,
+    extra_names: dict[str, Any],
     scan: _EntryScan,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Return the candidates that satisfy the filter expression."""
     if not resolved_filter:
         return candidates
 
-    kept: List[Dict[str, Any]] = []
+    kept: list[dict[str, Any]] = []
     for entry in candidates:
         if _entry_filter_skip(
             resolved_filter, extra_names, entry["flat_meta"]
@@ -470,7 +470,7 @@ def _append_matched_entry(
     scan: _EntryScan,
     cache: Any,
     cache_path: str,
-    entry: Dict[str, Any],
+    entry: dict[str, Any],
 ) -> None:
     """Load one matched entry in full and append it to the scan."""
     full_entry = cache.get(entry["matrix_values"])
@@ -487,7 +487,7 @@ def _append_matched_entry(
     )
 
 
-def _warn(logger: Optional[Callable[[str], None]], message: str) -> None:
+def _warn(logger: Callable[[str], None] | None, message: str) -> None:
     """Emit a scan warning when a logger is provided."""
     if logger:
         logger(message)
@@ -495,8 +495,8 @@ def _warn(logger: Optional[Callable[[str], None]], message: str) -> None:
 
 def _entry_filter_skip(
     resolved_filter: str,
-    extra_names: Dict[str, Any],
-    flat_meta: Dict[str, Any],
+    extra_names: dict[str, Any],
+    flat_meta: dict[str, Any],
 ) -> bool:
     """Return True when the entry is filtered out of the input scan.
 
@@ -513,11 +513,11 @@ def _entry_filter_skip(
 
 
 def _scanned_entry(
-    entry_matrix: Dict[str, Any],
+    entry_matrix: dict[str, Any],
     full_entry: Any,
     cache_path: str,
-    entry_info: Dict[str, Any],
-) -> Dict[str, Any]:
+    entry_info: dict[str, Any],
+) -> dict[str, Any]:
     """Build the scan record for one matched entry."""
     objects_content = {
         name: obj.content for name, obj in full_entry.objects.items()
@@ -535,7 +535,7 @@ def _scanned_entry(
 def _log_scan_summary(
     config: AggregationConfig,
     scan: _EntryScan,
-    logger: Optional[Callable[[str], None]],
+    logger: Callable[[str], None] | None,
 ) -> None:
     """Log the entry-scan statistics when a logger is provided."""
     if not logger:

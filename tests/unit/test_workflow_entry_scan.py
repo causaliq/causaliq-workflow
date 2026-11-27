@@ -5,7 +5,7 @@ and it builds reporting views only for the entries it keeps. These tests
 pin both properties, which is what keeps a scan cheap on a large cache.
 """
 
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Iterable, Set
 
 import pytest
 from pytest_mock import MockerFixture
@@ -24,7 +24,7 @@ from causaliq_workflow.workflow.entry_scan import (
 from causaliq_workflow.workflow.matrix import _matrix_values_match
 
 
-def _write_entries(path: Any, rows: Iterable[Dict[str, Any]]) -> None:
+def _write_entries(path: Any, rows: Iterable[dict[str, Any]]) -> None:
     """Write one cache entry per row of matrix values."""
     with WorkflowCache(path) as cache:
         for row in rows:
@@ -34,7 +34,7 @@ def _write_entries(path: Any, rows: Iterable[Dict[str, Any]]) -> None:
 def _reference_hashes(
     path: Any,
     config: AggregationConfig,
-    job: Dict[str, Any],
+    job: dict[str, Any],
 ) -> Set[str]:
     """Return entry hashes found by filtering first, then matching."""
     with WorkflowCache(path) as cache:

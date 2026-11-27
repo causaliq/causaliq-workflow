@@ -3,7 +3,7 @@
 import json
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pytest
 from causaliq_core import CausalIQActionProvider
@@ -30,17 +30,17 @@ class _RecordProvider(CausalIQActionProvider):
 
     supported_actions = {"record"}
 
-    def _dry_run_result(self, action: str, parameters: Dict[str, Any]) -> Any:
+    def _dry_run_result(self, action: str, parameters: dict[str, Any]) -> Any:
         """Return a dry-run placeholder result."""
         return ("skipped", {"dry_run": True}, [])
 
     def _execute(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
-        context: Optional[Any],
-        logger: Optional[Any],
+        context: Any | None,
+        logger: Any | None,
     ) -> Any:
         """Return one JSON object recording the action and mode."""
         payload = json.dumps({"action": action, "mode": mode})
@@ -60,17 +60,17 @@ class _ParamRecordProvider(CausalIQActionProvider):
 
     supported_actions = {"record"}
 
-    def _dry_run_result(self, action: str, parameters: Dict[str, Any]) -> Any:
+    def _dry_run_result(self, action: str, parameters: dict[str, Any]) -> Any:
         """Return a dry-run placeholder result."""
         return ("skipped", {"dry_run": True}, [])
 
     def _execute(
         self,
         action: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         mode: str,
-        context: Optional[Any],
-        logger: Optional[Any],
+        context: Any | None,
+        logger: Any | None,
     ) -> Any:
         """Return metadata recording the parameters the action received."""
         metadata = {"parameters": parameters, "result": {"mode": mode}}
@@ -305,7 +305,7 @@ def test_null_default_is_overridden(
     assert parameters["reference"] == "networks/asia.graphml"
 
 
-def _entry_parameters(tmp_path: Path, cache_name: str) -> Dict[str, Any]:
+def _entry_parameters(tmp_path: Path, cache_name: str) -> dict[str, Any]:
     """Return the recorded action parameters of a cache's first entry."""
     with WorkflowCache(str(tmp_path / cache_name)) as cache:
         summaries = cache.list_entry_summaries()

@@ -2,7 +2,7 @@
 
 import io
 import sys
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
@@ -18,7 +18,7 @@ class SpyStream:
     """Stream stand-in that records reconfiguration and flush requests."""
 
     def __init__(self, *, fail: bool = False) -> None:
-        self.reconfigure_calls: List[Dict[str, Any]] = []
+        self.reconfigure_calls: list[dict[str, Any]] = []
         self.flush_calls = 0
         self._fail = fail
 

@@ -1,7 +1,7 @@
 """Per-entry validation for the execution pass."""
 
 import warnings
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Set
 
 from causaliq_workflow.schema import _duplicate_step_name_errors
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -23,10 +23,10 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _validate_all_entries(
         self,
-        workflow: Dict[str, Any],
-        cli_params: Optional[Dict[str, Any]] = None,
-        frames: Tuple[WorkflowFrame, ...] = (),
-    ) -> List[str]:
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any] | None = None,
+        frames: tuple[WorkflowFrame, ...] = (),
+    ) -> list[str]:
         """Validate all entries (matrix combos/cache entries) before execution.
 
         This is the validation pass of two-pass execution. It iterates
@@ -64,7 +64,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         jobs = self.expand_matrix(
             self._derive_workflow_matrix(workflow, cli_params)
         )
-        errors: List[str] = _duplicate_step_name_errors(workflow)
+        errors: list[str] = _duplicate_step_name_errors(workflow)
         errors.extend(_parameter_errors(workflow, cli_params))
         errors.extend(self._missing_variable_errors(workflow, cli_params))
 
@@ -79,13 +79,13 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _validate_step_entries(
         self,
-        step: Dict[str, Any],
-        jobs: List[Dict[str, Any]],
-        matrix: Dict[str, Any],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-        frames: Tuple[WorkflowFrame, ...] = (),
-    ) -> List[str]:
+        step: dict[str, Any],
+        jobs: list[dict[str, Any]],
+        matrix: dict[str, Any],
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any],
+        frames: tuple[WorkflowFrame, ...] = (),
+    ) -> list[str]:
         """Dispatch per-entry validation for a single step by pattern."""
         step_name = step.get("name", "unnamed")
         if is_workflow_call_step(step):
@@ -113,11 +113,11 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _validate_create_entries(
         self,
-        step: Dict[str, Any],
-        jobs: List[Dict[str, Any]],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-    ) -> List[str]:
+        step: dict[str, Any],
+        jobs: list[dict[str, Any]],
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any],
+    ) -> list[str]:
         """Validate templating step entries by expanding matrix.
 
         Validates parameters for each matrix combination.
@@ -131,7 +131,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         Returns:
             List of validation error messages
         """
-        errors: List[str] = []
+        errors: list[str] = []
         step_name = step.get("name", "unnamed")
         provider_name = str(step.get("uses", ""))
         step_inputs = step.get("with", {})
@@ -154,11 +154,11 @@ class EntryValidationMixin(WorkflowExecutorBase):
         self,
         step_name: str,
         provider_name: str,
-        step_inputs: Dict[str, Any],
-        job: Dict[str, Any],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-    ) -> Optional[str]:
+        step_inputs: dict[str, Any],
+        job: dict[str, Any],
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any],
+    ) -> str | None:
         """Validate one templating entry, returning an error or None."""
         from causaliq_core import ActionValidationError
 
@@ -182,10 +182,10 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _validate_single_run_entries(
         self,
-        step: Dict[str, Any],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-    ) -> List[str]:
+        step: dict[str, Any],
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any],
+    ) -> list[str]:
         """Validate single-run step entries (once, without matrix).
 
         Single-run steps write no workflow cache and do not use the
@@ -202,7 +202,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         """
         from causaliq_core import ActionValidationError
 
-        errors: List[str] = []
+        errors: list[str] = []
         step_name = step.get("name", "unnamed")
         provider_name = str(step.get("uses", ""))
         step_inputs = step.get("with", {})
@@ -223,11 +223,11 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _validate_entry_scan_entries(
         self,
-        step: Dict[str, Any],
-        jobs: List[Dict[str, Any]],
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-    ) -> List[str]:
+        step: dict[str, Any],
+        jobs: list[dict[str, Any]],
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any],
+    ) -> list[str]:
         """Validate cache-reading step entries.
 
         Validates parameters for each matrix combination, scanning input
@@ -247,7 +247,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         Returns:
             List of validation error messages
         """
-        errors: List[str] = []
+        errors: list[str] = []
         step_name = step.get("name", "unnamed")
         matrix = workflow.get("matrix", {})
         agg_config = self._get_entry_scan_config(
@@ -264,7 +264,7 @@ class EntryValidationMixin(WorkflowExecutorBase):
         # Track entry fingerprints per output matrix combo to
         # detect silent duplication (different combos producing
         # identical input entry sets).
-        fingerprints: Dict[frozenset, Dict[str, Any]] = {}
+        fingerprints: dict[frozenset, dict[str, Any]] = {}
         templated = _token_names(step.get("with", {}))
 
         for job in jobs:
@@ -288,12 +288,12 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _entry_validation_errors(
         self,
-        step: Dict[str, Any],
+        step: dict[str, Any],
         step_name: str,
-        resolved_inputs: Dict[str, Any],
-    ) -> List[str]:
+        resolved_inputs: dict[str, Any],
+    ) -> list[str]:
         """Return arity and parameter errors for one scanned entry set."""
-        errors: List[str] = []
+        errors: list[str] = []
         entries = resolved_inputs.get("_aggregation_entries") or []
         arity_error = self._map_arity_error(
             step_name, step, entries, allow_empty=True
@@ -309,11 +309,11 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
     def _apply_entry_scan(
         self,
-        agg_config: Optional[AggregationConfig],
-        resolved_inputs: Dict[str, Any],
-        job: Dict[str, Any],
+        agg_config: AggregationConfig | None,
+        resolved_inputs: dict[str, Any],
+        job: dict[str, Any],
         step_name: str,
-        fingerprints: Dict[frozenset, Dict[str, Any]],
+        fingerprints: dict[frozenset, dict[str, Any]],
         templated: Set[str],
     ) -> None:
         """Scan inputs for a matrix combo and record its fingerprint.
@@ -336,9 +336,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
     def _scan_entries_for(
         self,
         agg_config: AggregationConfig,
-        resolved_inputs: Dict[str, Any],
-        job: Dict[str, Any],
-    ) -> List[Dict[str, Any]]:
+        resolved_inputs: dict[str, Any],
+        job: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         """Scan the step's input caches using the resolved step inputs.
 
         The matched entries feed validation and the fingerprint check, so
@@ -352,9 +352,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
     def _step_parameter_error(
         self,
         provider_name: str,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         step_name: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Return an action parameter validation error, or None."""
         from causaliq_core import ActionValidationError
 
@@ -369,9 +369,9 @@ class EntryValidationMixin(WorkflowExecutorBase):
 
 def _check_entry_fingerprint(
     step_name: str,
-    job: Dict[str, Any],
-    matching_entries: List[Dict[str, Any]],
-    fingerprints: Dict[frozenset, Dict[str, Any]],
+    job: dict[str, Any],
+    matching_entries: list[dict[str, Any]],
+    fingerprints: dict[frozenset, dict[str, Any]],
     templated: Set[str],
 ) -> None:
     """Warn when different matrix combos select identical entries.

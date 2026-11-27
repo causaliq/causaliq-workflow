@@ -1,7 +1,7 @@
 """Tests for invoking another workflow from a step."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pytest
 from causaliq_core import ActionValidationError, CausalIQActionProvider
@@ -28,7 +28,7 @@ def _state(
     tmp_path: Path,
     job_index: int = 0,
     mode: str = "run",
-    logger: Optional[Any] = None,
+    logger: Any | None = None,
 ) -> _JobState:
     """Build per-job execution state for a sub-workflow test."""
     context = WorkflowContext(
@@ -103,7 +103,7 @@ def test_validate_call_step_wraps_load_errors(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def raise_error(path: Any) -> Dict[str, Any]:
+    def raise_error(path: Any) -> dict[str, Any]:
         raise WorkflowValidationError("Workflow file not found: x")
 
     monkeypatch.setattr(
@@ -125,16 +125,16 @@ def test_validate_call_step_recurses_into_child(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     child = {"steps": [{"name": "inner"}]}
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     def record_entries(
-        workflow: Dict[str, Any], cli_params: Dict[str, Any], frames: Any
-    ) -> List[str]:
+        workflow: dict[str, Any], cli_params: dict[str, Any], frames: Any
+    ) -> list[str]:
         captured.update(workflow=workflow, frames=frames)
         return ["inner error"]
 
@@ -154,7 +154,7 @@ def test_validate_call_step_accepts_null_default(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    child: Dict[str, Any] = {
+    child: dict[str, Any] = {
         "network": None,
         "steps": [
             {"name": "inner", "with": {"output": "{{network}}"}},
@@ -163,7 +163,7 @@ def test_validate_call_step_accepts_null_default(
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     monkeypatch.setattr(executor, "_load_child_workflow", load_child)
@@ -179,7 +179,7 @@ def test_validate_call_step_reports_required_placeholder(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    child: Dict[str, Any] = {
+    child: dict[str, Any] = {
         "steps": [
             {"name": "inner", "with": {"output": "{{network}}.db"}},
         ],
@@ -187,7 +187,7 @@ def test_validate_call_step_reports_required_placeholder(
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     monkeypatch.setattr(executor, "_load_child_workflow", load_child)
@@ -204,14 +204,14 @@ def test_validate_call_step_reports_unused_parameter(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    child: Dict[str, Any] = {
+    child: dict[str, Any] = {
         "matrix": {"variant": ["one"]},
         "steps": [{"name": "inner", "with": {"output": "{{variant}}"}}],
     }
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     monkeypatch.setattr(executor, "_load_child_workflow", load_child)
@@ -232,11 +232,11 @@ def test_run_call_step_skips_later_jobs(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     state = _state(tmp_path, job_index=1)
-    loaded: List[Any] = []
+    loaded: list[Any] = []
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         loaded.append(target)
         return {}
 
@@ -256,21 +256,21 @@ def test_run_call_step_executes_child(
 ) -> None:
     state = _state(tmp_path)
     child = {"steps": [{"name": "inner"}]}
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     def record_jobs(
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         mode: str,
-        cli_params: Dict[str, Any],
+        cli_params: dict[str, Any],
         step_logger: Any,
         frames: Any,
         **_: Any,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         captured.update(
             workflow=workflow,
             mode=mode,
@@ -305,16 +305,16 @@ def test_run_call_step_overrides_child_matrix(
 ) -> None:
     state = _state(tmp_path)
     child = {"matrix": {"variant": ["one", "two"]}, "steps": []}
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     def record_jobs(
-        workflow: Dict[str, Any], *args: Any, **kwargs: Any
-    ) -> List[Dict[str, Any]]:
+        workflow: dict[str, Any], *args: Any, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         captured.update(workflow=workflow, variables=args[1])
         return []
 
@@ -339,16 +339,16 @@ def test_run_call_step_forwards_list_parameter(
     state = _state(tmp_path)
     state.variables = {"network": ["asia", "sports"]}
     child = {"matrix": {"network": ["asia"]}, "steps": []}
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     def record_jobs(
-        workflow: Dict[str, Any], *args: Any, **kwargs: Any
-    ) -> List[Dict[str, Any]]:
+        workflow: dict[str, Any], *args: Any, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         captured.update(workflow=workflow, variables=args[1])
         return []
 
@@ -410,17 +410,17 @@ def test_run_call_step_announces_before_child(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    logged: List[Any] = []
+    logged: list[Any] = []
     state = _state(
         tmp_path, logger=lambda *args, **kwargs: logged.append(args)
     )
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {"steps": []}
 
-    def run_jobs(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+    def run_jobs(*args: Any, **kwargs: Any) -> list[dict[str, Any]]:
         logged.append(("child", "inner", "SUCCESS", {}))
         return [{"steps": {"inner": {"status": "success"}}}]
 
@@ -460,7 +460,7 @@ def test_count_results_counts_called_steps() -> None:
 
 # Every call step's nested steps are counted across the whole run.
 def test_count_results_counts_all_call_steps() -> None:
-    def call_step(status: str) -> Dict[str, Any]:
+    def call_step(status: str) -> dict[str, Any]:
         return {
             "status": status,
             "workflow": "child.yml",
@@ -536,17 +536,17 @@ def test_run_call_step_resolves_caller_variables(
 ) -> None:
     state = _state(tmp_path)
     state.variables.update({"variant": "two"})
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         captured["names"] = set(parameter_names)
         return {"matrix": {"variant": ["one"]}, "steps": []}
 
     def record_jobs(
-        workflow: Dict[str, Any], *args: Any, **kwargs: Any
-    ) -> List[Dict[str, Any]]:
+        workflow: dict[str, Any], *args: Any, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         captured["matrix"] = workflow["matrix"]
         return []
 
@@ -602,7 +602,7 @@ def test_validate_step_entries_dispatches_calls(
         jobs: Any,
         workflow: Any,
         cli_params: Any,
-    ) -> List[str]:
+    ) -> list[str]:
         return ["call error"]
 
     monkeypatch.setattr(
@@ -621,16 +621,16 @@ def test_validate_call_step_resolves_forwarded_values(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     child = {"matrix": {"sample_size": [1]}, "steps": []}
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return child
 
     def record_entries(
-        workflow: Dict[str, Any], cli_params: Dict[str, Any], frames: Any
-    ) -> List[str]:
+        workflow: dict[str, Any], cli_params: dict[str, Any], frames: Any
+    ) -> list[str]:
         captured["matrix"] = workflow["matrix"]
         return []
 
@@ -668,7 +668,7 @@ class _TypedSampleSizeProvider(CausalIQActionProvider):
     version = "1.0.0"
     supported_actions = {"learn"}
 
-    def validate_parameters(self, action: str, parameters: Dict[str, Any]):
+    def validate_parameters(self, action: str, parameters: dict[str, Any]):
         """Reject a sample size that is not an integer."""
         super().validate_parameters(action, parameters)
         size = parameters.get("sample_size")
@@ -713,14 +713,14 @@ def test_call_forwards_list_parameter_to_child_matrix(
     ]
 
 
-def _recording_logger(logged: List[Dict[str, Any]]) -> Any:
+def _recording_logger(logged: list[dict[str, Any]]) -> Any:
     """Return a step logger that records every event as a dictionary."""
 
     def record(
         action: str,
         name: str,
         status: str,
-        values: Dict[str, Any],
+        values: dict[str, Any],
         **kwargs: Any,
     ) -> None:
         logged.append({"status": status, "name": name, **kwargs})
@@ -734,15 +734,15 @@ def test_run_call_step_logs_completed_with_counts(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    logged: List[Dict[str, Any]] = []
+    logged: list[dict[str, Any]] = []
     state = _state(tmp_path, logger=_recording_logger(logged))
 
     def load_child(
         target: Any, step_name: str, parameter_names: Any = frozenset()
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {"steps": []}
 
-    def run_jobs(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+    def run_jobs(*args: Any, **kwargs: Any) -> list[dict[str, Any]]:
         return [
             {
                 "job": {"network": "asia"},
@@ -775,9 +775,9 @@ def test_execute_child_workflow_passes_next_depth(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     state = _state(tmp_path)
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
-    def record_jobs(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+    def record_jobs(*args: Any, **kwargs: Any) -> list[dict[str, Any]]:
         captured.update(kwargs)
         return []
 

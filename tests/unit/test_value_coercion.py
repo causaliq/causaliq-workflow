@@ -1,6 +1,6 @@
 """Unit tests for action parameter coercion at the workflow boundary."""
 
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from causaliq_core import ActionInput
@@ -163,7 +163,7 @@ def test_coerce_list_without_kind() -> None:
 
 # Coercion builds a new parameter mapping.
 def test_coercion_does_not_mutate_input() -> None:
-    parameters: Dict[str, Any] = {"seed": "42"}
+    parameters: dict[str, Any] = {"seed": "42"}
     result = coerce_action_parameters(_Provider(), parameters)
     assert parameters == {"seed": "42"}
     assert result == {"seed": 42}

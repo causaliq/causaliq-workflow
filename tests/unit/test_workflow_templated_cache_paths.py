@@ -9,7 +9,7 @@ matrix of its own.
 """
 
 from pathlib import Path
-from typing import Any, Dict, Iterable
+from typing import Any, Iterable
 
 import pytest
 from causaliq_core import ActionPattern
@@ -19,7 +19,7 @@ from causaliq_workflow.workflow import WorkflowExecutor
 from causaliq_workflow.workflow.entry_scan import AggregationConfig
 
 
-def _write_entries(path: Any, rows: Iterable[Dict[str, Any]]) -> None:
+def _write_entries(path: Any, rows: Iterable[dict[str, Any]]) -> None:
     """Write one cache entry per row of matrix values."""
     with WorkflowCache(path) as cache:
         for row in rows:
@@ -42,9 +42,9 @@ def _use_map_pattern(
     )
 
 
-def _workflow(cache_dir: Any = None) -> Dict[str, Any]:
+def _workflow(cache_dir: Any = None) -> dict[str, Any]:
     """Return a one-step MAP workflow whose input path is templated."""
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "steps": [
             {
                 "name": "evaluate",
@@ -256,7 +256,7 @@ def test_aggregate_scope_accepts_caches_with_different_keys(
     _use_aggregate_pattern(executor, monkeypatch)
     _write_mixed_key_caches(tmp_path)
     parameters = {"cache_dir": str(tmp_path)}
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "matrix": {"network": ["alarm", "asia"]},
         "cache_dir": str(tmp_path),
         "steps": [
@@ -287,7 +287,7 @@ def test_aggregate_scope_accepts_caches_with_different_keys(
     executor._validate_template_variables(workflow, parameters)
 
 
-def _map_step(tmp_path: Path) -> Dict[str, Any]:
+def _map_step(tmp_path: Path) -> dict[str, Any]:
     """Return a one-step MAP definition reading the two mixed-key caches."""
     return {
         "uses": "map-provider",
@@ -392,7 +392,7 @@ def test_map_input_key_error_ignores_steps_without_cache_scan(
 ) -> None:
     """A step the scan configuration does not cover has no keys to compare."""
     _use_map_pattern(executor, monkeypatch)
-    step: Dict[str, Any] = {
+    step: dict[str, Any] = {
         "uses": "map-provider",
         "with": {"action": "evaluate"},
     }
@@ -408,7 +408,7 @@ def test_validate_all_entries_reports_mixed_input_keys(
     """The validation pass reports a MAP step's mixed input keys once."""
     _use_map_pattern(executor, monkeypatch)
     _write_mixed_key_caches(tmp_path)
-    workflow: Dict[str, Any] = {
+    workflow: dict[str, Any] = {
         "matrix": {"network": ["asia"]},
         "cache_dir": str(tmp_path),
         "steps": [{"name": "evaluate", **_map_step(tmp_path)}],

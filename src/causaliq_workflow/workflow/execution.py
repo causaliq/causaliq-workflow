@@ -7,7 +7,7 @@ share is declared in :mod:`causaliq_workflow.workflow.job_state`.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Union
 
 from causaliq_workflow.registry import WorkflowContext
 from causaliq_workflow.reporting import StepLogger
@@ -27,8 +27,8 @@ class ExecutionMixin(WorkflowExecutorBase):
         self,
         workflow_path: Union[str, Path],
         mode: str = "dry-run",
-        parameters: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        parameters: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Parse workflow YAML file with validation.
 
         Args:
@@ -71,13 +71,13 @@ class ExecutionMixin(WorkflowExecutorBase):
 
     def execute_workflow(
         self,
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         mode: str = "dry-run",
-        cli_params: Optional[Dict[str, Any]] = None,
-        step_logger: Optional[StepLogger] = None,
+        cli_params: dict[str, Any] | None = None,
+        step_logger: StepLogger | None = None,
         validate: bool = True,
-        source_path: Optional[Union[str, Path]] = None,
-    ) -> List[Dict[str, Any]]:
+        source_path: Union[str, Path] | None = None,
+    ) -> list[dict[str, Any]]:
         """Execute complete workflow with matrix expansion.
 
         Uses two-pass execution:
@@ -137,9 +137,9 @@ class ExecutionMixin(WorkflowExecutorBase):
 
     def _validate_execution(
         self,
-        workflow: Dict[str, Any],
-        cli_params: Dict[str, Any],
-        frames: Tuple[WorkflowFrame, ...] = (),
+        workflow: dict[str, Any],
+        cli_params: dict[str, Any],
+        frames: tuple[WorkflowFrame, ...] = (),
     ) -> None:
         """Run the validation pass, raising on the first failure."""
         validation_errors = self._validate_all_entries(
@@ -153,13 +153,13 @@ class ExecutionMixin(WorkflowExecutorBase):
 
     def _execute_jobs(
         self,
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         mode: str,
-        cli_params: Dict[str, Any],
-        step_logger: Optional[StepLogger],
-        frames: Tuple[WorkflowFrame, ...] = (),
+        cli_params: dict[str, Any],
+        step_logger: StepLogger | None,
+        frames: tuple[WorkflowFrame, ...] = (),
         depth: int = 0,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Execute every matrix job and collect the results."""
         # Derive matrix from explicit definition or from input caches
         matrix = self._derive_workflow_matrix(workflow, cli_params)
@@ -193,14 +193,14 @@ class ExecutionMixin(WorkflowExecutorBase):
 
     def _execute_job(
         self,
-        workflow: Dict[str, Any],
-        job: Dict[str, Any],
+        workflow: dict[str, Any],
+        job: dict[str, Any],
         context: WorkflowContext,
-        cli_params: Dict[str, Any],
-        step_logger: Optional[StepLogger] = None,
-        frames: Tuple[WorkflowFrame, ...] = (),
+        cli_params: dict[str, Any],
+        step_logger: StepLogger | None = None,
+        frames: tuple[WorkflowFrame, ...] = (),
         depth: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute single job with resolved matrix variables.
 
         Args:
@@ -237,7 +237,7 @@ class ExecutionMixin(WorkflowExecutorBase):
             "context": context,
         }
 
-    def _run_step(self, state: _JobState, step: Dict[str, Any]) -> None:
+    def _run_step(self, state: _JobState, step: dict[str, Any]) -> None:
         """Execute a single step, then restore the job's matrix values.
 
         The step name is expanded for the current job, so a matrix value

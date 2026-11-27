@@ -7,7 +7,7 @@ multiple output destinations (terminal, file, test capture).
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, TextIO
+from typing import Any, TextIO
 
 
 class LogLevel(Enum):
@@ -43,7 +43,7 @@ class WorkflowLogger:
     def __init__(
         self,
         terminal: bool = True,
-        log_file: Optional[Path] = None,
+        log_file: Path | None = None,
         log_level: LogLevel = LogLevel.SUMMARY,
     ) -> None:
         """Initialize logger with output destinations and verbosity level."""
@@ -53,7 +53,7 @@ class WorkflowLogger:
 
         # Initialize output streams
         self._terminal_stream: TextIO = sys.stdout
-        self._file_stream: Optional[TextIO] = None
+        self._file_stream: TextIO | None = None
 
         # File stream will be opened lazily when first needed
 
@@ -78,8 +78,8 @@ class WorkflowLogger:
 
     def __exit__(
         self,
-        exc_type: Optional[type],
-        exc_val: Optional[Exception],
+        exc_type: type | None,
+        exc_val: Exception | None,
         exc_tb: Any,
     ) -> None:
         """Context manager exit with cleanup."""

@@ -7,14 +7,14 @@ the single implementation of that rule; the action registry and the
 workflow provenance layer both use it.
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
 __all__ = ["split_action_metadata"]
 
 
 def split_action_metadata(
     raw_metadata: Any,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Split action metadata into effective parameters and results.
 
     Args:

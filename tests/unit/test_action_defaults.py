@@ -1,6 +1,6 @@
 """Unit tests for action parameter defaults in the workflow engine."""
 
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from causaliq_core import ActionInput, ActionResult, CausalIQActionProvider
@@ -57,8 +57,8 @@ class MultiProvider(CausalIQActionProvider):
 def _run(
     registry: ActionRegistry,
     name: str,
-    inputs: Dict[str, Any],
-) -> Dict[str, Any]:
+    inputs: dict[str, Any],
+) -> dict[str, Any]:
     """Execute an action and return its parameters metadata block."""
     context = WorkflowContext(mode="run", matrix={})
     result = registry.execute_action(name, inputs, context)

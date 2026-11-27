@@ -5,7 +5,7 @@ completion log line, so the execution and step-runner mixins stay within
 the module and method limits.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 from causaliq_workflow.reporting import format_elapsed
 from causaliq_workflow.workflow._base import WorkflowExecutorBase
@@ -22,7 +22,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class StepStoreMixin(WorkflowExecutorBase):
     """Storing step results and failures for WorkflowExecutor."""
 
-    def _get_environment(self) -> Optional[Dict[str, Any]]:
+    def _get_environment(self) -> dict[str, Any] | None:
         """Return the run environment, collecting it at most once."""
         if not getattr(self, "_environment_ready", False):
             self._environment = collect_environment()
@@ -32,8 +32,8 @@ class StepStoreMixin(WorkflowExecutorBase):
     def _store_step_result(
         self,
         state: _JobState,
-        step_result: Dict[str, Any],
-        provenance: Dict[str, Any],
+        step_result: dict[str, Any],
+        provenance: dict[str, Any],
     ) -> None:
         """Store a step result to the open cache when appropriate.
 
@@ -62,8 +62,8 @@ class StepStoreMixin(WorkflowExecutorBase):
         self,
         state: _JobState,
         cache: "WorkflowCache",
-        step_result: Dict[str, Any],
-        provenance: Dict[str, Any],
+        step_result: dict[str, Any],
+        provenance: dict[str, Any],
     ) -> None:
         """Record a failed step as provenance only.
 
@@ -82,8 +82,8 @@ class StepStoreMixin(WorkflowExecutorBase):
     def _store_action_result(
         self,
         state: _JobState,
-        step_result: Dict[str, Any],
-        provenance: Dict[str, Any],
+        step_result: dict[str, Any],
+        provenance: dict[str, Any],
     ) -> None:
         """Write a step result (objects and metadata) to the open cache."""
         from causaliq_workflow.cache import store_action_result
@@ -102,9 +102,9 @@ class StepStoreMixin(WorkflowExecutorBase):
         self,
         state: _JobState,
         step_name: str,
-        resolved_inputs: Dict[str, Any],
-        step_result: Dict[str, Any],
-        provenance: Dict[str, Any],
+        resolved_inputs: dict[str, Any],
+        step_result: dict[str, Any],
+        provenance: dict[str, Any],
     ) -> None:
         """Log a step's completion status when a step logger is present."""
         if not state.step_logger:
@@ -121,7 +121,7 @@ class StepStoreMixin(WorkflowExecutorBase):
         )
 
 
-def _completion_status(state: _JobState, step_result: Dict[str, Any]) -> str:
+def _completion_status(state: _JobState, step_result: dict[str, Any]) -> str:
     """Return the reported status of a finished step."""
     status = step_result.get("status", "unknown")
     if status == "success":

@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import zipfile
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Set
 
 from causaliq_core.metadata import normalise_metadata
 
@@ -102,7 +102,7 @@ def _import_from_dir(
 
 def _dir_cache_entry(
     entry_dir: Path, meta_path: Path
-) -> Tuple[Dict[str, Any], CacheEntry]:
+) -> tuple[dict[str, Any], CacheEntry]:
     """Build a CacheEntry and its matrix values from an entry directory."""
     matrix_values, metadata = _read_meta(meta_path.read_text(encoding="utf-8"))
     entry = CacheEntry(metadata=metadata)
@@ -121,7 +121,7 @@ def _dir_cache_entry(
 
 def _read_meta(
     meta_content: str,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Parse a _meta.json payload into matrix values and metadata.
 
     Version 1 metadata is normalised to the version 2 envelope so all
@@ -183,9 +183,9 @@ def _import_zip_archive(cache: "WorkflowCache", zf: zipfile.ZipFile) -> int:
     return count
 
 
-def _group_zip_dir_files(zf: zipfile.ZipFile) -> Dict[str, List[str]]:
+def _group_zip_dir_files(zf: zipfile.ZipFile) -> dict[str, list[str]]:
     """Group a zip archive's file names by their parent directory."""
-    dirs_files: Dict[str, List[str]] = {}
+    dirs_files: dict[str, list[str]] = {}
     for name in zf.namelist():
         if name.endswith("/"):
             continue
@@ -197,9 +197,9 @@ def _group_zip_dir_files(zf: zipfile.ZipFile) -> Dict[str, List[str]]:
 def _zip_meta_entry(
     zf: zipfile.ZipFile,
     name: str,
-    dirs_files: Dict[str, List[str]],
+    dirs_files: dict[str, list[str]],
     processed_dirs: Set[str],
-) -> Optional[Tuple[Dict[str, Any], CacheEntry]]:
+) -> tuple[dict[str, Any], CacheEntry] | None:
     """Build a (matrix_values, entry) pair from one zip member, or None."""
     if not name.endswith("_meta.json"):
         return None

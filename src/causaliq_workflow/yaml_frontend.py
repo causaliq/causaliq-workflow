@@ -14,7 +14,7 @@ plain-scalar sentinel before parsing and restored afterwards.
 
 import re
 import uuid
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import yaml
 
@@ -60,7 +60,7 @@ WorkflowLoader.add_implicit_resolver(
 )
 
 
-def _protect_template_tokens(text: str) -> Tuple[str, Dict[str, str]]:
+def _protect_template_tokens(text: str) -> tuple[str, dict[str, str]]:
     """Replace template tokens with YAML-safe sentinels.
 
     Args:
@@ -70,7 +70,7 @@ def _protect_template_tokens(text: str) -> Tuple[str, Dict[str, str]]:
         The protected text and a mapping of sentinel to original token.
     """
     nonce = uuid.uuid4().hex
-    tokens: Dict[str, str] = {}
+    tokens: dict[str, str] = {}
 
     def _replace(match: "re.Match[str]") -> str:
         sentinel = f"__cq_token_{nonce}_{len(tokens)}__"
@@ -80,7 +80,7 @@ def _protect_template_tokens(text: str) -> Tuple[str, Dict[str, str]]:
     return _TEMPLATE_TOKEN_PATTERN.sub(_replace, text), tokens
 
 
-def _restore_template_tokens(obj: Any, tokens: Dict[str, str]) -> Any:
+def _restore_template_tokens(obj: Any, tokens: dict[str, str]) -> Any:
     """Restore template tokens in a parsed workflow object.
 
     Args:

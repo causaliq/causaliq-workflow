@@ -10,7 +10,7 @@ from __future__ import annotations
 import importlib.metadata
 from datetime import datetime
 from time import perf_counter
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from causaliq_core.metadata import build_metadata
 from causaliq_core.utils import environment as _environment
@@ -44,7 +44,7 @@ def local_now() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
 
-def collect_environment() -> Optional[Dict[str, Any]]:
+def collect_environment() -> dict[str, Any] | None:
     """Collect runtime environment information without failing the run.
 
     Returns:
@@ -60,7 +60,7 @@ def collect_environment() -> Optional[Dict[str, Any]]:
 def resolve_provider_version(
     action_class: Any,
     provider_name: str,
-) -> Optional[str]:
+) -> str | None:
     """Return the provider version, falling back to package metadata.
 
     Args:
@@ -79,7 +79,7 @@ def resolve_provider_version(
         return None
 
 
-def workflow_version() -> Optional[str]:
+def workflow_version() -> str | None:
     """Return the causaliq-workflow package version.
 
     Returns:
@@ -93,7 +93,7 @@ def workflow_version() -> Optional[str]:
 
 
 def resolve_action_name(
-    resolved_inputs: Dict[str, Any],
+    resolved_inputs: dict[str, Any],
     action_class: Any,
 ) -> str:
     """Return the action name, deriving it for single-action providers.
@@ -115,10 +115,10 @@ def resolve_action_name(
 def execute_with_provenance(
     registry: Any,
     action_name: str,
-    resolved_inputs: Dict[str, Any],
+    resolved_inputs: dict[str, Any],
     context: Any,
-    environment: Optional[Dict[str, Any]],
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    environment: dict[str, Any] | None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Execute an action and collect its provenance.
 
     Args:
@@ -158,9 +158,9 @@ def execute_with_provenance(
 
 
 def build_result_metadata(
-    provenance: Dict[str, Any],
-    step_result: Dict[str, Any],
-) -> Dict[str, Any]:
+    provenance: dict[str, Any],
+    step_result: dict[str, Any],
+) -> dict[str, Any]:
     """Build the metadata envelope for a completed step.
 
     Args:
@@ -179,11 +179,11 @@ def build_result_metadata(
 def collect_step_provenance(
     action_class: Any,
     provider_name: str,
-    resolved_inputs: Dict[str, Any],
+    resolved_inputs: dict[str, Any],
     started: str,
     elapsed: float,
-    environment: Optional[Dict[str, Any]],
-) -> Dict[str, Any]:
+    environment: dict[str, Any] | None,
+) -> dict[str, Any]:
     """Collect provenance for one executed action.
 
     Args:
@@ -211,10 +211,10 @@ def collect_step_provenance(
 
 
 def build_step_metadata(
-    provenance: Dict[str, Any],
-    parameters: Dict[str, Any],
-    result: Dict[str, Any],
-) -> Dict[str, Any]:
+    provenance: dict[str, Any],
+    parameters: dict[str, Any],
+    result: dict[str, Any],
+) -> dict[str, Any]:
     """Build a version 2 envelope from collected step provenance.
 
     Args:

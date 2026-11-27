@@ -18,7 +18,7 @@ underlying evaluator cannot address dotted keys directly.
 from __future__ import annotations
 
 import ast
-from typing import Any, Dict, Iterable, List, Tuple, cast
+from typing import Any, Iterable, cast
 
 from causaliq_core.metadata import MetadataParts, split_metadata
 from causaliq_core.utils import evaluate_filter
@@ -34,9 +34,9 @@ _BLOCKS = ("parameters", "result")
 
 
 def flatten_block(
-    block: Dict[str, Any],
+    block: dict[str, Any],
     prefix: str = "",
-) -> Iterable[Tuple[str, Any]]:
+) -> Iterable[tuple[str, Any]]:
     """Yield dotted paths and values for a nested metadata block.
 
     Args:
@@ -54,10 +54,10 @@ def flatten_block(
 
 
 def build_entry_view(
-    matrix_values: Dict[str, Any],
-    metadata: Dict[str, Any],
-    object_values: Dict[str, Any] | None = None,
-) -> Dict[str, Any]:
+    matrix_values: dict[str, Any],
+    metadata: dict[str, Any],
+    object_values: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build the flat reporting view for one cache entry.
 
     Args:
@@ -68,9 +68,9 @@ def build_entry_view(
     Returns:
         Flat mapping of names to values.
     """
-    view: Dict[str, Any] = dict(matrix_values)
+    view: dict[str, Any] = dict(matrix_values)
     parts = split_metadata(metadata)
-    short: Dict[Tuple[str, str], List[Any]] = {}
+    short: dict[tuple[str, str], list[Any]] = {}
     _add_blocks(
         view,
         short,
@@ -97,7 +97,7 @@ def _has_producer(parts: MetadataParts) -> bool:
     return isinstance(provider, str) and isinstance(action, str)
 
 
-def _add_anonymous(view: Dict[str, Any], parts: MetadataParts) -> None:
+def _add_anonymous(view: dict[str, Any], parts: MetadataParts) -> None:
     """Expose flat metadata fields when no producer is recorded."""
     for block in (parts.parameters, parts.result):
         for path, value in flatten_block(block):
@@ -105,12 +105,12 @@ def _add_anonymous(view: Dict[str, Any], parts: MetadataParts) -> None:
 
 
 def _add_blocks(
-    view: Dict[str, Any],
-    short: Dict[Tuple[str, str], List[Any]],
+    view: dict[str, Any],
+    short: dict[tuple[str, str], list[Any]],
     provider: Any,
     action: Any,
-    parameters: Dict[str, Any],
-    result: Dict[str, Any],
+    parameters: dict[str, Any],
+    result: dict[str, Any],
 ) -> None:
     """Add one producer's parameter and result fields to the view."""
     if not isinstance(provider, str) or not isinstance(action, str):
@@ -126,8 +126,8 @@ def _add_blocks(
 
 
 def _add_history(
-    view: Dict[str, Any],
-    short: Dict[Tuple[str, str], List[Any]],
+    view: dict[str, Any],
+    short: dict[tuple[str, str], list[Any]],
     parts: MetadataParts,
 ) -> None:
     """Add inherited producer blocks to the view."""
@@ -147,8 +147,8 @@ def _add_history(
 
 def _producer_parts(
     producer_key: str,
-    blocks: Dict[str, Any],
-) -> Tuple[Any, Any]:
+    blocks: dict[str, Any],
+) -> tuple[Any, Any]:
     """Return the provider and action names of a history block."""
     provenance = blocks.get("provenance")
     if isinstance(provenance, dict):
@@ -162,7 +162,7 @@ def _producer_parts(
     return None, None
 
 
-def _block(blocks: Dict[str, Any], name: str) -> Dict[str, Any]:
+def _block(blocks: dict[str, Any], name: str) -> dict[str, Any]:
     """Return a named block, treating a flat history entry as result."""
     value = blocks.get(name)
     if isinstance(value, dict):
@@ -174,8 +174,8 @@ def _block(blocks: Dict[str, Any], name: str) -> Dict[str, Any]:
 
 def resolve_qualified_names(
     expression: str,
-    view: Dict[str, Any],
-) -> Tuple[str, Dict[str, Any]]:
+    view: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
     """Rewrite qualified names in a filter expression to safe aliases.
 
     Args:
@@ -196,11 +196,11 @@ def resolve_qualified_names(
 class _NameRewriter(ast.NodeTransformer):
     """Replace dotted references with aliases present in the view."""
 
-    def __init__(self, keys: Iterable[str], view: Dict[str, Any]) -> None:
+    def __init__(self, keys: Iterable[str], view: dict[str, Any]) -> None:
         """Store the addressable keys and their values."""
         self.keys = set(keys)
         self.view = view
-        self.aliases: Dict[str, Any] = {}
+        self.aliases: dict[str, Any] = {}
 
     def visit_Attribute(self, node: ast.Attribute) -> ast.expr:
         """Rewrite an attribute chain when it names a view key."""
@@ -224,7 +224,7 @@ def _attribute_name(node: ast.AST) -> str | None:
 
 def evaluate_entry_filter(
     expression: str,
-    view: Dict[str, Any],
+    view: dict[str, Any],
 ) -> bool:
     """Evaluate a filter expression against a reporting view.
 

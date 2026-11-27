@@ -1,7 +1,7 @@
 """CLI result reporting helpers for causaliq-workflow."""
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from causaliq_workflow.reporting import (
     count_results,
@@ -13,8 +13,8 @@ from causaliq_workflow.terminal import echo_line
 
 
 def _report_results(
-    results: List[Dict[str, Any]],
-    workflow: Dict[str, Any],
+    results: list[dict[str, Any]],
+    workflow: dict[str, Any],
     mode: str,
     log_depth: int,
 ) -> None:
@@ -38,7 +38,7 @@ def _report_results(
     _log_result_errors(timestamp, counts.errors)
 
 
-def _log_result_errors(timestamp: str, error_messages: List[str]) -> None:
+def _log_result_errors(timestamp: str, error_messages: list[str]) -> None:
     """Print recorded step error messages, capped, with an omitted count."""
     if not error_messages:
         return

@@ -1,6 +1,6 @@
 """Focused tests for helpers extracted by the workflow package split."""
 
-from typing import Any, List
+from typing import Any
 
 import pytest
 
@@ -38,5 +38,5 @@ def test_map_step_matrix_without_cache_input(
 def test_deduplicate_errors_removes_duplicates(
     executor: WorkflowExecutor,
 ) -> None:
-    errors: List[str] = ["Step 'a': boom", "Step 'a': boom"]
+    errors: list[str] = ["Step 'a': boom", "Step 'a': boom"]
     assert executor._deduplicate_errors(errors) == ["Step 'a': boom"]
